@@ -1,0 +1,317 @@
+
+%----------------------------------------------------------------------------------------
+% Impresión de un lado de la hoja
+\documentclass[notitlepage]{report}
+\usepackage[paper=a4paper,top=2in, bottom=1in, left=1in, right=1in]{geometry}
+%----------------------------------------------------------------------------------------
+% Impresión para libros (de los dos lados de la hoja)
+%\documentclass[a4paper,twoside, notitlepage]{report}
+%----------------------------------------------------------------------------------------
+% PAQUETES NECESARIOS
+\usepackage[utf8]{inputenc} % set input encoding
+\usepackage{amsmath}
+\usepackage{amssymb} %para mathbb
+\usepackage{eqnarray}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{xcolor}
+\usepackage{xfrac}
+\usepackage{esint}
+\usepackage{mathcomp}
+\usepackage[rightcaption]{sidecap}
+\usepackage{graphicx} 					% necesario para agregar gráficos.
+\usepackage[margin=2cm]{caption}  		% por defecto 2cm
+\usepackage[spanish]{babel}
+\usepackage[hidelinks]{hyperref}
+\usepackage{afterpage}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{acro} 
+\usepackage[lined,ruled,vlined,linesnumbered,spanish, onelanguage]{algorithm2e}
+\usepackage{listings}
+
+% Anexos y readecuación de nombres.
+\usepackage[toc,page]{appendix}
+\addto\captionsspanish{%
+	\renewcommand\appendixname{Anexo}
+	\renewcommand\appendixpagename{Anexos}
+	\renewcommand\appendixtocname{Anexos}
+}
+%----------------------------------------------------------------------------------------
+% CONFIGURACIÓN INTERLÍNEA. 
+% Quitar el comentario a \usepackage{setspace} y 
+% seleccionar alguna de las opciones (quitar % a la elegida)
+% \usepackage{setspace}
+
+% Opciones:
+%\doublespacing
+%\onehalfspacing
+%\singlespace
+%----------------------------------------------------------------------------------------
+% Estilo para encabezado de página
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\bfseries\leftmark} % Título
+\fancyhead[R]{\bfseries\thepage}  % Nro de página
+\renewcommand\headrulewidth{0pt}  % línea 
+%----------------------------------------------------------------------------------------
+% Algunos colores de diseño
+\definecolor{hyperlink}{rgb}{0,0,93.3}
+\definecolor{ideicolor}{RGB}{139, 13, 51}
+
+%============================================================
+% DEFINICIÓN DE COMANDOS PARA CARGA DE DATOS
+\NewDocumentCommand{\universidad}{m}{\newcommand{\univn}{#1}}
+\NewDocumentCommand{\instituto}{m}{\newcommand{\instn}{#1}}
+\NewDocumentCommand{\autor}{m}{\newcommand{\autorn}{#1}}
+\NewDocumentCommand{\coautor}{m}{\newcommand{\coautorn}{#1}}
+\NewDocumentCommand{\autormail}{m}{\newcommand{\autorm}{#1}}
+\NewDocumentCommand{\coautormail}{m}{\newcommand{\coautorm}{#1}}
+\NewDocumentCommand{\supervisor}{m}{\newcommand{\supname}{#1}}
+\NewDocumentCommand{\cosupervisor}{m}{\newcommand{\cosupname}{#1}}
+\NewDocumentCommand{\examiner}{m}{\newcommand{\examname}{#1}}
+\NewDocumentCommand{\grado}{m}{\newcommand{\gradon}{#1}}
+\NewDocumentCommand{\grupo}{m}{\newcommand{\grupon}{#1}}
+\NewDocumentCommand{\subject}{m}{\newcommand{\subjectname}{#1}}
+\NewDocumentCommand{\keywords}{m}{\newcommand{\keywordnames}{#1}}
+\NewDocumentCommand{\titulo}{m}{\newcommand{\ttitle}{#1}}
+
+%============================================================
+% Algunos formatos nuevos para separar el formato del contexto
+\newcommand{\keyword}[1]{\textbf{#1}}
+\newcommand{\tabhead}[1]{\textbf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{\bfseries#1}}
+\newcommand{\option}[1]{\texttt{\itshape#1}}
+\newcommand\blankpage{
+	\null
+	\thispagestyle{empty}
+	\addtocounter{page}{0}
+	\newpage}
+
+%================================================================
+% DATOS DE  PORTADA
+%----------------------------------------------------------------------------------------
+% Datos Institucionales.
+\universidad{	\href{www.ungs.edu.ar}{Universidad Nacional de General Sarmiento}}
+\instituto{\href{https://www.ungs.edu.ar/idei/idei}{Instituto de Industria (IDEI)}}
+%----------------------------------------------------------------------------------------
+% Datos Particulares
+\titulo{\vspace{-4.5cm} Plantilla Modelo de Presentación de la Tesina de Licenciatura en Sistemas para  \LaTeX{}}
+% Grado Alcanzado
+\grado{Licenciad en Sistemas} % Cambiar según corresponda (a/o/os/as)
+%Autorres
+\autor{Nombre Autor }
+\autormail{nautor@campus.ungs.edu.ar}
+\coautor{Nombre Coautor }
+\coautormail{ncoautor@campus.ungs.edu.ar}
+% Gupo de Investigación o Laboratorio. (si fuera necesario declarar, quitar ~ y reemplazar por el nombre)
+\grupo{~} 
+%Directores, Supervisores.
+\supervisor{Nombre Supervisor}
+\cosupervisor{Nombre Cosupervisor}
+
+%===========================================================================
+%DECLARACIÓN DE ACRÓNIMOS Y GLOSARIO
+%----------------------------------------------------------------------------------------
+% Los Acrónimos y Glosario de terminos se declara en el encabezado (previo al cuerpo del documento)
+% Se emplea el paquete "acro" : https://github.com/cgnieder/acro/
+% Hay ciertas incompatibilidades entre diferentes compiladores de latex 
+% principalmente por el versionado.   .
+%----------------------------------------------------------------------------------------
+%% Con LiveTex ()LINUX)
+%% class 'abbrev':abreviaciones:
+\DeclareAcronym{id}{
+	short = I+D ,
+	long  = Investigación y Desarrollo,
+	class = abbrev
+}
+
+% class 'nomencl':glosario
+\DeclareAcronym{angelsperarea}{
+	short = \ensuremath{a} ,
+	long  = El número de ángeles por unidad de área ,
+	sort  = a ,
+	class = nomencl}
+
+%% Con MikTex (Mac - Windows)
+%%
+%% tag 'abbrev':abreviaciones:
+%\DeclareAcronym{id}{
+%	short = I+D ,
+%	long  = Investigación y Desarrollo,
+%	tag = abbrev}
+
+%% tag 'nomencl': glosario
+%\DeclareAcronym{angelsperarea}{
+%	short = \ensuremath{a} ,
+%	long  = El número de ángeles por unidad de área ,
+%	sort  = a ,
+%	tag = nomencl}
+
+%=======================================================================================
+% DOCUMENTO DE TESIS
+\begin{document}
+
+% Numeración romana para las páginas preliminares
+\pagenumbering{roman} 
+
+%----------------------------------------------------------------------------------------
+%  Título - PORTADA 
+%----------------------------------------------------------------------------------------
+\begin{titlepage}
+	\begin{tikzpicture}[remember picture, overlay]
+		\node[
+		anchor=center,
+		xshift=7.5cm,
+		yshift=4cm,
+		rectangle,
+		%fill=gray!20!white,
+		%fill opacity=0.8,
+		inner ysep=5pt,
+		inner xsep=3cm,
+		%text opacity=0.8,
+		%text width=\paperwidth+1cm, % Set text width in order to force left-alignment
+		]{\includegraphics[width=22cm]{Figuras/ungs.png}};
+	
+	\end{tikzpicture}
+
+	\begin{center}
+		\vspace{-1.5cm}
+		{\scshape\LARGE \univn\par}
+		\vspace{1.5cm} % University name
+		\textsc{\Large Tesina de la Licenciatura de Sistemas}\\[1.5cm] % Tipo de tesis
+		\hrule
+		\vspace{6.0cm}
+		{\huge \bfseries \ttitle\par} \vspace{1.4cm} % Título de la tesis
+		\hrule
+		\vspace*{.06\textheight}
+		\begin{minipage}[t]{0.4\textwidth}
+			\begin{flushleft} \large
+				\emph{Autor/es:}\\
+				\href{\autorm}{\autorn} \\ % Autor /a 
+				% salto de línea necesario
+				\href{\coautorm}{\coautorn} %  Coautor/a  
+			\end{flushleft}
+		\end{minipage}
+		\begin{minipage}[t]{0.4\textwidth}
+			\begin{flushright} \large
+				\emph{Supervisor:} \\
+				\supname
+				
+				% salto de línea necesario
+				\cosupname
+			\end{flushright}
+		\end{minipage}\\[2cm]
+		\vfill
+		\large \textit{La tesina se presenta para cumplir con los requerimientos de grado de \\ \gradon}\\[0.3cm] % University requirement text
+		\textit{en el}\\[0.4cm]
+		{\color{ideicolor} \grupon \\ \LARGE \instn}\\[1cm] % Research group name and department name
+		\vfill
+		{\large \today}\\[4cm] % Date
+		%\includegraphics{Logo} % University/department logo - uncomment to place it
+		
+		\vfill
+	\end{center}
+\end{titlepage}
+
+
+%----------------------------------------------------------------------------------------
+%	PÁGINA DE CITA, si el autor lo requiere
+%----------------------------------------------------------------------------------------
+\vspace*{0.1\textheight}
+
+{\itshape Son cosas chiquitas. No acaban con la pobreza, no nos sacan del subdesarrollo, no socializan los medios de producción y de cambio (\dots). Pero quizás desencadenen la alegría de hacer y la traduzcan en actos. Y al fin y al cabo, actuar sobre la realidad y cambiarla un poquito es la única manera de probar que la realidad es transformable.}\bigbreak
+
+\hfill Eduardo Galeano, 1990
+
+\afterpage{\blankpage}
+\clearpage
+
+%--------------------------------------------------------------------------------------
+%  RESUMEN
+%--------------------------------------------------------------------------------------
+\begin{abstract} 
+	\addcontentsline{toc}{section}{Resumen}
+	\input{Capitulos/resumen.tex}
+\end{abstract}
+
+\afterpage{\blankpage}
+\clearpage
+
+%----------------------------------------------------------------------------------------
+%	AGRADECIMIENTOS	
+%----------------------------------------------------------------------------------------
+\section*{Agradecimientos}
+\addcontentsline{toc}{section}{Agradecimientos}
+	Los reconocimientos y las personas a las que se quiere agradecer van aquí, no hay que olvidar de incluir al director o supervisor del proyecto\ldots
+\newpage
+
+%-------------------------------------------------------------------------------------
+%  INDICES
+%-------------------------------------------------------------------------------------
+% Lista de Abreviaciones
+\printacronyms[include-classes=abbrev,name={\Huge Lista de abreviaciones \\}]   %TexLive
+%\printacronyms[include=abbrev,name={\Huge Lista de Abreviaciones \\}]  % MikTex
+\addcontentsline{toc}{section}{Lista de Abreviaciones}
+\cleardoublepage
+% Lista de Nomenclaturas
+\printacronyms[include-classes=nomencl,name={\Huge  Glosario \\}]  %TexLive
+%\printacronyms[include=nomencl,name={\Huge  Glosario \\}]  %MikTex
+\addcontentsline{toc}{section}{Glosario}
+% Lista de Figuras
+\listoffigures
+\addcontentsline{toc}{section}{Índice de Figuras}
+% Lista de cuadros
+\listoftables
+\addcontentsline{toc}{section}{Índice de Cuadros}
+% Índice
+\renewcommand\headrulewidth{1pt} % a partir de aquí se tienen una línea en el header
+\tableofcontents
+\addcontentsline{toc}{section}{Índice General}
+
+\clearpage
+
+%----------------------------------------------------------------------------------------
+%	DEDICATORIA	
+%----------------------------------------------------------------------------------------
+\chapter*{}
+\addcontentsline{toc}{section}{Dedicatoria}
+\vspace*{0.2\textheight}
+
+\begin{center}{\Large\slshape Para / Dedicada a / Para mi ... }\end{center}
+
+\afterpage{\blankpage}
+\clearpage
+%----------------------------------------------------------------------------------------
+% Numeración arábiga para el cuerpo de la tesis.
+\pagenumbering{arabic} 
+%-----------------------------------------------------------------------------------
+% Capítulos 
+%-----------------------------------------------------------------------------------
+\include{Capitulos/cap1}
+\include{Capitulos/cap2}
+\include{Capitulos/cap3}
+%\include{Cap/cap4}
+%\include{Cap/cap5}
+
+\afterpage{\blankpage}
+
+%-----------------------------------------------------------------------------------
+% Anexos 
+%-----------------------------------------------------------------------------------
+\begin{appendices}
+\include{Apendices/ap1}
+%\include{Apendices/ap2}
+%\include{Apendices/ap3}
+\end{appendices}
+
+
+%-----------------------------------------------------------------------------------
+% Referencias
+%-----------------------------------------------------------------------------------
+\bibliographystyle{plain}
+\bibliography{Referencias/tesina.bib} %tesina.bib
+\addcontentsline{toc}{chapter}{Bibliografía}
+
+\end{document}
