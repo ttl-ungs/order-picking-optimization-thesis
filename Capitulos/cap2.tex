@@ -1,34 +1,107 @@
-\chapter{Modelo 1: OPP Model}
+\chapter{Estado del arte}
 
 \label{Capitulo_2}
-%----------------------------------------------------------------------------------------
-\section{Consideraciones}
-
-Llamamos \textbf{OPP} al problema de optimización de rutas de picking 
-(del inglés \emph{Order Picking Problem}), al problema de encontrar la ruta más 
-corta que recorra un conjunto de ubicaciones dentro de un almacén, partiendo y 
-finalizando en un punto específico, denominado \emph{depot} o depósito.
-
-El modelo desarrollado en este capítulo es una adaptación del modelo propuesto por [Referencia].
-
-% Order Picking Problem: A Model for the Joint Optimisation of Order Batching, Batch Assignment Sequencing and Picking Routing 
-
-En este artículo, se propone un modelo de programación lineal entera que busca 
-optimizar el agrupamiento de pedidos, la asignación de lotes y la secuenciación de los mismos,
-así como la ruta de picking, en un almacén con estanterías en pasillos.
-
-En nuestro caso, nos centraremos unicamente en la optimización de la ruta de picking,
-recibiendo como entrada las órdenes ya agrupadas en lotes y asignadas a
-un picker específico.
 
 %----------------------------------------------------------------------------------------
+\section{Introducción}
+\label{sec:estado_arte_intro}
 
-\section{Definición del modelo}
-\label{Definición inicial}
-
-\subsection{Fase Inicial}
-
+En este capítulo se revisan los trabajos relacionados con el problema de
+ruteo de picking, se describe el software utilizado para implementar los
+modelos, se releva el estado del repositorio de código en el que se
+desarrolló este trabajo, y se establece el objetivo concreto de la tesina a
+partir de ese relevamiento.
 
 %----------------------------------------------------------------------------------------
-\section{Pruebas realizadas}
+\section{Trabajos relacionados}
+\label{sec:trabajos_relacionados}
 
+El modelo de referencia de esta tesina es el propuesto por Coruzzolo et al.
+\cite{coruzzolo2023orderpicking}, que formula la optimización conjunta de
+\emph{batching}, asignación de lotes, secuenciación y ruteo de picking como
+un modelo de programación lineal entera, y lo valida sobre un caso real
+reduciendo el tiempo de picking en un 57\% respecto de una estrategia de
+pedido por pedido.
+
+Otros trabajos documentan el impacto económico del picking y motivan porqué
+vale la pena optimizarlo: Urzúa et al. \cite{urzua2019evaluating} evalúan,
+mediante simulación de eventos discretos, el efecto de distintas estrategias
+de picking (\emph{slotting}, \emph{wave picking}, \emph{picking} expedito)
+sobre el tiempo de cumplimiento de pedidos, con reducciones de hasta el 54\%;
+Gutiérrez López et al. \cite{gutierrez2019reduction} documentan un caso real
+de reducción del tiempo de picking mediante la reubicación de productos en un
+centro de distribución.
+
+En cuanto a los métodos de resolución, Chen et al.
+\cite{chen2013antcolony} proponen un algoritmo de ruteo basado en ACO para
+dos operarios de picking que considera explícitamente la congestión entre
+ellos, un fenómeno relevante para cualquier heurística de ruteo con múltiples
+operarios trabajando en simultáneo. Lesch et al. \cite{lesch2023optimizing}
+combinan un algoritmo genético para la asignación de \emph{storage} con ACO
+para el ruteo de picking en almacenes con entrepiso, mostrando que ambos
+problemas están interrelacionados y que optimizarlos de forma conjunta mejora
+el resultado global. Alaya et al. \cite{alaya2007antcolony} formalizan
+extensiones de ACO a problemas multiobjetivo, relevantes porque el OPP
+combina en su función objetivo tiempo de recolección con penalidades por
+adelanto y demora.
+
+%----------------------------------------------------------------------------------------
+\section{Software utilizado}
+\label{sec:software}
+
+Los modelos de esta tesina están implementados en Python. El modelo exacto
+\code{opp\_v5} se resuelve con \textbf{SCIP}, un solver de programación
+lineal entera mixta de código abierto, a través de su binding de Python
+\textbf{PySCIPOpt}. Las heurísticas \code{opp\_hc\_4} y \code{opp\_aco\_4}
+están implementadas íntegramente en Python, sin dependencia de un solver
+externo.
+
+%----------------------------------------------------------------------------------------
+\section{Relevamiento inicial}
+\label{sec:relevamiento}
+
+El repositorio de código en el que se desarrolló este trabajo contiene, además
+de los tres modelos que son objeto de esta tesina, un conjunto de versiones
+previas desarrolladas durante un proceso exploratorio anterior: modelos
+exactos \code{opp\_v1} a \code{opp\_v4}, y heurísticas
+\code{opp\_hc\_1}/\code{opp\_hc\_2}/\code{opp\_hc\_3} y
+\code{opp\_aco\_1}/\code{opp\_aco\_2}/\code{opp\_aco\_3}. Estas versiones
+incorporaron características de forma incremental sobre un par base, lo que permitió
+validar cada característica de forma aislada antes de combinarla con las demás.
+
+De ese relevamiento surge que \code{opp\_v5}, \code{opp\_hc\_4} y
+\code{opp\_aco\_4} son las tres versiones que comparten exactamente el mismo
+conjunto de características (velocidad heterogénea entre operarios y cadena
+de frío), lo que las vuelve directamente comparables entre sí. El resto de las
+versiones (\code{opp\_v1}-\code{opp\_v4}, \code{opp\_hc\_1}-\code{opp\_hc\_3},
+\code{opp\_aco\_1}-\code{opp\_aco\_3}) quedan fuera del alcance de esta tesina.
+
+%----------------------------------------------------------------------------------------
+\section{Objetivo}
+\label{sec:objetivo}
+
+\subsection{Objetivo general}
+
+Evaluar, sobre un conjunto de escenarios comparables, el compromiso entre
+calidad de la solución, tiempo de cómputo y robustez que ofrecen distintos
+enfoques de resolución (exacto y heurísticos) al problema de asignación,
+secuenciación y ruteo de picking, para caracterizar en qué condiciones cada
+enfoque resulta más apropiado.
+
+\subsection{Objetivos específicos}
+
+\begin{itemize}
+	\item Formular e implementar el modelo exacto \code{opp\_v5}, que
+	incorpora velocidad heterogénea entre operarios y requisitos de cadena de
+	frío a la formulación de referencia.
+	\item Diseñar e implementar las heurísticas \code{opp\_hc\_4} (\emph{Hill
+	Climbing}) y \code{opp\_aco\_4} (\emph{Ant Colony Optimization}),
+	equivalentes a \code{opp\_v5} en las características que modelan, de forma
+	tal que sus resultados sean comparables entre sí.
+	\item Diseñar un conjunto de escenarios de prueba (funcionales y de estrés)
+	que permitan comparar los tres modelos bajo condiciones equivalentes.
+	\item Medir y comparar, sobre esos escenarios, la tasa de convergencia, el
+	tiempo de ejecución y la calidad de la solución respecto del óptimo.
+	\item Identificar limitaciones estructurales de los enfoques heurísticos
+	evaluados y proponer líneas de trabajo futuro para superarlas.
+\end{itemize}
