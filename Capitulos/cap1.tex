@@ -1,6 +1,100 @@
 \chapter{Introducción}
 
-\label{Capitulo_1} 
+\label{Capitulo_1}
 
-\section{Definición del problema}
+%----------------------------------------------------------------------------------------
+\section{Problema de pickeo de órdenes}
+\label{sec:problema}
 
+En un centro de distribución, el \emph{picking} (la recolección de los ítems
+que componen un pedido dentro de un almacén) es una de las actividades que
+más tiempo y costo insume dentro de las operaciones logísticas, llegando a
+representar hasta el 50-75\% del costo operativo total de un almacén
+\cite{urzua2019evaluating}. Un caso real documentado en un centro de
+distribución nacional muestra que el tiempo de preparación de un pedido podía
+llegar a las 8 horas, y que con una mejor asignación de las ubicaciones de picking
+es posible reducir significativamente ese tiempo \cite{gutierrez2019reduction}.
+Reducir el tiempo de desplazamiento de los operarios tiene un impacto
+económico directo y escalable, ya que cualquier mejora se repite en cada
+turno, en cada operario y en cada pedido.
+
+Llamamos \textbf{OPP} (del inglés \emph{Order Picking Problem}) al problema
+de determinar, dado un conjunto de pedidos de clientes agrupados en lotes, a
+qué operario (\emph{picker}) asignar cada lote, en qué orden secuenciarlos, y
+la ruta que cada operario debe seguir dentro del almacén para recolectar
+todas las ubicaciones requeridas por sus lotes, de forma tal de minimizar una
+función objetivo que combina el tiempo total de recolección con penalidades
+por adelanto y demora respecto de la fecha de entrega comprometida
+(\emph{due date}) de cada pedido. El almacén se representa como un grafo
+dirigido cuyos nodos son las ubicaciones de picking, el depósito de partida y
+el punto de entrega, y cuyos arcos representan los desplazamientos posibles
+entre ubicaciones junto con su distancia o tiempo asociado.
+
+El agrupamiento de pedidos en lotes (\emph{batching}) es un problema
+relacionado, pero distinto: en este trabajo los lotes se reciben ya
+conformados como dato de entrada, y no forman parte de lo que el modelo
+decide.
+
+%----------------------------------------------------------------------------------------
+\section{Algoritmos utilizados}
+\label{sec:algoritmos}
+
+Existen dos grandes familias de enfoques para resolver problemas de
+optimización combinatoria como el OPP: los métodos \textbf{exactos}, que
+garantizan encontrar la solución óptima pero cuyo tiempo de cómputo crece
+rápidamente con el tamaño de la instancia, y los métodos \textbf{heurísticos}
+(y metaheurísticos), que renuncian a la garantía de optimalidad a cambio de
+tiempos de resolución mucho menores y de mayor escalabilidad. En un contexto
+operativo real, donde las decisiones de ruteo deben tomarse en segundos y los
+almacenes pueden tener cientos de ubicaciones, esta disyuntiva entre calidad
+de la solución y tiempo de cómputo es central.
+
+Como método exacto se formula el problema mediante \textbf{programación
+lineal entera}, siguiendo el modelo propuesto por Coruzzolo et al.
+\cite{coruzzolo2023orderpicking}, y se lo resuelve con un solver de
+programación lineal entera mixta (SCIP, a través de su binding de Python
+PySCIPOpt).
+
+Como heurísticas se utilizan dos enfoques de naturaleza distinta.
+\textbf{Hill Climbing} (HC) es un método de búsqueda local: construye una
+solución inicial y la mejora de forma incremental moviéndose siempre hacia
+soluciones vecinas que reducen el valor de la función objetivo, hasta que
+ningún movimiento local mejora el resultado. \textbf{Ant Colony Optimization}
+(ACO) es una metaheurística poblacional basada en el comportamiento de
+colonias de hormigas, en la que múltiples soluciones se construyen de forma
+probabilística guiadas por rastros de feromona que se refuerzan sobre las
+mejores rutas encontradas. ACO ya fue aplicada en la literatura tanto al
+ruteo de picking con congestión entre operarios \cite{chen2013antcolony}
+como a la optimización conjunta de asignación de \emph{storage} y ruteo de
+picking \cite{lesch2023optimizing}, y existen extensiones multiobjetivo
+\cite{alaya2007antcolony} relevantes para problemas, como el OPP, que
+combinan varios criterios en su función objetivo.
+
+%----------------------------------------------------------------------------------------
+\section{Metodología}
+\label{sec:metodologia}
+
+El trabajo se organizó en cuatro etapas.
+
+En la etapa de \textbf{investigación y análisis} se relevó la literatura
+sobre OPP y sobre los métodos exactos y heurísticos aplicables, y se
+estudió en detalle el modelo de referencia de Coruzzolo et al.
+\cite{coruzzolo2023orderpicking} para identificar qué características del
+problema real (velocidad heterogénea entre operarios, requisitos de cadena de
+frío) no estaban contempladas en esa formulación.
+
+En la etapa de \textbf{implementación} se formuló y programó el modelo
+exacto \code{opp\_v5}, que extiende la formulación de referencia con esas
+características, junto con dos heurísticas equivalentes en las mismas
+características: \code{opp\_hc\_4} (Hill Climbing) y \code{opp\_aco\_4}
+(Ant Colony Optimization).
+
+En la etapa de \textbf{experimentos} se diseñó un conjunto de escenarios de
+prueba, funcionales y de estrés, y se ejecutaron los tres modelos sobre esos
+escenarios midiendo tasa de convergencia, tiempo de ejecución y calidad de la
+solución respecto del óptimo.
+
+Finalmente, en la etapa de \textbf{comparación} se analizaron esos resultados
+para caracterizar el compromiso entre calidad de la solución, tiempo de
+cómputo y robustez que ofrece cada enfoque, y para identificar limitaciones
+estructurales de las heurísticas evaluadas.
