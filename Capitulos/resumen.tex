@@ -1,1 +1,22 @@
-El Resumen de la Tesina debe escribirse aquí, y usualmente se limita a esta página.   \dots
+El problema de optimización de rutas de picking (\textbf{OPP}, del inglés
+\emph{Order Picking Problem}) consiste en, dado un conjunto de pedidos ya
+agrupados en lotes, decidir a qué operario asignar cada lote, en qué orden
+secuenciarlos y qué ruta debe recorrer cada operario dentro del almacén para
+recolectarlos, minimizando el tiempo total de recolección junto con las
+penalidades por adelanto y demora respecto de la fecha de entrega
+comprometida de cada pedido. Resolver este problema de forma exacta
+garantiza la solución óptima, pero el tiempo de cómputo requerido crece
+rápidamente con el tamaño del almacen, la cantidad de pedidos, y otras variables,
+lo que lo vuelve poco práctico en escenarios operativos reales donde las decisiones
+de ruteo deben tomarse en poco tiempo. Este trabajo parte de un modelo de
+programación lineal entera propuesto en la literatura para el OPP, y lo
+extiende para contemplar velocidad heterogénea entre operarios y requisitos
+de cadena de frío. Sobre esa misma extensión se diseñan dos heurísticas equivalentes,
+una basada en \emph{Hill Climbing} y otra en \emph{Ant Colony Optimization}, pensadas
+para escalar a instancias donde el modelo exacto deja de ser viable en tiempos prácticos.
+Los tres modelos se evalúan sobre un conjunto común de escenarios de prueba, funcionales
+y de estrés, midiendo tasa de convergencia, tiempo de ejecución y calidad de la solución
+respecto del óptimo, con el objetivo de caracterizar el compromiso entre calidad de
+la solución, tiempo de cómputo y robustez que ofrece cada enfoque, y de identificar
+en qué condiciones conviene reemplazar el modelo exacto por una heurística.
+% TODO: agregar hallazgo principal cuando lo tengamos
