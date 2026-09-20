@@ -51,9 +51,9 @@ de la solución y tiempo de cómputo es central.
 
 Como método exacto se formula el problema mediante \textbf{programación
 lineal entera}, siguiendo el modelo propuesto por Coruzzolo et al.
-\cite{coruzzolo2023orderpicking}, y se lo resuelve con un solver de
-programación lineal entera mixta (SCIP, a través de su binding de Python
-PySCIPOpt).
+\cite{coruzzolo2023orderpicking}, lo que garantiza encontrar la solución
+óptima a costa de un tiempo de cómputo que puede volverse impracticable en
+instancias grandes.
 
 Como heurísticas se utilizan dos enfoques de naturaleza distinta.
 \textbf{Hill Climbing} (HC) es un método de búsqueda local: construye una
