@@ -121,51 +121,66 @@
 %----------------------------------------------------------------------------------------
 %% Con LiveTex ()LINUX)
 %% class 'abbrev':abreviaciones:
-\DeclareAcronym{id}{
-	short = I+D ,
-	long  = Investigación y Desarrollo,
-	class = abbrev
-}
-
-\DeclareAcronym{mip}{
-	short = MIP ,
-	long  = Programación Lineal Entera Mixta (del inglés \emph{Mixed-Integer Programming}),
-	class = abbrev
-}
-
-\DeclareAcronym{hc}{
-	short = HC ,
-	long  = Ascenso de Colina (del inglés \emph{Hill Climbing}),
-	class = abbrev
-}
-
-\DeclareAcronym{aco}{
-	short = ACO ,
-	long  = Optimización por Colonia de Hormigas (del inglés \emph{Ant Colony Optimization}),
-	class = abbrev
-}
-
-% class 'nomencl':glosario
-\DeclareAcronym{angelsperarea}{
-	short = \ensuremath{a} ,
-	long  = El número de ángeles por unidad de área ,
-	sort  = a ,
-	class = nomencl}
-
-%% Con MikTex (Mac - Windows)
-%%
-%% tag 'abbrev':abreviaciones:
 %\DeclareAcronym{id}{
 %	short = I+D ,
 %	long  = Investigación y Desarrollo,
-%	tag = abbrev}
-
-%% tag 'nomencl': glosario
+%	class = abbrev
+%}
+%
+%\DeclareAcronym{mip}{
+%	short = MIP ,
+%	long  = Programación Lineal Entera Mixta (del inglés \emph{Mixed-Integer Programming}),
+%	class = abbrev
+%}
+%
+%\DeclareAcronym{hc}{
+%	short = HC ,
+%	long  = Ascenso de Colina (del inglés \emph{Hill Climbing}),
+%	class = abbrev
+%}
+%
+%\DeclareAcronym{aco}{
+%	short = ACO ,
+%	long  = Optimización por Colonia de Hormigas (del inglés \emph{Ant Colony Optimization}),
+%	class = abbrev
+%}
+%
+% class 'nomencl':glosario
 %\DeclareAcronym{angelsperarea}{
 %	short = \ensuremath{a} ,
 %	long  = El número de ángeles por unidad de área ,
 %	sort  = a ,
-%	tag = nomencl}
+%	class = nomencl}
+
+%% Con MikTex (Mac - Windows)
+%%
+%% tag 'abbrev':abreviaciones:
+\DeclareAcronym{id}{
+	short = I+D ,
+	long  = Investigación y Desarrollo,
+	tag = abbrev}
+
+\DeclareAcronym{mip}{
+	short = MIP ,
+	long  = Programación Lineal Entera Mixta (del inglés \emph{Mixed-Integer Programming}),
+	tag = abbrev}
+
+\DeclareAcronym{hc}{
+	short = HC ,
+	long  = Ascenso de Colina (del inglés \emph{Hill Climbing}),
+	tag = abbrev}
+
+\DeclareAcronym{aco}{
+	short = ACO ,
+	long  = Optimización por Colonia de Hormigas (del inglés \emph{Ant Colony Optimization}),
+	tag = abbrev}
+
+%% tag 'nomencl': glosario
+\DeclareAcronym{angelsperarea}{
+	short = \ensuremath{a} ,
+	long  = El número de ángeles por unidad de área ,
+	sort  = a ,
+	tag = nomencl}
 
 %=======================================================================================
 % DOCUMENTO DE TESIS
@@ -249,15 +264,10 @@
 %--------------------------------------------------------------------------------------
 %  RESUMEN
 %--------------------------------------------------------------------------------------
-\begin{abstract} 
+\begin{abstract}
 	\addcontentsline{toc}{section}{Resumen}
 	\input{Capitulos/resumen.tex}
 \end{abstract}
-
-% Se reinician las siglas usadas en el Resumen para que la primera mención
-% de cada una en el cuerpo de la tesis (Capítulo 1) muestre su expansión
-% completa.
-\acresetall
 
 \afterpage{\blankpage}
 \clearpage
@@ -274,13 +284,13 @@
 %  INDICES
 %-------------------------------------------------------------------------------------
 % Lista de Abreviaciones
-\printacronyms[include-classes=abbrev,name={\Huge Lista de abreviaciones \\}]   %TexLive
-%\printacronyms[include=abbrev,name={\Huge Lista de Abreviaciones \\}]  % MikTex
+%\printacronyms[include-classes=abbrev,name={\Huge Lista de abreviaciones \\}]   %TexLive
+\printacronyms[include=abbrev,name={\Huge Lista de Abreviaciones \\}]  % MikTex
 \addcontentsline{toc}{section}{Lista de Abreviaciones}
 \cleardoublepage
 % Lista de Nomenclaturas
-\printacronyms[include-classes=nomencl,name={\Huge  Glosario \\}]  %TexLive
-%\printacronyms[include=nomencl,name={\Huge  Glosario \\}]  %MikTex
+%\printacronyms[include-classes=nomencl,name={\Huge  Glosario \\}]  %TexLive
+\printacronyms[include=nomencl,name={\Huge  Glosario \\}]  %MikTex
 \addcontentsline{toc}{section}{Glosario}
 % Lista de Figuras
 \listoffigures
