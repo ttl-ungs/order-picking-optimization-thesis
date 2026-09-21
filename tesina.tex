@@ -171,6 +171,61 @@
 	tag = abbrev}
 
 %% tag 'nomencl': glosario
+\DeclareAcronym{pickeo}{
+	short = Pickeo ,
+	long  = Proceso de recolección de los ítems que componen un pedido dentro de un almacén (del inglés \emph{picking}),
+	tag = nomencl}
+
+\DeclareAcronym{picker}{
+	short = Picker ,
+	long  = Operario encargado de recolectar los ítems de uno o más lotes dentro del almacén,
+	tag = nomencl}
+
+\DeclareAcronym{lote}{
+	short = Lote ,
+	long  = Conjunto de pedidos agrupados que se asignan y recolectan de forma conjunta,
+	tag = nomencl}
+
+\DeclareAcronym{orden}{
+	short = Orden ,
+	long  = Pedido de un cliente, compuesto por uno o más ítems a recolectar,
+	tag = nomencl}
+
+\DeclareAcronym{deposito}{
+	short = Depósito ,
+	long  = Nodo de partida y llegada del grafo que representa el almacén (también llamado \emph{depot}),
+	tag = nomencl}
+
+\DeclareAcronym{duedate}{
+	short = Due date ,
+	long  = Fecha de entrega comprometida de un pedido, respecto de la cual se penaliza el adelanto o la demora en su recolección,
+	tag = nomencl}
+
+\DeclareAcronym{batching}{
+	short = Batching ,
+	long  = Agrupamiento de pedidos en lotes,
+	tag = nomencl}
+
+\DeclareAcronym{cadenadefrio}{
+	short = Cadena de frío ,
+	long  = Restricción de tiempo máximo que un pedido puede permanecer fuera de temperatura controlada durante su recolección,
+	tag = nomencl}
+
+\DeclareAcronym{instancia}{
+	short = Instancia ,
+	long  = Conjunto particular de datos de entrada (almacén, pedidos, lotes, parámetros) sobre el que se ejecuta un modelo,
+	tag = nomencl}
+
+\DeclareAcronym{escenariofuncional}{
+	short = Escenario funcional ,
+	long  = Escenario de prueba de tamaño y complejidad moderados, pensado para validar la correctitud de un modelo,
+	tag = nomencl}
+
+\DeclareAcronym{escenariodeestres}{
+	short = Escenario de estrés ,
+	long  = Escenario de prueba de mayor escala, pensado para evaluar el comportamiento de un modelo en condiciones exigentes,
+	tag = nomencl}
+
 %\DeclareAcronym{angelsperarea}{
 %	short = \ensuremath{a} ,
 %	long  = El número de ángeles por unidad de área ,
@@ -280,6 +335,11 @@
 %-------------------------------------------------------------------------------------
 %  INDICES
 %-------------------------------------------------------------------------------------
+% Se marcan como "usados" los términos del Glosario que no necesariamente
+% se referencian con \ac{...} en el cuerpo (serían muy intrusivos para
+% palabras tan frecuentes), para que igual aparezcan en la lista impresa.
+\acuse{pickeo,picker,lote,orden,deposito,duedate,batching,cadenadefrio,instancia,escenariofuncional,escenariodeestres}
+
 % Lista de Abreviaciones
 %\printacronyms[include-classes=abbrev,name={\Huge Lista de abreviaciones \\}]   %TexLive
 \printacronyms[include=abbrev,name={\Huge Lista de Abreviaciones \\}]  % MikTex
