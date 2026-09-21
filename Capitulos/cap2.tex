@@ -19,7 +19,7 @@ partir de ese relevamiento.
 El modelo de referencia de esta tesina es el propuesto por Coruzzolo et al.
 \cite{coruzzolo2023orderpicking}, que formula la optimización conjunta de
 \emph{batching}, asignación de lotes, secuenciación y ruteo de picking como
-un modelo de programación lineal entera, y lo valida sobre un caso real
+un modelo de \ac{mip}, y lo valida sobre un caso real
 reduciendo el tiempo de picking en un 57\% respecto de una estrategia de
 pedido por pedido.
 
@@ -33,25 +33,25 @@ de reducción del tiempo de picking mediante la reubicación de productos en un
 centro de distribución.
 
 En cuanto a los métodos de resolución, Chen et al.
-\cite{chen2013antcolony} proponen un algoritmo de ruteo basado en ACO para
-dos operarios de picking que considera explícitamente la congestión entre
-ellos, un fenómeno relevante para cualquier heurística de ruteo con múltiples
-operarios trabajando en simultáneo. Lesch et al. \cite{lesch2023optimizing}
-combinan un algoritmo genético para la asignación de \emph{storage} con ACO
-para el ruteo de picking en almacenes con entrepiso, mostrando que ambos
-problemas están interrelacionados y que optimizarlos de forma conjunta mejora
-el resultado global. Alaya et al. \cite{alaya2007antcolony} formalizan
-extensiones de ACO a problemas multiobjetivo, relevantes porque el OPP
-combina en su función objetivo tiempo de recolección con penalidades por
-adelanto y demora.
+\cite{chen2013antcolony} proponen un algoritmo de ruteo basado en \ac{aco}
+para dos operarios de picking que considera explícitamente la congestión
+entre ellos, un fenómeno relevante para cualquier heurística de ruteo con
+múltiples operarios trabajando en simultáneo. Lesch et al.
+\cite{lesch2023optimizing} combinan un algoritmo genético para la asignación
+de \emph{storage} con \ac{aco} para el ruteo de picking en almacenes con
+entrepiso, mostrando que ambos problemas están interrelacionados y que
+optimizarlos de forma conjunta mejora el resultado global. Alaya et al.
+\cite{alaya2007antcolony} formalizan extensiones de \ac{aco} a problemas
+multiobjetivo, relevantes porque el OPP combina en su función objetivo
+tiempo de recolección con penalidades por adelanto y demora.
 
 %----------------------------------------------------------------------------------------
 \section{Software utilizado}
 \label{sec:software}
 
 Los modelos de esta tesina están implementados en Python. El modelo exacto
-\code{opp\_v5} se resuelve con \textbf{SCIP}, un solver de programación
-lineal entera mixta de código abierto, a través de su binding de Python
+\code{opp\_v5} se resuelve con \textbf{SCIP}, un solver de \ac{mip} de
+código abierto, a través de su binding de Python
 \textbf{PySCIPOpt}. Las heurísticas \code{opp\_hc\_4} y \code{opp\_aco\_4}
 están implementadas íntegramente en Python, sin dependencia de un solver
 externo.
@@ -94,9 +94,9 @@ enfoque resulta más apropiado.
 	\item Formular e implementar el modelo exacto \code{opp\_v5}, que
 	incorpora velocidad heterogénea entre operarios y requisitos de cadena de
 	frío a la formulación de referencia.
-	\item Diseñar e implementar las heurísticas \code{opp\_hc\_4} (\emph{Hill
-	Climbing}) y \code{opp\_aco\_4} (\emph{Ant Colony Optimization}),
-	equivalentes a \code{opp\_v5} en las características que modelan, de forma
+	\item Diseñar e implementar las heurísticas \code{opp\_hc\_4} (\ac{hc}) y
+	\code{opp\_aco\_4} (\ac{aco}), equivalentes a \code{opp\_v5} en las
+	características que modelan, de forma
 	tal que sus resultados sean comparables entre sí.
 	\item Diseñar un conjunto de escenarios de prueba (funcionales y de estrés)
 	que permitan comparar los tres modelos bajo condiciones equivalentes.
