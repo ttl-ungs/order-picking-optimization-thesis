@@ -20,21 +20,63 @@ con el problema de ruteo de picking.
 \section{Hill Climbing}
 \label{sec:marco_hc}
 
-\ac{hc} es un método de búsqueda local: construye una solución inicial y la
-mejora de forma incremental moviéndose siempre hacia soluciones vecinas que
-reducen el valor de la función objetivo, hasta que ningún movimiento local
-mejora el resultado \cite{hoos2015sls, talbi2009metaheuristics}.
+El algoritmo de Hill Climbing, también referido frecuentemente como búsqueda local, descenso o mejora iterativa, es considerado el
+método metaheurístico más antiguo y sencillo. Pertenece a la familia de las metaheurísticas basadas en una sola solución, cuyo
+funcionamiento principal consiste en mejorar una solución individual realizando recorridos o trayectorias a través de las vecindades
+del espacio de búsqueda de un problema \cite{talbi2009metaheuristics}.
 
-% TODO: completar
+El concepto central de toda metaheurística basada en una sola solución es el de \emph{vecindad}. Formalmente, una función de
+vecindad $N : S \rightarrow 2^S$ asigna a cada solución $s$ del espacio de búsqueda $S$ un conjunto de soluciones $N(s) \subset S$,
+llamadas \emph{vecinas} de $s$. Cada vecino se obtiene aplicando sobre $s$ un \emph{operador de movimiento}, que realiza una pequeña
+perturbación de la solución. A partir de esta definición, una solución $s$ es un \emph{óptimo local} respecto de $N$ si
+$f(s) \leq f(s')$ para todo $s' \in N(s)$, en un problema de minimización. Una solución puede ser un óptimo local para una vecindad
+y no serlo para otra, por lo que la elección de la vecindad determina en gran medida el comportamiento de la búsqueda
+\cite{talbi2009metaheuristics}.
+
+En problemas cuya solución se representa como una permutación, como el problema del viajante (TSP, del inglés \emph{Traveling
+Salesman Problem}), los operadores de movimiento más utilizados son el \emph{intercambio} (\emph{swap}), que intercambia la posición
+de dos elementos y genera una vecindad de tamaño $n(n-1)/2$; la \emph{inserción}, que extrae un elemento de su posición y lo coloca
+en otra; y el operador \emph{k-opt}, que elimina $k$ aristas del recorrido y las reemplaza por otras $k$. El caso más difundido de
+este último es \emph{2-opt}, propuesto por Croes \cite{croes1958method}, que reemplaza las aristas $(\pi_i, \pi_{i+1})$ y $(\pi_j, \pi_{j+1})$ por $(\pi_i, \pi_j)$ y
+$(\pi_{i+1}, \pi_{j+1})$. Esto equivale a invertir el tramo del recorrido comprendido entre ambas aristas:
+\begin{equation}
+	\pi'(k) =
+	\begin{cases}
+		\pi(k)         & \text{si } k \leq i \text{ o } k > j, \\
+		\pi(i + j + 1 - k) & \text{si } i < k \leq j.
+	\end{cases}
+	\label{eq:2opt}
+\end{equation}
+La vecindad de 2-opt tiene $n(n-1)/2 - n$ elementos, ya que se consideran todos los pares de aristas excepto los adyacentes
+\cite{talbi2009metaheuristics}.
+
+El proceso de optimización comienza siempre evaluando una solución inicial dada. A partir de ese punto, y durante cada iteración, el
+algoritmo reemplaza la solución actual por un vecino que logre mejorar el valor de la función objetivo. Para decidir qué camino tomar
+en el espacio de búsqueda, el método requiere definir una estrategia de selección del próximo vecino, existiendo opciones estándar como
+elegir la mejor mejora disponible, tomar la primera mejora que el algoritmo encuentre, o seleccionar una mejora de forma aleatoria
+\cite{talbi2009metaheuristics}. La estrategia de primera mejora aplica pasos de mejora antes que la de mejor mejora, aunque cada paso
+suele mejorar menos y se necesitan más pasos para alcanzar un óptimo local. Además, el óptimo local que encuentra depende del orden en
+que se recorre la vecindad: recorrerla en orden aleatorio permite que distintas ejecuciones, incluso partiendo de la misma solución
+inicial, alcancen óptimos locales muy diferentes \cite{hoos2015sls}.
+
+Una característica particular del Hill Climbing es que no requiere configurar condiciones de finalización complejas, ya que sus
+criterios de parada son implícitos. La búsqueda se detiene de forma natural cuando todos los vecinos candidatos evaluados resultan ser
+peores que la solución actual. Cuando esto sucede, significa que el algoritmo ha encontrado un óptimo local y concluye su ejecución
+\cite{talbi2009metaheuristics}. Sin embargo, para confirmar que una solución es un óptimo local es necesario inspeccionar su vecindad
+completa \cite{hoos2015sls}. Cuando en cada iteración se genera solo una parte de la vecindad, como ocurre al muestrear vecinos al
+azar, la búsqueda se detiene mediante criterios explícitos, como un número máximo de iteraciones o un límite de tiempo
+\cite{talbi2009metaheuristics}.
+
+El principal inconveniente de esta metaheurística es precisamente su tendencia a quedar atrapada en dichos óptimos locales, limitando
+su capacidad para encontrar el óptimo global del problema. Para contrarrestar esta debilidad, se han desarrollado cuatro grandes
+familias de enfoques: reiniciar el algoritmo iterando desde diferentes soluciones iniciales, cambiar la estructura de la vecindad de
+búsqueda, alterar la función objetivo o los datos de entrada para modificar el panorama del problema, o finalmente, flexibilizar el
+criterio de aceptación para permitir movimientos hacia vecinos que no mejoren la solución actual, dando origen a técnicas más avanzadas
+como el recocido simulado y la búsqueda tabú \cite{talbi2009metaheuristics, hoos2015sls}.
 
 %----------------------------------------------------------------------------------------
 \section{Ant Colony Optimization}
 \label{sec:marco_aco}
-
-\ac{aco} es una metaheurística poblacional basada en el comportamiento de
-colonias de hormigas, en la que múltiples soluciones se construyen de forma
-probabilística guiadas por rastros de feromona que se refuerzan sobre las
-mejores rutas encontradas \cite{dorigo2004aco}.
 
 La Optimización por Colonia de Hormigas, conocida por sus siglas en inglés como ACO (Ant Colony Optimization), es una
 metaheurística poblacional introducida por M. Dorigo que se inspira en el comportamiento de búsqueda de alimento de las hormigas
@@ -53,6 +95,20 @@ de la colonia \cite{dorigo2004aco}. Por un lado, la feromona representa la memor
 indicando qué componentes han formado parte de buenas soluciones en el pasado; por otro, la información heurística aporta conocimiento
 previo sobre el problema específico, como por ejemplo priorizar las distancias más cortas entre dos puntos \cite{talbi2009metaheuristics}.
 
+En el \emph{Ant System} (AS), el primer algoritmo ACO, esta interacción se formaliza mediante la \emph{regla proporcional aleatoria}:
+la probabilidad de que la hormiga $k$, ubicada en el nodo $i$, elija moverse al nodo $j$ es
+\begin{equation}
+	p_{ij}^{k} = \frac{[\tau_{ij}]^{\alpha} \, [\eta_{ij}]^{\beta}}{\sum_{l \in \mathcal{N}_i^k} [\tau_{il}]^{\alpha} \, [\eta_{il}]^{\beta}},
+	\qquad \text{si } j \in \mathcal{N}_i^k,
+	\label{eq:aco_transicion}
+\end{equation}
+donde $\tau_{ij}$ es la feromona asociada al arco $(i, j)$; $\eta_{ij} = 1/d_{ij}$ es la información heurística, definida como la
+inversa de la distancia entre ambos nodos; $\mathcal{N}_i^k$ es el conjunto de nodos que la hormiga $k$ todavía no visitó, y fuera
+del cual la probabilidad de elección es nula; y $\alpha$ y $\beta$ son parámetros que regulan la influencia relativa de la feromona
+y de la información heurística. Si $\alpha = 0$, se favorecen los nodos más cercanos y el algoritmo se comporta como una heurística
+golosa estocástica. Si $\beta = 0$, solo actúa la feromona, lo que en general produce malos resultados y, para $\alpha > 1$, lleva
+rápidamente a una situación de \emph{estancamiento}, en la que todas las hormigas construyen el mismo recorrido \cite{dorigo2004aco}.
+
 Una vez que las hormigas han construido sus soluciones completas, el algoritmo procede a actualizar los niveles de feromona mediante dos
 mecanismos opuestos y complementarios: la evaporación y el depósito o refuerzo, que incrementa la cantidad de feromona en aquellos
 componentes que pertenecen a las soluciones generadas en la iteración actual \cite{hoos2015sls}. La evaporación reduce todos los niveles
@@ -62,13 +118,38 @@ mayoría de las variantes de alto rendimiento la cantidad de feromona depositada
 solo se permite que las hormigas con las mejores rutas refuercen sus caminos, atrayendo así a las futuras hormigas hacia las regiones
 más óptimas \cite{dorigo2004aco}.
 
+En AS, ambos mecanismos se aplican una vez que las $m$ hormigas completaron sus recorridos. Primero, la evaporación reduce la
+feromona de todos los arcos:
+\begin{equation}
+	\tau_{ij} \leftarrow (1 - \rho) \, \tau_{ij},
+	\label{eq:aco_evaporacion}
+\end{equation}
+donde $0 < \rho \leq 1$ es la \emph{tasa de evaporación}. Si un arco deja de ser elegido, su feromona decrece exponencialmente con el
+número de iteraciones. Luego, cada hormiga deposita feromona sobre los arcos que recorrió:
+\begin{equation}
+	\tau_{ij} \leftarrow \tau_{ij} + \sum_{k=1}^{m} \Delta\tau_{ij}^{k},
+	\qquad
+	\Delta\tau_{ij}^{k} =
+	\begin{cases}
+		1 / C^{k} & \text{si el arco } (i, j) \text{ pertenece a } T^{k}, \\
+		0         & \text{en caso contrario,}
+	\end{cases}
+	\label{eq:aco_deposito}
+\end{equation}
+donde $C^{k}$ es la longitud del recorrido $T^{k}$ construido por la hormiga $k$. De esta forma, cuanto mejor es el recorrido de una
+hormiga, más feromona reciben sus arcos \cite{dorigo2004aco}.
+
+Sobre este esquema se desarrollaron variantes que explotan con más fuerza las mejores soluciones encontradas. En el \emph{Elitist Ant
+System} (EAS), además del depósito de todas las hormigas, los arcos del mejor recorrido encontrado desde el inicio del algoritmo,
+$T^{bs}$ (del inglés \emph{best-so-far}), reciben un refuerzo adicional $e / C^{bs}$, donde $e$ es un parámetro que define el peso de
+ese recorrido y $C^{bs}$ su longitud. En el \emph{MAX-MIN Ant System} (MMAS), propuesto por Stützle y Hoos \cite{stutzle2000mmas}, en cambio, solo la mejor hormiga de la iteración o la
+mejor desde el inicio deposita feromona, con $\Delta\tau_{ij}^{best} = 1 / C^{best}$. Como esta estrategia puede llevar al
+estancamiento, MMAS además limita la feromona al intervalo $[\tau_{\min}, \tau_{\max}]$ y la inicializa en $\tau_{\max}$ para
+favorecer la exploración al comienzo de la búsqueda \cite{dorigo2004aco}.
+
 Para maximizar la calidad de los resultados, los algoritmos ACO suelen incorporar acciones centralizadas que no pueden realizar las hormigas a
 nivel individual, conocidas como ``acciones de demonio''. Una de las estrategias más extendidas y recomendables es aplicar algoritmos de búsqueda
 local o procedimientos de mejora iterativa a las soluciones completas antes de proceder a la actualización de las feromonas \cite{dorigo2004aco}.
-Otra técnica avanzada para evitar el estancamiento es la operación de cataclismo, un mecanismo que interviene cuando el algoritmo no logra mejorar
-la mejor solución global durante un número determinado de iteraciones \cite{lesch2023optimizing}. Cuando esto ocurre, los valores de las feromonas
-en el grafo se reinician a su estado mínimo o inicial, forzando a la colonia a abandonar un óptimo local y explorar rutas completamente
-nuevas \cite{talbi2009metaheuristics}.
 
 Si bien esta metaheurística se diseñó inicialmente para problemas de un solo objetivo, su estructura se ha adaptado exitosamente para abordar
 problemas de optimización multiobjetivo (MOP). En estas adaptaciones, el marco de trabajo adquiere una mayor complejidad e incluye variaciones
@@ -76,6 +157,32 @@ como el uso de múltiples colonias independientes o la implementación de varias
 a una función objetivo específica. Durante la construcción de la ruta, una hormiga puede seleccionar de forma aleatoria o ponderada a qué matriz
 de feromona prestar atención, lo que permite al algoritmo converger hacia un conjunto de soluciones óptimas de Pareto que equilibran múltiples
 metas contradictorias simultáneamente \cite{alaya2007antcolony}.
+
+%----------------------------------------------------------------------------------------
+\section{Manejo de restricciones en metaheurísticas}
+\label{sec:marco_restricciones}
+
+Un aspecto común al diseño de cualquier metaheurística, incluidas \ac{hc} y \ac{aco}, es el tratamiento de las restricciones del
+problema. La estrategia más simple es la de \emph{rechazo}, que descarta automáticamente toda solución infactible y conserva solo las
+factibles durante la búsqueda. Esta estrategia es razonable cuando la porción infactible del espacio de búsqueda es muy pequeña, pero
+desaprovecha la información que aportan las soluciones infactibles, aun cuando las soluciones óptimas suelen encontrarse en la frontera
+entre la región factible y la infactible. Además, cuando la región factible es discontinua, el único camino entre dos soluciones
+factibles puede atravesar soluciones infactibles \cite{talbi2009metaheuristics}.
+
+Por este motivo, el enfoque más difundido es la estrategia de \emph{penalización}, en la que las soluciones infactibles sí se
+consideran durante la búsqueda, pero la función objetivo se extiende con un término que las penaliza. En su forma lineal, la
+función penalizada es
+\begin{equation}
+	f'(s) = f(s) + \lambda \, c(s),
+	\label{eq:penalizacion}
+\end{equation}
+donde $c(s)$ representa el costo de la violación de las restricciones y $\lambda$ es un peso. Esto permite que la búsqueda pase por
+una solución infactible para llegar a una factible mejor que la anterior. La penalización resulta más informativa cuando $c(s)$ mide
+\emph{cuánto} se viola cada restricción, y no solo \emph{cuántas} restricciones se violan, ya que así refleja qué tan cerca está la
+solución de la región factible. La elección del peso es delicada: si es demasiado bajo, la solución final puede resultar
+infactible; si es demasiado alto, la búsqueda puede converger hacia soluciones factibles pero no óptimas. El peso puede mantenerse
+constante durante toda la búsqueda (penalización \emph{estática}) o modificarse a medida que avanza (penalización \emph{dinámica})
+\cite{talbi2009metaheuristics}.
 
 %----------------------------------------------------------------------------------------
 \section{Trabajos relacionados}
