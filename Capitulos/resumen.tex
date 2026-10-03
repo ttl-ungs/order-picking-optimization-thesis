@@ -5,13 +5,15 @@ comprometidas. Aunque la resolución exacta de este problema garantiza la optimi
 almacén y la cantidad de pedidos. Esto dificulta su aplicación en escenarios operativos reales, donde las decisiones de ruteo exigen tiempos
 de respuesta acotados.
 
-Este trabajo toma como punto de partida un modelo de programación lineal entera de la literatura para el OPP, y lo extiende incorporando
-velocidades heterogéneas entre operarios y restricciones de cadena de frío. El mismo también fue optimizado para mejorar sus tiempos de ejecución
-y, de esta forma, poder abordar instancias de escala mayor. Sin embargo, el mismo sigue resultando inviable en tiempos prácticos, debido a sus
-altos tiempos de ejecución en instancias moderadamente grandes. Por lo tanto, se proponen dos alternativas heurísticas basadas en
-\emph{Hill Climbing} y \emph{Ant Colony Optimization}.
+Este trabajo toma como punto de partida un modelo de programación lineal entera mixta de la literatura para el OPP. Tomándolo como guía,
+se formula un modelo lineal propio, al que llamamos \emph{monolítico}, que incorpora velocidades heterogéneas entre operarios y restricciones
+de cadena de frío. Luego, con el fin de reducir sus tiempos de ejecución y abordar instancias de mayor escala, este modelo se optimiza
+descomponiéndolo en dos etapas que se resuelven de forma sucesiva: primero el ruteo de cada lote y luego la asignación y secuenciación de los
+lotes. A este segundo modelo lo llamamos \emph{Split}. Aun así, el modelo Split sigue resultando inviable en tiempos prácticos para instancias
+moderadamente grandes. Por lo tanto, se desarrollan dos metaheurísticas, basadas en \emph{Hill Climbing} y \emph{Ant Colony Optimization},
+equivalentes a los modelos lineales en las características que contemplan.
 
-Los tres enfoques se evalúan sobre un conjunto de escenarios de prueba funcionales y de estrés. Analizando la tasa de convergencia, el tiempo
+Los modelos se evalúan sobre un conjunto de escenarios de prueba funcionales y de estrés. Analizando la tasa de convergencia, el tiempo
 de ejecución y la calidad de la solución respecto al óptimo, se busca caracterizar el compromiso entre calidad, tiempo de cómputo y robustez,
 para identificar bajo qué condiciones resulta conveniente reemplazar el modelo exacto por una heurística, y cuál de las dos metaheurísticas
 elegidas es más favorable.
