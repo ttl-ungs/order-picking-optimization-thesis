@@ -36,7 +36,46 @@ colonias de hormigas, en la que múltiples soluciones se construyen de forma
 probabilística guiadas por rastros de feromona que se refuerzan sobre las
 mejores rutas encontradas \cite{dorigo2004aco}.
 
-% TODO: completar
+La Optimización por Colonia de Hormigas, conocida por sus siglas en inglés como ACO (Ant Colony Optimization), es una
+metaheurística poblacional introducida por M. Dorigo que se inspira en el comportamiento de búsqueda de alimento de las hormigas
+reales y su capacidad para encontrar los caminos más cortos entre su nido y una fuente de comida. Este fenómeno biológico se basa
+en la \emph{estigmergia}, una forma de comunicación indirecta en la que las hormigas modifican su entorno al depositar una
+sustancia química olorosa llamada \emph{feromona} a lo largo de su trayectoria. En el ámbito computacional, este comportamiento
+coordinado se modela mediante el uso de ``hormigas artificiales'', que actúan como agentes estocásticos que cooperan para
+construir de manera incremental soluciones a problemas de optimización combinatoria complejos moviéndose a través de un grafo
+de construcción \cite{dorigo2004aco}.
+
+El proceso de búsqueda en ACO se basa en la construcción probabilística de soluciones \cite{hoos2015sls}. A medida que una hormiga
+avanza por el grafo, toma decisiones sobre el siguiente paso basándose en la interacción de dos factores fundamentales: los rastros de
+feromona artificial y la información heurística dependiente del problema. Así, las hormigas realizan una búsqueda constructiva
+aleatorizada pero fuertemente sesgada hacia opciones que parecen prometedoras tanto a nivel heurístico como según la experiencia previa
+de la colonia \cite{dorigo2004aco}. Por un lado, la feromona representa la memoria a largo plazo y compartida del proceso de búsqueda,
+indicando qué componentes han formado parte de buenas soluciones en el pasado; por otro, la información heurística aporta conocimiento
+previo sobre el problema específico, como por ejemplo priorizar las distancias más cortas entre dos puntos \cite{talbi2009metaheuristics}.
+
+Una vez que las hormigas han construido sus soluciones completas, el algoritmo procede a actualizar los niveles de feromona mediante dos
+mecanismos opuestos y complementarios: la evaporación y el depósito o refuerzo, que incrementa la cantidad de feromona en aquellos
+componentes que pertenecen a las soluciones generadas en la iteración actual \cite{hoos2015sls}. La evaporación reduce todos los niveles
+de feromona por un factor constante a lo largo del tiempo. Este proceso de ``olvido'' resulta crucial para evitar una convergencia
+prematura hacia soluciones subóptimas y fomentar la exploración de nuevas áreas del espacio de búsqueda. En cuanto al depósito, en la
+mayoría de las variantes de alto rendimiento la cantidad de feromona depositada es proporcional a la calidad de la solución, y a menudo
+solo se permite que las hormigas con las mejores rutas refuercen sus caminos, atrayendo así a las futuras hormigas hacia las regiones
+más óptimas \cite{dorigo2004aco}.
+
+Para maximizar la calidad de los resultados, los algoritmos ACO suelen incorporar acciones centralizadas que no pueden realizar las hormigas a
+nivel individual, conocidas como ``acciones de demonio''. Una de las estrategias más extendidas y recomendables es aplicar algoritmos de búsqueda
+local o procedimientos de mejora iterativa a las soluciones completas antes de proceder a la actualización de las feromonas \cite{dorigo2004aco}.
+Otra técnica avanzada para evitar el estancamiento es la operación de cataclismo, un mecanismo que interviene cuando el algoritmo no logra mejorar
+la mejor solución global durante un número determinado de iteraciones \cite{lesch2023optimizing}. Cuando esto ocurre, los valores de las feromonas
+en el grafo se reinician a su estado mínimo o inicial, forzando a la colonia a abandonar un óptimo local y explorar rutas completamente
+nuevas \cite{talbi2009metaheuristics}.
+
+Si bien esta metaheurística se diseñó inicialmente para problemas de un solo objetivo, su estructura se ha adaptado exitosamente para abordar
+problemas de optimización multiobjetivo (MOP). En estas adaptaciones, el marco de trabajo adquiere una mayor complejidad e incluye variaciones
+como el uso de múltiples colonias independientes o la implementación de varias estructuras de matrices de feromonas, donde cada rastro se asocia
+a una función objetivo específica. Durante la construcción de la ruta, una hormiga puede seleccionar de forma aleatoria o ponderada a qué matriz
+de feromona prestar atención, lo que permite al algoritmo converger hacia un conjunto de soluciones óptimas de Pareto que equilibran múltiples
+metas contradictorias simultáneamente \cite{alaya2007antcolony}.
 
 %----------------------------------------------------------------------------------------
 \section{Trabajos relacionados}
