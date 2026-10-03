@@ -1,4 +1,4 @@
-\chapter{Estado del arte}
+\chapter{Marco teórico y estado del arte}
 
 \label{Capitulo_2}
 
@@ -6,11 +6,27 @@
 \section{Introducción}
 \label{sec:estado_arte_intro}
 
-En este capítulo se revisan los trabajos relacionados con el problema de
-ruteo de picking, se describe el software utilizado para implementar los
-modelos, se releva el estado del repositorio de código en el que se
-desarrolló este trabajo, y se establece el objetivo concreto de la tesina a
-partir de ese relevamiento.
+En este capítulo se presentan los fundamentos teóricos de los métodos de
+resolución utilizados en esta tesina y se revisan los trabajos relacionados
+con el problema de ruteo de picking.
+
+%----------------------------------------------------------------------------------------
+\section{Modelo de Programación Lineal Entera Mixta}
+\label{sec:marco_mip}
+
+% TODO: completar
+
+%----------------------------------------------------------------------------------------
+\section{Hill Climbing}
+\label{sec:marco_hc}
+
+% TODO: completar
+
+%----------------------------------------------------------------------------------------
+\section{Ant Colony Optimization}
+\label{sec:marco_aco}
+
+% TODO: completar
 
 %----------------------------------------------------------------------------------------
 \section{Trabajos relacionados}
@@ -44,64 +60,3 @@ optimizarlos de forma conjunta mejora el resultado global. Alaya et al.
 \cite{alaya2007antcolony} formalizan extensiones de \ac{aco} a problemas
 multiobjetivo, relevantes porque el OPP combina en su función objetivo
 tiempo de recolección con penalidades por adelanto y demora.
-
-%----------------------------------------------------------------------------------------
-\section{Software utilizado}
-\label{sec:software}
-
-Los modelos de esta tesina están implementados en Python. El modelo exacto
-\code{opp\_v5} se resuelve con \textbf{SCIP}, un solver de \ac{mip} de
-código abierto, a través de su binding de Python
-\textbf{PySCIPOpt}. Las heurísticas \code{opp\_hc\_4} y \code{opp\_aco\_4}
-están implementadas íntegramente en Python, sin dependencia de un solver
-externo.
-
-%----------------------------------------------------------------------------------------
-\section{Relevamiento inicial}
-\label{sec:relevamiento}
-
-El repositorio de código en el que se desarrolló este trabajo contiene, además
-de los tres modelos que son objeto de esta tesina, un conjunto de versiones
-previas desarrolladas durante un proceso exploratorio anterior: modelos
-exactos \code{opp\_v1} a \code{opp\_v4}, y heurísticas
-\code{opp\_hc\_1}/\code{opp\_hc\_2}/\code{opp\_hc\_3} y
-\code{opp\_aco\_1}/\code{opp\_aco\_2}/\code{opp\_aco\_3}. Estas versiones
-incorporaron características de forma incremental sobre un par base, lo que permitió
-validar cada característica de forma aislada antes de combinarla con las demás.
-
-De ese relevamiento surge que \code{opp\_v5}, \code{opp\_hc\_4} y
-\code{opp\_aco\_4} son las tres versiones que comparten exactamente el mismo
-conjunto de características (velocidad heterogénea entre operarios y cadena
-de frío), lo que las vuelve directamente comparables entre sí. El resto de las
-versiones (\code{opp\_v1}-\code{opp\_v4}, \code{opp\_hc\_1}-\code{opp\_hc\_3},
-\code{opp\_aco\_1}-\code{opp\_aco\_3}) quedan fuera del alcance de esta tesina.
-
-%----------------------------------------------------------------------------------------
-\section{Objetivo}
-\label{sec:objetivo}
-
-\subsection{Objetivo general}
-
-Evaluar, sobre un conjunto de escenarios comparables, el compromiso entre
-calidad de la solución, tiempo de cómputo y robustez que ofrecen distintos
-enfoques de resolución (exacto y heurísticos) al problema de asignación,
-secuenciación y ruteo de picking, para caracterizar en qué condiciones cada
-enfoque resulta más apropiado.
-
-\subsection{Objetivos específicos}
-
-\begin{itemize}
-	\item Formular e implementar el modelo exacto \code{opp\_v5}, que
-	incorpora velocidad heterogénea entre operarios y requisitos de cadena de
-	frío a la formulación de referencia.
-	\item Diseñar e implementar las heurísticas \code{opp\_hc\_4} (\ac{hc}) y
-	\code{opp\_aco\_4} (\ac{aco}), equivalentes a \code{opp\_v5} en las
-	características que modelan, de forma
-	tal que sus resultados sean comparables entre sí.
-	\item Diseñar un conjunto de escenarios de prueba (funcionales y de estrés)
-	que permitan comparar los tres modelos bajo condiciones equivalentes.
-	\item Medir y comparar, sobre esos escenarios, la tasa de convergencia, el
-	tiempo de ejecución y la calidad de la solución respecto del óptimo.
-	\item Identificar limitaciones estructurales de los enfoques heurísticos
-	evaluados y proponer líneas de trabajo futuro para superarlas.
-\end{itemize}

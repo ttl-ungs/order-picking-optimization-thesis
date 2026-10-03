@@ -325,16 +325,27 @@
 \afterpage{\blankpage}
 \clearpage
 
+%--------------------------------------------------------------------------------------
+%  ABSTRACT
+%--------------------------------------------------------------------------------------
+{\renewcommand{\abstractname}{Abstract}
+\begin{abstract}
+	\addcontentsline{toc}{section}{Abstract}
+	\input{Capitulos/abstract.tex}
+\end{abstract}}
+
+\afterpage{\blankpage}
+\clearpage
+
 %----------------------------------------------------------------------------------------
 %	AGRADECIMIENTOS	
 %----------------------------------------------------------------------------------------
 % TODO: cambiar esto!
 \section*{Agradecimientos}
 \addcontentsline{toc}{section}{Agradecimientos}
-	A nuestra familia y amigos, por el aguante, la paciencia y el apoyo incondicional a lo largo de toda nuestra formación profesional.
+	Le agradecemos en particular a nuestra familia y amigos, por la paciencia y el apoyo incondicional a lo largo de toda nuestra formación.
 	A Enrique Fernández, nuestro supervisor, por su predisposición, sus consejos y por guiarnos en el desafío de optimizar y modelar este problema.
-	A Iván Jourdan, por su acompañamiento durante el Taller de Tesina, brindando las herramientas necesarias para estructurar este trabajo de Licenciatura.
-
+	También, nos agradecemos la una a la otra, por habernos apoyado en los momentos difíciles, y habernos dado fuerzas para siempre seguir adelante.
 \newpage
 
 %-------------------------------------------------------------------------------------
@@ -384,11 +395,14 @@
 %-----------------------------------------------------------------------------------
 % Capítulos 
 %-----------------------------------------------------------------------------------
-\include{Capitulos/cap1}
-\include{Capitulos/cap2}
-\include{Capitulos/cap3}
-%\include{Cap/cap4}
-%\include{Cap/cap5}
+\include{Capitulos/cap1} % Introducción
+\include{Capitulos/cap2} % Marco teórico y estado del arte
+\include{Capitulos/cap3} % Modelos Lineales
+\include{Capitulos/cap4} % Metaheurísticas
+\include{Capitulos/cap5} % Metodología
+\include{Capitulos/cap6} % Resultados
+\include{Capitulos/cap7} % Conclusión y Discusión
+%\include{Capitulos/plantilla} % Guía de uso de la plantilla (referencia)
 
 \afterpage{\blankpage}
 
@@ -396,9 +410,8 @@
 % Anexos 
 %-----------------------------------------------------------------------------------
 \begin{appendices}
-\include{Apendices/ap1}
-%\include{Apendices/ap2}
-%\include{Apendices/ap3}
+\include{Apendices/ap1} % Diagramas
+\include{Apendices/ap2} % Pseudocódigos
 \end{appendices}
 
 
