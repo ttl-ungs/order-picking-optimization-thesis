@@ -1,22 +1,19 @@
-El problema de optimización de rutas de picking (\textbf{OPP}, del inglés
-\emph{Order Picking Problem}) consiste en, dado un conjunto de pedidos ya
-agrupados en lotes, decidir a qué operario asignar cada lote, en qué orden
-secuenciarlos y qué ruta debe recorrer cada operario dentro del almacén para
-recolectarlos, minimizando el tiempo total de recolección junto con las
-penalidades por adelanto y demora respecto de la fecha de entrega
-comprometida de cada pedido. Resolver este problema de forma exacta
-garantiza la solución óptima, pero el tiempo de cómputo requerido crece
-rápidamente con el tamaño del almacen, la cantidad de pedidos, y otras variables,
-lo que lo vuelve poco práctico en escenarios operativos reales donde las decisiones
-de ruteo deben tomarse en poco tiempo. Este trabajo parte de un modelo de
-programación lineal entera propuesto en la literatura para el OPP, y lo
-extiende para contemplar velocidad heterogénea entre operarios y requisitos
-de cadena de frío. Sobre esa misma extensión se diseñan dos heurísticas equivalentes,
-una basada en \emph{Hill Climbing} y otra en \emph{Ant Colony Optimization}, pensadas
-para escalar a instancias donde el modelo exacto deja de ser viable en tiempos prácticos.
-Los tres modelos se evalúan sobre un conjunto común de escenarios de prueba, funcionales
-y de estrés, midiendo tasa de convergencia, tiempo de ejecución y calidad de la solución
-respecto del óptimo, con el objetivo de caracterizar el compromiso entre calidad de
-la solución, tiempo de cómputo y robustez que ofrece cada enfoque, y de identificar
-en qué condiciones conviene reemplazar el modelo exacto por una heurística.
-% TODO: agregar hallazgo principal cuando lo tengamos
+En los centros de distribución, el Problema de Preparación de Pedidos (\textbf{OPP}, del inglés \emph{Order Picking Problem}) consiste
+en asignar lotes de pedidos a distintos operarios, determinar el orden de ejecución y establecer la ruta de recolección en el almacén.
+El objetivo es minimizar el tiempo total de preparación, así como las penalidades por adelanto o demora respecto a las fechas de entrega
+comprometidas. Aunque la resolución exacta de este problema garantiza la optimidad, el tiempo de cómputo crece rápidamente con el tamaño del
+almacén y la cantidad de pedidos. Esto dificulta su aplicación en escenarios operativos reales, donde las decisiones de ruteo exigen tiempos
+de respuesta acotados.
+
+Este trabajo toma como punto de partida un modelo de programación lineal entera de la literatura para el OPP, y lo extiende incorporando
+velocidades heterogéneas entre operarios y restricciones de cadena de frío. El mismo también fue optimizado para mejorar sus tiempos de ejecución
+y, de esta forma, poder abordar instancias de escala mayor. Sin embargo, el mismo sigue resultando inviable en tiempos prácticos, debido a sus
+altos tiempos de ejecución en instancias moderadamente grandes. Por lo tanto, se proponen dos alternativas heurísticas basadas en
+\emph{Hill Climbing} y \emph{Ant Colony Optimization}.
+
+Los tres enfoques se evalúan sobre un conjunto de escenarios de prueba funcionales y de estrés. Analizando la tasa de convergencia, el tiempo
+de ejecución y la calidad de la solución respecto al óptimo, se busca caracterizar el compromiso entre calidad, tiempo de cómputo y robustez,
+para identificar bajo qué condiciones resulta conveniente reemplazar el modelo exacto por una heurística, y cuál de las dos metaheurísticas
+elegidas es más favorable.
+
+\subsection*{}
