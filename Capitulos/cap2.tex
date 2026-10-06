@@ -14,7 +14,87 @@ con el problema de ruteo de picking.
 \section{Modelo de Programación Lineal Entera Mixta}
 \label{sec:marco_mip}
 
-% TODO: completar
+Un problema de programación lineal consiste en optimizar una función objetivo lineal sujeta a un conjunto de restricciones lineales, bajo
+el supuesto de que las variables de decisión pueden tomar cualquier valor real. Sin embargo, en muchos problemas prácticos las variables
+solo tienen sentido si adoptan valores enteros. Cuando esta exigencia aplica a todas las variables, nos enfrentamos a un problema de
+\emph{programación entera}; si aplica solo a algunas y el resto permanece continuo, el modelo se denomina de \emph{programación entera
+mixta} \cite{hillier2010investigacion}\textsuperscript{}. En un problema de minimización, su forma general es:
+\begin{equation}
+	\begin{aligned}
+		\min \quad & Z = \sum_{j=1}^{n} c_j x_j \\
+		\text{s.a.} \quad & \sum_{j=1}^{n} a_{ij} x_j \leq b_i, && i = 1, \dots, m, \\
+		& x_j \geq 0, && j = 1, \dots, n, \\
+		& x_j \in \mathbb{Z}, && j = 1, \dots, I,
+	\end{aligned}
+	\label{eq:mip}
+\end{equation}
+donde las primeras $I \leq n$ variables están restringidas a valores enteros. Un caso de particular interés es el de las \emph{variables
+binarias}, las cuales solo pueden valer 0 o 1. Estas son fundamentales para representar decisiones lógicas o dicotómicas de tipo "sí o no"
+\cite{hillier2010investigacion}\textsuperscript{}, como asignar un lote a un operario o incluir un arco específico en una ruta.
+
+La exigencia de integralidad incrementa drásticamente la dificultad computacional del problema. Mientras que la programación lineal continua
+se resuelve de manera eficiente, la programación entera general es NP-hard \cite{matousek2007understanding}. Aunque el espacio de soluciones
+de un problema entero acotado es finito, su tamaño crece de forma exponencial: con $n$ variables binarias existen $2^n$ combinaciones
+posibles, haciendo que la enumeración exhaustiva sea inviable incluso para instancias pequeñas. El problema del viajante de comercio ilustra
+perfectamente esta explosión en el ámbito del ruteo: para $n$ ciudades existen $(n-1)!/2$ recorridos posibles, lo que se traduce en
+aproximadamente $10^{16}$ rutas para solo 20 ciudades y $10^{62}$ para 50 \cite{hillier2010investigacion}\textsuperscript{}.
+
+
+Las variables binarias también permiten modelar condiciones lógicas entre restricciones. Una técnica ampliamente utilizada es la de la
+\emph{M grande} (\emph{Big-M}). Este método consiste en sumar al lado derecho de una restricción un número positivo $M$ lo suficientemente
+grande como para desactivarla o relajarla por completo. Al combinar $M$ con una variable binaria $y$, una restricción puede activarse o
+desactivarse según el valor de $y$:
+\begin{equation}
+	g(x) \leq b + M (1 - y),
+	\label{eq:bigm}
+\end{equation}
+
+De este modo, si $y = 1$, la restricción original $g(x) \leq b$ debe cumplirse obligatoriamente; pero si $y = 0$, la restricción queda
+desactivada porque el valor de $M$ absorbe cualquier valor factible de $g(x)$. Para que el modelo sea matemáticamente válido, el parámetro
+$M$ debe ser lo bastante grande como para no excluir ninguna solución factible \cite{hillier2010investigacion}\textsuperscript{}.
+
+% TODO: eliminación de subtours (formulación de Gavish-Graves, restricciones (10)-(12) del monolítico).
+% Falta una fuente: ver Öncan, Altınel y Laporte (2009), que compara formulaciones del TSP asimétrico.
+
+Para resolver estos problemas matemáticamente, un concepto central es la \emph{relajación lineal}, que resulta de eliminar temporalmente
+la exigencia de valores enteros. Dado que la región factible del problema relajado engloba todas las soluciones enteras factibles, su valor
+óptimo proporciona una cota válida (inferior en el caso de minimización) para el problema original. Si la solución óptima de la relajación
+resulta ser completamente entera, entonces también es el óptimo del problema original. No obstante, esto rara vez ocurre de forma natural.
+Además, el simple redondeo de una solución fraccionaria suele ser ineficaz, ya que puede generar soluciones infactibles o muy alejadas del
+verdadero óptimo \cite{hillier2010investigacion}\textsuperscript{}.
+
+El método exacto más difundido para resolver problemas de programación entera mixta es el algoritmo de \emph{ramificación y acotamiento}
+(\emph{branch and bound}), que evita la enumeración exhaustiva dividiendo sistemáticamente el problema en subproblemas más pequeños.
+En cada iteración se aplican tres pasos principales \cite{hillier2010investigacion}\textsuperscript{}:
+
+\begin{enumerate}
+\item \textbf{Ramificación:} Se selecciona una variable entera $x_j$ que ha tomado un valor fraccionario $x_j^*$ en la relajación lineal
+de un subproblema. A partir de ella, se crean dos nuevos subproblemas añadiendo las restricciones
+$x_j \leq \lfloor x_j^* \rfloor$ y $x_j \geq \lfloor x_j^* \rfloor + 1$.
+\item \textbf{Acotamiento:} Se resuelve la relajación lineal de cada nuevo subproblema para obtener una cota que delimite el mejor valor
+posible en esa rama de búsqueda.
+\item \textbf{Sondeo (o poda):} Un subproblema se descarta bajo tres condiciones: si su cota no mejora a la \emph{solución incumbente}
+(la mejor solución entera encontrada hasta el momento), si su relajación lineal es infactible, o si su solución relajada ya es entera
+(pudiendo convertirse en la nueva incumbente).
+El algoritmo concluye cuando no quedan subproblemas abiertos por explorar, momento en el cual la solución incumbente se declara como óptima.
+\end{enumerate}
+
+Durante el proceso de búsqueda, el algoritmo mantiene dos valores críticos: la \emph{cota primal} (el valor de la solución incumbente)
+y la \emph{cota dual} (la mejor cota entre los subproblemas aún abiertos). El óptimo global siempre se encuentra entre ambos valores, y
+la diferencia relativa entre ellos se conoce como \emph{gap de optimalidad}. Este gap permite detener el algoritmo anticipadamente para
+obtener soluciones de alta calidad con mucho menos esfuerzo computacional. Por ejemplo, al aceptar una solución a no más del 5\% del óptimo,
+la búsqueda termina en cuanto la distancia entre las cotas alcanza ese límite \cite{hillier2010investigacion}\textsuperscript{}. Asimismo,
+si el proceso se interrumpe por un límite de tiempo, el gap certifica cuánto podría mejorar aún la solución. Un gap nulo garantiza
+matemáticamente que la solución obtenida está \emph{probada} como óptima.
+
+Para maximizar la eficiencia, los resolvedores modernos combinan este algoritmo con técnicas de \emph{ramificación y corte} (\emph{branch
+and cut}), las cuales buscan estrechar la región factible de la relajación lineal sin descartar ninguna solución entera válida. Esto se
+logra mediante el preprocesamiento automático del modelo (fijando variables, eliminando restricciones redundantes y ajustando coeficientes)
+y la adición dinámica de \emph{planos cortantes}. Mientras más ajustada sea la relajación, mejores serán las cotas y más subproblemas podrán
+podarse rápidamente; en algunos casos, los cortes reducen hasta en un 98\% la brecha entre la relajación y el óptimo entero
+\cite{hillier2010investigacion}\textsuperscript{}. Por esta misma razón, en las restricciones de tipo M grande resulta vital escoger
+el menor valor de $M$ que preserve la validez de la formulación: un valor innecesariamente grande afloja la relajación y debilita severamente
+el rendimiento computacional del algoritmo.
 
 %----------------------------------------------------------------------------------------
 \section{Hill Climbing}
