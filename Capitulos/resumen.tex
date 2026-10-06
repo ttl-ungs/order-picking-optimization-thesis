@@ -2,15 +2,15 @@ En los centros de distribución, el Problema de Preparación de Pedidos (\textbf
 en asignar lotes de pedidos a distintos operarios, determinar el orden de ejecución y establecer la ruta de recolección en el almacén.
 El objetivo es minimizar el tiempo total de preparación, así como las penalidades por adelanto o demora respecto a las fechas de entrega
 comprometidas. Aunque la resolución exacta de este problema garantiza la optimidad, el tiempo de cómputo crece rápidamente con el tamaño del
-almacén y la cantidad de pedidos. Esto dificulta su aplicación en escenarios operativos reales, donde las decisiones de ruteo exigen tiempos
+almacén y la cantidad de pedidos. Esto dificulta su aplicación en escenarios operativos reales, donde las decisiones exigen tiempos
 de respuesta acotados.
 
 Este trabajo toma como punto de partida un modelo de programación lineal entera mixta de la literatura para el OPP. Tomándolo como guía,
 se formula un modelo lineal propio, al que llamamos \emph{monolítico}, que incorpora velocidades heterogéneas entre operarios y restricciones
-de cadena de frío. Luego, con el fin de reducir sus tiempos de ejecución y abordar instancias de mayor escala, este modelo se optimiza
-descomponiéndolo en dos etapas que se resuelven de forma sucesiva: primero el ruteo de cada lote y luego la asignación y secuenciación de los
-lotes. A este segundo modelo lo llamamos \emph{Split}. Aun así, el modelo Split sigue resultando inviable en tiempos prácticos para instancias
-moderadamente grandes. Por lo tanto, se desarrollan dos metaheurísticas, basadas en \emph{Hill Climbing} y \emph{Ant Colony Optimization},
+de cadena de frío. Luego, con el fin de reducir sus tiempos de ejecución y abordar instancias de mayor escala, este modelo se optimiza mediante
+su descomposición en dos etapas, las cuales se resuelven de forma sucesiva: primero el ruteo de cada lote y luego la asignación y secuenciación de los
+lotes. A este segundo modelo lo llamamos \emph{Split}. Aun así, el modelo Split sigue resultando demasiado costoso, y no se logra resolver en tiempos
+prácticos para instancias moderadamente grandes. Por lo tanto, se desarrollan dos metaheurísticas, basadas en \emph{Hill Climbing} y \emph{Ant Colony Optimization},
 equivalentes a los modelos lineales en las características que contemplan.
 
 Los modelos se evalúan sobre un conjunto de escenarios de prueba funcionales y de estrés. Analizando la tasa de convergencia, el tiempo

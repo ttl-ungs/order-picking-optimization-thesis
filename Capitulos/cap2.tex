@@ -318,3 +318,20 @@ optimizarlos de forma conjunta mejora el resultado global. Alaya et al.
 \cite{alaya2007antcolony} formalizan extensiones de \ac{aco} a problemas
 multiobjetivo, relevantes porque el OPP combina en su función objetivo
 tiempo de recolección con penalidades por adelanto y demora.
+
+Esta tesina se posiciona a partir de dos limitaciones de los trabajos
+revisados. En primer lugar, el modelo de Coruzzolo et al. no contempla
+la velocidad heterogénea entre operarios ni los requisitos de cadena de frío,
+dos características presentes en la operación real; por lo tanto, se
+extiende su formulación para incorporarlas. En segundo lugar, los propios
+autores señalan que sus modelos lineales resultaron demasiado complejos para
+resolverse sobre el caso de estudio, por lo que recurren a una heurística
+constructiva mejorada con búsqueda local iterada sin poder contrastar sus
+resultados con el óptimo. A diferencia de ello, en este trabajo se
+desarrollan dos modelos lineales (uno monolítico y otro descompuesto en dos
+etapas) capaces de resolver hasta la optimalidad instancias de tamaño
+reducido, y dos metaheurísticas basadas en \ac{hc} y \ac{aco} que
+resuelven exactamente el mismo problema. De este modo, la calidad de las
+soluciones heurísticas puede medirse directamente respecto del óptimo, y el
+compromiso entre calidad de la solución y tiempo de cómputo puede evaluarse
+sobre escenarios equivalentes para los cuatro enfoques.
