@@ -10,9 +10,10 @@ común a ambos (Sección~\ref{sec:notacion}). El modelo monolítico
 (Sección~\ref{sec:modelo_monolitico}) resuelve ruta, asignación y
 secuenciación en un único modelo. El modelo Split
 (Sección~\ref{sec:modelo_split}) resuelve el mismo problema en dos etapas sucesivas
-y alcanza el mismo valor óptimo en menor tiempo. Por último,
-la Sección~\ref{sec:diferencias_modelos} resume las
-diferencias entre ambas formulaciones.
+y alcanza el mismo valor óptimo en menor tiempo. La
+Sección~\ref{sec:espera_voluntaria} describe una propiedad común a ambas
+formulaciones y, por último, la Sección~\ref{sec:diferencias_modelos} resume
+las diferencias entre ellas.
 
 Los dos modelos resuelven el mismo problema: dado un conjunto de lotes de
 pedidos, un grafo de locaciones del almacén y un conjunto de \emph{pickers}
@@ -320,20 +321,6 @@ Como $ta_n, ea_n \geq 0$ y el objetivo los minimiza, en el óptimo se cumple
 que $ta_n = \max(0,\, c_b - T^{\text{due}}_n)$ y
 $ea_n = \max(0,\, T^{\text{due}}_n - c_b)$.
 
-\subsection{Espera voluntaria}
-\label{sec:espera_voluntaria}
-
-Las restricciones \eqref{eq:mono_piso}, \eqref{eq:mono_seq1} y
-\eqref{eq:mono_seq2} son desigualdades: exigen que un lote termine
-\emph{no antes} de lo que tarda en ejecutarse, pero permiten declarar un
-$c_{pb}$ mayor. Cuando el adelanto tiene peso en el objetivo, al modelo
-puede convenirle declarar un lote terminado más tarde para acercarlo a la
-fecha de entrega de sus órdenes. Esta \emph{espera voluntaria} es una
-propiedad de la formulación, compartida por los dos modelos lineales, y debe
-tenerse en cuenta al comparar sus resultados con los de las metaheurísticas
-del Capítulo~\ref{Capitulo_4}, que reportan el instante real de finalización
-de cada lote.
-
 %----------------------------------------------------------------------------------------
 \section{Modelo en Dos Etapas (Split)}
 \label{sec:modelo_split}
@@ -457,6 +444,109 @@ del modelo monolítico, restringidas a los pares elegibles:
 	& ta_n,\; ea_n,\; c_b,\; c_{pb} \geq 0 && \forall n \in \mathcal{N},\; b \in \mathcal{B},\; (p,b) \in \mathcal{PB}^{\text{elig}} \label{eq:split_dominio_cont} \\
 	& x_{pb},\; y_{bk} \in \{0,1\} && \forall (p,b) \in \mathcal{PB}^{\text{elig}},\; b, k \in \mathcal{B},\; b < k \label{eq:split_dominio_bin}
 \end{align}
+
+%----------------------------------------------------------------------------------------
+\section{Espera voluntaria}
+\label{sec:espera_voluntaria}
+
+En ambos modelos, un lote puede figurar como terminado más tarde de lo que
+termina realmente. Esto le permite acercar su instante de finalización a la
+fecha de entrega de sus órdenes y pagar menos penalización por adelanto. A
+este comportamiento se le conoce como \emph{espera voluntaria}. Es una propiedad
+de la formulación, compartida por los dos modelos lineales, y debe tenerse en
+cuenta al comparar sus resultados con los de las metaheurísticas del
+Capítulo~\ref{Capitulo_4}, que no pueden esperar porque reportan el instante
+real de finalización de cada lote.
+
+\subsection{Por qué ocurre}
+
+Las restricciones que vinculan la ejecución de un lote con su instante de
+finalización son desigualdades, no igualdades. En el modelo monolítico,
+\eqref{eq:mono_u_inf}--\eqref{eq:mono_u_sup} fijan $u_{pb}$ en la duración
+real del lote, pero \eqref{eq:mono_piso} solo exige que
+$c_{pb} \geq u_{pb}$. Lo mismo ocurre al encadenar lotes del mismo
+\emph{picker} en \eqref{eq:mono_seq1}--\eqref{eq:mono_seq2}, que solo exigen
+que $c_{pk}$ sea al menos $c_{pb}$ más la duración de $k$. En el modelo
+Split sucede lo mismo con \eqref{eq:split_piso} y
+\eqref{eq:split_seq1}--\eqref{eq:split_seq2}. Nada impide, entonces, que
+$c_{pb}$ quede por encima de su cota inferior, ya sea al final de la
+secuencia de un \emph{picker} o entre dos lotes consecutivos.
+
+Por otro lado, la función objetivo \eqref{eq:mono_objetivo} no penaliza solo
+la demora sino también el adelanto: es un objetivo de tipo
+\emph{just-in-time}. Si un lote termina antes de la fecha de entrega de sus
+órdenes, el resolvedor puede decidir declarar un $c_b$ mayor.
+
+\subsection{Cuándo esperar es conveniente}
+
+Si se demora en $\delta > 0$ unidades el instante de finalización de un
+lote, cada término del objetivo cambia como se resume en el
+Cuadro~\ref{tab:espera_balance}.
+
+\begin{table}[h]
+	\centering
+	\small
+	\begin{tabular}{|p{7cm}|p{6cm}|}
+		\hline
+		\textbf{Término} & \textbf{Efecto} \\
+		\hline
+		Finalización del lote & $+\, W^{c} \, \delta$ \\
+		\hline
+		Adelanto de cada orden del lote que todavía está antes de su fecha de entrega & $-\, W^{\text{pen}} W^{e} \, \delta$ por orden \\
+		\hline
+		Demora de cada orden del lote que ya está atrasada & $+\, W^{\text{pen}} W^{t} \, \delta$ por orden \\
+		\hline
+		Lotes posteriores del mismo \emph{picker}, si no tienen holgura & se desplazan también y pagan su propio costo \\
+		\hline
+	\end{tabular}
+	\caption{Efecto en la función objetivo de demorar en $\delta$ el instante de finalización de un lote.}
+	\label{tab:espera_balance}
+\end{table}
+
+Sean $n^{e}_b$ y $n^{t}_b$ la cantidad de órdenes del lote $b$ que están
+adelantadas y atrasadas, respectivamente, y $\Delta^{\text{suc}}_b$ el costo
+marginal de desplazar a los lotes posteriores del mismo \emph{picker}. La
+espera reduce el objetivo cuando
+\begin{equation}
+	W^{\text{pen}} W^{e} \, n^{e}_b \;>\; W^{c} + W^{\text{pen}} W^{t} \, n^{t}_b + \Delta^{\text{suc}}_b.
+	\label{eq:espera_condicion}
+\end{equation}
+Con $W^{\text{pen}} = W^{e} = 1$, y para un lote sin órdenes atrasadas ni
+sucesores que desplazar, la condición se reduce a $n^{e}_b > W^{c}$.
+
+El costo en función de $c_b$ es lineal por tramos, y cada fecha de entrega
+es un punto de quiebre ya que, al superarla, una orden deja de aportar adelanto y
+empieza a aportar demora. Por eso, cuando conviene esperar, el instante de
+finalización óptimo coincide con la fecha de entrega de alguna orden, de
+forma análoga a una mediana ponderada.
+
+\paragraph{Ejemplo.} Sea un lote con tres órdenes cuya fecha de entrega es
+20, que termina realmente en $t = 10$, con todos los pesos iguales a 1. Si se
+reporta su instante real de finalización, su aporte al objetivo es
+$1 \cdot 10 + 3 \cdot 10 = 40$ (finalización más adelanto de las tres
+órdenes). Si se lo declara terminado en $t = 20$, el aporte es
+$1 \cdot 20 + 0 = 20$. Más allá de $t = 20$, cada unidad adicional cuesta
+$1 + 3 = 4$ (finalización más demora de las tres órdenes), por lo que el
+resolvedor se detiene exactamente en la fecha de entrega.
+
+\subsection{Condiciones necesarias}
+
+La espera voluntaria solo aparece cuando se cumplen simultáneamente las
+siguientes condiciones:
+\begin{enumerate}
+	\item \textbf{El adelanto tiene peso en el objetivo}, es decir,
+	$W^{\text{pen}} W^{e} > 0$. En caso contrario, esperar nunca reduce el
+	objetivo.
+	\item \textbf{El lote termina antes de la fecha de entrega} de al menos
+	algunas de sus órdenes.
+	\item \textbf{El ahorro en adelanto supera el costo en completitud.}
+	Demorar un lote en $\delta$ unidades cuesta $W^{c} \, \delta$ y ahorra
+	$W^{\text{pen}} W^{e} \, \delta$ por cada orden del lote que todavía está
+	antes de su fecha de entrega. Para que la espera convenga debe cumplirse
+	$W^{\text{pen}} W^{e} \, n^{e}_b > W^{c}$. Si
+	$W^{c} \geq W^{\text{pen}} W^{e} \max_{b \in \mathcal{B}} |\mathcal{N}_b|$,
+	esto no ocurre en ningún lote.
+\end{enumerate}
 
 %----------------------------------------------------------------------------------------
 \section{Diferencias entre las formulaciones}
