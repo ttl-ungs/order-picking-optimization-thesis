@@ -1330,43 +1330,82 @@ aunque el lote tenga que alcanzar un puñado de ubicaciones; resuelve a la vez e
 visitar (un TSP con extremos fijos, NP-difícil) y cómo caminar entre paradas (camino mínimo,
 polinomial). La clausura reemplaza el grafo de cada lote por el grafo completo sobre
 $\{v_{start}\} \cup \text{requeridas} \cup \{v_{end}\}$, con distancias de camino mínimo
-(Dijkstra), y el MIP queda solo con el orden. En 100×100 con unas 25 requeridas por lote, los arcos
-pasan de unos 40.000 a unos 700. Se descartó la fórmula Manhattan cerrada: equivale en estas
-grillas, pero con estanterías daría distancias menores que las reales sin avisar.
+calculadas de antemano con Dijkstra, y el MIP queda solo con el orden. En 100×100 con unas 25
+requeridas por lote, los arcos pasan de unos 40.000 a unos 700. Se implementó como una opción de
+la Etapa 1, sin tocar los modelos: apagada en los tests, pero encendida por defecto en la
+herramienta de exploración, y por eso los estudios 01 a 03 corrieron con ella.
+
+{\bf Las distancias.} Se descartó la fórmula Manhattan cerrada: equivale en estas grillas, pero
+con estanterías daría distancias menores que las reales sin avisar. Se usó en cambio como control:
+las distancias de Dijkstra coincidieron exactamente con la Manhattan con pesos en grillas de 6×7,
+10×10, 5×8 y 12×12, también con pesos asimétricos (vertical 3, horizontal 7).
 
 {\bf Dos mecanismos obligatorios.} Un arco de la clausura no es un arco del almacén, así que la
 ruta se expande de vuelta a arcos reales (sin eso, tests que reconstruyen el recorrido recibían
 distancias infinitas). Y la clausura permite que dos tramos crucen el mismo vértice, lo que
 (8)--(9) prohíben: si la expansión repite un vértice, ese lote se resuelve de nuevo con el grafo
-completo. Con los dos, la reducción es exacta: 53 de 53 tests funcionales con el mismo resultado
-(44 objetivos idénticos y 9 infactibles en los dos). Sin ellos, 4 objetivos distintos y 3 fallas.
+completo.
 
-{\bf Lo que dio.} Sobre los stress heredados mejoró la Etapa 1 entre 19 \% y 33 \% (10 lotes en
-10×10: 11,18~s a 7,76~s; 25 lotes: 131,71~s a 88,17~s; 10 lotes con 25 pickers: 9,12~s a 7,41~s),
-pero no destrabó ningún test, porque el tiempo estaba en la Etapa 2. En la suite funcional costó
-un 58,6 \% más (son instancias donde casi todo el grafo es requerido). En grillas de proporción
-realista (25×25 con 12 y 20 órdenes por lote, 35×35 con 12) ninguna configuración terminó la
-Etapa 1 en 15 minutos, con ni sin clausura. El diagnóstico lote por lote:
+{\bf Por qué la reducción es exacta.} Toda ruta válida de la Etapa 1 visita las requeridas en
+algún orden, y cada tramo entre dos paradas consecutivas cuesta al menos el camino mínimo entre
+ellas. Esa misma secuencia es una ruta de la clausura que cuesta lo mismo o menos, así que el
+problema sobre la clausura es una relajación y su óptimo es una cota inferior del óptimo real. Si
+la ruta expandida no repite vértices, es una ruta válida del modelo completo que cuesta
+exactamente esa cota, y por lo tanto es óptima. Si repite, la cota no alcanza para concluir nada,
+y por eso hace falta resolver de nuevo. La comprobación empírica: con los dos mecanismos, 53 de 53
+tests funcionales dieron el mismo resultado (44 objetivos idénticos y 9 infactibles en los dos).
+Sin ellos, 4 objetivos distintos y 3 fallas, lo que confirma que la clausura sola es una relajación.
+
+{\bf Lo que dio en los stress heredados.} La Etapa 1 mejoró entre 19 \% y 33 \% (05, 10 lotes
+en 10×10: 11,18~s a 7,76~s; 06, 25 lotes: 131,71~s a 88,17~s; 07, 10 lotes con 25 pickers:
+9,12~s a 7,41~s), pero no destrabó ningún test, porque el tiempo estaba en la Etapa 2. El 07 lo
+muestra: tiene exactamente la misma Etapa 1 que el 05 (mismos lotes,
+órdenes y grilla; solo cambian los pickers, que entran recién en la Etapa 2), resuelve esa
+Etapa 1 en 9,12~s y aun así agota los 40 minutos, con unos 2.391 de los 2.400~s en la Etapa 2.
+En esa misma medición el 05 tardó 98,89~s, de los que 87,73~s (88,7 \%) fueron Etapa 2, y al 06
+la clausura le ahorró 43,5~s frente a un tope de 2.400~s, y siguió sin terminar. En la suite funcional costó un 58,6 \% más
+(de 22,0~s a 35,0~s): son instancias donde casi todo el grafo es requerido y no hay nada que
+reducir.
+
+{\bf Lo que dio en almacenes realistas.} La pregunta siguiente fue si servía en proporciones de
+almacén real: grilla grande y listas cortas. La cuenta de arcos predecía que sí: para $k$
+requeridas la clausura tiene unos $(k+2)^2$ arcos y la grilla de lado $n$ unos $4n^2$, así que
+la clausura achica el modelo mientras el lote tenga menos de unas $2n$ ubicaciones. Pero en
+25×25 con 12 y 20 órdenes por lote y en 35×35 con 12, ninguna configuración terminó la Etapa 1
+en 15 minutos, ni con clausura ni sin ella. Para ver por qué, se resolvió cada lote sobre la clausura y
+se revisó su ruta expandida, sin pagar la segunda resolución:
 
 \blank[medium]
-\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
 \setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
-\bTR \bTH Grilla \eTH \bTH Órd./lote \eTH \bTH Lotes que vuelven al grafo completo \eTH \bTH Resolución sobre la clausura \eTH \eTR
-\bTR \bTD 25×25 \eTD \bTD 12 \eTD \bTD 4 de 6 \eTD \bTD 0,16 a 0,22~s \eTD \eTR
-\bTR \bTD 13×13 \eTD \bTD 26 \eTD \bTD 6 de 6 \eTD \bTD 0,62 a 30,9~s \eTD \eTR
-\bTR \bTD 7×7 \eTD \bTD 26 \eTD \bTD 5 de 6 \eTD \bTD 0,25 a 3,03~s \eTD \eTR
+\bTR \bTH Grilla \eTH \bTH Órd./lote \eTH \bTH Lotes que se resuelven de nuevo \eTH \bTH Resolución sobre la clausura \eTH \bTH Vértices repetidos por ruta \eTH \eTR
+\bTR \bTD 25×25 \eTD \bTD 12 \eTD \bTD 4 de 6 \eTD \bTD 0,16 a 0,22~s \eTD \bTD 2, 5, 2, 5 \eTD \eTR
+\bTR \bTD 13×13 \eTD \bTD 26 \eTD \bTD 6 de 6 \eTD \bTD 0,62 a 30,9~s \eTD \bTD 2, 7, 1, 1, 4, 3 \eTD \eTR
+\bTR \bTD 7×7 \eTD \bTD 26 \eTD \bTD 5 de 6 \eTD \bTD 0,25 a 3,03~s \eTD \bTD 2, 1, 3, 1, 1 \eTD \eTR
 \eTABLE
 \blank[medium]
 
-Sobre la clausura cada lote resolvía en décimas de segundo, pero en el 67 \% al 100 \% de los
-lotes la ruta expandida repetía algún vértice y el tiempo se iba en la segunda resolución. En la
-calibración, con los mismos nodos en la Etapa 2, la Etapa 1 con clausura fue más lenta que sin
-ella: 24,2~s contra 13,8~s en 7×7 y 737~s contra 676~s en 13×13. La hipótesis, consistente con
-todo lo medido, es que en una grilla hay muchos caminos mínimos del mismo largo: Dijkstra elige
-uno por tramo, dos tramos pueden cruzarse, y casi siempre existía otro igual de corto que no se
-cruzaba (por eso el modelo con (8)--(9) llega al mismo tiempo de ruta). El respaldo era evitable
-con una expansión que eligiera caminos que no se crucen, pero no se intentó. {\bf La clausura se
-eliminó del código el 23-09.} Era además incompatible con el paralelismo de la Etapa 1.
+{\bf Por qué no anduvo.} La clausura hacía lo que prometía: cada lote resolvía en décimas de
+segundo, aun en un almacén de 625 ubicaciones. Pero en el 67 \% al 100 \% de los lotes la ruta
+expandida repetía algún vértice y el tiempo se iba en la segunda resolución, que es la misma
+Etapa 1 de siempre más el costo de la clausura. Coincide con lo medido en la calibración, con los
+mismos nodos en la Etapa 2: la Etapa 1 con clausura fue más lenta que sin ella: 24,2~s contra 13,8~s en 7×7 y
+737~s contra 676~s en 13×13. La cuenta de arcos no alcanzaba para predecir si servía; lo que
+decidía era esa tasa de segunda resolución. La hipótesis, consistente con todo lo medido, es que
+en una grilla hay muchos caminos mínimos del mismo largo: Dijkstra elige uno por tramo, dos tramos
+pueden cruzarse, y casi siempre existía otro igual de corto que no se cruzaba (por eso el modelo
+con (8)--(9) llega al mismo tiempo de ruta). La segunda resolución era evitable con una expansión
+que eligiera caminos que no se crucen, pero no se intentó.
+
+{\bf Lo que quedó sin resolver de la implementación.} Era incompatible con el paralelismo de la
+Etapa 1: la segunda resolución necesitaba los datos originales del lote, y mandárselos a cada
+proceso implicaba copiar archivos de millones de filas en las instancias grandes, así que la
+combinación se rechazaba con un error explícito. Además cargaba entera la tabla de qué ubicaciones
+pide cada orden (7,5 millones de entradas en 100×100) y rearmaba el grafo para Dijkstra en cada
+lote, aunque era siempre el mismo. No se llegaron a optimizar, pero ninguno de los dos explica
+el resultado: lo que no terminaba eran las segundas resoluciones sobre el grafo completo, que sin
+clausura tampoco terminaban. {\bf La clausura
+se eliminó del código el 23-09.}
 \stopsubsection
 
 \startsubsection[title={Estudio 07: la restricción de un arco por vértice}, reference=sec:le1]
