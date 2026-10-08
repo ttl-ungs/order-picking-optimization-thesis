@@ -23,13 +23,15 @@
 
 \starttext
 
-\title{\bf Validación de los modelos OPP v5:\crlf equivalencia entre el monolítico y el Split}
+\title{\bf Validación de los modelos OPP v5:\crlf equivalencia entre el monolítico y el Split,\crlf y verificación de las heurísticas}
 \blank[big]
 
 {\it Notas de trabajo para la tesina. Describen cómo se verificó que el modelo monolítico
 (\ruta{opp_v5_1_mono}) y el modelo en dos etapas (\ruta{opp_v5_2_split}) son equivalentes: qué
 significa la equivalencia, con qué métodos se comprobó, con qué criterio se aceptó cada
-comprobación, qué resultados dio cada una y qué queda sin cubrir. Complementan las notas de
+comprobación, qué resultados dio cada una y qué queda sin cubrir. La última parte aplica la misma
+lógica a las heurísticas: cómo se aseguró que resuelvan los mismos datos, que sus soluciones sean
+válidas y que la brecha contra el Split mida calidad. Complementan las notas de
 desarrollo (\ruta{Notas/opp_v5_development.tex}), que tienen la formulación completa de los dos
 modelos; acá se repite solo lo necesario. Todos los números salen de los archivos de resultados
 del repositorio de implementación (\ruta{linear-picking-routing}) y se volvieron a calcular desde
@@ -393,20 +395,23 @@ El único test sin equivalente es el 24b: verifica el pre-chequeo de la cadena d
 después de correr solo la Etapa 1, y el monolítico no tiene etapas.
 \stopsubsection
 
-\startsubsection[title={El test heredado 06: un fallo que no era un error}, reference=sec:test06]
+\startsubsection[title={El test 06: por qué no se afirma la ruta}, reference=sec:test06]
 
-El test 06 heredado exigía la ruta más corta (L1→L4→L5, tiempo 4) en una instancia con fecha de
-entrega 15. En v5, con espera voluntaria, la ruta L1→L2→L4→L5 (tiempo 7,5) también llega a
-tiempo, y los dos lotes se declaran terminados en 15 de todos modos: las dos rutas dan objetivo
-30. El monolítico elegía la larga y el test fallaba; el Split pasaba solo porque su Etapa 1
-devuelve la ruta mínima por construcción. Hasta el 29-09 figuró como \quote{falla conocida} del
-monolítico.
+El test 06 resuelve una instancia en la que cada lote tiene dos rutas posibles: L1→L4→L5 (tiempo 4)
+y L1→L2→L4→L5 (tiempo 7,5). Tiene dos casos:
 
-El 29-09 se reemplazó por un test propio de v5 sobre la misma instancia, con dos casos: con fecha
-10 la ruta larga atrasa, así que la corta es la única óptima, y se afirma (06b); con fecha 15
-toda ruta llega, así que se afirman el objetivo y las terminaciones, no la ruta (06a). Los dos
-modelos pasan los dos casos, y la comparación cruzada marca el 06a como óptimo alternativo. Es
-el ejemplo más claro de por qué la validación separa el objetivo de la solución.
+\startitemize
+\item {\bf 06b, fecha de entrega 10:} la ruta larga atrasa, así que la corta es la única óptima, y el
+test la afirma.
+\item {\bf 06a, fecha de entrega 15:} las dos rutas llegan a tiempo y, con espera voluntaria, los dos
+lotes se declaran terminados en 15 de todos modos: las dos dan objetivo 30. El test afirma el
+objetivo y las terminaciones, pero no la ruta.
+\stopitemize
+
+Un 06a que exigiera la ruta corta fallaría en el monolítico, que elige la larga, sin que haya ningún
+error: el Split pasaría solo porque su Etapa 1 minimiza la ruta por construcción. La comparación
+cruzada marca el 06a como óptimo alternativo. Es el ejemplo más claro de por qué la validación
+separa el objetivo de la solución.
 \stopsubsection
 
 \startsubsection[title={Resultado}]
@@ -635,11 +640,8 @@ verificador detectó los cuatro.
 del 29-09 con \ruta{python -m verification.compare_v5 --verify-split-stress}). Ese veredicto quedó
 en el registro de cambios del repositorio, pero no en el CSV de comparación guardado, que se
 generó sin esa opción. Se reproduce con el mismo comando.
-\item {\bf Heurísticas, como contexto:} las 150 soluciones de HC y ACO (56 funcionales y 19 de stress
-por heurística) también dieron \quote{compliant}. En la primera verificación, sobre una suite
-anterior, el nivel 1 bajó el objetivo de 7 de 51 casos entre 7,9~\% y 93,6~\% con las mismas
-decisiones: el monolítico espera hasta la fecha de entrega y las heurísticas no. No es una
-violación; es la espera voluntaria medida desde otro lado.
+\item {\bf Heurísticas:} el mismo verificador validó las 150 soluciones de HC y ACO (sección
+\in[sec:heuristicas]).
 \stopitemize
 \stopsubsection
 
@@ -709,7 +711,260 @@ revisar la violación máxima de sus restricciones con los valores sin redondear
 \stopsection
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\startsection[title={Lo que la validación no cubre}, reference=sec:limitaciones]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Validación de las heurísticas contra los modelos exactos}, reference=sec:heuristicas]
+
+Las heurísticas HC y ACO (en el repositorio, \ruta{opp_hc_4} y \ruta{opp_aco_4}) se miden contra el
+óptimo del Split. Para que esa comparación diga algo sobre la calidad de las heurísticas hacen falta
+tres cosas: que resuelvan exactamente los mismos datos, que sus soluciones sean válidas para el
+problema y que la diferencia de objetivo mida calidad y no una diferencia de modelado. Esta sección
+describe cómo se aseguró cada una. El desempeño de las heurísticas (tiempos, escala, convergencia)
+no es parte de la validación: está en las notas de desarrollo y en el documento de comparación del
+repositorio de implementación.
+
+La validación de las heurísticas se apoya en la equivalencia de las secciones anteriores: el
+monolítico, que es la formulación directa del problema, define qué es una solución válida, y el
+Split, que tiene el mismo óptimo y termina en muchas más instancias, da la referencia de calidad.
+
+\startsubsection[title={Qué se valida}]
+\startitemize
+\item {\bf Validez:} toda solución de una heurística cumple las restricciones del problema tal como
+las define el monolítico, y el objetivo que reporta es su costo real.
+\item {\bf Estado:} la heurística no encuentra solución exactamente en las instancias donde el Split
+prueba que no la hay.
+\item {\bf Calidad:} donde el objetivo es comparable, la brecha contra el óptimo del Split,
+\startformula
+\mathrm{brecha} = 100 \cdot \frac{z_{\rm heur} - z_{\rm Split}}{z_{\rm Split}},
+\stopformula
+que vale 0 cuando la heurística alcanza el óptimo.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Metodología}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][align=flushleft]
+\setupTABLE[column][3][align=flushleft]
+\setupTABLE[column][4][align=flushleft]
+\bTR \bTH Qué \eTH \bTH Cómo \eTH \bTH Instancias \eTH \bTH Criterio de aceptación \eTH \eTR
+\bTR \bTD Mismos datos \eTD \bTD Exportador de escenarios del Split (funcional); mismo constructor (stress) \eTD \bTD 68 instancias funcionales y 19 de stress \eTD \bTD Por construcción \eTD \eTR
+\bTR \bTD Validez \eTD \bTD El monolítico como verificador, sobre las soluciones guardadas \eTD \bTD Todas las soluciones de las dos heurísticas \eTD \bTD Veredicto \quote{compliant} \eTD \eTR
+\bTR \bTD Estado \eTD \bTD Registro de comparabilidad \eTD \bTD 67 funcionales y 9 de stress \eTD \bTD Mismo estado que el Split \eTD \eTR
+\bTR \bTD Calidad \eTD \bTD Brecha contra el óptimo del Split \eTD \bTD 45 funcionales y 9 de stress \eTD \bTD Se informa; 0 es el óptimo \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startsubsubsection[title={Mismos datos}]
+
+\startitemize
+\item {\bf Funcional:} un exportador corre la suite funcional del Split y captura cada escenario en
+el momento en que el Split escribe sus archivos \ruta{.dat}, junto con el estado y el objetivo que
+obtiene. Las heurísticas resuelven exactamente esos escenarios: cada uno es una instancia con el
+nombre del test del Split (\ruta{test_v5eq__<test>}, con un sufijo cuando un test resuelve varias
+instancias). Donde el escenario no define velocidades ni límite de frío, un adaptador completa
+$V_p = 1$ y $T^{cold} = 10^{9}$, igual que hace el Split. Si cambia un test o un escenario del
+Split, hay que volver a correr el exportador.
+\item {\bf Stress:} los tests de las dos heurísticas llaman al mismo constructor de escenario, con
+los mismos argumentos, que los del Split; se verificó para los 19.
+\item {\bf Fuera de la validación:} el resto de la suite funcional de cada heurística resuelve otras
+instancias (con un solo picker, cuando las del Split tienen dos), aunque algunos tests compartan el
+nombre. No se comparan con el Split.
+\stopitemize
+
+El registro de comparabilidad tiene 70 filas funcionales: las 68 instancias que resuelven las
+heurísticas y 2 tests sin instancia (el 36c, que rechaza la entrada antes de resolver, y el 37a,
+excluido porque verifica la espera voluntaria, que las heurísticas no modelan).
+\stopsubsubsection
+
+\startsubsubsection[title={Qué es comparable}, reference=sec:comparable]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][4][align=flushleft]
+\bTR \bTH Resultado del Split \eTH \bTH ¿Estado comparable? \eTH \bTH ¿Objetivo comparable? \eTH \bTH Motivo \eTH \eTR
+\bTR \bTD Óptimo, sin espera \eTD \bTD Sí \eTD \bTD Sí \eTD \bTD Mismos datos, mismo objetivo \eTD \eTR
+\bTR \bTD Óptimo, con espera voluntaria \eTD \bTD Sí \eTD \bTD No \eTD \bTD El objetivo del Split es menor por cómo está formulado, no por un plan mejor \eTD \eTR
+\bTR \bTD Infactible \eTD \bTD Sí \eTD \bTD No \eTD \bTD No hay objetivo; se verifica que la heurística tampoco encuentre solución \eTD \eTR
+\bTR \bTD Timeout \eTD \bTD No \eTD \bTD No \eTD \bTD Sin referencia \eTD \eTR
+\eTABLE
+\blank[medium]
+
+{\bf La espera voluntaria.} El Split (como el monolítico) puede declarar un lote terminado más tarde
+de lo que termina físicamente, para acercarlo a la fecha de entrega y pagar menos adelanto. Las
+heurísticas reportan el tiempo en que el lote termina de verdad. En esas instancias la diferencia
+de objetivo no es una brecha de calidad, así que se comparan solo en estado.
+
+\startitemize
+\item {\bf Cómo se detecta:} sobre la solución del Split, un lote espera si su $c_{pb}$ supera la
+terminación del lote anterior del mismo picker más su $T^{exec}_{pb}$.
+\item {\bf Cuándo cuenta:} solo si el adelanto tiene peso ($W^{pen} W^{e} > 0$); si no, esperar no
+puede bajar el objetivo.
+\item {\bf Comprobación:} en las instancias marcadas, tomar las rutas más cortas y agregarles la
+espera óptima reproduce exactamente el objetivo del Split. El verificador da además una medida
+directa del efecto (sección \in[sec:res_heuristicas]).
+\item {\bf En stress no hay espera que descartar:} del 04 al 19, $W^{c} = 27$ es mayor que las
+órdenes por lote, así que esperar nunca conviene; del 01 al 03, todas las órdenes llegan tarde.
+\stopitemize
+\stopsubsubsection
+
+\startsubsubsection[title={Verificación de las soluciones}]
+
+Con \ruta{WRITE_SOLUTIONS=1}, el runner guarda cada solución de una heurística en un JSON, después
+de medir la duración del test. El JSON tiene la instancia completa y la solución: estado, objetivo,
+la ruta de cada lote como secuencia de ubicaciones, el orden de los lotes de cada picker, el tiempo
+de ejecución y la terminación de cada lote, y el atraso y el adelanto de cada orden.
+
+\ruta{verification/run_compliance.py} lee esos JSON (no vuelve a correr la heurística) y verifica
+cada solución con el monolítico, con las mismas capas que en la línea 4 (sección
+\in[sec:verificador]): chequeos en Python, nivel 1 con las decisiones fijas y nivel 2 con la
+solución exacta. Cada fila del reporte tiene el veredicto, el objetivo reportado, el recalculado en
+Python, el estado y el objetivo de cada nivel, y las notas (lotes vacíos descartados, subgrafo).
+\quote{Skipped} significa que no hay solución que verificar: la heurística no encontró solución, y
+el test lo esperaba.
+
+{\bf Qué agrega el nivel 1 en las heurísticas.} Como las heurísticas nunca esperan, el nivel 1, que
+deja libres los tiempos, puede devolver un objetivo menor que el reportado: el que tendrían las
+mismas decisiones si se permitiera la espera voluntaria. No es una violación (el nivel 2 comprueba
+los tiempos reportados), pero mide cuánto de la diferencia con el Split se debe a la espera.
+\stopsubsubsection
+\stopsubsection
+
+\startsubsection[title={Resultados}, reference=sec:res_heuristicas]
+
+\startsubsubsection[title={Validez y estado}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Heurística \eTH \bTH Suite \eTH \bTH Instancias \eTH \bTH Compliant \eTH \bTH Skipped \eTH \bTH Violaciones \eTH \eTR
+\bTR \bTD HC \eTD \bTD Funcional \eTD \bTD 68 \eTD \bTD 56 \eTD \bTD 12 \eTD \bTD 0 \eTD \eTR
+\bTR \bTD HC \eTD \bTD Stress \eTD \bTD 19 \eTD \bTD 19 \eTD \bTD 0 \eTD \bTD 0 \eTD \eTR
+\bTR \bTD ACO \eTD \bTD Funcional \eTD \bTD 68 \eTD \bTD 56 \eTD \bTD 12 \eTD \bTD 0 \eTD \eTR
+\bTR \bTD ACO \eTD \bTD Stress \eTD \bTD 19 \eTD \bTD 19 \eTD \bTD 0 \eTD \bTD 0 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf Las 150 soluciones son válidas} (75 por heurística), y en todas el objetivo recalculado
+coincide con el reportado.
+\item {\bf Las 12 \quote{skipped} son exactamente las 12 instancias que el Split prueba infactibles:} en
+todas, la heurística tampoco encontró solución.
+\item {\bf Estado:} las dos heurísticas coinciden con el Split en las 67 instancias funcionales
+comparables en estado y en los 9 escenarios de stress comparables.
+\item {\bf Sin referencia:} en los 10 escenarios de stress donde el Split no termina, las dos heurísticas
+dan soluciones válidas. Es la única evidencia sobre esas instancias: no hay forma de medir su
+calidad.
+\stopitemize
+\stopsubsubsection
+
+\startsubsubsection[title={Calidad}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][align=flushleft]
+\bTR \bTH \eTH \bTH HC \eTH \bTH ACO \eTH \eTR
+\bTR \bTD Funcional: instancias comparables en objetivo \eTD \bTD 45 \eTD \bTD 45 \eTD \eTR
+\bTR \bTD \quad con el óptimo (brecha 0) \eTD \bTD 40 \eTD \bTD 45 \eTD \eTR
+\bTR \bTD \quad brecha máxima \eTD \bTD 5,88 \% \eTD \bTD 0 \% \eTD \eTR
+\bTR \bTD Stress: escenarios comparables en objetivo \eTD \bTD 9 \eTD \bTD 9 \eTD \eTR
+\bTR \bTD \quad con el óptimo (brecha 0) \eTD \bTD 1 \eTD \bTD 2 \eTD \eTR
+\bTR \bTD \quad brecha máxima \eTD \bTD 0,21 \% \eTD \bTD 0,06 \% \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las 5 instancias funcionales en las que HC no alcanza el óptimo son todas de grilla:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Caso \eTH \bTH Test \eTH \bTH Split \eTH \bTH HC \eTH \bTH Brecha \eTH \eTR
+\bTR \bTD 20 \eTD \bTD Grilla multiubicación \eTD \bTD 2.620 \eTD \bTD 2.678 \eTD \bTD 2,21 \% \eTD \eTR
+\bTR \bTD 25c \eTD \bTD Grilla multiubicación con capacidades \eTD \bTD 2.620 \eTD \bTD 2.678 \eTD \bTD 2,21 \% \eTD \eTR
+\bTR \bTD 25e·1 \eTD \bTD Grilla: penalización por fecha \eTD \bTD 276 \eTD \bTD 282 \eTD \bTD 2,17 \% \eTD \eTR
+\bTR \bTD 25f·1 \eTD \bTD Grilla: orden igual al carro \eTD \bTD 102 \eTD \bTD 108 \eTD \bTD 5,88 \% \eTD \eTR
+\bTR \bTD 25f·2 \eTD \bTD Grilla: orden igual al carro \eTD \bTD 156 \eTD \bTD 162 \eTD \bTD 3,85 \% \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las brechas de stress por escenario están en las notas de desarrollo.
+\stopsubsubsection
+
+\startsubsubsection[title={Las instancias con espera voluntaria}]
+
+En las 10 instancias funcionales donde el Split espera, el nivel 1 del verificador muestra cuánto de
+la diferencia se debe a la espera: es el mejor objetivo que tienen las decisiones de la heurística
+(rutas, asignación y orden) si se permite esperar.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Caso \eTH \bTH Split \eTH \bTH HC reportado \eTH \bTH HC, nivel 1 \eTH \bTH ACO reportado \eTH \bTH ACO, nivel 1 \eTH \eTR
+\bTR \bTD 01 \eTD \bTD 30 \eTD \bTD 39 \eTD \bTD 30 \eTD \bTD 39 \eTD \bTD 30 \eTD \eTR
+\bTR \bTD 06a \eTD \bTD 30 \eTD \bTD 144 \eTD \bTD 144 \eTD \bTD 144 \eTD \bTD 144 \eTD \eTR
+\bTR \bTD 06b \eTD \bTD 20 \eTD \bTD 56 \eTD \bTD 20 \eTD \bTD 56 \eTD \bTD 20 \eTD \eTR
+\bTR \bTD 19a \eTD \bTD 25 \eTD \bTD 320 \eTD \bTD 25 \eTD \bTD 320 \eTD \bTD 25 \eTD \eTR
+\bTR \bTD 19c \eTD \bTD 25 \eTD \bTD 320 \eTD \bTD 25 \eTD \bTD 320 \eTD \bTD 25 \eTD \eTR
+\bTR \bTD 26b·1 \eTD \bTD 20.725 \eTD \bTD 597.462,5 \eTD \bTD 21.087,5 \eTD \bTD 596.375 \eTD \bTD 22.175 \eTD \eTR
+\bTR \bTD 26b·2 \eTD \bTD 20.899 \eTD \bTD 595.505 \eTD \bTD 22.697 \eTD \bTD 595.505 \eTD \bTD 22.697 \eTD \eTR
+\bTR \bTD 29 \eTD \bTD 327 \eTD \bTD 426 \eTD \bTD 381 \eTD \bTD 418 \eTD \bTD 385 \eTD \eTR
+\bTR \bTD 31b \eTD \bTD 100 \eTD \bTD 388 \eTD \bTD 298 \eTD \bTD 388 \eTD \bTD 298 \eTD \eTR
+\bTR \bTD 33c \eTD \bTD 30 \eTD \bTD 39 \eTD \bTD 30 \eTD \bTD 39 \eTD \bTD 30 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf En 5 de las 10} (01, 06b, 19a, 19c y 33c), las dos heurísticas toman las mismas decisiones
+que el Split: el nivel 1 llega exactamente a su óptimo, y toda la diferencia es la espera.
+\item {\bf En las otras 5} (06a, 26b·1, 26b·2, 29 y 31b), aun permitiendo la espera queda una
+diferencia: con espera, las mejores decisiones son otras. El 06a lo muestra con claridad. Las dos
+heurísticas ponen los dos lotes en el mismo picker, uno detrás del otro, y obtienen 144. Sin espera,
+esa es la mejor asignación: con un lote por picker, los dos terminarían en 8 con 7 de adelanto cada
+uno, y el objetivo sería 156. Con espera, en cambio, conviene un lote por picker y declararlos
+terminados en la fecha de entrega (15), y el objetivo baja a 30. La diferencia sigue viniendo de la
+espera, pero a través de la asignación.
+\item {\bf Una instancia más,} la 30a, no tiene referencia porque el Split no termina, pero el nivel 1
+muestra que con espera las decisiones de las dos heurísticas costarían 213,5 en lugar de 344.
+\stopitemize
+
+Esta tabla es la justificación cuantitativa de comparar esas instancias solo en estado.
+\stopsubsubsection
+
+\startsubsubsection[title={Casos particulares}]
+\startitemize
+\item {\bf Instancia de 100×100 (stress 01):} se verificó sobre el subgrafo de las rutas fijas: 1.425
+de los 10.000 nodos y 2.900 de los 39.600 arcos en HC, y 1.499 nodos y 3.160 arcos en ACO.
+\item {\bf ACO en el 01:} la notebook se suspendió 4 minutos durante la corrida, y el tope de ACO cuenta
+tiempo de reloj. La solución es válida, pero su objetivo (988.252) quedó 6,9~\% por encima del de una
+corrida anterior (924.536): vale como solución factible, no como medida de calidad. De todos modos,
+el 01 no tiene referencia del Split.
+\item {\bf Lotes vacíos (30a):} el verificador descartó los 10 lotes sin órdenes que la solución no
+usa (sección \in[sec:verificador]).
+\stopitemize
+\stopsubsubsection
+\stopsubsection
+
+\startsubsection[title={Lo que esta validación no cubre}]
+\startitemize
+\item {\bf Una corrida por instancia, con semilla 1:} no se mide la variabilidad de las heurísticas
+entre semillas.
+\item {\bf Calidad sin medir} en las 10 instancias con espera voluntaria (solo estado), en los 10
+escenarios de stress sin referencia y en la 30a.
+\item {\bf Topes mirados entre iteraciones:} HC (30~s) y ACO (30 minutos) comparan el reloj al terminar
+cada iteración. Afecta los tiempos, no la validez.
+\item {\bf La definición de válida es la del monolítico:} si el monolítico tuviera un error, el
+verificador lo heredaría. Es la razón por la que la equivalencia entre los dos modelos exactos se
+validó primero.
+\stopitemize
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Lo que la validación de la equivalencia no cubre}, reference=sec:limitaciones]
 
 \startitemize
 \item {\bf Ninguna comparación de objetivos en stress.} El monolítico no termina ninguno de los 19
@@ -760,6 +1015,11 @@ mínima; el monolítico no.
 explícitas: la equivalencia se juzga por estado y objetivo, no por solución; y en stress, donde
 el monolítico no termina, la pregunta pasa de \quote{¿mismo óptimo?} a \quote{¿la solución del
 Split es válida para el monolítico?}.
+\item {\bf Heurísticas:} las 150 soluciones de HC y ACO son válidas para el monolítico, coinciden con
+el Split en estado en todas las instancias comparables y, donde el objetivo es comparable, ACO
+alcanza el óptimo en las 45 funcionales y queda a 0,06~\% como máximo en stress, y HC a 5,88~\% y
+0,21~\%. En las instancias donde el Split espera, la comparación es solo de estado, y el verificador
+muestra por qué: en 5 de las 10 toda la diferencia es la espera.
 \item {\bf Por qué importa:} la equivalencia es lo que permite usar al Split, mucho más rápido a
 escala, como referencia exacta del problema para las heurísticas, y al monolítico, que es la
 formulación directa, como verificador de cualquier solución.
@@ -785,8 +1045,14 @@ formulación directa, como verificador de cualquier solución.
 \ruta{results/comparability/compare_v5_split_vs_mono.csv} (veredictos).
 \item {\bf Pares de la exploración:} \ruta{experiments/opp_v5/studies/08_mono_frontier/} a
 \ruta{11_mono_long_cap/}.
-\item {\bf Documento de comparación:}
-\ruta{docs/thesis/opp_v5_1_mono_vs_opp_v5_2_split_comparison.tex}.
+\item {\bf Documentos de comparación:}
+\ruta{docs/thesis/opp_v5_1_mono_vs_opp_v5_2_split_comparison.tex} y
+\ruta{docs/thesis/opp_v5_2_split_vs_heuristics_comparison.tex}.
+\item {\bf Heurísticas:} reglas de comparabilidad en \ruta{docs/specs/comparabilidad_v5_heuristicas.md};
+registro en \ruta{results/comparability/comparability_v5_vs_heuristics.csv}; resultados por instancia
+en \ruta{results/comparability/results_v5_vs_heuristics.csv}; reportes del verificador en
+\ruta{results/compliance/opp_hc_4/} y \ruta{results/compliance/opp_aco_4/}; exportador en
+\ruta{tests/shared_scenarios/functional/export_v5_equivalence_scenarios.py}.
 \stopitemize
 \stopsubsection
 
@@ -802,6 +1068,11 @@ python -m tests.run_suite opp_v5_1_mono functional
 
 # Comparación cruzada, con la verificación de los stress del Split
 python -m verification.compare_v5 --verify-split-stress
+
+# Heurísticas: verificar las soluciones guardadas y regenerar el registro
+python -m verification.run_compliance --model opp_hc_4 --tier functional
+python -m verification.run_compliance --model opp_aco_4 --tier stress
+python -m analysis.comparability
 \stoptyping
 \stopsubsection
 
