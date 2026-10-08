@@ -1,0 +1,810 @@
+\setupcolors[state=start]
+\setupcolor[hex]
+\definecolor[darkblue][h=003366]
+\definecolor[darkgray][h=e6e6e6]
+\definecolor[redline][h=d9534f]
+\definecolor[blueline][h=5bc0de]
+\definecolor[greenline][h=5cb85c]
+
+\setuphead[section][style=\bfa, color=darkblue, before=\blank, after=\blank]
+\setuphead[subsection][style=\bf, color=black, before=\blank, after=\blank]
+\setuppapersize[A4][A4]
+\setupbodyfont[11pt]
+\setuplayout[width=middle, height=middle, topspace=2cm, bottomspace=2cm]
+
+% Agregados a la cabecera de la guía de estilo del repositorio de implementación
+% (docs/guides/context_style_guide.md): idioma, sub-subsecciones con la misma regla que
+% las subsecciones, índice de secciones y subsecciones, y rutas del código en
+% monoespaciado con corte de línea en / y _.
+\mainlanguage[es]
+\setuphead[subsubsection][style=\bf, color=black, before=\blank, after=\blank]
+\setupcombinedlist[content][list={section,subsection}]
+\define[1]\ruta{{\tt\hyphenatedurl{#1}}}
+
+\starttext
+
+\title{\bf Validación de los modelos OPP v5:\crlf equivalencia entre el monolítico y el Split}
+\blank[big]
+
+{\it Notas de trabajo para la tesina. Describen cómo se verificó que el modelo monolítico
+(\ruta{opp_v5_1_mono}) y el modelo en dos etapas (\ruta{opp_v5_2_split}) son equivalentes: qué
+significa la equivalencia, con qué métodos se comprobó, con qué criterio se aceptó cada
+comprobación, qué resultados dio cada una y qué queda sin cubrir. Complementan las notas de
+desarrollo (\ruta{Notas/opp_v5_development.tex}), que tienen la formulación completa de los dos
+modelos; acá se repite solo lo necesario. Todos los números salen de los archivos de resultados
+del repositorio de implementación (\ruta{linear-picking-routing}) y se volvieron a calcular desde
+esos archivos al escribir estas notas.}
+
+\blank[big]
+
+\completecontent
+
+\page
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Qué se quiere validar}, reference=sec:objetivo]
+
+El Split se usa en la tesina como la referencia exacta del problema: contra su óptimo se miden
+las heurísticas, y en los estudios de escala es la referencia contra la que se mide al
+monolítico. Eso solo es legítimo si el Split resuelve {\em el mismo problema} que el
+monolítico, que es la formulación directa del problema. La validación responde esa pregunta.
+
+\startsubsection[title={Definición de equivalencia}]
+
+Se dice que los dos modelos son equivalentes si, para cualquier instancia:
+
+\startitemize[n]
+\item {\bf Mismo estado:} uno es factible si y solo si el otro lo es.
+\item {\bf Mismo valor óptimo:} cuando los dos prueban optimalidad, el objetivo es el mismo,
+salvo la tolerancia numérica del solver.
+\stopitemize
+
+{\bf No se exige la misma solución.} Los dos modelos pueden devolver soluciones óptimas
+distintas (otras rutas, otra asignación de lotes a pickers) con el mismo objetivo. Esa diferencia
+no es un error: se clasifica como {\em óptimo alternativo} y se explica (sección
+\in[sec:alternativos]). Separar el objetivo de la solución es una decisión metodológica central:
+un test que exigiera una solución puntual fallaría en un modelo correcto.
+
+{\bf Tolerancia numérica.} Se considera que dos objetivos $a$ y $b$ son iguales si
+\startformula
+|a - b| \le 10^{-6} \cdot \max(1, |a|, |b|),
+\stopformula
+que es del orden de las tolerancias por defecto de SCIP. Las diferencias que superan ese umbral
+se reportan aparte, con su explicación (sección \in[sec:pares]).
+\stopsubsection
+
+\startsubsection[title={Por qué no alcanza con mirar que los tests pasen}]
+
+Que los dos modelos pasen la misma suite de tests muestra que cada uno respeta las reglas que
+los tests verifican, pero no que den el mismo óptimo: muchos tests verifican propiedades de la
+solución (cobertura de ubicaciones, sin solapamiento, asignación de cada lote) y no su valor. Por
+eso, además de los tests, se comparan los dos modelos entre sí, instancia por instancia, sobre
+las soluciones guardadas.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Metodología}, reference=sec:metodologia]
+
+La validación combina cinco líneas de evidencia. Cada una responde una pregunta distinta y cubre
+lo que las anteriores no alcanzan:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][align=flushleft]
+\setupTABLE[column][3][align=flushleft]
+\setupTABLE[column][4][align=flushleft]
+\bTR \bTH Línea \eTH \bTH Pregunta \eTH \bTH Instancias \eTH \bTH Criterio de aceptación \eTH \eTR
+\bTR \bTD 1. Argumento formal \eTD \bTD ¿Deben coincidir los dos modelos? ¿Bajo qué condiciones? \eTD \bTD Todas \eTD \bTD Demostración en los dos sentidos \eTD \eTR
+\bTR \bTD 2. Suite de tests compartida \eTD \bTD ¿Cada modelo cumple las reglas y da los valores calculados a mano? \eTD \bTD 64 tests funcionales (63 en el monolítico) y 19 de stress \eTD \bTD Aserciones de cada test \eTD \eTR
+\bTR \bTD 3. Comparación cruzada de soluciones \eTD \bTD ¿Mismo estado y mismo objetivo en cada instancia? ¿Misma solución? \eTD \bTD Todas las instancias funcionales y de stress \eTD \bTD Estado igual y objetivo igual con tolerancia relativa $10^{-6}$ \eTD \eTR
+\bTR \bTD 4. Verificación cruzada de factibilidad \eTD \bTD Donde el monolítico no resuelve, ¿la solución del Split es factible para él? \eTD \bTD Los 9 stress que resuelve el Split \eTD \bTD Veredicto \quote{compliant} del verificador \eTD \eTR
+\bTR \bTD 5. Pares de la exploración \eTD \bTD ¿Se mantiene en instancias más grandes y realistas? \eTD \bTD 71 pares de los estudios 08 a 11 \eTD \bTD Óptimo probado por los dos; tolerancia relativa $10^{-6}$ \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startsubsection[title={Principios}]
+\startitemize
+\item {\bf Misma instancia por construcción:} los dos modelos reciben la instancia de la misma
+llamada al mismo constructor de escenarios, y los dos escriben sus datos con el mismo módulo
+(\ruta{build_dat_files}). Ninguna instancia se reconstruye a mano para un modelo.
+\item {\bf Comparar sin volver a resolver:} cada corrida guarda su solución completa; la
+comparación lee esos archivos. Es barata, se puede repetir y no depende del reloj ni de la
+máquina.
+\item {\bf Objetivo y solución por separado:} la equivalencia se juzga por estado y objetivo; la
+igualdad de soluciones se mide aparte y cada diferencia se clasifica.
+\item {\bf Un modelo verifica al otro sin reescribirlo:} para comprobar una solución contra el
+monolítico, se fijan sus valores sobre las variables del monolítico compilado tal como está; no
+se copia ni se reescribe ninguna restricción.
+\item {\bf Tolerancias explícitas:} cada comparación declara su tolerancia, y las diferencias que
+la superan se informan aunque sean mínimas.
+\item {\bf Toda discrepancia se explica o queda registrada como pendiente:} ninguna diferencia se
+descarta como ruido sin una explicación o una hipótesis declarada.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Orden lógico}]
+
+El argumento formal (línea 1) dice qué esperar y bajo qué condiciones. La suite de tests (línea 2)
+valida cada modelo por separado contra valores conocidos. La comparación cruzada (línea 3)
+contrasta los dos modelos instancia por instancia, pero solo donde los dos terminan, que en la
+práctica son las instancias funcionales. En stress el monolítico no termina ninguna instancia,
+así que la línea 4 cambia la pregunta: si no se puede comparar el óptimo, al menos se comprueba
+que lo que devuelve el Split sea factible y tenga el mismo costo bajo las restricciones del
+monolítico. La línea 5 extiende la comparación de objetivos a instancias del perfil realista,
+más grandes que las funcionales y todavía al alcance del monolítico.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Línea 1: el argumento formal}, reference=sec:formal]
+
+En el repositorio de implementación el argumento estaba escrito en una sola frase: la ruta más
+corta domina a cualquier otra, porque el objetivo no tiene un término de ruta y una ruta más
+corta solo relaja las restricciones de duración y de cadena de frío. Acá se escribe completo, en
+los dos sentidos, a partir de las dos formulaciones, y con las condiciones que necesita.
+
+\startsubsection[title={Las dos formulaciones, en resumen}]
+
+Se usa la notación de las notas de desarrollo. El monolítico tiene las restricciones (1) a (22).
+Para no mezclar numeraciones, las de la Etapa 2 del Split se citan como (E2-1) a (E2-7).
+
+\startitemize
+\item {\bf Monolítico:} decide a la vez las rutas ($z_{ijb}$, $q_{ijb}$ y el tiempo de ruta
+$r_b$, restricciones (1)--(13)), la asignación $x_{pb}$, la duración $u_{pb}$ de cada lote en
+cada picker ((14)--(17)), las terminaciones $c_{pb}$ y $c_b$ ((18)), la secuencia $y_{bk}$
+((19)--(20)) y el atraso y adelanto de cada orden ((21)--(22)). La cadena de frío es una cota de
+la variable: $u_{pb} \le T^{cold} + \varepsilon$.
+\item {\bf Split, Etapa 1:} las mismas restricciones (1)--(13), resueltas por lote, minimizando
+$\sum_b r_b$. Su resultado es el tiempo de ruta $R_b$ de cada lote.
+\item {\bf Split, Etapa 2:} con $R_b$ como dato, la duración de cada par es un parámetro,
+$T^{exec}_{pb} = F_b + R_b / V_p$, y solo existen los pares elegibles por la cadena de frío,
+$\mathcal{PB}^{elig} = \{(p,b) : T^{exec}_{pb} \le T^{cold} + \varepsilon\}$. Restricciones:
+asignación (E2-1), $c_{pb} \ge T^{exec}_{pb} \, x_{pb}$ (E2-2), $c_b$ (E2-3), secuencia (E2-4) y
+(E2-5), atraso y adelanto (E2-6) y (E2-7).
+\item {\bf Mismo objetivo:} $W^{c} \sum_b c_b + W^{pen} \left( W^{e} \sum_n ea_n + W^{t} \sum_n
+ta_n \right)$ en el monolítico y en la Etapa 2. Ninguno de los dos tiene un término de ruta.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Correspondencia de restricciones}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][align=flushleft]
+\setupTABLE[column][2][align=flushleft]
+\bTR \bTH Monolítico (nombre en el código) \eTH \bTH Split \eTH \eTR
+\bTR \bTD (1)--(13) ruteo y flujo, de \ruta{start_from_depot} a \ruta{define_route_time} \eTD \bTD Etapa 1: las mismas restricciones, una copia por lote \eTD \eTR
+\bTR \bTD (14) \ruta{assign_exactly_one_picker}, sobre todos los pickers \eTD \bTD (E2-1), solo sobre los pickers elegibles \eTD \eTR
+\bTR \bTD (15) \ruta{batch_execution_time_lower} \eTD \bTD Absorbida en (E2-2), con $T^{exec}_{pb}$ como dato \eTD \eTR
+\bTR \bTD (16) \ruta{batch_execution_time_upper} \eTD \bTD No existe: la Etapa 2 no tiene $u_{pb}$ \eTD \eTR
+\bTR \bTD (17) \ruta{processing_le_completion} \eTD \bTD Absorbida en (E2-2) \eTD \eTR
+\bTR \bTD Cota $u_{pb} \le T^{cold} + \varepsilon$ \eTD \bTD Dominio $\mathcal{PB}^{elig}$, más un pre-chequeo en Python si un lote queda sin pickers elegibles \eTD \eTR
+\bTR \bTD (18) \ruta{c_b_lower_bound} \eTD \bTD (E2-3), solo pares elegibles \eTD \eTR
+\bTR \bTD (19)--(20) \ruta{non_overlap_1} y \ruta{non_overlap_2} \eTD \bTD (E2-4)--(E2-5), con $T^{exec}$ como dato y solo si los dos pares son elegibles \eTD \eTR
+\bTR \bTD (21)--(22) \ruta{tardiness_definition} y \ruta{earliness_definition} \eTD \bTD (E2-6)--(E2-7), solo pares elegibles \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Los valores de $M$ y $M^{seq}$ son los mismos en los dos modelos: los dos los leen del mismo
+archivo de parámetros que escribe el constructor de datos. También coinciden los nombres de las
+variables ($z_{ijb}$, $x_{pb}$, $y_{bk}$, $c_{pb}$, $c_b$, $r_b$), lo que permite comparar
+soluciones variable por variable.
+\stopsubsection
+
+\startsubsection[title={La Etapa 1 se separa por lote}]
+
+Las restricciones (1)--(13) son \quote{para cada lote}: ninguna vincula variables de dos lotes
+distintos, y el objetivo de la Etapa 1 es una suma de un término por lote. Por lo tanto,
+minimizar $\sum_b r_b$ es lo mismo que minimizar cada $r_b$ por separado, y la Etapa 1 da, para
+cada lote, su ruta mínima $R^{*}_b$. Es lo que hace la implementación al resolver un MIP por lote.
+Además, ninguna restricción de ruteo depende del picker ni del orden entre lotes, así que la ruta
+mínima de un lote no depende de quién lo ejecute.
+\stopsubsection
+
+\startsubsection[title={Demostración}, reference=sec:demostracion]
+
+Sean $z^{M}$ el valor óptimo del monolítico y $z^{S}$ el del Split (la Etapa 2 resuelta con las
+rutas mínimas de la Etapa 1).
+
+{\bf Sentido 1: de una solución del Split a una del monolítico ($z^{M} \le z^{S}$).} Se toma una
+solución factible del Split: rutas de la Etapa 1 con tiempos $R^{*}_b$, y $(x, c, c_b, y, ta,
+ea)$ de la Etapa 2. Se arma una solución del monolítico con las mismas rutas ($r_b = R^{*}_b$),
+los mismos valores de $x$, $y$, $c$, $c_b$, $ta$ y $ea$ en los pares elegibles, $x_{pb} = 0$ y
+$c_{pb} = 0$ en los no elegibles, y $u_{pb} = T^{exec}_{pb}$ si $x_{pb} = 1$, o $0$ si no.
+
+\startitemize
+\item {\bf (1)--(13):} son las mismas restricciones que la Etapa 1.
+\item {\bf (14):} cada lote tiene exactamente un picker elegible asignado (E2-1), y los no elegibles
+valen 0.
+\item {\bf (15)--(16):} si $x_{pb} = 1$, $u_{pb} = F_b + r_b / V_p$ las cumple con igualdad; si
+$x_{pb} = 0$, $u_{pb} = 0$ las cumple siempre que $M \ge F_b + r_b / V_p$.
+\item {\bf Cadena de frío:} solo se asignan pares elegibles, así que $u_{pb} = T^{exec}_{pb} \le
+T^{cold} + \varepsilon$.
+\item {\bf (17):} $u_{pb} = T^{exec}_{pb} \, x_{pb} \le c_{pb}$ es exactamente (E2-2).
+\item {\bf (18)--(22):} con $x_{pb} = 1$ coinciden con (E2-3)--(E2-7), porque $F_k + r_k / V_p =
+T^{exec}_{pk}$; con $x_{pb} = 0$ quedan desactivadas por la Big-M.
+\item {\bf Objetivo:} la misma expresión sobre los mismos valores de $c_b$, $ea$ y $ta$.
+\stopitemize
+
+{\bf Sentido 2: de una solución del monolítico a una del Split ($z^{S} \le z^{M}$).} Se toma una
+solución óptima del monolítico y se reemplaza la ruta de cada lote por la de la Etapa 1. Como la
+ruta del monolítico cumple (1)--(13), es factible para la Etapa 1 de ese lote, y por lo tanto
+$R^{*}_b \le r_b$. Se conservan $x$, $y$, $c$, $c_b$, $ta$ y $ea$.
+
+\startitemize
+\item {\bf Elegibilidad:} si $x_{pb} = 1$, (15)--(16) fijan $u_{pb} = F_b + r_b / V_p \le
+T^{cold} + \varepsilon$. Como $R^{*}_b \le r_b$, también $T^{exec}_{pb} = F_b + R^{*}_b / V_p \le
+T^{cold} + \varepsilon$: el par es elegible, así que la asignación existe en la Etapa 2 y cumple
+(E2-1).
+\item {\bf (E2-2):} $c_{pb} \ge u_{pb} = F_b + r_b / V_p \ge F_b + R^{*}_b / V_p =
+T^{exec}_{pb}$.
+\item {\bf (E2-4)--(E2-5):} la separación que exigen entre dos lotes del mismo picker es la
+duración del segundo, que con la ruta mínima es igual o menor. Si el monolítico la cumplía, la
+Etapa 2 también.
+\item {\bf (E2-3), (E2-6) y (E2-7):} son las mismas que (18), (21) y (22), sobre los mismos valores.
+\item {\bf Objetivo:} no cambia, porque no depende de las rutas.
+\stopitemize
+
+{\bf Conclusión.} $z^{M} = z^{S}$. Las mismas dos construcciones muestran que los dos modelos
+coinciden en factibilidad: si el Split tiene una solución, el monolítico también (sentido 1); si el
+monolítico tiene una, la Etapa 1 es factible para cada lote y la Etapa 2 también (sentido 2).
+
+{\bf Un matiz sobre la frase original.} Se decía que una ruta más corta \quote{adelanta las
+terminaciones}. No es necesariamente así: con espera voluntaria, al acortar la ruta las
+terminaciones no se mueven. Lo que hace la ruta más corta es dejar factibles las mismas
+terminaciones, y eso es lo que usa la demostración.
+\stopsubsection
+
+\startsubsection[title={Condiciones}, reference=sec:condiciones]
+
+La demostración vale en aritmética exacta y bajo cuatro condiciones:
+
+\startitemize[n]
+\item {\bf $M$ suficientemente grande:} cuando $x_{pb} = 0$, las restricciones con $M$ ((15), (16),
+(18), (21) y (22), y sus equivalentes de la Etapa 2) tienen que quedar desactivadas. En
+particular, $M \ge F_b + r_b / V_p$. Los dos modelos usan el mismo $M$, que es un dato del
+escenario: entre $10^{3}$ y $10^{5}$ en las instancias funcionales y $10^{6}$ en el perfil
+realista de stress.
+\item {\bf $M^{seq}$ suficientemente grande:} cubre la diferencia entre dos terminaciones del mismo
+picker. Se calcula por instancia como una cota del horizonte, con un piso de 500, y es el mismo
+valor en los dos modelos. Con 500 fijo, el Split llegó a declarar infactible una instancia de 40
+lotes en un picker (ver las notas de desarrollo). La cota cubre la ejecución de los lotes, pero no
+la espera voluntaria hasta las fechas de entrega; como los dos modelos usan el mismo valor, eso
+no afecta la equivalencia entre ellos.
+\item {\bf Etapa 1 resuelta a optimalidad:} si la Etapa 1 se cortara por tiempo, $R_b$ podría no
+ser la ruta mínima y el Split podría dar un objetivo mayor que el monolítico. En los tests la
+Etapa 1 corre sin límite de tiempo. Solo el experimento a igual tiempo le pone un presupuesto, y
+ahí la diferencia es buscada.
+\item {\bf Aritmética exacta:} en la práctica, SCIP trabaja con tolerancias de factibilidad e
+integralidad del orden de $10^{-6}$. La consecuencia más concreta está en la cadena de frío: en el
+Split es un filtro exacto sobre los datos ($T^{exec}_{pb} \le T^{cold} + 10^{-9}$), y en el
+monolítico es una cota de una variable que SCIP respeta con su tolerancia. Muy cerca del borde
+(entre $10^{-9}$ y unos $10^{-6}$ por encima del límite), el monolítico podría aceptar un par que
+el Split rechaza. Está documentado y no tiene test (sección \in[sec:limitaciones]).
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Por qué las soluciones óptimas pueden ser distintas}, reference=sec:porque_alternativos]
+
+La demostración iguala los valores óptimos, no los conjuntos de soluciones óptimas. Hay tres
+fuentes de diferencia:
+
+\startitemize
+\item {\bf Rutas no mínimas:} el sentido 2 muestra que una solución óptima del monolítico con rutas
+más largas que las mínimas tiene una contraparte del Split con el mismo objetivo. El Split siempre
+devuelve rutas mínimas, porque la Etapa 1 las minimiza; el monolítico puede devolver cualquier
+ruta que no empeore el objetivo.
+\item {\bf Espera voluntaria:} si un lote igual va a esperar hasta su fecha de entrega, una ruta más
+larga que llega a tiempo cuesta lo mismo. Es la razón por la que el monolítico elige rutas más
+largas en las instancias de la sección \in[sec:alternativos].
+\item {\bf Empates:} cuando dos asignaciones de lotes a pickers, o dos rutas del mismo largo, dan el
+mismo objetivo, cada resolución rompe el empate a su manera.
+\stopitemize
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Línea 2: la suite de tests compartida}, reference=sec:tests]
+
+\startsubsection[title={Misma instancia en los dos modelos}]
+
+La suite funcional tiene 38 archivos en cada modelo, con los mismos números de test. Hay dos
+clases de archivos, y en las dos la instancia sale de la misma llamada:
+
+\startitemize
+\item {\bf Heredados (30 archivos):} son los tests de la versión anterior del modelo, que no tenía
+velocidades de picker ni cadena de frío. Cada archivo de v5 es una línea que envuelve el mismo
+módulo de test en los dos modelos. Un adaptador reemplaza la resolución original por la del
+modelo v5, con $V_p = 1$ y la cadena de frío desactivada ($T^{cold} = 10^{9}$), y conserva el
+escenario y las aserciones sin tocarlas. El adaptador del Split reemplaza además la aserción de
+no solapamiento, que en el original se calcula con $u_{pb}$, una variable que la Etapa 2 no tiene;
+el del monolítico solo cambia el archivo \ruta{.zpl}.
+\item {\bf Propios de v5 (archivos 06, 23, 24 y 34 a 38):} los escenarios están en un módulo común
+y los dos modelos llaman al mismo constructor con los mismos argumentos. Los archivos 06, 35, 36 y
+37 son idénticos salvo la clase base; el 23 difiere en cómo se desempaqueta el resultado, el 34
+solo en comentarios, y el 38 llega al resultado por otro camino (el Split corre solo la Etapa 1,
+que ya es infactible). El 24b existe solo en el Split (ver más abajo).
+\stopitemize
+
+En stress, los 19 tests de cada modelo llaman a la misma función con los mismos argumentos; se
+verificó textualmente para los 19 pares.
+
+Las dos clases base exponen los mismos ayudantes de aserción y devuelven el resultado con la misma
+forma, de modo que el cuerpo de un test propio es el mismo en los dos modelos.
+\stopsubsection
+
+\startsubsection[title={Qué afirman los tests}]
+
+\startitemize
+\item {\bf Stress:} estado óptimo o factible, rutas que salen del depósito, llegan al final y
+cubren las ubicaciones requeridas, cada lote asignado y sin solapamiento entre lotes del mismo
+picker (tolerancia $10^{-5}$). No afirman el objetivo.
+\item {\bf Heredados:} estado, y en varios casos el grafo exacto de la ruta. Ninguno afirma el
+objetivo. Los que exigen una ruta puntual pueden fallar en un modelo correcto si hay rutas
+alternativas igual de óptimas (sección \in[sec:test06]).
+\item {\bf Propios de v5:} valores exactos calculados a mano sobre la geometría del escenario
+(tabla siguiente).
+\stopitemize
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][width=1.4cm]
+\setupTABLE[column][2][align=flushleft]
+\setupTABLE[column][3][width=2.6cm]
+\bTR \bTH Test \eTH \bTH Qué afirma \eTH \bTH ¿Objetivo exacto? \eTH \eTR
+\bTR \bTD 06 \eTD \bTD 06b: con fecha 10, cada lote toma la ruta corta, termina en 10, objetivo 20. 06a: con fecha 15, cobertura, cada lote termina en 15, objetivo 30; la ruta no se afirma. \eTD \bTD Sí \eTD \eTR
+\bTR \bTD 23 \eTD \bTD Tiempos de ruta 5 y 14; todos los lotes asignados y sin solapamiento; el lote de ruta larga va al picker rápido. \eTD \bTD No \eTD \eTR
+\bTR \bTD 24 \eTD \bTD 24a: la cadena de frío deja solo al picker rápido. 24b (solo Split): tras la Etapa 1, ningún par elegible. \eTD \bTD No \eTD \eTR
+\bTR \bTD 34 \eTD \bTD Tiempos de ruta 5 y 14; asignación; terminaciones 7 y 9 por la fórmula; un par justo en el límite de frío sigue elegible; sin pickers elegibles, infactible. \eTD \bTD No \eTD \eTR
+\bTR \bTD 35 \eTD \bTD Frío por lote y no por turno (objetivo 27); tolerancia de $5 \cdot 10^{-10}$; la parte fija cuenta para el frío (infactible). \eTD \bTD Sí \eTD \eTR
+\bTR \bTD 36 \eTD \bTD Velocidad 4 (objetivo 16,5), velocidad 2 (25), velocidad 0,5 (atraso 10, objetivo 310); velocidad 0 o negativa se rechaza nombrando al picker. \eTD \bTD Sí \eTD \eTR
+\bTR \bTD 37 \eTD \bTD Con $W^{c} = 1$ el lote espera hasta la fecha (objetivo 20); con $W^{c} = 5$ no espera (objetivo 78). \eTD \bTD Sí \eTD \eTR
+\bTR \bTD 38 \eTD \bTD Una ruta que tendría que pasar dos veces por un vértice es infactible. \eTD \bTD -- \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Donde hay varias terminaciones, los tests las comparan ordenadas y no atadas a un lote puntual, y
+el 36b solo verifica qué pickers se usan: así toleran empates que no cambian el objetivo. La
+igualdad de objetivos entre los dos modelos no se verifica dentro de los tests sino después, con
+la comparación cruzada (sección \in[sec:cruzada]).
+\stopsubsection
+
+\startsubsection[title={Cantidad de tests}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH \eTH \bTH Split \eTH \bTH Monolítico \eTH \eTR
+\bTR \bTD Métodos heredados \eTD \bTD 45 \eTD \bTD 45 \eTD \eTR
+\bTR \bTD Métodos propios de v5 \eTD \bTD 19 \eTD \bTD 18 \eTD \eTR
+\bTR \bTD Total funcional \eTD \bTD 64 \eTD \bTD 63 \eTD \eTR
+\bTR \bTD Stress \eTD \bTD 19 \eTD \bTD 19 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+El único test sin equivalente es el 24b: verifica el pre-chequeo de la cadena de frío del Split
+después de correr solo la Etapa 1, y el monolítico no tiene etapas.
+\stopsubsection
+
+\startsubsection[title={El test heredado 06: un fallo que no era un error}, reference=sec:test06]
+
+El test 06 heredado exigía la ruta más corta (L1→L4→L5, tiempo 4) en una instancia con fecha de
+entrega 15. En v5, con espera voluntaria, la ruta L1→L2→L4→L5 (tiempo 7,5) también llega a
+tiempo, y los dos lotes se declaran terminados en 15 de todos modos: las dos rutas dan objetivo
+30. El monolítico elegía la larga y el test fallaba; el Split pasaba solo porque su Etapa 1
+devuelve la ruta mínima por construcción. Hasta el 29-09 figuró como \quote{falla conocida} del
+monolítico.
+
+El 29-09 se reemplazó por un test propio de v5 sobre la misma instancia, con dos casos: con fecha
+10 la ruta larga atrasa, así que la corta es la única óptima, y se afirma (06b); con fecha 15
+toda ruta llega, así que se afirman el objetivo y las terminaciones, no la ruta (06a). Los dos
+modelos pasan los dos casos, y la comparación cruzada marca el 06a como óptimo alternativo. Es
+el ejemplo más claro de por qué la validación separa el objetivo de la solución.
+\stopsubsection
+
+\startsubsection[title={Resultado}]
+
+Con el código actual, el Split pasa 63 de sus 64 tests funcionales y el monolítico 62 de 63. El
+único que no pasa es el mismo en los dos: el 30a, con capacidades fraccionarias y 10 de sus 12
+lotes vacíos, da timeout a los 25 minutos en los dos modelos. Al verificar una solución de esa
+instancia se confirmó la causa: con los lotes vacíos libres, SCIP no cierra en 600~s; sin ellos,
+cierra en 0,13~s. Son $10!$ permutaciones indistinguibles de lotes vacíos.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Línea 3: comparación cruzada de soluciones}, reference=sec:cruzada]
+
+\startsubsection[title={Cómo se guardan las soluciones}]
+
+Con la variable de entorno \ruta{WRITE_SOLUTIONS=1}, el runner de tests guarda cada solución en un
+JSON, después de medir la duración del test (no afecta los tiempos). El CSV de resultados enlaza
+cada fila con su JSON (columna \ruta{solution_file}). Cada JSON tiene:
+
+\startitemize
+\item {\bf La instancia completa:} todos los conjuntos y parámetros que se escribieron en los
+\ruta{.dat}, tal como los recibió el modelo.
+\item {\bf La solución:} estado, objetivo y todos los valores no nulos de las variables, con su
+nombre de ZIMPL (por ejemplo, \ruta{x_pb$P1$B2}).
+\item {\bf En el Split, las dos etapas:} los valores de la Etapa 2 y, aparte, los de la Etapa 1
+($z_{ijb}$, $q_{ijb}$, $r_b$).
+\stopitemize
+
+Las corridas del 29-09 dejaron 119 soluciones: 54 funcionales del monolítico, 56 funcionales del
+Split y 9 de stress del Split. El monolítico no tiene soluciones de stress porque no resuelve
+ninguno.
+\stopsubsection
+
+\startsubsection[title={El comparador}]
+
+\ruta{verification/compare_v5.py} lee los CSV finales de los dos modelos y los JSON enlazados, y no
+resuelve nada. Para cada test:
+
+\startitemize[n]
+\item {\bf Empareja} la fila del Split con la del monolítico por el nombre del método de test.
+\item {\bf Compara el estado.} Si alguno no terminó, el veredicto es \quote{mismo estado} (los dos
+con timeout) o \quote{no resueltos los dos}.
+\item {\bf Compara el objetivo} con la tolerancia de la sección \in[sec:objetivo]. Si los dos
+están vacíos, es \quote{infactible en los dos}. Si el Split se detuvo antes de la Etapa 2 (Etapa 1
+infactible), su objetivo no se usa, porque sería un tiempo de ruta.
+\item {\bf Si el objetivo coincide, compara la solución,} tomando como activo todo binario mayor que
+0,5:
+\startitemize
+\item {\bf Rutas:} el conjunto de arcos activos $z_{ijb}$ de cada lote.
+\item {\bf Asignación:} el conjunto de pares activos $x_{pb}$.
+\item {\bf Orden:} si la asignación coincide, la lista de lotes de cada picker ordenada por
+$c_{pb}$.
+\stopitemize
+\item {\bf Clasifica:} \quote{misma solución} si todo coincide; \quote{óptimo alternativo} si el
+objetivo coincide y algo de lo anterior no; \quote{objetivo distinto} si no coincide el objetivo.
+\stopitemize
+
+El comparador agrupa los tests en heredados, propios de v5 y stress, escribe un CSV con el
+veredicto y el detalle de cada fila, y termina con error solo si algún objetivo difiere: es la
+condición que rompería la equivalencia.
+\stopsubsection
+
+\startsubsection[title={Resultados}, reference=sec:res_cruzada]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Grupo \eTH \bTH Filas \eTH \bTH Misma solución \eTH \bTH Óptimo alternativo \eTH \bTH Infactible en los dos \eTH \bTH Otro \eTH \bTH Objetivo distinto \eTH \eTR
+\bTR \bTD Heredados \eTD \bTD 44 \eTD \bTD 15 \eTD \bTD 20 \eTD \bTD 8 \eTD \bTD 1 (30a, timeout en los dos) \eTD \bTD 0 \eTD \eTR
+\bTR \bTD Propios de v5 \eTD \bTD 19 \eTD \bTD 13 \eTD \bTD 1 (06a) \eTD \bTD 4 \eTD \bTD 1 (24b, solo Split) \eTD \bTD 0 \eTD \eTR
+\bTR \bTD {\bf Funcional} \eTD \bTD {\bf 63} \eTD \bTD {\bf 28} \eTD \bTD {\bf 21} \eTD \bTD {\bf 12} \eTD \bTD {\bf 2} \eTD \bTD {\bf 0} \eTD \eTR
+\bTR \bTD Stress \eTD \bTD 19 \eTD \bTD -- \eTD \bTD -- \eTD \bTD -- \eTD \bTD 9 timeout en los dos; 10 resueltos solo por el Split o sin resultado \eTD \bTD -- \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf Ningún objetivo distinto.} Los 49 pares resueltos por los dos tienen el mismo objetivo.
+La mayor diferencia es de $3{,}83 \cdot 10^{-6}$ en valor absoluto ($1{,}2 \cdot 10^{-9}$
+relativo), en los tests 13 y 14: 3.086,9999999999754 en el Split contra 3.086,9999961653775 en el
+monolítico. La siguiente es de $6{,}1 \cdot 10^{-10}$ (25b).
+\item {\bf Mismo estado en todos los infactibles.} Los 12 infactibles lo son en los dos modelos. En
+5 de ellos (07, 21, 26a, 31a y 38) el Split ya se detiene en la Etapa 1, porque alguna ruta es
+imposible, y el monolítico llega a la misma conclusión resolviendo todo junto. El 36c cuenta acá
+aunque no es un infactible propiamente dicho: los dos modelos rechazan la entrada (velocidad no
+positiva) antes de resolver.
+\item {\bf Stress sin pares comparables.} El monolítico no termina ninguno de los 19. El Split
+termina 9, y para esos la comparación de objetivos no es posible: es el hueco que cubre la línea 4.
+\stopitemize
+
+{\bf La base comparable.} El documento de comparación del repositorio de implementación usa la
+misma base que la comparación con las heurísticas: 49 pares resueltos y 11 infactibles, y deja
+fuera el 24b (solo Split), el 30a (timeout, sin referencia), el 36c (entrada rechazada) y el 37a
+(verifica la espera voluntaria, que las heurísticas no modelan; entre los dos modelos exactos sí
+es comparable y da el mismo objetivo, 20). Por eso cuenta 11 infactibles y no 12. Que también dé 49
+resueltos es una coincidencia de dos bases distintas: suma el 02 y resta el 37a.
+\stopsubsection
+
+\startsubsection[title={Los 21 óptimos alternativos}, reference=sec:alternativos]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][align=flushleft]
+\bTR \bTH Caso \eTH \bTH Test \eTH \bTH Difiere en \eTH \bTH $\sum_b r_b$ Split \eTH \bTH $\sum_b r_b$ mono \eTH \eTR
+\bTR \bTD 06a \eTD \bTD Todas las rutas llegan a tiempo \eTD \bTD rutas \eTD \bTD 8 \eTD \bTD 15 \eTD \eTR
+\bTR \bTD 15 \eTD \bTD Tres órdenes, un picker \eTD \bTD rutas \eTD \bTD 20 \eTD \bTD 20 \eTD \eTR
+\bTR \bTD 19a \eTD \bTD Ruta extendida, ubicación dup. \eTD \bTD rutas \eTD \bTD 7 \eTD \bTD 10 \eTD \eTR
+\bTR \bTD 19b \eTD \bTD Ruta extendida, penalizaciones \eTD \bTD rutas \eTD \bTD 7 \eTD \bTD 10 \eTD \eTR
+\bTR \bTD 19c \eTD \bTD Ruta extendida \eTD \bTD rutas \eTD \bTD 7 \eTD \bTD 10 \eTD \eTR
+\bTR \bTD 13 \eTD \bTD Dos períodos, grilla \eTD \bTD rutas y asignación \eTD \bTD 72 \eTD \bTD 72 \eTD \eTR
+\bTR \bTD 14 \eTD \bTD Un período, grilla \eTD \bTD rutas y asignación \eTD \bTD 72 \eTD \bTD 72 \eTD \eTR
+\bTR \bTD 16 \eTD \bTD Seis órdenes, dos pickers \eTD \bTD rutas y asignación \eTD \bTD 44 \eTD \bTD 44 \eTD \eTR
+\bTR \bTD 25b \eTD \bTD Grilla: ubicación dup. \eTD \bTD rutas y asignación \eTD \bTD 34 \eTD \bTD 34 \eTD \eTR
+\bTR \bTD 25e \eTD \bTD Grilla: penalización por fecha \eTD \bTD rutas y asignación \eTD \bTD 36 \eTD \bTD 45 \eTD \eTR
+\bTR \bTD 25f \eTD \bTD Grilla: orden igual al carro \eTD \bTD rutas y asignación \eTD \bTD 36 \eTD \bTD 36 \eTD \eTR
+\bTR \bTD 26d \eTD \bTD Puente: atraso \eTD \bTD rutas y asignación \eTD \bTD 34 \eTD \bTD 34 \eTD \eTR
+\bTR \bTD 29 \eTD \bTD Lote vacío permitido \eTD \bTD rutas y asignación \eTD \bTD 52 \eTD \bTD 100 \eTD \eTR
+\bTR \bTD 11 \eTD \bTD Cuatro órdenes \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\bTR \bTD 20 \eTD \bTD Grilla multiubicación \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\bTR \bTD 25c \eTD \bTD Grilla multiubicación con capacidades \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\bTR \bTD 25g \eTD \bTD Grilla: ubic. compartidas \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\bTR \bTD 26b \eTD \bTD Puente: adelanto \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\bTR \bTD 26c \eTD \bTD Puente: ubic. compartidas \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\bTR \bTD 27 \eTD \bTD Pesos distintos \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\bTR \bTD 33c \eTD \bTD Servicio cero \eTD \bTD asignación \eTD \bTD \eTD \bTD \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las sumas de tiempos de ruta salen de los valores de $r_b$ de las soluciones guardadas. Se
+calcularon al escribir estas notas para comprobar lo que predice la sección
+\in[sec:porque_alternativos]:
+
+\startitemize
+\item {\bf El monolítico nunca encontró una ruta más corta que el Split.} Es la comprobación empírica
+de que la Etapa 1 da la ruta mínima.
+\item {\bf En 7 de los 13 pares con rutas distintas, el tiempo total de ruta es el mismo:} son rutas
+distintas del mismo largo, es decir, empates.
+\item {\bf En los otros 6, el monolítico eligió rutas más largas} con el mismo objetivo (06a, 19a,
+19b, 19c, 25e y 29). Es la consecuencia directa de la espera voluntaria y de que el objetivo no
+tenga un término de ruta.
+\item {\bf En los 8 que difieren solo en la asignación,} las rutas son idénticas y la diferencia es
+qué picker toma cada lote: empates de asignación.
+\stopitemize
+
+En los 28 pares con la misma solución, coinciden rutas, asignación y orden de cada picker.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Línea 4: el monolítico como verificador}, reference=sec:verificador]
+
+\startsubsection[title={Para qué}]
+
+En stress el monolítico no termina ninguna instancia en 40 minutos, así que no hay un óptimo del
+monolítico contra el cual comparar. Se cambia la pregunta: la solución que devuelve el Split, ¿es
+factible bajo las restricciones del monolítico, y le cuesta lo mismo? Si la Etapa 1 y la Etapa 2
+implementan bien las restricciones del monolítico, la respuesta tiene que ser sí. Lo que esta línea
+detecta son errores de implementación en las etapas del Split: una restricción mal escrita, un dato
+mal pasado de una etapa a la otra o una cadena de frío mal filtrada. El mismo verificador se usó
+para validar las soluciones de las heurísticas.
+\stopsubsection
+
+\startsubsection[title={Cómo funciona}]
+
+\ruta{verification/mono_compliance.py} toma el \ruta{.zpl} del monolítico sin modificar, escribe
+los datos de la instancia, lo compila y fija sobre las variables del modelo compilado los valores
+de la solución, buscándolas por su nombre de ZIMPL. No copia ni reescribe ninguna restricción: el
+\ruta{.zpl} del monolítico es la única definición de qué es una solución válida. Si un nombre no
+existe en el modelo compilado, el verificador falla en vez de ignorarlo. La comprobación tiene
+tres capas:
+
+\startitemize
+\item {\bf Capa 0, chequeos en Python:} cada lote asignado a exactamente un picker; rutas que solo
+usan nodos y arcos del grafo, sin revisitas; ubicaciones requeridas cubiertas; cadena de frío
+($T^{exec} \le T^{cold} + 10^{-9}$); tiempos de ejecución, terminaciones y objetivo reportados
+iguales a los que da la fórmula del monolítico recalculada en Python.
+\item {\bf Nivel 1, las decisiones:} se fijan las rutas ($z_{ijb}$ de todos los arcos), la
+asignación ($x_{pb}$ de todos los pares) y la secuencia ($y_{bk}$), y se dejan libres los tiempos.
+SCIP resuelve: si es infactible, las decisiones no son válidas para el monolítico.
+\item {\bf Nivel 2, la solución exacta:} se fijan además las terminaciones $c_{pb}$ y $c_b$
+reportadas. SCIP comprueba que la solución entera sea factible y calcula su objetivo.
+\stopitemize
+
+El veredicto es {\bf \quote{compliant}} solo si no hay hallazgos en la capa 0, los dos niveles son
+factibles y el objetivo del nivel 2 coincide con el reportado (tolerancia relativa $10^{-6}$).
+Cualquier otro resultado es \quote{violations}, con el detalle. Si el nivel 1 es infactible, el
+verificador libera por turnos las rutas, la secuencia o la asignación, y con hasta 40 lotes
+también la ruta de cada lote por separado, para señalar qué decisión es la inválida.
+
+Algunos detalles de diseño:
+
+\startitemize
+\item {\bf Big-M:} si el $M$ o el $M^{seq}$ del escenario fueran demasiado chicos para la solución
+que se verifica, se reemplazan por un valor válido y queda anotado; nunca cuenta como violación.
+\item {\bf Lotes vacíos:} el monolítico obliga a rutear, asignar y cobrar todo lote de
+$\mathcal{B}$, aunque no tenga órdenes, mientras que las heurísticas los ignoran. Por decisión del
+equipo, el verificador saca de $\mathcal{B}$ los lotes sin órdenes que la solución no usa, y lo
+anota. Ninguna restricción cambia.
+\item {\bf Instancia de 100×100:} compilar el monolítico completo llevó a ZIMPL a unos 5~GB sin
+terminar. Cuando todas las rutas están fijas, el verificador trabaja sobre el subgrafo de esas
+rutas (sus arcos, sus nodos, el depósito y el final), que es exactamente equivalente con las rutas
+fijas. El control: las 248 soluciones que ya estaban verificadas dieron el mismo veredicto, los
+mismos estados y los mismos objetivos con y sin el recorte.
+\item {\bf Adaptación de una solución del Split:} las rutas se reconstruyen a partir de los arcos
+activos de la Etapa 1, el orden de cada picker a partir de $c_{pb}$ y las terminaciones de los
+lotes a partir de $c_b$.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Prueba de que el verificador puede fallar}]
+
+Un verificador que siempre dice \quote{compliant} no prueba nada. Sobre una solución chica se
+introdujeron cuatro errores a propósito: un arco que no existe en el grafo, dos terminaciones
+superpuestas del mismo picker, una violación de la cadena de frío y un objetivo mal reportado. El
+verificador detectó los cuatro.
+\stopsubsection
+
+\startsubsection[title={Resultados}]
+
+\startitemize
+\item {\bf Split en stress:} las 9 soluciones de stress del Split dieron \quote{compliant} (corrida
+del 29-09 con \ruta{python -m verification.compare_v5 --verify-split-stress}). Ese veredicto quedó
+en el registro de cambios del repositorio, pero no en el CSV de comparación guardado, que se
+generó sin esa opción. Se reproduce con el mismo comando.
+\item {\bf Heurísticas, como contexto:} las 150 soluciones de HC y ACO (56 funcionales y 19 de stress
+por heurística) también dieron \quote{compliant}. En la primera verificación, sobre una suite
+anterior, el nivel 1 bajó el objetivo de 7 de 51 casos entre 7,9~\% y 93,6~\% con las mismas
+decisiones: el monolítico espera hasta la fecha de entrega y las heurísticas no. No es una
+violación; es la espera voluntaria medida desde otro lado.
+\stopitemize
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Línea 5: pares en la exploración}, reference=sec:pares]
+
+\startsubsection[title={Método}]
+
+Los estudios 08 a 11 de la exploración del monolítico usaron el {\em modo par}: cada instancia se
+genera una vez y se resuelve primero con el Split y después con el monolítico, con el mismo tope.
+Los estudios 08 y 11 usan el perfil realista (pesos 4/5, velocidades en bandas, 26 órdenes por
+lote); el 09 repite instancias de los estudios 01 a 03 del Split, y el 10 varía un factor por vez
+(órdenes, pesos, velocidades, lotes, pickers, grilla). Son más grandes que las funcionales: hasta
+6 lotes y grillas de hasta 7×7, y un punto de 10×10. El objetivo de cada modelo se registra con dos
+decimales.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][align=flushleft]
+\bTR \bTH Estudio \eTH \bTH Qué varía \eTH \bTH Tope por modelo \eTH \bTH Pares \eTH \bTH Óptimo probado por los dos \eTH \bTH Mismo objetivo \eTH \eTR
+\bTR \bTD 08 \eTD \bTD Frontera: lotes {1, 2, 3, 4, 6} × lado {3 a 7} \eTD \bTD 600~s \eTD \bTD 25 \eTD \bTD 15 \eTD \bTD 14 \eTD \eTR
+\bTR \bTD 09 \eTD \bTD Las instancias de los estudios 01 a 03 \eTD \bTD 330~s \eTD \bTD 15 \eTD \bTD 0 \eTD \bTD -- \eTD \eTR
+\bTR \bTD 10 \eTD \bTD Un factor por vez desde 4 lotes, 2 pickers, 5×5 \eTD \bTD 630~s \eTD \bTD 27 \eTD \bTD 25 \eTD \bTD 25 \eTD \eTR
+\bTR \bTD 11 \eTD \bTD Tope de 40 minutos en los puntos difíciles \eTD \bTD 2.430~s \eTD \bTD 4 \eTD \bTD 1 \eTD \bTD 1 \eTD \eTR
+\bTR \bTD {\bf Total} \eTD \bTD \eTD \bTD \eTD \bTD {\bf 71} \eTD \bTD {\bf 41} \eTD \bTD {\bf 40} \eTD \eTR
+\eTABLE
+\blank[medium]
+
+El criterio de igualdad es el de la sección \in[sec:objetivo]. En el estudio 11, el único par
+resuelto por los dos difiere en el segundo decimal (62.963,65 contra 62.963,64), una diferencia
+relativa de $1{,}6 \cdot 10^{-7}$, dentro de la tolerancia.
+\stopsubsection
+
+\startsubsection[title={Resultados}]
+
+\startitemize
+\item {\bf 40 de 41 pares con el mismo objetivo.} El restante es el punto de 3 lotes en 6×6 del
+estudio 08: el monolítico reportó 26.709,36 y el Split 26.709,60, los dos declarando
+optimalidad. La diferencia relativa es de $-9{,}0 \cdot 10^{-6}$: supera la tolerancia de
+$10^{-6}$, así que con el criterio del comparador sería un \quote{objetivo distinto}.
+\item {\bf Mismo estado en los infactibles:} 4 puntos del estudio 08 (2, 3, 4 y 6 lotes en 4×4) son
+infactibles en los dos. En el Split, ya en la Etapa 1.
+\item {\bf Donde el monolítico no terminó,} en 3 puntos encontró el óptimo del Split sin poder
+probarlo: a los 85~s con una brecha de 2,96~\% (estudio 08), a los 109~s con 1,7~\% (estudio 10) y
+a los 972~s con 10,37~\% (estudio 11). Son consistentes con la equivalencia, aunque no la prueban.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Las dos diferencias numéricas}]
+
+Hay dos casos en los que el objetivo del monolítico quedó apenas por debajo del óptimo probado del
+Split: los tests 13 y 14 ($3{,}83 \cdot 10^{-6}$ absoluto, dentro de la tolerancia) y el punto de 3
+lotes en 6×6 ($0{,}24$ absoluto, fuera de ella). Por la demostración de la sección
+\in[sec:demostracion], el monolítico no puede tener un óptimo menor que el del Split en
+aritmética exacta. La hipótesis registrada es numérica, y no está verificada: con $M = 10^{6}$, un
+binario apenas fraccionario dentro de la tolerancia de integralidad de SCIP afloja una
+restricción Big-M en cerca de una unidad, y la solución del monolítico queda levemente infactible
+sin que SCIP lo detecte.
+
+Una forma de verificarla sería pasar esa solución del monolítico por el verificador del nivel 2 o
+revisar la violación máxima de sus restricciones con los valores sin redondear.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Lo que la validación no cubre}, reference=sec:limitaciones]
+
+\startitemize
+\item {\bf Ninguna comparación de objetivos en stress.} El monolítico no termina ninguno de los 19
+tests de stress, así que en stress solo hay verificación de factibilidad (línea 4), no de
+optimalidad. Además, sus stress 05 a 19 nunca se corrieron con $W^{c} = 27$; solo el 04, que
+también dio timeout.
+\item {\bf Tolerancia de la cadena de frío sin test.} La diferencia entre el filtro exacto del Split
+y la tolerancia de SCIP en el monolítico (sección \in[sec:condiciones]) está documentada, pero el
+test de tolerancia (35b) solo prueba el lado de \quote{entra}: un par apenas por debajo del límite
+sigue elegible en los dos.
+\item {\bf Las dos diferencias numéricas,} con una hipótesis sin verificar (sección \in[sec:pares]).
+\item {\bf El test 02 no se comparó por separado.} El comparador empareja las filas por nombre de
+método, y los tests heredados 02 y 03 tienen el mismo nombre (\ruta{test_two_orders_two_aisles}):
+la fila del 02 queda pisada por la del 03. Los dos objetivos del 02 coinciden en los CSV (795 en
+los dos modelos), pero sus soluciones no se compararon. Corregirlo es emparejar por archivo y
+método.
+\item {\bf Sin referencia en el 30a,} por el timeout en los dos modelos, y sin equivalente del 24b en
+el monolítico.
+\item {\bf La Etapa 1 puede reportar \quote{factible}.} El pipeline del Split acepta ese estado. En los
+tests no ocurre, porque la Etapa 1 corre sin límite de tiempo, pero si ocurriera, la condición 3
+de la sección \in[sec:condiciones] dejaría de valer.
+\item {\bf Resultados anteriores al cambio de nombres.} El 29-09 se unificaron los nombres de
+variables y parámetros en el código y en los resultados. Los CSV y los JSON de la comparación se
+migraron con el mismo mapeo, sin volver a correr; después del cambio solo se corrieron tests
+puntuales de cada modelo, todos sin cambios. Una corrida completa de las dos suites, seguida del
+comparador, cerraría ese punto.
+\item {\bf El veredicto de los 9 stress del Split no está guardado} en un archivo de resultados
+(sección \in[sec:verificador]).
+\stopitemize
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Síntesis para la tesina}, reference=sec:sintesis]
+
+\startitemize
+\item {\bf Qué se puede afirmar:} el monolítico y el Split son equivalentes en factibilidad y en
+valor óptimo. Lo respaldan una demostración en los dos sentidos, válida bajo cuatro condiciones
+explícitas, y cuatro líneas empíricas: los 49 pares funcionales resueltos por los dos tienen el
+mismo objetivo y los 12 infactibles lo son en los dos; 40 de los 41 pares de la exploración tienen
+el mismo objetivo (el restante, a $9 \cdot 10^{-6}$, con una explicación numérica pendiente); y las
+9 soluciones de stress del Split son factibles para el monolítico y le cuestan lo mismo.
+\item {\bf Qué no se puede afirmar:} que devuelvan las mismas soluciones. En 21 de los 49 pares
+funcionales la solución óptima es distinta: rutas del mismo largo, rutas más largas que llegan a
+tiempo gracias a la espera voluntaria, o empates de asignación. El Split siempre devuelve la ruta
+mínima; el monolítico no.
+\item {\bf Cómo presentar la metodología:} conviene contarla como cinco líneas que se complementan
+(sección \in[sec:metodologia]), con el criterio de aceptación de cada una, y con dos decisiones
+explícitas: la equivalencia se juzga por estado y objetivo, no por solución; y en stress, donde
+el monolítico no termina, la pregunta pasa de \quote{¿mismo óptimo?} a \quote{¿la solución del
+Split es válida para el monolítico?}.
+\item {\bf Por qué importa:} la equivalencia es lo que permite usar al Split, mucho más rápido a
+escala, como referencia exacta del problema para las heurísticas, y al monolítico, que es la
+formulación directa, como verificador de cualquier solución.
+\stopitemize
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Apéndice: archivos y comandos}, reference=sec:apendice]
+
+\startsubsection[title={Dónde está cada cosa en el repositorio de implementación}]
+\startitemize
+\item {\bf Modelos:} \ruta{models/opp_v5_1_mono/opp_model_v5_1_mono.zpl},
+\ruta{models/opp_v5_2_split/opp_model_v5_2_split_stage1_routing.zpl} y
+\ruta{models/opp_v5_2_split/opp_model_v5_2_split_stage2_scheduling.zpl}.
+\item {\bf Tests:} \ruta{tests/opp_v5_1_mono/} y \ruta{tests/opp_v5_2_split/}; escenarios en
+\ruta{tests/shared_scenarios/}; adaptadores de los heredados en
+\ruta{tests/infra/factories/migrated_case.py} y \ruta{migrated_mono_case.py}.
+\item {\bf Verificación:} \ruta{verification/compare_v5.py} (comparación cruzada),
+\ruta{verification/mono_compliance.py} (verificador), \ruta{verification/solution_store.py}
+(formato de las soluciones guardadas).
+\item {\bf Resultados:} \ruta{results/opp_v5_1_mono/functional/} y
+\ruta{results/opp_v5_2_split/functional/} (CSV de nombre fijo y carpetas \ruta{solutions/});
+\ruta{results/comparability/compare_v5_split_vs_mono.csv} (veredictos).
+\item {\bf Pares de la exploración:} \ruta{experiments/opp_v5/studies/08_mono_frontier/} a
+\ruta{11_mono_long_cap/}.
+\item {\bf Documento de comparación:}
+\ruta{docs/thesis/opp_v5_1_mono_vs_opp_v5_2_split_comparison.tex}.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Comandos}]
+
+Necesitan \ruta{zimpl} en el \ruta{PATH} y PySCIPOpt.
+
+\starttyping
+# Suites funcionales con las soluciones guardadas
+export WRITE_SOLUTIONS=1
+python -m tests.run_suite opp_v5_2_split functional
+python -m tests.run_suite opp_v5_1_mono functional
+
+# Comparación cruzada, con la verificación de los stress del Split
+python -m verification.compare_v5 --verify-split-stress
+\stoptyping
+\stopsubsection
+
+\stopsection
+
+\stoptext
