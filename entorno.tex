@@ -1,0 +1,184 @@
+%========================================================================================
+% ENTORNO DE LA TESINA (ConTeXt LMTX)
+%
+% Sigue la guía de estilos (Guias/context_style_guide.md, copiada del repositorio de
+% código): A4, márgenes de 2cm, cuerpo de 11pt, la paleta de colores, secciones en
+% darkblue y tablas con encabezado gris. Agrega lo propio de una tesina: capítulos,
+% páginas preliminares, índices, siglas, glosario y bibliografía. Lo carga tesina.tex
+% con \environment entorno.
+%========================================================================================
+
+\startenvironment entorno
+
+%----------------------------------------------------------------------------------------
+% PLANTILLA BASE DE LA GUÍA DE ESTILOS
+\setupcolors[state=start]
+\setupcolor[hex]
+\definecolor[darkblue][h=003366]
+\definecolor[darkgray][h=e6e6e6]
+\definecolor[redline][h=d9534f]
+\definecolor[blueline][h=5bc0de]
+\definecolor[greenline][h=5cb85c]
+
+\setuphead[section][style=\bfa, color=darkblue, before=\blank, after=\blank]
+\setuphead[subsection][style=\bf, color=black, before=\blank, after=\blank]
+\setuphead[subsubsection][style=\bf, color=black, before=\blank, after=\blank]
+\setuppapersize[A4][A4]
+\setupbodyfont[11pt]
+\setuplayout[width=middle, height=middle, topspace=2cm, bottomspace=2cm]
+
+%----------------------------------------------------------------------------------------
+% IDIOMA Y PÁRRAFOS
+\mainlanguage[es]
+\language[es]
+
+% Separación entre párrafos equivalente a un \blank, sin sangría.
+\setupwhitespace[big]
+
+%----------------------------------------------------------------------------------------
+% ENLACES Y MARCADORES DEL PDF (enlaces sin color)
+\setupinteraction
+  [state=start,
+   color=,
+   contrastcolor=,
+   style=,
+   title={Optimización picking y ruteo de pedidos en un centro de distribución},
+   author={Ximena Ebertz, Lucía Soria}]
+
+\placebookmarks[preliminar,title,chapter,section,subsection][force=yes]
+\setupinteractionscreen[option=bookmark]
+
+%----------------------------------------------------------------------------------------
+% NUMERACIÓN DE PÁGINAS
+% Romanos en las páginas preliminares y arábigos desde el Capítulo 1 (tesina.tex
+% reinicia el número ahí).
+\defineconversionset[frontpart:pagenumber][][romannumerals]
+\defineconversionset[bodypart:pagenumber][][numbers]
+\defineconversionset[appendix:pagenumber][][numbers]
+\defineconversionset[backpart:pagenumber][][numbers]
+\setupuserpagenumber[numberconversionset=pagenumber]
+
+%----------------------------------------------------------------------------------------
+% ETIQUETAS
+\setuplabeltext
+  [es]
+  [chapter=Capítulo~,
+   appendix=Anexo~,
+   figure=Figura~,
+   table=Cuadro~]
+
+%----------------------------------------------------------------------------------------
+% CAPÍTULOS Y PÁGINAS PRELIMINARES
+% La guía no define capítulos: cada uno empieza en una página nueva, con
+% "Capítulo N" (o "Anexo A") en una línea y el título debajo, en negro.
+\protected\def\TesinaTituloCapitulo#1#2%
+  {\vbox
+     {\hsize\textwidth
+      \setupalign[flushleft,nothyphenated]%
+      \doifsomething{#1}{#1\par\vskip.5\lineheight}%
+      #2}}
+
+\setuphead
+  [chapter]
+  [page=yes,
+   command=\TesinaTituloCapitulo,
+   numberstyle=\bfb,
+   textstyle=\bfc,
+   after={\blank[2*big]}]
+
+\setuphead
+  [title]
+  [page=yes,
+   command=\TesinaTituloCapitulo,
+   textstyle=\bfc,
+   after={\blank[2*big]},
+   incrementnumber=list]
+
+% Páginas preliminares con título (resumen, listas, índices, dedicatoria).
+\definehead[preliminar][title]
+
+%----------------------------------------------------------------------------------------
+% ÍNDICES
+\setupcombinedlist
+  [content]
+  [list={preliminar,title,chapter,section,subsection}]
+
+\setuplist
+  [preliminar]
+  [style=normal,
+   pagestyle=normal,
+   before=]
+
+\setuplist
+  [title,chapter]
+  [style=bold,
+   pagestyle=bold,
+   before={\blank[medium]}]
+
+%----------------------------------------------------------------------------------------
+% TABLAS
+% Estilo de la guía: \bTABLE[split=yes, align=middle, frame=on, width=fit] con la
+% primera fila de encabezado en gris y negrita:
+%     \setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+
+%----------------------------------------------------------------------------------------
+% SIGLAS Y GLOSARIO
+%
+% \ac{tag}: la primera vez escribe "forma larga (sigla)" y después solo la sigla.
+% Las listas muestran todo lo definido acá (van antes del texto, así que no pueden
+% filtrar por uso).
+\definesynonyms[sigla][siglas][\siglalarga][\siglacorta]
+\setupsynonyms[sigla][headstyle=bold, location=serried, width=fit, distance=1em, criterium=all]
+
+\definesynonyms[termino][terminos][\terminodefinicion][\terminonombre]
+\setupsynonyms[termino][headstyle=bold, location=serried, width=fit, distance=1em, criterium=all]
+
+\protected\def\ac#1%
+  {\ifcsname tesina:ac:#1\endcsname
+     \siglacorta{#1}%
+   \else
+     \global\expandafter\let\csname tesina:ac:#1\endcsname\relax
+     \siglalarga{#1} (\siglacorta{#1})%
+   \fi}
+
+% Abreviaciones
+\sigla[mip]{MIP}{Programación Lineal Entera Mixta (del inglés {\em Mixed-Integer Programming})}
+\sigla[hc] {HC} {Ascenso de Colina (del inglés {\em Hill Climbing})}
+\sigla[aco]{ACO}{Optimización por Colonia de Hormigas (del inglés {\em Ant Colony Optimization})}
+
+% Glosario
+\termino[pickeo]            {Pickeo}             {Proceso de recolección de los ítems que componen un pedido dentro de un almacén (del inglés {\em picking})}
+\termino[picker]            {Picker}             {Operario encargado de recolectar los ítems de uno o más lotes dentro del almacén}
+\termino[lote]              {Lote}               {Conjunto de pedidos agrupados que se asignan y recolectan de forma conjunta}
+\termino[orden]             {Orden}              {Pedido de un cliente, compuesto por uno o más ítems a recolectar}
+\termino[deposito]          {Depósito}           {Nodo de partida y llegada del grafo que representa el almacén (también llamado {\em depot})}
+\termino[duedate]           {Due date}           {Fecha de entrega comprometida de un pedido, respecto de la cual se penaliza el adelanto o la demora en su recolección}
+\termino[batching]          {Batching}           {Agrupamiento de pedidos en lotes}
+\termino[cadenadefrio]      {Cadena de frío}     {Restricción de tiempo máximo que un pedido puede permanecer fuera de temperatura controlada durante su recolección}
+\termino[instancia]         {Instancia}          {Conjunto particular de datos de entrada (almacén, pedidos, lotes, parámetros) sobre el que se ejecuta un modelo}
+\termino[escenariofuncional]{Escenario funcional}{Escenario de prueba de tamaño y complejidad moderados, pensado para validar la correctitud de un modelo}
+\termino[escenariodeestres] {Escenario de estrés}{Escenario de prueba de mayor escala, pensado para evaluar el comportamiento de un modelo en condiciones exigentes}
+
+%----------------------------------------------------------------------------------------
+% BIBLIOGRAFÍA
+% Estilo numérico (aps), ordenado alfabéticamente por autor, con el DOI visible y como
+% enlace.
+\usebtxdataset[default][Referencias/tesina.bib]
+\usebtxdefinitions[aps]
+\setupbtx[dataset=default]
+\setupbtxrendering[aps][numbering=yes, sorttype=short]
+
+\starttexdefinition mutable protected btx:aps:doi-url #1
+    #1
+    \btxdoif {doi} {
+        \btxcomma
+        \goto {DOI:~\hyphenatedurl{\btxflush{doi}}} [url(https://doi.org/\btxflush{doi})]
+    }
+\stoptexdefinition
+
+%----------------------------------------------------------------------------------------
+% FLOTANTES PARA PSEUDOCÓDIGOS
+\definefloat[algoritmo][algoritmos]
+\setuplabeltext[es][algoritmo=Algoritmo~]
+
+\stopenvironment

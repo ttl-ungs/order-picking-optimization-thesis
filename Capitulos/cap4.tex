@@ -1,37 +1,38 @@
-\chapter{Metaheurísticas}
-
-\label{Capitulo_4}
+\startchapter[title={Metaheurísticas}, reference=Capitulo_4]
 
 Aún con la optimización en dos etapas, el modelo Split resulta inviable en
 tiempos prácticos para instancias moderadamente grandes. En este capítulo se
 presentan las dos metaheurísticas desarrolladas como alternativa, basadas en
-\ac{hc} (Sección~\ref{sec:hc}) y \ac{aco} (Sección~\ref{sec:aco}). Ambas son
+\ac{hc} (Sección~\in[sec:hc]) y \ac{aco} (Sección~\in[sec:aco]). Ambas son
 equivalentes en características a los modelos lineales del
-Capítulo~\ref{Capitulo_3}: resuelven el mismo problema, con la misma función
+Capítulo~\in[Capitulo_3]: resuelven el mismo problema, con la misma función
 objetivo, las mismas restricciones de velocidad y cadena de frío, y sobre el
 mismo espacio de soluciones, aunque sin garantía de optimalidad.
 
 %----------------------------------------------------------------------------------------
-\section{Hill Climbing}
-\label{sec:hc}
+\startsection[title={Hill Climbing}, reference=sec:hc]
 
 % TODO: completar
 %
 % Citas a usar al describir la construcción y mejora de rutas (HC y ACO):
 % - Ruta inicial por inserción del más lejano:
-%     ...la inserción del más lejano (\emph{farthest insertion}) \cite{rosenkrantz1977analysis}...
+%     ...la inserción del más lejano ({\em farthest insertion}) \cite[rosenkrantz1977analysis]...
 % - Pulido de rutas con or-opt (la tesis de Or de 1976 no está disponible; se
 %   la nombra como autor original y se cita a través de Babin et al.).
 %   OJO: el or-opt original mueve cadenas de 3, luego 2 y luego 1 vértices
 %   consecutivos (Babin et al., sección 1), pero relocate_picks del código
 %   mueve UN solo pick por vez. Describirlo como una versión simplificada:
-%     ...una versión simplificada del operador \emph{or-opt}, propuesto por Or
-%     en su tesis doctoral de 1976 \cite{babin2007oropt}: mientras que el
+%     ...una versión simplificada del operador {\em or-opt}, propuesto por Or
+%     en su tesis doctoral de 1976 \cite[babin2007oropt]: mientras que el
 %     operador original reubica cadenas de tres, dos y un vértice consecutivos,
 %     aquí se reubica un pick por vez en otra posición de la secuencia...
 
+\stopsection
+
 %----------------------------------------------------------------------------------------
-\section{Ant Colony Optimization}
-\label{sec:aco}
+\startsection[title={Ant Colony Optimization}, reference=sec:aco]
 
 % TODO: completar
+
+\stopsection
+\stopchapter

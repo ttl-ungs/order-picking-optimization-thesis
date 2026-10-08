@@ -1,48 +1,46 @@
-\chapter{Introducción}
-
-\label{Capitulo_1}
+\startchapter[title={Introducción}, reference=Capitulo_1]
 
 %----------------------------------------------------------------------------------------
-\section{Problema de pickeo de órdenes}
-\label{sec:problema}
+\startsection[title={Problema de pickeo de órdenes}, reference=sec:problema]
 
-En un centro de distribución, el \emph{picking} (la recolección de los ítems
+En un centro de distribución, el {\em picking} (la recolección de los ítems
 que componen un pedido dentro de un almacén) es una de las actividades que
 más tiempo y costo insume dentro de las operaciones logísticas, llegando a
 representar hasta el 50-75\% del costo operativo total de un almacén
-\cite{urzua2019evaluating}. Un caso real documentado en un centro de
+\cite[urzua2019evaluating]. Un caso real documentado en un centro de
 distribución nacional muestra que el tiempo de preparación de un pedido podía
 llegar a las 8 horas, y que con una mejor asignación de las ubicaciones de picking
-es posible reducir significativamente ese tiempo \cite{gutierrez2019reduction}.
+es posible reducir significativamente ese tiempo \cite[gutierrez2019reduction].
 Reducir el tiempo de desplazamiento de los operarios tiene un impacto
 económico directo y escalable, ya que cualquier mejora se repite en cada
 turno, en cada operario y en cada pedido.
 
-Llamamos \textbf{OPP} (del inglés \emph{Order Picking Problem}) al problema
+Llamamos {\bf OPP} (del inglés {\em Order Picking Problem}) al problema
 de determinar, dado un conjunto de pedidos de clientes agrupados en lotes, a
-qué operario (\emph{picker}) asignar cada lote, en qué orden secuenciarlos, y
+qué operario ({\em picker}) asignar cada lote, en qué orden secuenciarlos, y
 la ruta que cada operario debe seguir dentro del almacén para recolectar
 todas las ubicaciones requeridas por sus lotes, de forma tal de minimizar una
 función objetivo que combina el tiempo total de recolección con penalidades
 por adelanto y demora respecto de la fecha de entrega comprometida
-(\emph{due date}) de cada pedido. El almacén se representa como un grafo
+({\em due date}) de cada pedido. El almacén se representa como un grafo
 dirigido cuyos nodos son las ubicaciones de picking, el depósito de partida y
 el punto de entrega, y cuyos arcos representan los desplazamientos posibles
 entre ubicaciones junto con su distancia o tiempo asociado.
 
-El agrupamiento de pedidos en lotes (\emph{batching}) es un problema
+El agrupamiento de pedidos en lotes ({\em batching}) es un problema
 relacionado, pero distinto: en este trabajo los lotes se reciben ya
 conformados como dato de entrada, y no forman parte de lo que el modelo
 decide.
 
+\stopsection
+
 %----------------------------------------------------------------------------------------
-\section{Enfoque propuesto}
-\label{sec:enfoque}
+\startsection[title={Enfoque propuesto}, reference=sec:enfoque]
 
 Existen dos grandes familias de enfoques para resolver problemas de
-optimización combinatoria como el OPP: los métodos \textbf{exactos}, que
+optimización combinatoria como el OPP: los métodos {\bf exactos}, que
 garantizan encontrar la solución óptima pero cuyo tiempo de cómputo crece
-rápidamente con el tamaño de la instancia, y los métodos \textbf{heurísticos}
+rápidamente con el tamaño de la instancia, y los métodos {\bf heurísticos}
 (y metaheurísticos), que renuncian a la garantía de optimalidad a cambio de
 tiempos de resolución mucho menores y de mayor escalabilidad. En un contexto
 operativo real, donde las decisiones de ruteo deben tomarse en segundos y los
@@ -52,41 +50,42 @@ de la solución y tiempo de cómputo es central.
 Este trabajo recorre esa disyuntiva en cuatro pasos sucesivos, cada uno
 construido sobre el anterior:
 
-\begin{enumerate}
-	\item \textbf{Modelo de referencia.} Se toma como punto de partida el
+\startitemize[n]
+	\item {\bf Modelo de referencia.} Se toma como punto de partida el
 	modelo de \ac{mip} propuesto por Coruzzolo et al.
-	\cite{coruzzolo2023orderpicking}, que resuelve de forma conjunta la
+	\cite[coruzzolo2023orderpicking], que resuelve de forma conjunta la
 	asignación, la secuenciación y el ruteo de los lotes.
-	\item \textbf{Modelo monolítico.} Con ese modelo como guía, se formula un
+	\item {\bf Modelo monolítico.} Con ese modelo como guía, se formula un
 	modelo lineal propio que incorpora dos características del problema real
 	que la formulación de referencia no contempla: la velocidad heterogénea
 	entre operarios y los requisitos de cadena de frío. El mismo recibe el nombre de
-	\emph{monolítico} porque decide ruta, asignación y secuenciación en un
+	{\em monolítico} porque decide ruta, asignación y secuenciación en un
 	único modelo.
-	\item \textbf{Modelo en dos etapas (Split).} Para reducir los tiempos de
+	\item {\bf Modelo en dos etapas (Split).} Para reducir los tiempos de
 	ejecución del modelo monolítico, se lo descompone en dos modelos que se
 	resuelven uno después del otro: el primero calcula la ruta más corta de
 	cada lote, y el segundo, tomando esos tiempos de ruta como datos, decide
 	la asignación, la secuenciación y la cadena de frío. A este modelo lo
-	llamamos \emph{Split}.
-	\item \textbf{Metaheurísticas.} Como el modelo Split sigue siendo
+	llamamos {\em Split}.
+	\item {\bf Metaheurísticas.} Como el modelo Split sigue siendo
 	inviable en tiempos prácticos para instancias moderadamente grandes, se
 	programan dos metaheurísticas, basadas en \ac{hc} y en \ac{aco},
-	\emph{equivalentes en características} a los modelos lineales: resuelven
+	{\em equivalentes en características} a los modelos lineales: resuelven
 	el mismo problema, con la misma función objetivo, las mismas
 	restricciones de velocidad y cadena de frío, y sobre el mismo espacio de
 	soluciones, pero sin garantía de optimalidad. Esto permite comparar sus
 	resultados directamente contra el óptimo.
-\end{enumerate}
+\stopitemize
 
-Los modelos lineales se desarrollan en el Capítulo~\ref{Capitulo_3} y las
-metaheurísticas en el Capítulo~\ref{Capitulo_4}.
+Los modelos lineales se desarrollan en el Capítulo~\in[Capitulo_3] y las
+metaheurísticas en el Capítulo~\in[Capitulo_4].
+
+\stopsection
 
 %----------------------------------------------------------------------------------------
-\section{Objetivo}
-\label{sec:objetivo}
+\startsection[title={Objetivo}, reference=sec:objetivo]
 
-\subsection{Objetivo general}
+\startsubsection[title={Objetivo general}]
 
 Evaluar, sobre un conjunto de escenarios comparables, el compromiso entre
 calidad de la solución, tiempo de cómputo y robustez que ofrecen distintos
@@ -94,9 +93,11 @@ enfoques de resolución (exacto y heurísticos) al problema de asignación,
 secuenciación y ruteo de picking, para caracterizar en qué condiciones cada
 enfoque resulta más apropiado.
 
-\subsection{Objetivos específicos}
+\stopsubsection
 
-\begin{itemize}
+\startsubsection[title={Objetivos específicos}]
+
+\startitemize
 	\item Formular e implementar, tomando como guía la formulación de
 	referencia, un modelo lineal (monolítico) que incorpore velocidad
 	heterogénea entre operarios y requisitos de cadena de frío.
@@ -111,41 +112,46 @@ enfoque resulta más apropiado.
 	tiempo de ejecución y la calidad de la solución respecto del óptimo.
 	\item Identificar limitaciones estructurales de los enfoques heurísticos
 	evaluados y proponer líneas de trabajo futuro para superarlas.
-\end{itemize}
+\stopitemize
+
+\stopsubsection
+\stopsection
 
 %----------------------------------------------------------------------------------------
-\section{Organización del trabajo}
-\label{sec:organizacion}
+\startsection[title={Organización del trabajo}, reference=sec:organizacion]
 
 El trabajo se organizó en seis etapas.
 
-En la etapa de \textbf{investigación y análisis} se relevó la literatura
+En la etapa de {\bf investigación y análisis} se relevó la literatura
 sobre OPP y sobre los métodos exactos y heurísticos aplicables, y se
 estudió en detalle el modelo de referencia de Coruzzolo et al.
-\cite{coruzzolo2023orderpicking} para identificar qué características del
+\cite[coruzzolo2023orderpicking] para identificar qué características del
 problema real (velocidad heterogénea entre operarios, requisitos de cadena de
 frío) no estaban contempladas en esa formulación.
 
-En la etapa de \textbf{modelado} se formuló y programó, con el modelo de
+En la etapa de {\bf modelado} se formuló y programó, con el modelo de
 referencia como guía, el modelo monolítico, que lo extiende con esas
 características.
 
-En la etapa de \textbf{optimización} se aplicaron distintas estrategias con la
+En la etapa de {\bf optimización} se aplicaron distintas estrategias con la
 finalidad de reducir los tiempos de procesamiento del modelo monolítico, que
 culminaron en su descomposición en dos etapas, dando lugar al modelo lineal
-\emph{Split}.
+{\em Split}.
 
-En la etapa de \textbf{desarrollo de metaheurísticas} se programaron las
+En la etapa de {\bf desarrollo de metaheurísticas} se programaron las
 metaheurísticas basadas en \ac{hc} y \ac{aco}, equivalentes en
 características a los modelos lineales, y se refinaron con la finalidad de
 pulir los resultados obtenidos y mejorar el tiempo de convergencia al óptimo.
 
-En la etapa de \textbf{experimentación} se diseñó un conjunto de escenarios de
+En la etapa de {\bf experimentación} se diseñó un conjunto de escenarios de
 prueba, funcionales y de estrés, y se ejecutaron los cuatro modelos sobre esos
 escenarios midiendo tasa de convergencia, tiempo de ejecución y calidad de la
 solución respecto del óptimo.
 
-Finalmente, en la etapa de \textbf{comparación} se analizaron esos resultados
+Finalmente, en la etapa de {\bf comparación} se analizaron esos resultados
 para caracterizar el compromiso entre calidad de la solución, tiempo de
 cómputo y robustez que ofrece cada enfoque, y para identificar limitaciones
 estructurales de las heurísticas evaluadas.
+
+\stopsection
+\stopchapter

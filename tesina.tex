@@ -1,425 +1,189 @@
-
-%----------------------------------------------------------------------------------------
-% Impresión de un lado de la hoja
-\documentclass[notitlepage]{report}
-\usepackage[paper=a4paper,top=2in, bottom=1in, left=1in, right=1in]{geometry}
-%----------------------------------------------------------------------------------------
-% Impresión para libros (de los dos lados de la hoja)
-%\documentclass[a4paper,twoside, notitlepage]{report}
-%----------------------------------------------------------------------------------------
-% PAQUETES NECESARIOS
-\usepackage[utf8]{inputenc} % set input encoding
-\usepackage{amsmath}
-\usepackage{amssymb} %para mathbb
-\usepackage{eqnarray}
-\usepackage{bm}
-\usepackage{mathtools}
-\usepackage{xcolor}
-\usepackage{xfrac}
-\usepackage{esint}
-\usepackage{mathcomp}
-\usepackage[rightcaption]{sidecap}
-\usepackage{graphicx} 					% necesario para agregar gráficos.
-\usepackage[margin=2cm]{caption}  		% por defecto 2cm
-\usepackage[spanish]{babel}
-\usepackage[hidelinks]{hyperref}
-\usepackage{afterpage}
-\usepackage{tikz}
-\usepackage{fancyhdr}
-\usepackage{acro} 
-\usepackage[lined,ruled,vlined,linesnumbered,spanish, onelanguage]{algorithm2e}
-\usepackage{listings}
-
-% Anexos y readecuación de nombres.
-\usepackage[toc,page]{appendix}
-\addto\captionsspanish{%
-	\renewcommand\appendixname{Anexo}
-	\renewcommand\appendixpagename{Anexos}
-	\renewcommand\appendixtocname{Anexos}
-}
-%----------------------------------------------------------------------------------------
-% CONFIGURACIÓN INTERLÍNEA. 
-% Quitar el comentario a \usepackage{setspace} y 
-% seleccionar alguna de las opciones (quitar % a la elegida)
-% \usepackage{setspace}
-
-% Opciones:
-%\doublespacing
-%\onehalfspacing
-%\singlespace
-%----------------------------------------------------------------------------------------
-% Estilo para encabezado de página
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\bfseries\leftmark} % Título
-\fancyhead[R]{\bfseries\thepage}  % Nro de página
-\renewcommand\headrulewidth{0pt}  % línea 
-%----------------------------------------------------------------------------------------
-% Algunos colores de diseño
-\definecolor{hyperlink}{rgb}{0,0,93.3}
-\definecolor{ideicolor}{RGB}{139, 13, 51}
-
-%============================================================
-% DEFINICIÓN DE COMANDOS PARA CARGA DE DATOS
-\NewDocumentCommand{\universidad}{m}{\newcommand{\univn}{#1}}
-\NewDocumentCommand{\instituto}{m}{\newcommand{\instn}{#1}}
-\NewDocumentCommand{\autor}{m}{\newcommand{\autorn}{#1}}
-\NewDocumentCommand{\coautor}{m}{\newcommand{\coautorn}{#1}}
-\NewDocumentCommand{\autormail}{m}{\newcommand{\autorm}{#1}}
-\NewDocumentCommand{\coautormail}{m}{\newcommand{\coautorm}{#1}}
-\NewDocumentCommand{\supervisor}{m}{\newcommand{\supname}{#1}}
-\NewDocumentCommand{\cosupervisor}{m}{\newcommand{\cosupname}{#1}}
-\NewDocumentCommand{\examiner}{m}{\newcommand{\examname}{#1}}
-\NewDocumentCommand{\grado}{m}{\newcommand{\gradon}{#1}}
-\NewDocumentCommand{\grupo}{m}{\newcommand{\grupon}{#1}}
-\NewDocumentCommand{\subject}{m}{\newcommand{\subjectname}{#1}}
-\NewDocumentCommand{\keywords}{m}{\newcommand{\keywordnames}{#1}}
-\NewDocumentCommand{\titulo}{m}{\newcommand{\ttitle}{#1}}
-
-%============================================================
-% Algunos formatos nuevos para separar el formato del contexto
-\newcommand{\keyword}[1]{\textbf{#1}}
-\newcommand{\tabhead}[1]{\textbf{#1}}
-\newcommand{\code}[1]{\texttt{#1}}
-\newcommand{\file}[1]{\texttt{\bfseries#1}}
-\newcommand{\option}[1]{\texttt{\itshape#1}}
-\newcommand\blankpage{
-	\null
-	\thispagestyle{empty}
-	\addtocounter{page}{0}
-	\newpage}
-
-%================================================================
-% DATOS DE  PORTADA
-%----------------------------------------------------------------------------------------
-% Datos Institucionales.
-\universidad{	\href{www.ungs.edu.ar}{Universidad Nacional de General Sarmiento}}
-\instituto{\href{https://www.ungs.edu.ar/idei/idei}{Instituto de Industria (IDEI)}}
-%----------------------------------------------------------------------------------------
-% Datos Particulares
-\titulo{\vspace{-4.5cm} Optimización picking y ruteo de pedidos en un centro de distribución}
-% Grado Alcanzado
-\grado{Licenciadas en Sistemas} % Cambiar según corresponda (a/o/os/as)
-%Autorres
-\autor{Ebertz, Ximena}
-\autormail{ebertz.xime@gmail.com}
-\coautor{Soria, Lucía}
-\coautormail{luciacsoria5@gmail.com}
-% Gupo de Investigación o Laboratorio. (si fuera necesario declarar, quitar ~ y reemplazar por el nombre)
-∞\grupo{~}
-%Directores, Supervisores.
-\supervisor{Fernández, Enrique}
-%\cosupervisor{Nombre Cosupervisor}
-
-%===========================================================================
-%DECLARACIÓN DE ACRÓNIMOS Y GLOSARIO
-%----------------------------------------------------------------------------------------
-% Los Acrónimos y Glosario de terminos se declara en el encabezado (previo al cuerpo del documento)
-% Se emplea el paquete "acro" : https://github.com/cgnieder/acro/
-% Hay ciertas incompatibilidades entre diferentes compiladores de latex 
-% principalmente por el versionado.   .
-%----------------------------------------------------------------------------------------
-%% Con LiveTex ()LINUX)
-%% class 'abbrev':abreviaciones:
-%\DeclareAcronym{id}{
-%	short = I+D ,
-%	long  = Investigación y Desarrollo,
-%	class = abbrev
-%}
+%========================================================================================
+% TESINA (ConTeXt LMTX)
 %
-%\DeclareAcronym{mip}{
-%	short = MIP ,
-%	long  = Programación Lineal Entera Mixta (del inglés \emph{Mixed-Integer Programming}),
-%	class = abbrev
-%}
+% Compilar desde la raíz del repositorio:
 %
-%\DeclareAcronym{hc}{
-%	short = HC ,
-%	long  = Ascenso de Colina (del inglés \emph{Hill Climbing}),
-%	class = abbrev
-%}
+%     context tesina.tex && mv tesina.pdf out/
 %
-%\DeclareAcronym{aco}{
-%	short = ACO ,
-%	long  = Optimización por Colonia de Hormigas (del inglés \emph{Ant Colony Optimization}),
-%	class = abbrev
-%}
-%
-% class 'nomencl':glosario
-%\DeclareAcronym{angelsperarea}{
-%	short = \ensuremath{a} ,
-%	long  = El número de ángeles por unidad de área ,
-%	sort  = a ,
-%	class = nomencl}
+% El diseño, las siglas, el glosario y la bibliografía están en entorno.tex.
+%========================================================================================
 
-%% Con MikTex (Mac - Windows)
-%%
-%% tag 'abbrev':abreviaciones:
-\DeclareAcronym{mip}{
-	short = MIP ,
-	long  = Programación Lineal Entera Mixta (del inglés \emph{Mixed-Integer Programming}),
-	tag = abbrev}
-
-\DeclareAcronym{hc}{
-	short = HC ,
-	long  = Ascenso de Colina (del inglés \emph{Hill Climbing}),
-	tag = abbrev}
-
-\DeclareAcronym{aco}{
-	short = ACO ,
-	long  = Optimización por Colonia de Hormigas (del inglés \emph{Ant Colony Optimization}),
-	tag = abbrev}
-
-%% tag 'nomencl': glosario
-\DeclareAcronym{pickeo}{
-	short = Pickeo ,
-	long  = Proceso de recolección de los ítems que componen un pedido dentro de un almacén (del inglés \emph{picking}),
-	tag = nomencl}
-
-\DeclareAcronym{picker}{
-	short = Picker ,
-	long  = Operario encargado de recolectar los ítems de uno o más lotes dentro del almacén,
-	tag = nomencl}
-
-\DeclareAcronym{lote}{
-	short = Lote ,
-	long  = Conjunto de pedidos agrupados que se asignan y recolectan de forma conjunta,
-	tag = nomencl}
-
-\DeclareAcronym{orden}{
-	short = Orden ,
-	long  = Pedido de un cliente, compuesto por uno o más ítems a recolectar,
-	tag = nomencl}
-
-\DeclareAcronym{deposito}{
-	short = Depósito ,
-	long  = Nodo de partida y llegada del grafo que representa el almacén (también llamado \emph{depot}),
-	tag = nomencl}
-
-\DeclareAcronym{duedate}{
-	short = Due date ,
-	long  = Fecha de entrega comprometida de un pedido, respecto de la cual se penaliza el adelanto o la demora en su recolección,
-	tag = nomencl}
-
-\DeclareAcronym{batching}{
-	short = Batching ,
-	long  = Agrupamiento de pedidos en lotes,
-	tag = nomencl}
-
-\DeclareAcronym{cadenadefrio}{
-	short = Cadena de frío ,
-	long  = Restricción de tiempo máximo que un pedido puede permanecer fuera de temperatura controlada durante su recolección,
-	tag = nomencl}
-
-\DeclareAcronym{instancia}{
-	short = Instancia ,
-	long  = Conjunto particular de datos de entrada (almacén, pedidos, lotes, parámetros) sobre el que se ejecuta un modelo,
-	tag = nomencl}
-
-\DeclareAcronym{escenariofuncional}{
-	short = Escenario funcional ,
-	long  = Escenario de prueba de tamaño y complejidad moderados, pensado para validar la correctitud de un modelo,
-	tag = nomencl}
-
-\DeclareAcronym{escenariodeestres}{
-	short = Escenario de estrés ,
-	long  = Escenario de prueba de mayor escala, pensado para evaluar el comportamiento de un modelo en condiciones exigentes,
-	tag = nomencl}
-
-%\DeclareAcronym{angelsperarea}{
-%	short = \ensuremath{a} ,
-%	long  = El número de ángeles por unidad de área ,
-%	sort  = a ,
-%	tag = nomencl}
-
-%=======================================================================================
-% DOCUMENTO DE TESIS
-\begin{document}
-
-% Numeración romana para las páginas preliminares
-\pagenumbering{roman} 
+\environment entorno
 
 %----------------------------------------------------------------------------------------
-%  Título - PORTADA 
-%----------------------------------------------------------------------------------------
-\begin{titlepage}
-	\begin{tikzpicture}[remember picture, overlay]
-		\node[
-		anchor=center,
-		xshift=7.5cm,
-		yshift=4cm,
-		rectangle,
-		%fill=gray!20!white,
-		%fill opacity=0.8,
-		inner ysep=5pt,
-		inner xsep=3cm,
-		%text opacity=0.8,
-		%text width=\paperwidth+1cm, % Set text width in order to force left-alignment
-		]{\includegraphics[width=22cm]{Figuras/ungs.png}};
-	
-	\end{tikzpicture}
+% DATOS DE PORTADA
+\def\TesinaUniversidad   {Universidad Nacional de General Sarmiento}
+\def\TesinaUniversidadUrl{https://www.ungs.edu.ar}
+\def\TesinaInstituto     {Instituto de Industria (IDEI)}
+\def\TesinaInstitutoUrl  {https://www.ungs.edu.ar/idei/idei}
+\def\TesinaTitulo        {Optimización picking y ruteo de pedidos en un centro de distribución}
+\def\TesinaGrado         {Licenciadas en Sistemas} % Cambiar según corresponda (a/o/os/as)
+\def\TesinaAutor         {Ebertz, Ximena}
+\def\TesinaAutorMail     {ebertz.xime@gmail.com}
+\def\TesinaCoautor       {Soria, Lucía}
+\def\TesinaCoautorMail   {luciacsoria5@gmail.com}
+\def\TesinaSupervisor    {Fernández, Enrique}
+\def\TesinaCosupervisor  {}
+\def\TesinaGrupo         {} % Grupo de investigación o laboratorio, si corresponde
 
-	\begin{center}
-		\vspace{-1.5cm}
-		{\scshape\LARGE \univn\par}
-		\vspace{1.5cm} % University name
-		\textsc{\Large Tesina de la Licenciatura de Sistemas}\\[1.5cm] % Tipo de tesis
-		\hrule
-		\vspace{6.0cm}
-		{\huge \bfseries \ttitle\par} \vspace{1.4cm} % Título de la tesis
-		\hrule
-		\vspace*{.06\textheight}
-		\begin{minipage}[t]{0.4\textwidth}
-			\begin{flushleft} \large
-				\emph{Autor/es:}\\
-				\href{\autorm}{\autorn} \\ % Autor /a 
-				% salto de línea necesario
-				\href{\coautorm}{\coautorn} %  Coautor/a  
-			\end{flushleft}
-		\end{minipage}
-		\begin{minipage}[t]{0.4\textwidth}
-			\begin{flushright} \large
-				\emph{Supervisor:} \\
-				\supname
-				
-				% salto de línea necesario
-				\cosupname
-			\end{flushright}
-		\end{minipage}\\[2cm]
-		\vfill
-		\large \textit{La tesina se presenta para cumplir con los requerimientos de grado de \\ \gradon}\\[0.3cm] % University requirement text
-		\textit{en el}\\[0.4cm]
-		{\color{ideicolor} \grupon \\ \LARGE \instn}\\[1cm] % Research group name and department name
-		\vfill
-		{\large \today}\\[4cm] % Date
-		%\includegraphics{Logo} % University/department logo - uncomment to place it
-		
-		\vfill
-	\end{center}
-\end{titlepage}
+% Franja institucional en el borde superior de la portada.
+\definelayer
+  [portada]
+  [x=0mm,
+   y=0mm,
+   width=\paperwidth,
+   height=\paperheight]
 
+\setupbackgrounds[page][background=portada]
+
+\starttext
 
 %----------------------------------------------------------------------------------------
-%	PÁGINA DE CITA, si el autor lo requiere
-%----------------------------------------------------------------------------------------
-\vspace*{0.1\textheight}
+% PORTADA
+\setlayer
+  [portada]
+  [x=-0.5cm,
+   y=0cm]
+  {\externalfigure[Figuras/ungs.png][width=22cm]}
 
-{\itshape Una hormiga en movimiento hace más que un buey dormido.}\bigbreak
-\hfill Lao Tse
+\startstandardmakeup[headerstate=empty, footerstate=empty]
+  \startalignment[middle]
+    \blank[force,2cm]
+    {\bfb \goto{\TesinaUniversidad}[url(\TesinaUniversidadUrl)]\par}
+    \blank[big]
+    {\tfa Tesina de la Licenciatura de Sistemas\par}
+    \blank[2*big]
+    \hrule
+    \blank[big]
+    {\bfc \TesinaTitulo\par}
+    \blank[big]
+    \hrule
+    \blank[2*big]
+    \hbox to \textwidth
+      {\hss
+       \vtop
+         {\hsize=.4\textwidth
+          \raggedright
+          {\em Autor/es:}\par
+          \goto{\TesinaAutor}[url(mailto:\TesinaAutorMail)]\par
+          \goto{\TesinaCoautor}[url(mailto:\TesinaCoautorMail)]\par}%
+       \vtop
+         {\hsize=.4\textwidth
+          \raggedleft
+          {\em Supervisor:}\par
+          \TesinaSupervisor\par
+          \TesinaCosupervisor\par}%
+       \hss}
+    \vfill
+    {\em La tesina se presenta para cumplir con los requerimientos de grado de\\
+     \TesinaGrado\par
+     en el\par}
+    \blank
+    {\TesinaGrupo\par}
+    {\tfb \goto{\TesinaInstituto}[url(\TesinaInstitutoUrl)]\par}
+    \vfill
+    {\currentdate[day,{ de },month,{ de },year]\par}
+    \blank[2cm]
+  \stopalignment
+\stopstandardmakeup
+
+%----------------------------------------------------------------------------------------
+% PÁGINAS PRELIMINARES (numeración romana)
+\startfrontmatter
+
+%	PÁGINA DE CITA
+\blank[force,2cm]
+{\em Una hormiga en movimiento hace más que un buey dormido.}
+\startalignment[flushright]
+  Lao Tse
+\stopalignment
 
 % Esta también me gustó jaja:
-%{\itshape Todos los modelos están equivocados, pero algunos son útiles.}\bigbreak
-%\hfill George E. P. Box
+% {\em Todos los modelos están equivocados, pero algunos son útiles.}
+% \startalignment[flushright] George E. P. Box \stopalignment
 
-\afterpage{\blankpage}
-\clearpage
+\startpreliminar[title={Resumen}]
+  \input{Capitulos/resumen.tex}
+\stoppreliminar
 
-%--------------------------------------------------------------------------------------
-%  RESUMEN
-%--------------------------------------------------------------------------------------
-\begin{abstract}
-	\addcontentsline{toc}{section}{Resumen}
-	\input{Capitulos/resumen.tex}
-\end{abstract}
+\startpreliminar[title={Abstract}]
+  \input{Capitulos/abstract.tex}
+\stoppreliminar
 
-\afterpage{\blankpage}
-\clearpage
-
-%--------------------------------------------------------------------------------------
-%  ABSTRACT
-%--------------------------------------------------------------------------------------
-{\renewcommand{\abstractname}{Abstract}
-\begin{abstract}
-	\addcontentsline{toc}{section}{Abstract}
-	\input{Capitulos/abstract.tex}
-\end{abstract}}
-
-\afterpage{\blankpage}
-\clearpage
-
-%----------------------------------------------------------------------------------------
-%	AGRADECIMIENTOS	
-%----------------------------------------------------------------------------------------
 % TODO: cambiar esto!
-\section*{Agradecimientos}
-\addcontentsline{toc}{section}{Agradecimientos}
+\startpreliminar[title={Agradecimientos}]
 	Le agradecemos en particular a nuestra familia y amigos, por la paciencia y el apoyo incondicional a lo largo de toda nuestra formación.
 	A Enrique Fernández, nuestro supervisor, por su predisposición, sus consejos y por guiarnos en el desafío de optimizar y modelar este problema.
 	También, nos agradecemos la una a la otra, por habernos apoyado en los momentos difíciles, y habernos dado fuerzas para siempre seguir adelante.
-\newpage
+\stoppreliminar
 
-%-------------------------------------------------------------------------------------
-%  INDICES
-%-------------------------------------------------------------------------------------
-% Se marcan como "usados" los términos del Glosario que no necesariamente
-% se referencian con \ac{...} en el cuerpo (serían muy intrusivos para
-% palabras tan frecuentes), para que igual aparezcan en la lista impresa.
-\acuse{pickeo,picker,lote,orden,deposito,duedate,batching,cadenadefrio,instancia,escenariofuncional,escenariodeestres}
+\startpreliminar[title={Lista de Abreviaciones}]
+  \placelistofsiglas
+\stoppreliminar
 
-% Lista de Abreviaciones
-%\printacronyms[include-classes=abbrev,name={\Huge Lista de abreviaciones \\}]   %TexLive
-\printacronyms[include=abbrev,name={\Huge Lista de Abreviaciones \\}]  % MikTex
-\addcontentsline{toc}{section}{Lista de Abreviaciones}
-\cleardoublepage
-% Lista de Nomenclaturas
-%\printacronyms[include-classes=nomencl,name={\Huge  Glosario \\}]  %TexLive
-\printacronyms[include=nomencl,name={\Huge  Glosario \\}]  %MikTex
-\addcontentsline{toc}{section}{Glosario}
-% Lista de Figuras
-\listoffigures
-\addcontentsline{toc}{section}{Índice de Figuras}
-% Lista de cuadros
-\listoftables
-\addcontentsline{toc}{section}{Índice de Cuadros}
-% Índice
-\renewcommand\headrulewidth{1pt} % a partir de aquí se tienen una línea en el header
-\tableofcontents
-\addcontentsline{toc}{section}{Índice General}
+\startpreliminar[title={Glosario}]
+  \placelistofterminos
+\stoppreliminar
 
-\clearpage
+\startpreliminar[title={Índice de figuras}]
+  {\setupwhitespace[none]\placelistoffigures}
+\stoppreliminar
+
+\startpreliminar[title={Índice de cuadros}]
+  {\setupwhitespace[none]\placelistoftables}
+\stoppreliminar
+
+\startpreliminar[title={Índice general}]
+  {\setupwhitespace[none]\placecontent}
+\stoppreliminar
+
+\startpreliminar[title=, list={Dedicatoria}]
+  \blank[force,6cm]
+  \startalignment[middle]
+    {\tfb\sl Para / Dedicada a / Para mi ...\par}
+  \stopalignment
+\stoppreliminar
+
+\stopfrontmatter
 
 %----------------------------------------------------------------------------------------
-%	DEDICATORIA	
+% CAPÍTULOS (numeración arábiga desde 1)
+\startbodymatter
+
+\setupuserpagenumber[number=1]
+
+\input{Capitulos/cap1.tex} % Introducción
+\input{Capitulos/cap2.tex} % Marco teórico y estado del arte
+\input{Capitulos/cap3.tex} % Modelos Lineales
+\input{Capitulos/cap4.tex} % Metaheurísticas
+\input{Capitulos/cap5.tex} % Metodología
+\input{Capitulos/cap6.tex} % Resultados
+\input{Capitulos/cap7.tex} % Conclusión y Discusión
+% Capitulos/plantilla.tex: guía de la plantilla original en LaTeX; no se compila,
+% queda como referencia.
+
+\stopbodymatter
+
 %----------------------------------------------------------------------------------------
-\chapter*{}
-\addcontentsline{toc}{section}{Dedicatoria}
-\vspace*{0.2\textheight}
+% ANEXOS
+\startappendices
 
-\begin{center}{\Large\slshape Para / Dedicada a / Para mi ... }\end{center}
+\starttitle[title={Anexos}]
+\stoptitle
 
-\afterpage{\blankpage}
-\clearpage
+\input{Apendices/ap1.tex} % Diagramas
+\input{Apendices/ap2.tex} % Pseudocódigos
+
+\stopappendices
+
 %----------------------------------------------------------------------------------------
-% Numeración arábiga para el cuerpo de la tesis.
-\pagenumbering{arabic} 
-%-----------------------------------------------------------------------------------
-% Capítulos 
-%-----------------------------------------------------------------------------------
-\include{Capitulos/cap1} % Introducción
-\include{Capitulos/cap2} % Marco teórico y estado del arte
-\include{Capitulos/cap3} % Modelos Lineales
-\include{Capitulos/cap4} % Metaheurísticas
-\include{Capitulos/cap5} % Metodología
-\include{Capitulos/cap6} % Resultados
-\include{Capitulos/cap7} % Conclusión y Discusión
-%\include{Capitulos/plantilla} % Guía de uso de la plantilla (referencia)
+% REFERENCIAS
+\startbackmatter
 
-\afterpage{\blankpage}
+\starttitle[title={Bibliografía}]
+  \placelistofpublications
+\stoptitle
 
-%-----------------------------------------------------------------------------------
-% Anexos 
-%-----------------------------------------------------------------------------------
-\begin{appendices}
-\include{Apendices/ap1} % Diagramas
-\include{Apendices/ap2} % Pseudocódigos
-\end{appendices}
+\stopbackmatter
 
-
-%-----------------------------------------------------------------------------------
-% Referencias
-%-----------------------------------------------------------------------------------
-\bibliographystyle{plain}
-\bibliography{Referencias/tesina.bib} %tesina.bib
-\addcontentsline{toc}{chapter}{Bibliografía}
-
-\end{document}
+\stoptext
