@@ -580,57 +580,18 @@ para validar las soluciones de las heurísticas.
 
 \startsubsection[title={Cómo funciona}]
 
-\ruta{verification/mono_compliance.py} toma el \ruta{.zpl} del monolítico sin modificar, escribe
-los datos de la instancia, lo compila y fija sobre las variables del modelo compilado los valores
-de la solución, buscándolas por su nombre de ZIMPL. No copia ni reescribe ninguna restricción: el
-\ruta{.zpl} del monolítico es la única definición de qué es una solución válida. Si un nombre no
-existe en el modelo compilado, el verificador falla en vez de ignorarlo. La comprobación tiene
-tres capas:
+El verificador toma la solución, fija sus decisiones (rutas, asignación de lotes a pickers y orden
+de cada picker) y después sus terminaciones sobre las variables del monolítico compilado, sin
+modificar el modelo, y deja que SCIP decida si con esos valores se cumplen todas las restricciones
+y cuánto cuesta la solución. Es el mismo mecanismo que se usa con las heurísticas. Se explica en
+detalle en la sección \in[sec:verificacion_mono]: qué dato se fija en qué variable, qué queda
+libre, qué comprueba cada restricción, los tres pasos y el criterio de aceptación, y la prueba de
+que el verificador detecta errores.
 
-\startitemize
-\item {\bf Capa 0, chequeos en Python:} cada lote asignado a exactamente un picker; rutas que solo
-usan nodos y arcos del grafo, sin revisitas; ubicaciones requeridas cubiertas; cadena de frío
-($T^{exec} \le T^{cold} + 10^{-9}$); tiempos de ejecución, terminaciones y objetivo reportados
-iguales a los que da la fórmula del monolítico recalculada en Python.
-\item {\bf Nivel 1, las decisiones:} se fijan las rutas ($z_{ijb}$ de todos los arcos), la
-asignación ($x_{pb}$ de todos los pares) y la secuencia ($y_{bk}$), y se dejan libres los tiempos.
-SCIP resuelve: si es infactible, las decisiones no son válidas para el monolítico.
-\item {\bf Nivel 2, la solución exacta:} se fijan además las terminaciones $c_{pb}$ y $c_b$
-reportadas. SCIP comprueba que la solución entera sea factible y calcula su objetivo.
-\stopitemize
-
-El veredicto es {\bf \quote{compliant}} solo si no hay hallazgos en la capa 0, los dos niveles son
-factibles y el objetivo del nivel 2 coincide con el reportado (tolerancia relativa $10^{-6}$).
-Cualquier otro resultado es \quote{violations}, con el detalle. Si el nivel 1 es infactible, el
-verificador libera por turnos las rutas, la secuencia o la asignación, y con hasta 40 lotes
-también la ruta de cada lote por separado, para señalar qué decisión es la inválida.
-
-Algunos detalles de diseño:
-
-\startitemize
-\item {\bf Big-M:} si el $M$ o el $M^{seq}$ del escenario fueran demasiado chicos para la solución
-que se verifica, se reemplazan por un valor válido y queda anotado; nunca cuenta como violación.
-\item {\bf Lotes vacíos:} el monolítico obliga a rutear, asignar y cobrar todo lote de
-$\mathcal{B}$, aunque no tenga órdenes, mientras que las heurísticas los ignoran. Por decisión del
-equipo, el verificador saca de $\mathcal{B}$ los lotes sin órdenes que la solución no usa, y lo
-anota. Ninguna restricción cambia.
-\item {\bf Instancia de 100×100:} compilar el monolítico completo llevó a ZIMPL a unos 5~GB sin
-terminar. Cuando todas las rutas están fijas, el verificador trabaja sobre el subgrafo de esas
-rutas (sus arcos, sus nodos, el depósito y el final), que es exactamente equivalente con las rutas
-fijas. El control: las 248 soluciones que ya estaban verificadas dieron el mismo veredicto, los
-mismos estados y los mismos objetivos con y sin el recorte.
-\item {\bf Adaptación de una solución del Split:} las rutas se reconstruyen a partir de los arcos
-activos de la Etapa 1, el orden de cada picker a partir de $c_{pb}$ y las terminaciones de los
-lotes a partir de $c_b$.
-\stopitemize
-\stopsubsection
-
-\startsubsection[title={Prueba de que el verificador puede fallar}]
-
-Un verificador que siempre dice \quote{compliant} no prueba nada. Sobre una solución chica se
-introdujeron cuatro errores a propósito: un arco que no existe en el grafo, dos terminaciones
-superpuestas del mismo picker, una violación de la cadena de frío y un objetivo mal reportado. El
-verificador detectó los cuatro.
+{\bf Adaptación de una solución del Split.} La solución guardada del Split se lleva al mismo formato
+que la de una heurística: la ruta de cada lote se reconstruye siguiendo los arcos activos de la
+Etapa 1, el orden de cada picker se arma ordenando sus lotes por $c_{pb}$, y la terminación de cada
+lote es su $c_b$. Las duraciones, el atraso y el adelanto no se pasan: los calcula el verificador.
 \stopsubsection
 
 \startsubsection[title={Resultados}]
@@ -809,28 +770,262 @@ directa del efecto (sección \in[sec:res_heuristicas]).
 órdenes por lote, así que esperar nunca conviene; del 01 al 03, todas las órdenes llegan tarde.
 \stopitemize
 \stopsubsubsection
+\stopsubsection
 
-\startsubsubsection[title={Verificación de las soluciones}]
+\startsubsection[title={El monolítico como verificador: cómo se comprueba que se cumplen las restricciones}, reference=sec:verificacion_mono]
+
+Esta es la pieza central de la validación de las heurísticas: es la que muestra que cada solución
+cumple todas las restricciones del problema.
+
+\startsubsubsection[title={La idea}]
+
+Para saber si una solución cumple las restricciones hay dos caminos: reescribir cada restricción
+en un programa aparte y evaluarla, o usar el modelo que ya las define. Se eligió el segundo. El
+monolítico es la formulación directa del problema, y sus restricciones (1)--(22) son la
+definición de qué es una solución válida. El verificador toma la solución de la heurística, la
+escribe sobre las variables del monolítico fijando su valor, y le pregunta a SCIP si con esos
+valores se pueden cumplir todas las restricciones:
+
+\startitemize
+\item {\bf Si SCIP encuentra el modelo factible,} la solución cumple todas las restricciones del
+monolítico, y SCIP además calcula su costo con la función objetivo del modelo.
+\item {\bf Si lo declara infactible,} hay al menos una restricción que la solución no cumple.
+\stopitemize
+
+Así no existe una segunda implementación de las restricciones que pueda equivocarse distinto que
+el modelo: el juicio de factibilidad lo da el mismo \ruta{.zpl} que usan los tests del
+monolítico, y lo resuelve SCIP. Concretamente, el verificador
+(\ruta{verification/mono_compliance.py}):
+
+\startitemize[n]
+\item {\bf Copia} el \ruta{.zpl} del monolítico sin modificarlo.
+\item {\bf Escribe los datos de la instancia} con el mismo módulo que usan los tests
+(\ruta{build_dat_files}), a partir de la instancia guardada junto con la solución.
+\item {\bf Compila} el modelo con ZIMPL, igual que los tests, y lo carga en SCIP.
+\item {\bf Fija los valores de la solución} cambiando las cotas de las variables del modelo
+compilado (cota inferior igual a cota superior), buscándolas por su nombre de ZIMPL, por ejemplo
+\ruta{x_pb$P2$B1}. Si un nombre no existe en el modelo, el verificador se detiene con un error en
+vez de ignorarlo.
+\item {\bf Resuelve,} con un límite de 300~s por resolución, y lee el estado y el objetivo.
+\stopitemize
+
+Ninguna restricción se copia, se edita ni se agrega: lo único que cambia son las cotas de algunas
+variables.
+\stopsubsubsection
+
+\startsubsubsection[title={Qué se guarda de cada solución}]
 
 Con \ruta{WRITE_SOLUTIONS=1}, el runner guarda cada solución de una heurística en un JSON, después
-de medir la duración del test. El JSON tiene la instancia completa y la solución: estado, objetivo,
-la ruta de cada lote como secuencia de ubicaciones, el orden de los lotes de cada picker, el tiempo
-de ejecución y la terminación de cada lote, y el atraso y el adelanto de cada orden.
+de medir la duración del test. El JSON tiene dos partes:
 
-\ruta{verification/run_compliance.py} lee esos JSON (no vuelve a correr la heurística) y verifica
-cada solución con el monolítico, con las mismas capas que en la línea 4 (sección
-\in[sec:verificador]): chequeos en Python, nivel 1 con las decisiones fijas y nivel 2 con la
-solución exacta. Cada fila del reporte tiene el veredicto, el objetivo reportado, el recalculado en
-Python, el estado y el objetivo de cada nivel, y las notas (lotes vacíos descartados, subgrafo).
-\quote{Skipped} significa que no hay solución que verificar: la heurística no encontró solución, y
-el test lo esperaba.
+\startitemize
+\item {\bf La instancia completa:} conjuntos, grafo con sus distancias, órdenes con sus cantidades,
+ubicaciones y fechas, lotes, velocidades, límite de frío y pesos del objetivo. Es la que se usa
+para escribir los datos del monolítico.
+\item {\bf La solución:} estado y objetivo reportado; la ruta de cada lote como secuencia de
+ubicaciones entre el depósito y el final; el orden de los lotes de cada picker; la duración y la
+terminación de cada lote; y el atraso y el adelanto de cada orden.
+\stopitemize
+
+\ruta{verification/run_compliance.py} recorre los JSON de una suite y verifica cada uno, sin
+volver a correr la heurística.
+\stopsubsubsection
+
+\startsubsubsection[title={De la solución a las variables del monolítico}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][align=flushleft]
+\setupTABLE[column][3][align=flushleft]
+\setupTABLE[column][2][width=2.6cm]
+\bTR \bTH Dato de la solución \eTH \bTH Variable del monolítico \eTH \bTH Cómo se usa \eTH \eTR
+\bTR \bTD Ruta de cada lote \eTD \bTD $z_{ijb}$ \eTD \bTD Se arma el camino depósito → paradas → final. Para ese lote, $z_{ijb} = 1$ en cada arco del camino y $z_{ijb} = 0$ en todos los demás arcos del grafo. \eTD \eTR
+\bTR \bTD Picker de cada lote \eTD \bTD $x_{pb}$ \eTD \bTD $x_{pb} = 1$ para el picker asignado y $0$ para todos los demás. \eTD \eTR
+\bTR \bTD Orden de los lotes de cada picker \eTD \bTD $y_{bk}$ \eTD \bTD Para cada par de lotes del mismo picker, consecutivos o no, se fija el valor que indica cuál va primero. \eTD \eTR
+\bTR \bTD Terminación de cada lote \eTD \bTD $c_{pb}$ y $c_b$ \eTD \bTD Solo en el nivel 2: exactamente el valor reportado, en $c_{pb}$ del picker asignado y en $c_b$. \eTD \eTR
+\bTR \bTD Duración de cada lote \eTD \bTD -- \eTD \bTD No se fija: la capa 0 la compara con $F_b + r_b / V_p$ recalculado. \eTD \eTR
+\bTR \bTD Atraso y adelanto \eTD \bTD -- \eTD \bTD No se fijan: los calcula SCIP. \eTD \eTR
+\bTR \bTD Objetivo reportado \eTD \bTD -- \eTD \bTD No se fija: se compara con el recalculado en la capa 0 y con el que da SCIP en el nivel 2. \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las rutas, la asignación y el orden son las {\em decisiones} de la heurística; las terminaciones son
+los {\em tiempos} que resultan de ellas. El verificador las fija por separado, en dos niveles, para
+poder distinguir una decisión inválida de un tiempo mal calculado.
+\stopsubsubsection
+
+\startsubsubsection[title={Qué queda libre y por qué}]
+
+Las variables que no se fijan no son grados de libertad que la solución pueda aprovechar: o
+quedan determinadas por las restricciones a partir de lo fijado, o SCIP tiene que demostrar que
+existen valores que cumplan las restricciones.
+
+\startitemize
+\item {\bf Flujo de carga $q_{ijb}$:} SCIP tiene que encontrar un flujo que cumpla (10)--(12) usando
+solo los arcos fijados en 1. Ese flujo existe solo si la ruta conecta el depósito con todas las
+ubicaciones requeridas: es la prueba de que no hay ciclos sueltos.
+\item {\bf Tiempo de ruta $r_b$:} queda determinado por (13) a partir de los arcos fijados. Es el
+tiempo de la ruta de la heurística, con traslado y servicio.
+\item {\bf Duración $u_{pb}$:} (15) y (16) la fijan en $F_b + r_b / V_p$ para el picker asignado, y
+su cota superior $T^{cold} + \varepsilon$ verifica la cadena de frío.
+\item {\bf Terminaciones $c_{pb}$ y $c_b$, solo en el nivel 1:} SCIP busca los mejores tiempos para
+esas decisiones.
+\item {\bf Atraso $ta_n$ y adelanto $ea_n$:} como el objetivo los minimiza, SCIP les asigna el atraso
+y el adelanto reales de cada orden respecto de su fecha, dadas las terminaciones.
+\item {\bf $y_{bk}$ entre lotes de pickers distintos:} no importa su valor, porque (19)--(20) solo se
+activan cuando los dos lotes comparten picker.
+\stopitemize
+\stopsubsubsection
+
+\startsubsubsection[title={Qué comprueba cada restricción}]
+
+Con las decisiones fijadas, cada restricción del monolítico se convierte en una pregunta sobre la
+solución de la heurística:
+
+\testpage[12]
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][width=3.2cm]
+\setupTABLE[column][2][align=flushleft]
+\bTR \bTH Restricciones \eTH \bTH Qué verifica sobre la solución \eTH \eTR
+\bTR \bTD (1)--(4) \eTD \bTD La ruta de cada lote sale del depósito y llega al nodo final, sin volver a entrar al depósito ni salir del final. \eTD \eTR
+\bTR \bTD (5)--(6) \eTD \bTD Cada ubicación que piden las órdenes del lote tiene un arco que entra y uno que sale: está visitada. \eTD \eTR
+\bTR \bTD (7)--(9) \eTD \bTD La ruta es un camino: lo que entra a un nodo sale de él, y a cada nodo entra y sale a lo sumo un arco. \eTD \eTR
+\bTR \bTD (10)--(12) \eTD \bTD Existe un flujo de carga desde el depósito que llega a cada ubicación requerida: la ruta es conexa. \eTD \eTR
+\bTR \bTD (13) \eTD \bTD Define el tiempo de la ruta. \eTD \eTR
+\bTR \bTD (14) \eTD \bTD Cada lote está asignado a exactamente un picker. \eTD \eTR
+\bTR \bTD (15)--(16) y la cota de $u_{pb}$ \eTD \bTD La duración del lote en su picker es $F_b + r_b / V_p$ y no supera $T^{cold} + \varepsilon$: cadena de frío. \eTD \eTR
+\bTR \bTD (17)--(18) \eTD \bTD Cada lote termina después de su duración, y $c_b$ es su terminación. \eTD \eTR
+\bTR \bTD (19)--(20) \eTD \bTD Dos lotes del mismo picker no se superponen: en el orden dado, el segundo termina por lo menos su duración después del primero. \eTD \eTR
+\bTR \bTD (21)--(22) \eTD \bTD Atraso y adelanto de cada orden respecto de su fecha de entrega. \eTD \eTR
+\bTR \bTD Objetivo \eTD \bTD El costo de la solución con la fórmula del monolítico. \eTD \eTR
+\eTABLE
+\blank[medium]
+\stopsubsubsection
+
+\startsubsubsection[title={Los tres pasos y el criterio de aceptación}]
+
+\startitemize
+\item {\bf Capa 0, chequeos en Python (antes de SCIP):} recalcula la solución con las fórmulas del
+monolítico y la compara con lo reportado:
+\startitemize
+\item cada picker existe y cada lote tiene exactamente un picker;
+\item cada ruta usa solo nodos y arcos del grafo, no repite nodos y cubre las ubicaciones
+requeridas del lote;
+\item la duración de cada lote, $F_b + r_b / V_p$, no supera $T^{cold} + 10^{-9}$, y coincide con la
+reportada;
+\item las terminaciones, recalculadas sumando las duraciones en el orden de cada picker (las
+heurísticas no esperan), coinciden con las reportadas;
+\item toda orden tiene fecha de entrega, y el objetivo recalculado coincide con el reportado.
+\stopitemize
+Repite a propósito parte de lo que comprueba SCIP. Da mensajes legibles en lugar de un
+\quote{infactible} sin detalle, y revisa los números reportados (duraciones, terminaciones,
+objetivo) que el nivel 1 no fija. Además, una ruta con un arco que no existe no se puede fijar en
+el modelo, porque esa variable no existe.
+\item {\bf Nivel 1, las decisiones:} se fijan rutas, asignación y orden, y quedan libres los
+tiempos. Si SCIP lo declara infactible, alguna decisión viola una restricción. Si es factible,
+las decisiones son válidas, y el objetivo que devuelve SCIP es el mejor costo posible para ellas,
+que no puede ser mayor que el reportado.
+\item {\bf Nivel 2, la solución exacta:} se fijan además las terminaciones reportadas. Si SCIP lo
+encuentra factible, la solución completa, con sus tiempos, cumple todas las restricciones, y el
+objetivo que devuelve es el costo de exactamente esa solución. Las terminaciones se fijan sin
+margen (cota inferior igual a cota superior): un margen dejaría que SCIP eligiera el extremo más
+barato y movería el objetivo. El ruido de punto flotante en las restricciones lo absorbe la
+tolerancia de factibilidad de SCIP.
+\stopitemize
+
+{\bf Veredicto.} Una solución es {\bf \quote{compliant}} si se cumplen las cuatro condiciones:
+la capa 0 no tiene hallazgos, el nivel 1 es factible, el nivel 2 es factible, y el objetivo del
+nivel 2 coincide con el reportado (tolerancia relativa $10^{-6}$). Cualquier otro resultado es
+\quote{violations}, con el detalle de qué falló. \quote{Skipped} significa que no hay solución que
+verificar: la heurística no encontró solución, y el test lo esperaba.
+
+{\bf Cuando el nivel 1 es infactible,} el verificador busca qué decisión es la inválida: vuelve a
+resolver liberando por turnos las rutas, el orden, o la asignación junto con el orden, y con hasta
+40 lotes también la ruta de cada lote por separado. Si al liberar un grupo el modelo vuelve a ser
+factible, el problema está en ese grupo.
 
 {\bf Qué agrega el nivel 1 en las heurísticas.} Como las heurísticas nunca esperan, el nivel 1, que
 deja libres los tiempos, puede devolver un objetivo menor que el reportado: el que tendrían las
 mismas decisiones si se permitiera la espera voluntaria. No es una violación (el nivel 2 comprueba
-los tiempos reportados), pero mide cuánto de la diferencia con el Split se debe a la espera.
+los tiempos reportados), pero mide cuánto de la diferencia con el Split se debe a la espera
+(sección \in[sec:res_heuristicas]).
 \stopsubsubsection
+
+\startsubsubsection[title={Un ejemplo paso a paso}]
+
+La instancia 06a tiene dos lotes, B1 y B2, de una orden cada uno, dos pickers, P1 y P2, y fecha de
+entrega 15 para las dos órdenes. HC devuelve:
+
+\startitemize
+\item {\bf Rutas:} los dos lotes, por L1→L4→L5.
+\item {\bf Asignación y orden:} los dos lotes en P2, primero B2 y después B1. P1 no hace nada.
+\item {\bf Tiempos:} duración 8 cada lote, así que B2 termina en 8 y B1 en 16. La orden de B2 tiene 7
+de adelanto, y la de B1, 1 de atraso.
+\item {\bf Objetivo reportado:} $1 \cdot (8 + 16) + 10 \cdot (1 \cdot 7 + 5 \cdot 1) = 144$.
+\stopitemize
+
+El verificador:
+
+\startitemize[n]
+\item {\bf Capa 0:} el camino L1→L4→L5 existe en el grafo y no repite nodos; recalcula la duración
+(8) y las terminaciones en el orden de P2 (8 y 16), y el objetivo con la fórmula del monolítico
+(144): todo coincide con lo reportado.
+\item {\bf Nivel 1:} fija, para cada lote, $z_{ijb} = 1$ en los arcos L1→L4 y L4→L5 y $0$ en el resto;
+$x_{P2,B1} = x_{P2,B2} = 1$ y $x_{P1,B1} = x_{P1,B2} = 0$; y $y_{B1,B2} = 0$, que indica que B1 va
+después de B2. Como todas las rutas quedan fijas, el verificador trabaja sobre el subgrafo de esas
+rutas (3 de los 5 nodos y 2 de los 6 arcos); sobre el grafo completo, los otros 4 arcos se fijarían
+en 0. SCIP encuentra el modelo factible con objetivo 144: con esas decisiones, ni siquiera esperando
+se consigue algo mejor.
+\item {\bf Nivel 2:} fija además $c_{P2,B2} = c_{B2} = 8$ y $c_{P2,B1} = c_{B1} = 16$. SCIP lo encuentra
+factible, con objetivo 144.
+\item {\bf Veredicto:} \quote{compliant}.
+\stopitemize
+
+En la instancia 06b (misma geometría, fecha 10), HC pone un lote en cada picker y reporta 56. El
+nivel 2 confirma ese 56, pero el nivel 1 devuelve 20: con las mismas decisiones, declarar los lotes
+terminados en la fecha de entrega cuesta 20. Ahí está la espera voluntaria.
+\stopsubsubsection
+
+\startsubsubsection[title={Ajustes que no cambian el problema}]
+\startitemize
+\item {\bf Lotes vacíos:} el monolítico obliga a rutear, asignar y cobrar en el objetivo todo lote de
+$\mathcal{B}$, aunque no tenga órdenes, mientras que las heurísticas los ignoran. Por decisión del
+equipo, el verificador saca de $\mathcal{B}$ los lotes sin órdenes que la solución no usa, y lo
+anota. Un lote vacío que la solución sí usa se conserva y se verifica. Ninguna restricción cambia.
+\item {\bf Big-M:} si el $M$ o el $M^{seq}$ del escenario fueran demasiado chicos para la solución que
+se verifica, el monolítico rechazaría una solución correcta por un artefacto de la formulación.
+En ese caso se reemplazan por un valor válido y queda anotado; nunca cuenta como violación. En las
+150 soluciones de las heurísticas no hizo falta.
+\item {\bf Subgrafo de las rutas:} con todas las rutas fijas, un arco que ningún lote usa tiene
+$z_{ijb} = 0$ y $q_{ijb} = 0$ en todos los lotes, y un nodo que ninguna ruta toca no tiene arcos
+ni lo pide ninguna orden. Por eso el verificador puede trabajar sobre el subgrafo de las rutas
+(sus arcos, sus nodos, el depósito y el final) con el mismo resultado. Se agregó el 29-09 porque
+compilar el monolítico completo de la instancia de 100×100 llevó a ZIMPL a unos 5~GB sin
+terminar, y solo se aplica si todos los lotes quedaron fijos y la capa 0 no encontró problemas de
+ruta. El control: las 248 soluciones que ya estaban verificadas dieron el mismo veredicto, los
+mismos estados y los mismos objetivos con y sin el recorte. La mayoría de los veredictos guardados
+se obtuvieron con el grafo completo, antes del cambio; el 100×100 y las dos instancias del 06, sobre
+el subgrafo.
+\stopitemize
+\stopsubsubsection
+
+\startsubsubsection[title={Por qué se puede confiar en el verificador}]
+\startitemize
+\item {\bf Puede fallar, y falla cuando debe:} sobre una solución chica se introdujeron cuatro errores
+a propósito (un arco que no existe en el grafo, dos terminaciones superpuestas del mismo picker,
+una violación de la cadena de frío y un objetivo mal reportado), y los detectó los cuatro.
+\item {\bf Dos cálculos independientes coinciden:} en las 150 soluciones, el objetivo recalculado en
+Python, el que da SCIP en el nivel 2 y el reportado por la heurística son el mismo.
+\item {\bf Define válida con el modelo validado:} el criterio es el monolítico, cuya equivalencia con
+el Split se validó primero (secciones \in[sec:formal] a \in[sec:pares]).
+\stopitemize
+\stopsubsubsection
+
 \stopsubsection
+
 
 \startsubsection[title={Resultados}, reference=sec:res_heuristicas]
 
