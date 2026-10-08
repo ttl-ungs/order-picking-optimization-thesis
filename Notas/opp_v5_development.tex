@@ -1,0 +1,2631 @@
+\setupcolors[state=start]
+\setupcolor[hex]
+\definecolor[darkblue][h=003366]
+\definecolor[darkgray][h=e6e6e6]
+\definecolor[redline][h=d9534f]
+\definecolor[blueline][h=5bc0de]
+\definecolor[greenline][h=5cb85c]
+
+\setuphead[section][style=\bfa, color=darkblue, before=\blank, after=\blank]
+\setuphead[subsection][style=\bf, color=black, before=\blank, after=\blank]
+\setuppapersize[A4][A4]
+\setupbodyfont[11pt]
+\setuplayout[width=middle, height=middle, topspace=2cm, bottomspace=2cm]
+
+% Agregados a la cabecera de la guía de estilo del repositorio de implementación
+% (docs/guides/context_style_guide.md): idioma, sub-subsecciones con la misma regla que
+% las subsecciones, índice de secciones y subsecciones, y rutas del código en
+% monoespaciado con corte de línea en / y _.
+\mainlanguage[es]
+\setuphead[subsubsection][style=\bf, color=black, before=\blank, after=\blank]
+\setupcombinedlist[content][list={section,subsection}]
+\define[1]\ruta{{\tt\hyphenatedurl{#1}}}
+
+\starttext
+
+\title{\bf Desarrollo de los modelos OPP v5:\crlf formulación monolítica y en dos etapas (Split)}
+\blank[big]
+
+{\it Notas de trabajo para la tesina. Reúnen todo lo hecho sobre la familia v5 en el
+repositorio de implementación (\ruta{linear-picking-routing}) entre el 30 de agosto y el 1 de
+octubre de 2026: definición de los modelos, decisiones de implementación, diseño de las
+pruebas, análisis exploratorio, pruebas para mejorar el rendimiento del modelo en dos
+etapas, resultados y comparaciones.}
+
+\blank[big]
+
+\completecontent
+
+\page
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Propósito, alcance y fuentes}, reference=sec:alcance]
+
+Estas notas son la base para escribir los capítulos de modelos lineales, metodología y
+resultados de la tesina. Cuentan qué se hizo con los dos modelos exactos de la familia v5,
+por qué se hizo, cómo se midió y qué se encontró, con todos los números relevantes. Donde un
+resultado es una hipótesis sin verificar, se dice explícitamente.
+
+\startsubsection[title={Nombres de los modelos}]
+
+En el código los modelos tienen identificadores de proyecto; en la tesina se usan nombres
+descriptivos. La equivalencia es:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][3][align=flushleft]
+\bTR \bTH Nombre en la tesina \eTH \bTH Identificador en el código \eTH \bTH Descripción \eTH \eTR
+\bTR \bTD Modelo monolítico \eTD \bTD opp\_v5\_1\_mono (OPP v5.1) \eTD \bTD Un único MIP: ruta, asignación y secuencia juntas \eTD \eTR
+\bTR \bTD Modelo Split (en dos etapas) \eTD \bTD opp\_v5\_2\_split (OPP v5.2; hasta el 21-09 se llamaba opp\_v5) \eTD \bTD Etapa 1: ruteo por lote. Etapa 2: asignación, secuencia y cadena de frío \eTD \eTR
+\bTR \bTD Modelo de referencia v4 \eTD \bTD opp\_v4 \eTD \bTD Monolítico sin velocidades ni cadena de frío; origen de la familia v5 \eTD \eTR
+\bTR \bTD HC \eTD \bTD opp\_hc\_4 \eTD \bTD Hill Climbing sobre el mismo problema que v5 \eTD \eTR
+\bTR \bTD ACO \eTD \bTD opp\_aco\_4 \eTD \bTD Ant Colony Optimization sobre el mismo problema que v5 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+En estas notas se usan indistintamente {\em Split} y {\em modelo en dos etapas}, y {\em mono} y
+{\em monolítico}.
+\stopsubsection
+
+\startsubsection[title={Fuentes en el repositorio de implementación}]
+
+\startitemize
+\item {\bf Definición de los modelos:} \ruta{docs/thesis/models.tex} (documento definitivo del
+1-10, que reemplazó a \ruta{opp_v5_models.tex}), y los fuentes ZIMPL
+\ruta{models/opp_v5_1_mono/opp_model_v5_1_mono.zpl},
+\ruta{models/opp_v5_2_split/opp_model_v5_2_split_stage1_routing.zpl} y
+\ruta{models/opp_v5_2_split/opp_model_v5_2_split_stage2_scheduling.zpl}.
+\item {\bf Exploración:} \ruta{docs/thesis/opp_v5_2_split_exploration.tex} (estudios 01 a 07 y
+12), \ruta{docs/thesis/opp_v5_1_mono_exploration.tex} (estudios 08 a 11), el índice
+\ruta{experiments/opp_v5/README.md} y los datos crudos en \ruta{experiments/opp_v5/studies/}.
+\item {\bf Diseño de la suite de stress:} \ruta{experiments/opp_v5/stress_test_design.md}.
+\item {\bf Comparaciones:} \ruta{docs/thesis/opp_v5_1_mono_vs_opp_v5_2_split_comparison.tex},
+\ruta{docs/thesis/opp_v5_2_split_vs_heuristics_comparison.tex},
+\ruta{docs/thesis/opp_v4_vs_opp_v5_comparision.tex} y las reglas de
+\ruta{docs/specs/comparabilidad_v5_heuristicas.md}.
+\item {\bf Bitácora:} \ruta{meta.md} (decisiones, hallazgos, correcciones y su validación, día por
+día) y \ruta{analysis/README.md} (historia temprana de v5).
+\item {\bf Resultados:} \ruta{results/opp_v5_2_split/} y \ruta{results/opp_v5_1_mono/} (CSV de
+nombre fijo, uno por suite), \ruta{results/comparability/} y \ruta{results/equal_time/}.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Cómo usar estas notas en la tesina}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][width=5.2cm, align=flushleft]
+\setupTABLE[column][2][align=flushleft]
+\bTR \bTH Capítulo de la tesina \eTH \bTH Secciones de estas notas \eTH \eTR
+\bTR \bTD Cap. 3, Modelos lineales \eTD \bTD \in[sec:problema] a \in[sec:relacion] (problema, notación, formulaciones, equivalencia, espera voluntaria y SLA, diferencias) \eTD \eTR
+\bTR \bTD Cap. 5, Metodología: software \eTD \bTD \in[sec:implementacion] (herramientas, descomposición de la Etapa 1, verificación) \eTD \eTR
+\bTR \bTD Cap. 5, Metodología: relevamiento inicial \eTD \bTD \in[sec:historia], \in[sec:degeneraciones] y \in[sec:exploracion_split] (por qué se rediseñaron las pruebas) \eTD \eTR
+\bTR \bTD Cap. 5, Pruebas funcionales y de estrés \eTD \bTD \in[sec:diseno] (suite funcional, perfil realista, suite de stress, $W^{c}$, herramienta) \eTD \eTR
+\bTR \bTD Cap. 6, Comparación entre modelos lineales \eTD \bTD \in[sec:exploracion_mono] y \in[sec:resultados], más \in[sec:rendimiento] para el rendimiento del Split \eTD \eTR
+\bTR \bTD Cap. 6, Split y metaheurísticas \eTD \bTD \in[sec:heuristicas] \eTD \eTR
+\bTR \bTD Cap. 7, Conclusión y discusión \eTD \bTD \in[sec:limitaciones] y \in[sec:sintesis] \eTD \eTR
+\eTABLE
+\blank[medium]
+\stopsubsection
+
+\startsubsection[title={Cómo leer los tiempos}, reference=sec:tiempos]
+
+Todo se midió en una notebook con un Intel i7-1360P: 4 núcleos de rendimiento con
+hyperthreading y 8 de eficiencia, que van a cerca de la mitad de velocidad. Eso condiciona la
+lectura de cualquier número de tiempo:
+
+\startitemize
+\item {\bf Los nodos de branch-and-bound son deterministas.} SCIP recorre el mismo árbol ante el
+mismo input: la misma instancia dio 14.041 nodos en dos corridas de 12,9~s y 17,7~s, y otra,
+31.317 nodos en corridas de 25,4~s y 26,3~s. Para comparar dificultad entre corridas en
+condiciones distintas, los nodos son la medida justa.
+\item {\bf El reloj varía hasta 2 veces entre corridas} de la misma instancia (calibración: 214~s
+en 7×7 y 710~s en 13×13; la suite de stress un rato después: 123~s y 351~s, con los mismos
+objetivos).
+\item {\bf Correr en paralelo infla el reloj entre 1,6 y 2,3 veces} con los mismos nodos. Solo
+las comparaciones lado a lado dentro de una misma corrida son confiables en tiempo, y aun así con
+margen: dos corridas simultáneas de la misma instancia de 13×13, con el mismo árbol (314.331
+nodos), tardaron 452~s y 490~s en la Etapa 2, un 8 \% de diferencia.
+\item {\bf La notebook se suspendió} durante algunas corridas largas. El tope del runner cuenta
+solo tiempo despierto, así que los timeouts valen, pero la duración de un test resuelto
+incluye el tiempo suspendido: esos tiempos son un techo.
+\item {\bf El límite de tiempo de SCIP no es un tope duro} (sección \in[sec:herramienta]).
+\stopitemize
+
+Estas reglas salieron de la propia exploración (sección \in[sec:exploracion_split]) y se
+aplicaron a todo lo que vino después.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Origen y evolución de la familia v5}, reference=sec:historia]
+
+\startsubsection[title={De v4 a v5}]
+
+El modelo de referencia v4 es un único MIP que decide la ruta de cada lote, la asignación de
+lotes a pickers y la secuencia de cada picker, con un objetivo de tiempos de completitud más
+penalizaciones por adelanto y tardanza. La familia v5 extiende ese problema con dos
+características que v4 no tiene:
+
+\startitemize
+\item {\bf Velocidad heterogénea de los pickers} ($V_p$): la velocidad escala el tiempo de
+traslado y servicio de la ruta, pero no la preparación del lote ni el picking.
+\item {\bf Cadena de frío} ($T^{cold}$): un lote solo puede asignarse a un picker si, a la
+velocidad de ese picker, su tiempo de ejecución no supera el límite fuera de la cámara.
+\stopitemize
+
+La primera versión de v5 (\ruta{opp_v5}, hoy el modelo Split) no fue un monolítico extendido
+sino directamente una descomposición en dos etapas, motivada por la escala (v4 resolvía 1 de sus 8 tests de stress) y porque,
+sin congestión entre pickers, la ruta óptima de un lote no depende de quién lo ejecuta ni de
+cuándo. El 21 de septiembre se agregó el modelo monolítico (\ruta{opp_v5_1_mono}), que resuelve
+exactamente el mismo problema en un solo MIP, para poder medir uno a uno qué aporta la
+descomposición.
+
+Respecto de v4, el monolítico agrega $V_p$ (el tiempo de ejecución pasa a ser
+$F_b + r_b/V_p$, con $r_b$ variable), la cadena de frío como cota superior de $u_{pb}$, y toma
+del Split dos mejoras de formulación que no cambian el problema: el objetivo suma $c_b$ (y no
+$c_{pb}$ sobre todos los pares) y las filas de tardanza y adelanto se generan solo para los
+pares $(n,b)$ con $B_{nb} = 1$. Con $V_p = 1$ para todos los pickers y $T^{cold}$ muy grande
+(los valores por defecto que se escriben cuando el escenario no los define), los dos modelos
+v5 se reducen al problema de v4. Los tres modelos usan la misma eliminación de subtours por
+flujo de Gavish-Graves.\footnote{Algunos documentos tempranos la llamaban MTZ; se corrigió el
+29-09.}
+\stopsubsection
+
+\startsubsection[title={Cronología}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][width=1.8cm]
+\setupTABLE[column][2][align=flushleft]
+\bTR \bTH Fecha (2026) \eTH \bTH Hito \eTH \eTR
+\bTR \bTD 25/30-08 \eTD \bTD Primeras corridas registradas de \ruta{opp_v5} (dos etapas), que entra al repositorio el 30-08: Etapa 1 de ruteo, Etapa 2 con $T^{exec}_{pb}$ como parámetro y la cadena de frío como dominio $\mathcal{PB}^{elig}$. \eTD \eTR
+\bTR \bTD 31-08 \eTD \bTD Cobertura funcional completa: se migran los tests de v4 y se agregan tests propios de velocidad y frío (53 tests, 52 ok y 1 timeout). Stress heredado de v4: 0 de 8 (7 timeouts y 1 falla). Se encuentra que un lote sin picker elegible hace fallar a ZIMPL al compilar. \eTD \eTR
+\bTR \bTD 01-09 \eTD \bTD Pre-chequeo de elegibilidad en Python que devuelve \quote{infactible} antes de llamar a ZIMPL. Diagnóstico de la falla de stress: nombres de variables corruptos en el \ruta{.lp}. \eTD \eTR
+\bTR \bTD 10/11-09 \eTD \bTD Auditoría: tolerancia $10^{-9}$ en la elegibilidad, rechazo de velocidades no positivas. La Etapa 1 se descompone en un MIP por lote. \eTD \eTR
+\bTR \bTD 17/19-09 \eTD \bTD Reorganización del repositorio. Alcance de la tesina: v4 en adelante. \eTD \eTR
+\bTR \bTD 21-09 \eTD \bTD Se agrega el monolítico; \ruta{opp_v5} pasa a llamarse \ruta{opp_v5_2_split}. Primer documento unificado de los dos modelos. \eTD \eTR
+\bTR \bTD 22-09 \eTD \bTD $M^{seq}$ calculado por instancia (antes 500 fijo) y ZIMPL con nombres de hasta 8.192 caracteres: el primer stress heredado resuelve. Bordes de resolubilidad, branching por pseudocosto, clausura métrica (opcional) y barrido de ejes (estudio 01). \eTD \eTR
+\bTR \bTD 22/23-09 \eTD \bTD Estudios 02 a 07. Derivación de la fórmula del SLA. Se elimina la clausura métrica. Suite de stress rediseñada (23 a 19 tests, perfil realista). Estudios 08 a 11 del monolítico. \eTD \eTR
+\bTR \bTD 24-09 \eTD \bTD Tests funcionales 35 a 38. Estudio 12 (paralelismo de la Etapa 1). Suites funcionales completas. Suite de stress cerrada: Split 9 de 19, monolítico 0 de 19. \eTD \eTR
+\bTR \bTD 26/28-09 \eTD \bTD $W^{c} = 27$ en el perfil realista para que la espera voluntaria no convenga. Verificador de soluciones heurísticas contra el monolítico. Experimento a igual tiempo (27-09). \eTD \eTR
+\bTR \bTD 29-09 \eTD \bTD Suite de equivalencia para las heurísticas, soluciones de v5 guardadas, comparación automática Split contra mono, test 06 propio de v5, notación unificada en código y documentos, comparaciones regeneradas sobre la base comparable. \eTD \eTR
+\bTR \bTD 01-10 \eTD \bTD \ruta{models.tex} reescrito como documento definitivo de los modelos y su comparación con las heurísticas. \eTD \eTR
+\eTABLE
+\blank[medium]
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={El problema y sus supuestos}, reference=sec:problema]
+
+Dado un conjunto de lotes de órdenes ya conformados, un grafo de locaciones del almacén y un
+conjunto de pickers con velocidades distintas, se decide a la vez la ruta de recolección de
+cada lote, a qué picker se asigna cada lote y en qué orden ejecuta cada picker sus lotes. Se
+minimiza una combinación de los tiempos de completitud de los lotes con penalizaciones por
+adelanto y tardanza de las órdenes, sujeto a una restricción de cadena de frío.
+
+\startitemize
+\item {\bf Lotes dados:} cada orden pertenece a un único lote; el batching no se decide.
+\item {\bf Pickers:} todos disponibles desde el instante 0; cada uno ejecuta un lote por vez.
+\item {\bf Velocidad:} solo escala el tiempo de la ruta. La preparación ($T^{setup}$) y el
+picking ($T^{pick}$) se consideran ligados a la tarea y no al desplazamiento. Si se quisiera
+que también dependan del picker, bastaría con moverlos al numerador que se divide por $V_p$.
+\item {\bf Cadena de frío por lote:} el límite acota el tiempo de ejecución de cada lote (parte
+fija incluida), no el turno del picker ni la espera antes de empezar.
+\item {\bf Sin congestión:} los pickers no interfieren entre sí en el grafo. Es lo que hace
+que la ruta de un lote sea independiente de su asignación y de su secuencia.
+\item {\bf Camino simple:} la ruta de un lote no repite vértices (restricciones (8)--(9)). Es
+una limitación de la formulación, no una regla del negocio (sección \in[sec:le1]).
+\stopitemize
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Notación común}, reference=sec:notacion]
+
+Los dos modelos usan los mismos datos. La notación es la unificada el 29-09 en código,
+resultados y documentos: variables en minúscula, parámetros en mayúscula, conjuntos en
+caligráfica; una letra con subíndices (índices) y superíndices (etiquetas). En el código,
+$T^{exec}_{pb}$ se escribe \ruta{T_exec_pb}.
+
+\startsubsection[title={Conjuntos}]
+\startformula
+\startalign[n=2, align={right,left}]
+    \NC \mathcal{N} \NC \quad \text{órdenes de clientes} \NR
+    \NC \mathcal{B} \NC \quad \text{lotes; cada orden pertenece a un único lote} \NR
+    \NC \mathcal{P} \NC \quad \text{pickers} \NR
+    \NC \mathcal{V} \NC \quad \text{locaciones del almacén, incluidos el depósito } v_{start} \text{ y el nodo final } v_{end} \NR
+    \NC \mathcal{E} \NC \quad \text{arcos del grafo de locaciones} \NR
+    \NC \mathcal{V}^{int} \NC = \mathcal{V} \setminus \{v_{start}, v_{end}\} \quad \text{(locaciones intermedias)} \NR
+    \NC \delta^{+}(i),\; \delta^{-}(i) \NC \quad \text{arcos que salen de } i \text{ y que entran a } i \NR
+    \NC \mathcal{N}_b \NC = \{ n \in \mathcal{N} : B_{nb} = 1 \} \quad \text{(órdenes del lote } b\text{)} \NR
+\stopalign
+\stopformula
+\stopsubsection
+
+\startsubsection[title={Parámetros}]
+\startformula
+\startalign[n=2, align={right,left}]
+    \NC A_{ni} \in \{0,1\} \NC \quad 1 \text{ si la orden } n \text{ tiene productos en la locación } i \NR
+    \NC B_{nb} \in \{0,1\} \NC \quad 1 \text{ si la orden } n \text{ pertenece al lote } b \NR
+    \NC C_n \NC \quad \text{cantidad a recoger de la orden } n \NR
+    \NC T^{due}_n \NC \quad \text{fecha de entrega de la orden } n \NR
+    \NC D_{ij},\; S_i \NC \quad \text{distancia del arco } (i,j) \text{ y tiempo de servicio en la locación } i \NR
+    \NC T^{travel} \NC \quad \text{tiempo por unidad de distancia, a velocidad de referencia} \NR
+    \NC T^{setup},\; T^{pick} \NC \quad \text{preparación de cada lote y picking por unidad de capacidad} \NR
+    \NC V_p \NC \quad \text{factor de velocidad del picker } p \text{ (} 1{,}0 = \text{referencia)} \NR
+    \NC T^{cold} \NC \quad \text{tiempo máximo que un lote puede estar fuera de la cámara de frío} \NR
+    \NC \varepsilon \NC \quad \text{tolerancia numérica del chequeo de frío, } 10^{-9} \NR
+    \NC W^{c},\; W^{pen},\; W^{e},\; W^{t} \NC \quad \text{pesos de completitud, de penalizaciones, de adelanto y de tardanza} \NR
+    \NC M,\; M^{seq} \NC \quad \text{constantes grandes: general y de secuenciación} \NR
+\stopalign
+\stopformula
+\stopsubsection
+
+\startsubsection[title={Parámetros derivados}]
+\startformula
+\startalign[n=2, align={right,left}]
+    \NC a_{bi} \NC = 1 \text{ si } \sum_{n \in \mathcal{N}_b} A_{ni} \ge 1 \text{, y } 0 \text{ en otro caso (el lote } b \text{ debe visitar } i\text{)} \NR
+    \NC L_b \NC = \sum_{i \in \mathcal{V}^{int}} a_{bi} \quad \text{(locaciones requeridas por el lote } b\text{)} \NR
+    \NC F_b \NC = T^{setup} + T^{pick} \cdot \sum_{n \in \mathcal{N}_b} C_n \quad \text{(parte fija: no depende de la ruta ni del picker)} \NR
+    \NC T^{exec}_{pb} \NC = F_b + \frac{r_b}{V_p} \quad \text{(tiempo de ejecución del lote } b \text{ por el picker } p\text{)} \NR
+\stopalign
+\stopformula
+
+$r_b$ es el tiempo de ruta del lote (traslado más servicio, a velocidad de referencia). En el
+monolítico es una variable; en el Split es un dato, $R_b$, que produce la Etapa 1.
+
+$M^{seq}$ se calcula para cada instancia como una cota del horizonte: lo que tardaría el picker
+más lento en ejecutar todos los lotes seguidos con una ruta de peor caso, redondeado y con un
+piso de 500:
+\startformula
+\startalign[n=2, align={right,left}]
+    \NC M^{seq} \NC = \max\left(500,\; \sum_{b \in \mathcal{B}} \left( F_b + \frac{R^{max}}{\min_{p} V_p} \right) + 1 \right) \NR
+    \NC R^{max} \NC = T^{travel} \cdot |\mathcal{V}| \cdot \max_{(i,j) \in \mathcal{E}} D_{ij} \;+\; |\mathcal{V}| \cdot \max_{i \in \mathcal{V}} S_i \NR
+\stopalign
+\stopformula
+
+{\bf Historia de $M^{seq}$.} Empezó en 100.000; con ese valor, frente a tiempos de decenas o
+cientos, SCIP aceptaba como óptimas soluciones que violaban la no superposición en unas
+0,1 unidades de tiempo (detectado por la aserción de no solapamiento de los tests 13 y 14 de
+v4). Se bajó a 500 fijo, que cubría las instancias funcionales pero no el horizonte de las
+grandes. La evidencia fue el stress heredado de 40 lotes y un picker (7×7, 8 órdenes por lote): la
+Etapa 2 lo declaró infactible a los 77~s. Solo la parte fija de sus lotes suma $40 \cdot 81 =
+3.240$, y con $M^{seq} = 500$ la restricción de secuencia desactivada seguía exigiendo que dos
+lotes del mismo picker terminaran a menos de 500 unidades uno del otro (con $y_{bk} = 1$, la
+(5) de la Etapa 2 queda $c_{pk} - c_{pb} \le M^{seq} - T^{exec}_{pb}$), algo imposible con 40
+lotes en fila. El 22-09 pasó a calcularse por instancia con la fórmula de arriba, y el mismo test
+corrió hasta el tope de 40 minutos sin declararse infactible. $M$ es un dato
+del escenario: $10^{6}$ en el perfil realista de stress y $10^{4}$ en los escenarios heredados
+de v4.
+\stopsubsection
+
+\startsubsection[title={Cómo leer las restricciones con Big-M}]
+Una restricción que solo debe valer si una binaria vale 1 se escribe
+\startformula
+\text{expresión} \;\le\; \text{cota} + M \cdot (1 - x_{pb})
+\stopformula
+Si $x_{pb} = 1$ el término desaparece; si $x_{pb} = 0$ la restricción queda desactivada. Con
+varias binarias el término es $M \cdot (k - \text{suma de las binarias})$, que vale 0 solo si las
+$k$ binarias valen 1.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Modelo monolítico}, reference=sec:mono]
+
+Un único MIP decide a la vez la ruta de cada lote, el picker al que se asigna y el orden en que
+lo ejecuta.
+
+\startsubsection[title={Variables}]
+\startformula
+\startalign[n=2, align={right,left}]
+    \NC z_{ijb} \in \{0,1\} \NC \quad 1 \text{ si la ruta del lote } b \text{ usa el arco } (i,j) \NR
+    \NC q_{ijb} \ge 0 \NC \quad \text{locaciones del lote } b \text{ que quedan por visitar al recorrer } (i,j) \text{ (flujo de Gavish-Graves)} \NR
+    \NC r_b \ge 0 \NC \quad \text{tiempo de ruta del lote } b \NR
+    \NC x_{pb} \in \{0,1\} \NC \quad 1 \text{ si el lote } b \text{ se asigna al picker } p \NR
+    \NC y_{bk} \in \{0,1\} \NC \quad \text{para } b < k \text{: } 1 \text{ si } b \text{ va antes que } k \text{ (si comparten picker)} \NR
+    \NC u_{pb} \in [0,\; T^{cold} + \varepsilon] \NC \quad \text{tiempo de ejecución del lote } b \text{ si lo hace el picker } p \NR
+    \NC c_{pb},\; c_b \ge 0 \NC \quad \text{terminación del lote } b \text{ en la agenda de } p \text{, y terminación del lote} \NR
+    \NC ta_n,\; ea_n \ge 0 \NC \quad \text{tardanza y adelanto de la orden } n \NR
+\stopalign
+\stopformula
+\stopsubsection
+
+\startsubsection[title={Función objetivo}]
+\startformula
+\min \;\; W^{c} \cdot \sum_{b \in \mathcal{B}} c_b \;+\; W^{pen} \cdot \left( W^{e} \cdot \sum_{n \in \mathcal{N}} ea_n + W^{t} \cdot \sum_{n \in \mathcal{N}} ta_n \right)
+\stopformula
+El tiempo de ruta no aparece en el objetivo: solo influye a través de las terminaciones y de
+la cadena de frío.
+\stopsubsection
+
+\startsubsection[title={Restricciones de ruteo (1)--(13)}]
+\startformula
+\startalign[n=3, align={right,left,left}]
+    \NC (1) \NC \quad \sum_{(i,j) \in \delta^{+}(v_{start})} z_{ijb} = 1 \NC \qquad \forall b \NR
+    \NC (2) \NC \quad \sum_{(i,j) \in \delta^{-}(v_{end})} z_{ijb} = 1 \NC \qquad \forall b \NR
+    \NC (3) \NC \quad \sum_{(i,j) \in \delta^{-}(v_{start})} z_{ijb} = 0 \NC \qquad \forall b \text{, si } v_{start} \ne v_{end} \NR
+    \NC (4) \NC \quad \sum_{(i,j) \in \delta^{+}(v_{end})} z_{ijb} = 0 \NC \qquad \forall b \text{, si } v_{start} \ne v_{end} \NR
+    \NC (5) \NC \quad \sum_{(i,j) \in \delta^{-}(j)} z_{ijb} \ge a_{bj} \NC \qquad \forall b,\; j \in \mathcal{V}^{int} \NR
+    \NC (6) \NC \quad \sum_{(j,i) \in \delta^{+}(j)} z_{jib} \ge a_{bj} \NC \qquad \forall b,\; j \in \mathcal{V}^{int} \NR
+    \NC (7) \NC \quad \sum_{(g,i) \in \delta^{-}(i)} z_{gib} = \sum_{(i,j) \in \delta^{+}(i)} z_{ijb} \NC \qquad \forall b,\; i \in \mathcal{V}^{int} \NR
+    \NC (8) \NC \quad \sum_{(j,i) \in \delta^{-}(i)} z_{jib} \le 1 \NC \qquad \forall b,\; i \ne v_{start} \NR
+    \NC (9) \NC \quad \sum_{(i,j) \in \delta^{+}(i)} z_{ijb} \le 1 \NC \qquad \forall b,\; i \ne v_{end} \NR
+    \NC (10) \NC \quad q_{ijb} \le L_b \cdot z_{ijb} \NC \qquad \forall b,\; (i,j) \in \mathcal{E} \NR
+    \NC (11) \NC \quad \sum_{(i,j) \in \delta^{+}(v_{start})} q_{ijb} = L_b \NC \qquad \forall b \NR
+    \NC (12) \NC \quad \sum_{(g,i) \in \delta^{-}(i)} q_{gib} - \sum_{(i,j) \in \delta^{+}(i)} q_{ijb} = a_{bi} \NC \qquad \forall b,\; i \in \mathcal{V}^{int} \NR
+    \NC (13) \NC \quad r_b = T^{travel} \sum_{(i,j) \in \mathcal{E}^{r}} D_{ij} z_{ijb} + \sum_{i \in \mathcal{V}^{int}} S_i \sum_{(i,j) \in \delta^{+}(i)} z_{ijb} \NC \qquad \forall b \NR
+\stopalign
+\stopformula
+con $\mathcal{E}^{r} = \{(i,j) \in \mathcal{E} : i \ne v_{end},\; j \ne v_{start}\}$.
+
+\startitemize
+\item {\bf Inicio y fin, (1)--(4):} la ruta sale una vez del depósito, llega una vez al final, no vuelve al depósito
+ni sale del final.
+\item {\bf Visitas y continuidad, (5)--(9):} a cada locación requerida se entra y se sale; en las
+intermedias se conserva el flujo, y (8)--(9) impiden pisar dos veces la misma locación (camino
+simple).
+\item {\bf Flujo de Gavish-Graves, (10)--(12):} sale del depósito con $L_b$ unidades, cada locación
+requerida consume una, y el flujo solo circula por arcos usados: una locación requerida solo
+recibe su unidad si está conectada al depósito por la ruta, así que no quedan ciclos sueltos.
+\item {\bf Tiempo de ruta, (13):} el servicio de una locación se cuenta cuando la ruta sale de ella.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Asignación, tiempo de ejecución y cadena de frío (14)--(18)}]
+\startformula
+\startalign[n=3, align={right,left,left}]
+    \NC (14) \NC \quad \sum_{p \in \mathcal{P}} x_{pb} = 1 \NC \qquad \forall b \NR
+    \NC (15) \NC \quad u_{pb} \ge F_b + \frac{r_b}{V_p} - M \cdot (1 - x_{pb}) \NC \qquad \forall p,\; b \NR
+    \NC (16) \NC \quad u_{pb} \le F_b + \frac{r_b}{V_p} + M \cdot (1 - x_{pb}) \NC \qquad \forall p,\; b \NR
+    \NC (17) \NC \quad c_{pb} \ge u_{pb} \NC \qquad \forall p,\; b \NR
+    \NC (18) \NC \quad c_b \ge c_{pb} - M \cdot (1 - x_{pb}) \NC \qquad \forall p,\; b \NR
+\stopalign
+\stopformula
+La cadena de frío no necesita una restricción aparte: está en la cota $u_{pb} \le T^{cold} +
+\varepsilon$. Si $x_{pb} = 1$, (15) obliga a $u_{pb} \ge F_b + r_b/V_p$, así que el picker $p$
+solo puede ejecutar $b$ si $F_b + r_b/V_p \le T^{cold} + \varepsilon$; si $x_{pb} = 0$, $u_{pb}$
+puede valer 0 y la cota no restringe.
+\stopsubsection
+
+\startsubsection[title={Secuencia (19)--(20) y tardanza y adelanto (21)--(22)}]
+\startformula
+\startalign[n=3, align={right,left,left}]
+    \NC (19) \NC \quad c_{pk} \ge c_{pb} + F_k + \frac{r_k}{V_p} - M^{seq} (3 - x_{pb} - x_{pk} - y_{bk}) \NC \qquad \forall p,\; b < k \NR
+    \NC (20) \NC \quad c_{pb} \ge c_{pk} + F_b + \frac{r_b}{V_p} - M^{seq} (2 - x_{pb} - x_{pk} + y_{bk}) \NC \qquad \forall p,\; b < k \NR
+    \NC (21) \NC \quad ta_n \ge c_{pb} - T^{due}_n - M (1 - x_{pb}) \NC \qquad \forall p,\; b,\; n \in \mathcal{N}_b \NR
+    \NC (22) \NC \quad ea_n \ge T^{due}_n - c_{pb} - M (1 - x_{pb}) \NC \qquad \forall p,\; b,\; n \in \mathcal{N}_b \NR
+\stopalign
+\stopformula
+Si $p$ ejecuta los dos lotes, solo una de (19)--(20) está activa, según $y_{bk}$; si no ejecuta
+alguno de los dos, se desactivan ambas. En el óptimo $ta_n = \max(0, c_b - T^{due}_n)$ y
+$ea_n = \max(0, T^{due}_n - c_b)$. En el código, (21)--(22) se escriben con
+$M (2 - x_{pb} - B_{nb})$ y se generan solo para $B_{nb} = 1$, que es lo mismo.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Modelo en dos etapas (Split)}, reference=sec:split]
+
+El mismo problema se resuelve con dos MIP, uno después del otro. Se puede separar porque la
+ruta de un lote no depende del picker ni del orden entre lotes, y una ruta más corta nunca
+empeora el objetivo: solo adelanta terminaciones y facilita cumplir la cadena de frío.
+
+\startsubsection[title={Etapa 1: ruteo de cada lote}]
+
+Variables $z_{ijb}$, $q_{ijb}$ y $r_b$, restricciones (1)--(13) del monolítico y objetivo
+\startformula
+\min \sum_{b \in \mathcal{B}} r_b
+\stopformula
+No usa pickers, pesos ni tiempos de preparación o picking. Como los lotes no comparten ninguna
+restricción, minimizar la suma equivale a minimizar cada $r_b$ por separado, y en la práctica
+cada lote se resuelve como un MIP independiente (sección \in[sec:descomposicion]). El resultado
+es $R_b = r_b^{*}$, el tiempo de ruta mínimo de cada lote.
+\stopsubsection
+
+\startsubsection[title={Etapa 2: asignación, secuencia y cadena de frío}]
+
+Con $R_b$ fijo, el tiempo de ejecución de cada par es un número conocido antes de resolver, y la
+cadena de frío se puede chequear de antemano:
+\startformula
+\startalign[n=2, align={right,left}]
+    \NC T^{exec}_{pb} \NC = F_b + \frac{R_b}{V_p} \NR
+    \NC \mathcal{PB}^{elig} \NC = \left\{ (p,b) \in \mathcal{P} \times \mathcal{B} : T^{exec}_{pb} \le T^{cold} + \varepsilon \right\} \NR
+\stopalign
+\stopformula
+Las variables $x_{pb}$ y $c_{pb}$ existen solo para los pares elegibles, así que la cadena de
+frío se cumple por construcción. No hace falta $u_{pb}$. Variables: $x_{pb}$, $c_{pb}$ (en
+$\mathcal{PB}^{elig}$), $c_b$, $y_{bk}$, $ta_n$, $ea_n$. Objetivo: el mismo del monolítico.
+
+\startformula
+\startalign[n=3, align={right,left,left}]
+    \NC (1) \NC \quad \sum_{p : (p,b) \in \mathcal{PB}^{elig}} x_{pb} = 1 \NC \qquad \forall b \NR
+    \NC (2) \NC \quad c_{pb} \ge T^{exec}_{pb} \cdot x_{pb} \NC \qquad \forall (p,b) \in \mathcal{PB}^{elig} \NR
+    \NC (3) \NC \quad c_b \ge c_{pb} - M (1 - x_{pb}) \NC \qquad \forall (p,b) \in \mathcal{PB}^{elig} \NR
+    \NC (4) \NC \quad c_{pk} \ge c_{pb} + T^{exec}_{pk} - M^{seq} (3 - x_{pb} - x_{pk} - y_{bk}) \NC \qquad (p,b),(p,k) \in \mathcal{PB}^{elig},\; b < k \NR
+    \NC (5) \NC \quad c_{pb} \ge c_{pk} + T^{exec}_{pb} - M^{seq} (2 - x_{pb} - x_{pk} + y_{bk}) \NC \qquad (p,b),(p,k) \in \mathcal{PB}^{elig},\; b < k \NR
+    \NC (6) \NC \quad ta_n \ge c_{pb} - T^{due}_n - M (1 - x_{pb}) \NC \qquad (p,b) \in \mathcal{PB}^{elig},\; n \in \mathcal{N}_b \NR
+    \NC (7) \NC \quad ea_n \ge T^{due}_n - c_{pb} - M (1 - x_{pb}) \NC \qquad (p,b) \in \mathcal{PB}^{elig},\; n \in \mathcal{N}_b \NR
+    \NC (8)\text{--}(9) \NC \quad ta_n, ea_n, c_b, c_{pb} \ge 0;\quad x_{pb}, y_{bk} \in \{0,1\} \NC \NR
+\stopalign
+\stopformula
+
+(2) reemplaza a (15)--(17) del monolítico: como $T^{exec}_{pb}$ es un número, el producto
+$T^{exec}_{pb} \cdot x_{pb}$ es lineal y no hace falta Big-M. Las dos simplificaciones de la
+Etapa 2 (tiempo de ejecución como dato y pares no elegibles que directamente no existen) no son
+agregados del Split: son consecuencia directa de dividir. Los parámetros de SCIP, el objetivo y
+las constantes $M$ y $M^{seq}$ son los mismos en los dos modelos.
+\stopsubsection
+
+\startsubsection[title={El pipeline del Split}, reference=sec:pipeline]
+
+En el código, una corrida del Split hace, en orden:
+\startitemize[n]
+\item {\bf Validación de velocidades:} rechaza velocidades no positivas antes de escribir nada (con $V_p = 0$, el cálculo de
+$M^{seq}$ y el de $T^{exec}_{pb}$ dividen por cero; con $V_p < 0$, $T^{exec}_{pb}$ sale negativo
+y cualquier picker parecería elegible).
+\item {\bf Datos:} escribe los archivos \ruta{.dat} de la instancia (incluido $M^{seq}$).
+\item {\bf Etapa 1:} resuelve un MIP de ruteo por lote (en secuencia, o en paralelo si se pide).
+\item {\bf Exportación:} escribe $R_b$ en \ruta{route_time_b.dat}, junto con velocidades y límite de frío.
+\item {\bf Pre-chequeo de frío:} verifica en Python que cada lote tenga al menos un picker elegible. Si alguno no lo tiene,
+registra el resultado como infactible y no llama a ZIMPL: con un lote sin pares elegibles,
+la restricción (1) queda como una suma vacía igual a 1 y ZIMPL la rechaza al compilar
+(\quote{Error 106: Empty LHS}) en lugar de devolver infactible.
+\item {\bf Etapa 2:} la resuelve y adjunta los valores de la Etapa 1 a la solución guardada (la
+Etapa 2 solo ve tiempos de ruta, no las rutas).
+\stopitemize
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Relación entre las dos formulaciones}, reference=sec:relacion]
+
+\startsubsection[title={Mismo valor óptimo, distintas soluciones óptimas}]
+
+Los dos modelos tienen el mismo valor óptimo. Dada cualquier solución del monolítico,
+reemplazar la ruta de cada lote por su ruta mínima no empeora ninguna restricción ni el
+objetivo: el objetivo no tiene un término de ruta, y una ruta más corta solo achica
+$T^{exec}_{pb}$, lo que relaja la secuencia y la cadena de frío. Y toda solución del Split es
+factible en el monolítico. El argumento es por lectura de la formulación; la verificación
+empírica está en la sección \in[sec:res_funcional]: 49 de 49 pares resueltos con el mismo
+objetivo.
+
+Lo que no coincide es el conjunto de soluciones óptimas: el monolítico puede devolver rutas no
+mínimas que alcanzan el mismo objetivo (por ejemplo, cuando todas las rutas llegan a tiempo o
+cuando el lote espera de todos modos), y los empates de asignación los rompe cada resolución a
+su manera. En la suite funcional, 21 de los 49 pares resueltos son óptimos alternativos.
+\stopsubsection
+
+\startsubsection[title={Espera voluntaria y el SLA}, reference=sec:espera]
+
+(17) y (19)--(20) del monolítico, y (2), (4) y (5) del Split, son desigualdades: piden que un
+lote no termine antes de lo que tarda, pero permiten declarar un $c_{pb}$ mayor. Como el
+objetivo penaliza el adelanto (es {\em just-in-time}), al modelo le puede convenir declarar un
+lote terminado más tarde de lo que termina físicamente. Demorar un lote una unidad cuesta
+$W^{c}$, más $W^{pen} W^{t}$ por cada orden suya ya atrasada, y ahorra $W^{pen} W^{e}$ por cada
+orden que todavía llegaría antes. Con $W^{pen} = W^{e} = W^{t} = 1$, el modelo demora cada lote
+mientras las órdenes adelantadas superen a las atrasadas en más de $W^{c}$.
+
+{\bf Consecuencia medida: el SLA lo fija el objetivo, no las fechas de entrega.} Con fechas
+repartidas y alcanzables, la proporción de órdenes a tiempo en el óptimo es
+\startformula
+\mathrm{SLA} = \frac{N_b + W^{c}}{2 \, N_b}
+\stopformula
+con $N_b$ las órdenes por lote. La derivación: el modelo se detiene cuando
+$\#\text{adelantadas} - \#\text{atrasadas} \approx W^{c}$, y con
+$\#\text{adelantadas} + \#\text{atrasadas} = N_b$ queda
+$\#\text{a tiempo} \approx (N_b + W^{c})/2$. Se verificó en los ocho tamaños del barrido de
+órdenes por lote del estudio 01 ($W^{c} = 9$):
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Órdenes por lote \eTH \bTH SLA medido \eTH \bTH Predicho \eTH \bTH Diferencia \eTH \eTR
+\bTR \bTD 10 \eTD \bTD 96,7 \% \eTD \bTD 95,0 \% \eTD \bTD +1,7 \eTD \eTR
+\bTR \bTD 14 \eTD \bTD 83,3 \% \eTD \bTD 82,1 \% \eTD \bTD +1,2 \eTD \eTR
+\bTR \bTD 18 \eTD \bTD 75,9 \% \eTD \bTD 75,0 \% \eTD \bTD +0,9 \eTD \eTR
+\bTR \bTD 22 \eTD \bTD 71,2 \% \eTD \bTD 70,5 \% \eTD \bTD +0,7 \eTD \eTR
+\bTR \bTD 26 \eTD \bTD 67,9 \% \eTD \bTD 67,3 \% \eTD \bTD +0,6 \eTD \eTR
+\bTR \bTD 32 \eTD \bTD 64,6 \% \eTD \bTD 64,1 \% \eTD \bTD +0,5 \eTD \eTR
+\bTR \bTD 40 \eTD \bTD 61,7 \% \eTD \bTD 61,3 \% \eTD \bTD +0,4 \eTD \eTR
+\bTR \bTD 50 \eTD \bTD 59,3 \% \eTD \bTD 59,0 \% \eTD \bTD +0,3 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\placefigure[force][fig:sla]{SLA medido en el barrido de órdenes por lote (estudio 01) contra el predicho por la fórmula.}
+{\startMPcode
+numeric w, h; w := 11.0cm; h := 5.5cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (0.500cm,0.000cm)--(0.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 10"), (0.500cm,-0.120cm));
+draw (1.500cm,0.000cm)--(1.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 14"), (1.500cm,-0.120cm));
+draw (2.500cm,0.000cm)--(2.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 18"), (2.500cm,-0.120cm));
+draw (3.500cm,0.000cm)--(3.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 22"), (3.500cm,-0.120cm));
+draw (4.500cm,0.000cm)--(4.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 26"), (4.500cm,-0.120cm));
+draw (6.000cm,0.000cm)--(6.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 32"), (6.000cm,-0.120cm));
+draw (8.000cm,0.000cm)--(8.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 40"), (8.000cm,-0.120cm));
+draw (10.500cm,0.000cm)--(10.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 50"), (10.500cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 50 \%"), (-0.120cm,0.000cm));
+draw (0.000cm,1.100cm)--(-0.120cm,1.100cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 60 \%"), (-0.120cm,1.100cm));
+draw (0.000cm,2.200cm)--(-0.120cm,2.200cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 70 \%"), (-0.120cm,2.200cm));
+draw (0.000cm,3.300cm)--(-0.120cm,3.300cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 80 \%"), (-0.120cm,3.300cm));
+draw (0.000cm,4.400cm)--(-0.120cm,4.400cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 90 \%"), (-0.120cm,4.400cm));
+draw (0.000cm,5.500cm)--(-0.120cm,5.500cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100 \%"), (-0.120cm,5.500cm));
+label.bot(textext("Órdenes por lote ($N_b$)"), (w/2,-0.85cm));
+label.lft(textext("Órdenes a tiempo") rotated 90, (-1.25cm,h/2));
+draw (0.250cm,5.500cm)...(0.500cm,4.950cm)...(0.750cm,4.500cm)...(1.000cm,4.125cm)...(1.250cm,3.808cm)...(1.500cm,3.536cm)...(1.750cm,3.300cm)...(2.000cm,3.094cm)...(2.250cm,2.912cm)...(2.500cm,2.750cm)...(2.750cm,2.605cm)...(3.000cm,2.475cm)...(3.250cm,2.357cm)...(3.500cm,2.250cm)...(3.750cm,2.152cm)...(4.000cm,2.062cm)...(4.250cm,1.980cm)...(4.500cm,1.904cm)...(4.750cm,1.833cm)...(5.000cm,1.768cm)...(5.250cm,1.707cm)...(5.500cm,1.650cm)...(5.750cm,1.597cm)...(6.000cm,1.547cm)...(6.250cm,1.500cm)...(6.500cm,1.456cm)...(6.750cm,1.414cm)...(7.000cm,1.375cm)...(7.250cm,1.338cm)...(7.500cm,1.303cm)...(7.750cm,1.269cm)...(8.000cm,1.238cm)...(8.250cm,1.207cm)...(8.500cm,1.179cm)...(8.750cm,1.151cm)...(9.000cm,1.125cm)...(9.250cm,1.100cm)...(9.500cm,1.076cm)...(9.750cm,1.053cm)...(10.000cm,1.031cm)...(10.250cm,1.010cm)...(10.500cm,0.990cm)...(10.750cm,0.971cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+fill fullcircle scaled 4pt shifted (0.500cm,5.137cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.500cm,3.663cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.500cm,2.849cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.500cm,2.332cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (4.500cm,1.969cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (6.000cm,1.606cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (8.000cm,1.287cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (10.500cm,1.023cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (5.300cm,5.350cm) withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx SLA medido"), (5.700cm,5.350cm));
+draw (5.000cm,4.930cm)--(5.600cm,4.930cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+label.rt(textext("\tfx $(N_b + W^{c}) / (2 N_b)$, con $W^{c} = 9$"), (5.700cm,4.930cm));
+\stopMPcode}
+
+Los ocho puntos quedan a 1,7 puntos o menos, y el error se achica al crecer $N_b$; el sesgo
+positivo viene de las órdenes que terminan justo en su fecha, que cuentan como a tiempo. Tres
+consecuencias que guiaron todo lo posterior:
+\startitemize[n]
+\item {\bf Para diseñar escenarios no hace falta calibrar fechas:} alcanza con que estén
+repartidas y sean alcanzables.
+\item {\bf El problema es de scheduling con adelanto y tardanza}, que no es un objetivo regular y
+es una clase notoriamente difícil: $c_{pb}$ no tiene una cota superior natural, solo la que le
+impone el objetivo.
+\item {\bf La espera voluntaria desaparece si} $W^{c} \ge W^{pen} W^{e} \max_b |\mathcal{N}_b|$.
+Por eso el perfil realista de stress usa $W^{c} = 26 + 1 = 27$ desde el 26-09 (sección
+\in[sec:wc27]). Con $W^{c} = 9$, el óptimo de la instancia 7×7 era 79.047 y ACO obtenía
+104.565: la diferencia era casi toda adelanto que el modelo exacto evitaba esperando.
+\stopitemize
+
+La espera voluntaria es una propiedad de la formulación, compartida por los dos modelos, y es
+la razón por la que algunas instancias se comparan con las heurísticas solo en estado
+(sección \in[sec:heuristicas]). Los tests 37a y 37b la fijan con valores exactos (sección
+\in[sec:funcionales_propios]).
+\stopsubsection
+
+\startsubsection[title={Diferencias y tamaño de los MIP}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Aspecto \eTH \bTH Monolítico \eTH \bTH Split \eTH \eTR
+\bTR \bTD Número de MIP \eTD \bTD 1 \eTD \bTD 1 por lote en la Etapa 1, más la Etapa 2 \eTD \eTR
+\bTR \bTD Tiempo de ruta \eTD \bTD Variable $r_b$ \eTD \bTD Dato $R_b$ (resultado de la Etapa 1) \eTD \eTR
+\bTR \bTD $T^{exec}_{pb}$ \eTD \bTD Expresión con variable, atada con dos Big-M por par \eTD \bTD Parámetro precalculado \eTD \eTR
+\bTR \bTD Variable $u_{pb}$ \eTD \bTD Sí \eTD \bTD No \eTD \eTR
+\bTR \bTD Cadena de frío \eTD \bTD Cota de $u_{pb}$ \eTD \bTD Dominio $\mathcal{PB}^{elig}$ \eTD \eTR
+\bTR \bTD Dominio de $x_{pb}$ \eTD \bTD $\mathcal{P} \times \mathcal{B}$ \eTD \bTD $\mathcal{PB}^{elig}$ \eTD \eTR
+\bTR \bTD Ruta devuelta \eTD \bTD Óptima para el objetivo, no necesariamente mínima \eTD \bTD Siempre mínima \eTD \eTR
+\bTR \bTD Paralelismo \eTD \bTD No \eTD \bTD Opcional en la Etapa 1, con más de 4 lotes \eTD \eTR
+\bTR \bTD Tolerancia del frío \eTD \bTD La de factibilidad de SCIP ($\approx 10^{-6}$, más con Big-M) \eTD \bTD Filtro exacto ($+10^{-9}$) \eTD \eTR
+\eTABLE
+\blank[medium]
+
+La última fila tiene una consecuencia documentada y sin test: muy cerca del borde (entre
+$10^{-9}$ y $\approx 10^{-6}$ por encima del límite) el monolítico podría aceptar un par que el
+Split rechaza. Por eso el test de tolerancia solo prueba el lado de \quote{entra}.
+
+El tamaño del MIP que resuelve SCIP (estudio 08, perfil realista): en el monolítico crece con la
+grilla porque incluye el ruteo de todos los lotes; el de la Etapa 2 no depende de la grilla.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Instancia \eTH \bTH Mono: variables \eTH \bTH Mono: restricciones \eTH \bTH Etapa 2: variables \eTH \bTH Etapa 2: restricciones \eTH \eTR
+\bTR \bTD 3 lotes, 3×3 \eTD \bTD 327 \eTD \bTD 573 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
+\bTR \bTD 3 lotes, 5×5 \eTD \bTD 663 \eTD \bTD 1.029 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
+\bTR \bTD 3 lotes, 7×7 \eTD \bTD 1.191 \eTD \bTD 1.725 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
+\bTR \bTD 4 lotes, 6×6 \eTD \bTD 1.206 \eTD \bTD 1.804 \eTD \bTD 234 \eTD \bTD 460 \eTD \eTR
+\bTR \bTD 6 lotes, 5×5 \eTD \bTD 1.353 \eTD \bTD 2.460 \eTD \bTD 369 \eTD \bTD 1.068 \eTD \eTR
+\bTR \bTD 6 lotes, 7×7 (2 pickers, 4/4) \eTD \bTD 2.391 \eTD \bTD 3.486 \eTD \bTD 357 \eTD \bTD 714 \eTD \eTR
+\bTR \bTD 6 lotes, 10×10 (2 pickers, 4/4) \eTD \bTD 4.695 \eTD \bTD 6.474 \eTD \bTD 357 \eTD \bTD 714 \eTD \eTR
+\eTABLE
+\blank[medium]
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Implementación}, reference=sec:implementacion]
+
+\startsubsection[title={Herramientas}]
+\startitemize
+\item {\bf Modelos y solver:} los modelos están escritos en ZIMPL. Cada resolución compila el \ruta{.zpl} a
+\ruta{.lp} con el binario \ruta{zimpl} y lo resuelve con SCIP a través de
+PySCIPOpt, con los parámetros por defecto de SCIP. Solo los experimentos fijan un límite de
+tiempo (\ruta{limits/time}); los tests corren hasta que SCIP termina o el runner los corta.
+\item {\bf Datos:} se escriben en archivos \ruta{.dat} por instancia. Si un escenario no define
+velocidades ni límite de frío, se escriben $V_p = 1$ para todos y $T^{cold} = 10^{9}$: así los
+tests heredados de v4 corren sin cambios en los dos modelos v5.
+\item {\bf Tests:} son \ruta{unittest} y corren con \ruta{python -m tests.run_suite}, seguido del
+modelo y de la suite (\ruta{functional} o \ruta{stress}). Cada test corre en su propio proceso, y el runner lo mata (con todo su
+árbol de procesos) al vencer el tope: 25 minutos por defecto, 40 en las corridas de stress.
+\item {\bf Resultados:} con \ruta{WRITE_RESULTS_CSV=1} cada corrida escribe un CSV; con \ruta{WRITE_SOLUTIONS=1}
+guarda además cada solución (instancia y valores no nulos) como JSON.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Descomposición de la Etapa 1 por lote}, reference=sec:descomposicion]
+
+La Etapa 1 se escribió como un único MIP con todos los lotes, cuyas restricciones son todas
+\quote{para cada lote} y cuyo objetivo es una suma de términos independientes. El 11-09 se pasó a
+resolver un MIP por lote, reusando el mismo \ruta{.zpl}: solo se reescriben \ruta{data_B.dat} y
+\ruta{B_nb.dat} reducidos a ese lote, y se restauran al terminar. Medido en la auditoría del
+10/11-09: con 10 lotes el MIP conjunto era unas 3 veces más lento que la suma de los MIP por
+lote, y con 20 lotes no terminaba en 14 minutos mientras la versión descompuesta tardaba
+segundos. Las variables enteras ($z_{ijb}$, $q_{ijb}$) son un juego completo por lote, y el
+árbol de búsqueda crece de forma muy no lineal con ellas aunque nada vincule dos lotes.
+
+Un detalle que costó un error: \ruta{data_N.dat} y \ruta{a_ni.dat} no se reducen. Un lote vacío
+dejaba \ruta{a_ni.dat} vacío y ZIMPL lo rechaza al compilar; como lo caro son las variables
+indexadas por $\mathcal{E} \times \mathcal{B}$, reducir $\mathcal{B}$ alcanza.
+
+{\bf Paralelismo opcional.} Con \ruta{OPP_STAGE1_WORKERS=n} los lotes se resuelven en hasta $n$
+procesos, cada uno en un directorio temporal con su copia de los datos. Solo se activa con más
+de 4 lotes, porque en instancias chicas levantar procesos cuesta más de lo que ahorra (en la
+suite funcional, 51~s con 6 procesos contra 46~s en secuencia). Por defecto es secuencial: con
+lotes en paralelo, el reloj depende de cuánta CPU estaba libre y la comparación con el
+monolítico, que no se puede descomponer, deja de ser pareja. Su efecto se midió aparte
+(estudio 12, sección \in[sec:paralelo]).
+\stopsubsection
+
+\startsubsection[title={Errores y correcciones que importan para la tesina}]
+\startitemize
+\item {\bf Lote sin picker elegible} (31-08): ZIMPL no devuelve \quote{infactible} sino un error
+de compilación por suma vacía. Se corrigió con un pre-chequeo en Python que replica
+$\mathcal{PB}^{elig}$ con la misma tolerancia (\ruta{cold_chain_validation.py}). El 29-09 se
+corrigió además que en ese caso el CSV mostraba como objetivo el tiempo de ruta del último lote
+de la Etapa 1.
+\item {\bf Tolerancia del frío} (10-09): el \ruta{.zpl} de la Etapa 2 comparaba con $\le$
+estricto y las heurísticas con $+10^{-9}$; un $T^{exec}_{pb} = T^{cold}$ con error de redondeo
+podía quedar afuera en un módulo y adentro en otro. Se unificó en $+10^{-9}$.
+\item {\bf Nombres de variables truncados} (01-09 a 22-09): en una instancia de 10 lotes en
+10×10, la Etapa 1 se declaraba óptima con rutas que no llegaban al nodo final. Inspeccionando el
+\ruta{.lp}, ZIMPL había generado nombres corruptos (sin el sufijo del lote) y omitido variables.
+Se resolvió compilando con \ruta{zimpl -l 8192} (largo máximo de nombre) y ese test pasó a
+resolver.
+\item {\bf $M^{seq}$} (22-09): de 500 fijo a calculado por instancia. Con 500, el stress de 40
+lotes en un picker se declaraba infactible (sección \in[sec:notacion]).
+\item {\bf Velocidad nula} (24-09): el cálculo de $M^{seq}$ dividía por la velocidad mínima antes de
+validar; la validación pasó al principio del pipeline.
+\item {\bf Test 06 heredado de v4} (29-09): exigía la ruta más corta con fecha 15. En v5, con
+espera voluntaria, una ruta más larga que llega a tiempo cuesta lo mismo, y el monolítico elegía
+otra ruta igual de óptima (objetivo 30). Se reemplazó por un test propio de v5 sobre la misma
+instancia (sección \in[sec:funcionales_propios]).
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Verificación cruzada}]
+\startitemize
+\item {\bf Split contra monolítico} (\ruta{verification/compare_v5.py}): compara, desde los CSV y
+las soluciones guardadas y sin resolver nada, el estado, el objetivo (tolerancia relativa
+$10^{-6}$) y, si coinciden, rutas, asignación y orden por picker. Distingue misma solución de
+óptimo alternativo. Con \ruta{--verify-split-stress} verifica además cada solución de stress del
+Split contra el monolítico: las 9 dan \quote{compliant}.
+\item {\bf El monolítico como verificador} (\ruta{verification/mono_compliance.py}): fija los
+valores de una solución sobre las variables del monolítico compilado y deja que SCIP decida si
+es factible, sin copiar ni reescribir ninguna restricción. Tres capas: chequeos en Python
+(arcos válidos, sin revisitas, locaciones requeridas, un picker por lote, frío, tiempos y
+objetivo recalculados), nivel 1 (rutas, asignación y secuencia fijas, tiempos libres) y nivel
+2 (también las terminaciones fijas). Se usó para validar las 150 soluciones de HC y ACO.
+\item {\bf Prueba de que el verificador puede fallar:} sobre una solución chica se introdujeron
+cuatro errores a propósito (un arco que no existe en el grafo, dos terminaciones superpuestas del
+mismo picker, una violación de la cadena de frío y un objetivo mal reportado), y los detectó los
+cuatro.
+\item {\bf Lotes vacíos:} los modelos exactos obligan a rutear, asignar y cobrar en el objetivo
+todo lote de $\mathcal{B}$, aunque no tenga órdenes; HC y ACO los ignoran. Por decisión del
+equipo, el verificador saca de $\mathcal{B}$ los lotes sin órdenes que la solución no usa (queda
+anotado en el reporte); ninguna restricción cambia. De ahí salió además la confirmación de la
+causa del timeout del funcional 30a: con sus 10 lotes vacíos libres, SCIP no cerró la
+verificación en 600~s; sin ellos, la cerró en 0,13~s.
+\item {\bf El 100×100:} compilar el monolítico completo llevó a ZIMPL a unos 5~GB sin terminar.
+Se verifica sobre el subgrafo de las rutas fijas (los arcos que usan, sus nodos, el depósito y el
+final), que es exactamente equivalente cuando todas las rutas están fijas. El control: las 248
+soluciones que ya estaban verificadas dieron el mismo veredicto, los mismos estados y los mismos
+objetivos con y sin el recorte. En el 100×100 de HC el subgrafo tiene 1.425 de los 10.000 nodos
+y 2.900 de los 39.600 arcos.
+\item {\bf El tamaño de la espera voluntaria:} en la primera verificación (28-09, sobre la suite
+funcional anterior de las heurísticas), en 7 de 51 casos el nivel 1 bajó el objetivo entre
+7,9 \% y 93,6 \% con las mismas rutas, asignación y secuencia: el monolítico espera para no
+terminar antes de la fecha, y las heurísticas nunca esperan. No es una violación.
+\stopitemize
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Diseño de las pruebas}, reference=sec:diseno]
+
+Hay dos suites con propósitos distintos: la {\bf funcional} verifica que cada regla del problema
+se cumpla en instancias chicas con resultados conocidos; la de {\bf stress} mide hasta qué tamaño
+llega cada modelo. Aparte, los {\bf estudios exploratorios} (secciones \in[sec:exploracion_split]
+y \in[sec:exploracion_mono]) no son tests: un test responde si una instancia resuelve; un
+barrido da la curva, es decir dónde se dobla cada eje y dónde se rompe. Los dos modelos corren
+exactamente los mismos tests: para cada número, Split y mono hacen la misma llamada al mismo
+constructor de escenario.
+
+\startsubsection[title={Suite funcional}, reference=sec:funcionales]
+
+La suite tiene 38 archivos y 64 métodos de test en el Split (63 en el monolítico: el 24b corre
+solo la Etapa 1 a propósito y no tiene equivalente). Tiene dos partes:
+
+\startitemize
+\item {\bf Migrados de v4} (30 archivos). Un adaptador reemplaza la resolución de v4 por la del
+modelo v5 y hereda los escenarios y las aserciones sin tocarlas, con $V_p = 1$ y el frío
+desactivado. Cubren capacidad del carro, rutas con desvíos y bifurcaciones, locaciones
+repetidas, grillas y puentes desconectados, pesos distintos, fechas ajustadas y holgadas, lotes
+vacíos, capacidades fraccionarias, órdenes en varios lotes, órdenes más grandes que el carro y
+tiempos de servicio. Los infactibles a propósito (orden mayor que el carro, locación
+inalcanzable, orden en dos lotes) deben detectarse como tales.
+\item {\bf Propios de v5} (archivos 06, 23, 24 y 34 a 38), con valores exactos calculados a mano
+sobre la geometría de los escenarios.
+\stopitemize
+
+\startsubsubsection[title={Tests propios de v5}, reference=sec:funcionales_propios]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][width=1.1cm]
+\setupTABLE[column][2][width=3.4cm, align=flushleft]
+\setupTABLE[column][3][align=flushleft]
+\bTR \bTH Caso \eTH \bTH Qué verifica \eTH \bTH Escenario y valor esperado \eTH \eTR
+\bTR \bTD 06a \eTD \bTD Ruta indiferente si todas llegan \eTD \bTD Fecha 15: toda ruta llega a tiempo; se afirma objetivo 30 y que cada lote completa en 15, sin afirmar la ruta (óptimo alternativo en el monolítico). \eTD \eTR
+\bTR \bTD 06b \eTD \bTD Ruta corta cuando la larga atrasa \eTD \bTD Fecha 10: los dos lotes toman L1→L4→L5, completan en 10, objetivo 20. \eTD \eTR
+\bTR \bTD 23a \eTD \bTD Ruta larga al picker rápido \eTD \bTD B2 (ruta 14) a P\_fast, B1 a P\_slow. \eTD \eTR
+\bTR \bTD 23b \eTD \bTD Rutas exportadas y usadas \eTD \bTD $R_{B1} = 5$, $R_{B2} = 14$; todos los lotes asignados y sin solapamiento. \eTD \eTR
+\bTR \bTD 24a \eTD \bTD El frío excluye al lento \eTD \bTD $2 + R/2 \le T^{cold} < 2 + R$: solo P\_fast es elegible. Objetivo 9. \eTD \eTR
+\bTR \bTD 24b \eTD \bTD Pre-chequeo \eTD \bTD Solo Etapa 1: ningún par elegible. \eTD \eTR
+\bTR \bTD 34a \eTD \bTD Fórmula exacta \eTD \bTD $F_b = 2$: P\_slow termina B1 en $2 + 5/1 = 7$, P\_fast termina B2 en $2 + 14/2 = 9$. \eTD \eTR
+\bTR \bTD 34b \eTD \bTD Infactible limpio \eTD \bTD Ningún picker elegible: estado infactible, sin excepción. \eTD \eTR
+\bTR \bTD 34c \eTD \bTD Justo en el límite \eTD \bTD $T^{exec} = T^{cold} = 9$: sigue elegible ($\le$, no $<$). \eTD \eTR
+\bTR \bTD 35a \eTD \bTD Frío por lote, no por turno \eTD \bTD Solo P\_fast elegible ($9 \le 10 < 16$): termina en 9 y 18 (después del límite, válido). Objetivo 27. \eTD \eTR
+\bTR \bTD 35b \eTD \bTD Tolerancia \eTD \bTD $T^{cold} = 9 - 5 \cdot 10^{-10}$, $T^{exec} = 9$: sigue elegible. \eTD \eTR
+\bTR \bTD 35c \eTD \bTD La parte fija cuenta \eTD \bTD Ruta $14/2 = 7 \le T^{cold} = 8$, pero $2 + 7 = 9 > 8$: infactible. \eTD \eTR
+\bTR \bTD 36a \eTD \bTD Rápido 2× reparte \eTD \bTD $V = 2$: un lote a cada picker, terminan en 9 y 16, objetivo 25. \eTD \eTR
+\bTR \bTD 36b \eTD \bTD Rápido 4× hace los dos \eTD \bTD $V = 4$: P\_fast hace ambos, $2 + 14/4 = 5{,}5$ y 11, objetivo 16,5. \eTD \eTR
+\bTR \bTD 36c \eTD \bTD Velocidad no positiva \eTD \bTD $V = 0$ y $V = -1$ se rechazan antes de resolver, nombrando al picker. \eTD \eTR
+\bTR \bTD 36d \eTD \bTD Tardanza con velocidad escalada \eTD \bTD $V = 0{,}5$: $2 + 14/0{,}5 = 30$ con fecha 20, tardanza 10, objetivo 310. \eTD \eTR
+\bTR \bTD 37a \eTD \bTD Espera a propósito \eTD \bTD 3 órdenes con fecha 20, lo antes posible 9. Con $W^{c} = 1 < 3$ el lote se declara terminado en 20; objetivo 20. \eTD \eTR
+\bTR \bTD 37b \eTD \bTD Sin espera \eTD \bTD Con $W^{c} = 5 > 3$ termina en 9, adelanto 11 por orden; objetivo $5 \cdot 9 + 3 \cdot 11 = 78$. \eTD \eTR
+\bTR \bTD 38 \eTD \bTD Límite del camino simple \eTD \bTD Un centro con dos pasillos sin salida: hay que pasar tres veces por el centro, así que es infactible. Documenta una limitación, no una regla. \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las letras siguen el orden alfabético de los nombres de los métodos de cada archivo, igual que en
+los documentos de comparación del repositorio de implementación y en la tabla de resultados de la
+sección \in[sec:res_funcional].
+
+Se verificó además, sin correr nada, que la suite funcional ejercita las dos mitades del
+objetivo. De la salida de depuración de la corrida funcional del Split del 22-09 se leyeron el
+adelanto y el atraso de cada orden; los valores de $10^{19}$ o más se descartaron, porque son
+variables libres de un término con peso cero en ese test. De los 42 tests con solución, 7 mezclan
+órdenes a tiempo y atrasadas, 5 tienen solo adelanto, 19 solo atraso (casi todos migrados de v4,
+con todas las órdenes tarde) y 11 ninguno (terminan justo en su fecha o el término pesa cero).
+Como los dos modelos son equivalentes, vale también para el monolítico.
+\stopsubsubsection
+\stopsubsection
+
+\startsubsection[title={La suite de stress heredada y sus degeneraciones}, reference=sec:degeneraciones]
+
+La primera suite de stress de v5 eran los 8 escenarios de v4, construidos con el mismo
+generador: lotes armados por turnos, ubicaciones asignadas en orden a las órdenes, $C_n = 10$,
+todas las fechas en 30, $W^{c} = 9$, $V_p = 1$ y pesos uniformes 4/4 en la grilla.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Test (numeración vieja) \eTH \bTH Configuración \eTH \bTH Split \eTH \bTH Mono \eTH \eTR
+\bTR \bTD 01 \eTD \bTD 30 lotes, 30 pickers, 750 órdenes, 25×25 \eTD \bTD timeout \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 02 \eTD \bTD 30/30, 750 órdenes, 100×100 \eTD \bTD timeout \eTD \bTD sin memoria \eTD \eTR
+\bTR \bTD 03 \eTD \bTD 20/20, 600 órdenes, 100×100 \eTD \bTD timeout \eTD \bTD ZIMPL sin memoria \eTD \eTR
+\bTR \bTD 04 \eTD \bTD 25/25, 100 órdenes, 10×10 \eTD \bTD timeout \eTD \bTD -- \eTD \eTR
+\bTR \bTD 05 \eTD \bTD 10/10, 100 órdenes, 10×10 \eTD \bTD ok (unos 45~s) \eTD \bTD -- \eTD \eTR
+\bTR \bTD 06 \eTD \bTD 25 lotes, 10 pickers, 100 órdenes, 10×10 \eTD \bTD timeout \eTD \bTD -- \eTD \eTR
+\bTR \bTD 07 \eTD \bTD 10 lotes, 25 pickers, 100 órdenes, 10×10 \eTD \bTD timeout \eTD \bTD -- \eTD \eTR
+\bTR \bTD 08 \eTD \bTD 40 lotes, 1 picker, 320 órdenes, 7×7 \eTD \bTD timeout \eTD \bTD -- \eTD \eTR
+\eTABLE
+\blank[medium]
+
+El 05 resolvió recién después de la corrección de nombres de ZIMPL; antes, la suite completa
+daba 0 de 8. Al analizarla se encontraron seis degeneraciones que inflan la dificultad o dejan
+partes del modelo sin ejercitar, sin representar nada de un depósito real:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][align=flushleft]
+\setupTABLE[column][3][align=flushleft]
+\bTR \bTH Tipo \eTH \bTH Degeneración \eTH \bTH Efecto \eTH \eTR
+\bTR \bTD Rendimiento \eTD \bTD Pesos uniformes de la grilla (4/4) \eTD \bTD Muchas rutas empatadas: Etapa 1 hasta 3,7 veces más lenta (estudio 02). \eTD \eTR
+\bTR \bTD Cobertura \eTD \bTD Fechas idénticas e inalcanzables ($T^{due}_n = 30$ con $F_b = 101$ y rutas de 64 a 72) \eTD \bTD SLA 0 \%: el adelanto nunca se activa. Se sospechó también un costo de rendimiento, que quedó sin confirmar (sección \in[sec:ordenes]). \eTD \eTR
+\bTR \bTD Cobertura \eTD \bTD $|\mathcal{B}| = |\mathcal{P}|$ en 5 de 8 \eTD \bTD Cada lote toma su picker: la secuencia, razón de ser de la Etapa 2, no se ejercita. \eTD \eTR
+\bTR \bTD Cobertura \eTD \bTD $|\mathcal{P}| > |\mathcal{B}|$ (07) \eTD \bTD 15 pickers que no pueden hacer nada: costo combinatorio puro. 10/10 y 10/12 dan el mismo objetivo. \eTD \eTR
+\bTR \bTD Cobertura \eTD \bTD $V_p = 1$ en todos \eTD \bTD Lo que distingue a v5 de v4 no se ejercita. \eTD \eTR
+\bTR \bTD Cobertura \eTD \bTD Lotes vacíos (funcional 30: 10 de 12) \eTD \bTD $10!$ permutaciones indistinguibles: timeout con 4 órdenes y 34 nodos. Confirmado al verificar una solución de esa instancia: sin los lotes vacíos SCIP cierra en 0,13~s; con ellos libres, no cierra en 600~s. \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Además, la geometría de los lotes dependía de cuántos lotes había (ubicaciones a intervalos
+fijados por la cantidad de lotes), así que cambiar $|\mathcal{B}|$ cambiaba también la forma de
+cada lote; y el peso de las órdenes ($C_n = 10$) hacía que la parte fija ($F_b = 101$) pesara más
+que la ruta, de modo que mejorar el ruteo casi no movía el objetivo.
+\stopsubsection
+
+\startsubsection[title={Principios del rediseño y perfil realista}, reference=sec:perfil]
+
+Los principios del rediseño salieron de las mediciones de la sección
+\in[sec:exploracion_split]:
+
+\startitemize[n]
+\item {\bf Un perfil realista fijo en todos los tests.} Pesos 4/5 (pasillos y travesaños de
+largo parecido pero no igual), velocidades en dos bandas, 0,8 y 1,2 (una cuadrilla de edad
+parecida que empuja el mismo carro, pero no idéntica), 26 órdenes por lote, sin ninguna de las
+seis degeneraciones: $|\mathcal{B}| > |\mathcal{P}|$, sin lotes vacíos, fechas repartidas y
+alcanzables.
+\item {\bf Un eje por vez entre tests}, para que el test donde cada modelo deja de resolver sea
+atribuible. El eje principal es el tamaño del almacén.
+\item {\bf El tamaño viene de la Etapa 1, no de la Etapa 2:} con velocidades realistas la Etapa
+2 no tolera más de unos dos lotes por picker, mientras que la Etapa 1 escala con la grilla de
+forma más predecible y es donde la descomposición tiene una ventaja estructural.
+\item {\bf La forma de la agenda fija: 6 lotes sobre 3 pickers}, cuya Etapa 2 mostró una
+dificultad estable frente a la grilla (321.137 nodos en 7×7 y 314.331 en 13×13).
+\item {\bf Fechas sin calibrar:} el SLA lo fija el objetivo (sección \in[sec:espera]).
+\item {\bf Tiempos calibrados de a una medición por vez}, porque el runner corre los tests en
+serie y en paralelo el reloj se infla.
+\stopitemize
+
+{\bf El generador} (\ruta{designed_stress_scenario}, semilla fija 20260922) arma una grilla con
+el depósito y el nodo final en esquinas opuestas, reparte las órdenes en los lotes por turnos
+(todos los lotes no vacíos y con tamaños que difieren en a lo sumo una orden) y asigna a cada
+orden una ubicación al azar, de modo que la geometría de un lote no cambia al cambiar la cantidad
+de lotes. Las velocidades se reparten por bandas alternadas entre los pickers. Las fechas se
+reparten entre el 60 \% y el 140 \% de una estimación del makespan. La capacidad del carro es 1,5
+veces la carga de un lote, para que nunca sea la restricción activa.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][3][align=flushleft]
+\bTR \bTH Parámetro \eTH \bTH Valor \eTH \bTH Motivo \eTH \eTR
+\bTR \bTD Órdenes por lote \eTD \bTD 26 ($C_n = 5$) \eTD \bTD Ejercita adelanto y tardanza; $F_b = 1 + 26 \cdot 5 = 131$ \eTD \eTR
+\bTR \bTD Lotes / pickers (base) \eTD \bTD 6 / 3 \eTD \bTD Dos lotes por picker: la secuencia se activa \eTD \eTR
+\bTR \bTD Pesos de la grilla \eTD \bTD vertical 4, horizontal 5 \eTD \bTD Rompen empates, sin ser una optimización \eTD \eTR
+\bTR \bTD Velocidades \eTD \bTD 0,8 y 1,2 \eTD \bTD Cuadrilla realista en dos bandas \eTD \eTR
+\bTR \bTD Tiempos \eTD \bTD $T^{setup} = T^{pick} = 1$, $T^{travel} = 0{,}5$, $S_i = 0$ \eTD \bTD Iguales a los de v4 \eTD \eTR
+\bTR \bTD Pesos del objetivo \eTD \bTD $W^{c} = 27$, $W^{pen} = W^{e} = W^{t} = 1$ \eTD \bTD $W^{c}$ mayor que las órdenes por lote: sin espera voluntaria \eTD \eTR
+\bTR \bTD Big-M \eTD \bTD $M = 10^{6}$, $M^{seq}$ por instancia \eTD \bTD \eTD \eTR
+\bTR \bTD Cadena de frío \eTD \bTD $T^{cold} = 10^{9}$ (salvo el test 11) \eTD \bTD Desactivada \eTD \eTR
+\eTABLE
+\blank[medium]
+\stopsubsection
+
+\startsubsection[title={La suite de stress final}, reference=sec:suite_stress]
+
+El 23-09 la suite se depuró y se renumeró de 23 a 19 tests, agrupados por eje. De los
+heredados se conservaron el más grande (100×100), el único que resolvía (10/10 en 10×10) y el de
+un solo picker con 40 lotes; los demás se eliminaron por degenerados y sin eje propio.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][width=5.4cm, align=flushleft]
+\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH Pickers \eTH \bTH Órdenes \eTH \bTH Grilla \eTH \bTH $W^{c}$ \eTH \eTR
+\bTR \bTD 01 \eTD \bTD Heredado: almacén muy grande, un lote por picker \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \bTD 9 \eTD \eTR
+\bTR \bTD 02 \eTD \bTD Heredado: un lote por picker \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \bTD 9 \eTD \eTR
+\bTR \bTD 03 \eTD \bTD Heredado: un picker con 40 lotes \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \bTD 9 \eTD \eTR
+\bTR \bTD 04 \eTD \bTD Perfil realista en almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 05 \eTD \bTD Igual que 04, almacén mediano \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 06 \eTD \bTD Igual que 04, entre 05 y 07 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 07 \eTD \bTD Igual que 04, el mayor que resuelve \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 08 \eTD \bTD Igual que 04: techo del ruteo exacto \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 09 \eTD \bTD Almacén alargado: ¿importa la forma? \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 10 \eTD \bTD Peso en la agenda: 4 pickers, ruteo barato \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 11 \eTD \bTD Cadena de frío activa ($T^{cold} = 280$) \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 12 \eTD \bTD Más personal, dos lotes por picker \eTD \bTD 8 \eTD \bTD 4 \eTD \bTD 208 \eTD \bTD 7×7 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 13 \eTD \bTD Más personal \eTD \bTD 10 \eTD \bTD 5 \eTD \bTD 260 \eTD \bTD 7×7 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 14 \eTD \bTD Más personal: techo del eje \eTD \bTD 12 \eTD \bTD 6 \eTD \bTD 312 \eTD \bTD 7×7 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 15 \eTD \bTD Más pickers que lotes: quién queda libre \eTD \bTD 6 \eTD \bTD 9 \eTD \bTD 156 \eTD \bTD 10×10 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 16 \eTD \bTD Una ola: un lote por picker \eTD \bTD 12 \eTD \bTD 12 \eTD \bTD 312 \eTD \bTD 10×10 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 17 \eTD \bTD Tres pickers toman un segundo lote \eTD \bTD 15 \eTD \bTD 12 \eTD \bTD 390 \eTD \bTD 10×10 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 18 \eTD \bTD La mitad toma un segundo lote \eTD \bTD 18 \eTD \bTD 12 \eTD \bTD 468 \eTD \bTD 10×10 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 19 \eTD \bTD Todos toman dos lotes \eTD \bTD 24 \eTD \bTD 12 \eTD \bTD 624 \eTD \bTD 10×10 \eTD \bTD 27 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Algunas decisiones puntuales:
+\startitemize
+\item {\bf 06 (14×14)} se agregó para cubrir la franja de 10 a 20 minutos entre 13×13 y 15×15,
+que en la primera corrida (una medición por vez, $W^{c} = 9$) saltaba de unos 6 a unos 28
+minutos. En la corrida del 23-09, con la Etapa 1 en 6 procesos y $W^{c} = 9$, terminó en 6,5
+minutos; en la final, con $W^{c} = 27$, en 3,4. La franja de 10 a 20 minutos la cubre ahora el 07
+(15×15, 15,1 minutos).
+\item {\bf 09 (8×21):} 168 ubicaciones, una menos que el 13×13, pero con pasillos largos.
+\item {\bf 10} es el de la proporción intermedia de lotes y pickers, la más difícil medida para la
+Etapa 2: es la referencia para cualquier intento de acelerarla.
+\item {\bf 11:} con esas rutas, un lote tarda 249 a 259 para un picker rápido y 308 a 324 para uno
+lento; $T^{cold} = 280$ excluye a la banda lenta de todos los lotes. Si cambia el generador, hay
+que volver a derivar el umbral.
+\item {\bf 15} reemplaza al heredado de 10 lotes con 25 pickers: con 5 pickers lentos y 4 rápidos,
+quién queda libre sí importa (dos lotes toman un lento o esperan a uno rápido).
+\item {\bf 16 a 19} fijan la cuadrilla en 12 y agrandan la ola: de asignación pura (16) a dos
+lotes por picker (19).
+\item {\bf Aserciones:} son las mismas para todos: estado óptimo o factible, rutas que
+cubren las ubicaciones requeridas, cada lote con un picker y sin solapamiento.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={El cambio de $W^{c}$ de 9 a 27}, reference=sec:wc27]
+
+La primera corrida del perfil realista (23-09) usaba $W^{c} = 9$, menor que las 26 órdenes por
+lote, así que el modelo esperaba a propósito y el SLA quedaba en 67,9 \%, sobre la fórmula. El
+26-09, al comparar con las heurísticas, se vio que esa espera hacía incomparables los objetivos
+(sección \in[sec:espera]) y el generador pasó a usar $W^{c} = \lceil N / B \rceil + 1 = 27$. El
+efecto sobre la Etapa 2 del Split fue grande, con las mismas instancias y las mismas 26 órdenes
+por lote:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Test \eTH \bTH Instancia \eTH \bTH Etapa 2, $W^{c} = 9$ \eTH \bTH Etapa 2, $W^{c} = 27$ \eTH \bTH Relación \eTH \eTR
+\bTR \bTD 04 \eTD \bTD 7×7 \eTD \bTD 202,5~s \eTD \bTD 8,9~s \eTD \bTD ×23 \eTD \eTR
+\bTR \bTD 05 \eTD \bTD 13×13 \eTD \bTD 183,9~s \eTD \bTD 9,9~s \eTD \bTD ×19 \eTD \eTR
+\bTR \bTD 06 \eTD \bTD 14×14 \eTD \bTD 119,7~s \eTD \bTD 6,8~s \eTD \bTD ×18 \eTD \eTR
+\bTR \bTD 07 \eTD \bTD 15×15 \eTD \bTD 110,7~s \eTD \bTD 3,9~s \eTD \bTD ×28 \eTD \eTR
+\bTR \bTD 09 \eTD \bTD 8×21 \eTD \bTD 86,1~s \eTD \bTD 5,5~s \eTD \bTD ×16 \eTD \eTR
+\bTR \bTD 10 \eTD \bTD 7×7, 4 pickers \eTD \bTD 778,8~s \eTD \bTD 71,0~s \eTD \bTD ×11 \eTD \eTR
+\bTR \bTD 11 \eTD \bTD 13×13, frío \eTD \bTD 9,8~s \eTD \bTD 11,9~s \eTD \bTD ×0,8 \eTD \eTR
+\bTR \bTD 15 \eTD \bTD 10×10, 9 pickers \eTD \bTD 724,5~s \eTD \bTD 96,6 y 220,8~s \eTD \bTD ×3,3 a ×7,5 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+La columna de $W^{c} = 9$ es la corrida del 23-09 con la Etapa 1 en 6 procesos; la de
+$W^{c} = 27$, la suite final (el 10 y el primer valor del 15 son de la corrida del 26-09; el
+segundo valor del 15, de la del 29-09). La Etapa 2 no se paraleliza, pero el reloj varía hasta
+dos veces entre corridas (sección \in[sec:tiempos]): las relaciones de 11 a 28 veces lo superan
+holgadamente, y la del 15 también. El 11 ya era barato porque el frío deja elegibles solo a los
+dos pickers rápidos. El SLA subió de 68--69 \% al 100 \% (97,4 \% en el 11).
+
+{\bf Qué muestra y qué no.} Con $N_b$ fijo, cambiar solo $W^{c}$ abarató la Etapa 2 entre 3 y 28
+veces: el tamaño de los lotes no explica por sí solo su costo, y la forma del objetivo sí pesa.
+Es la medición que separa en parte los dos efectos que el estudio 01 no podía separar (sección
+\in[sec:ordenes]). Pero no confirma el mecanismo que se había propuesto ahí, el del objetivo
+aplanado por tardanzas en cero: con $W^{c} = 27$ las tardanzas también quedan en cero (SLA
+100 \%) y la Etapa 2 es mucho más barata. Lo que cambia con seguridad es que desaparece la
+espera voluntaria: el objetivo deja de premiar demorar lotes y deja de ser de adelanto y
+tardanza no regular (sección \in[sec:espera]). Es la lectura más consistente con los datos, pero
+no se aisló. Los heredados (01 a 03) conservan $W^{c} = 9$: todas sus órdenes llegan tarde, así
+que no hay adelanto que recortar.
+\stopsubsection
+
+\startsubsection[title={La herramienta de exploración}, reference=sec:herramienta]
+
+Los estudios se corrieron con \ruta{experiments/opp_v5/exploration.py}, que arma instancias con
+el mismo generador que los tests y admite barridos de un eje por vez, listas de puntos en JSON y
+el modo frontera. Tres decisiones de diseño salieron de problemas reales:
+
+\startitemize
+\item {\bf Corte duro por proceso.} \ruta{limits/time} de SCIP no es un tope duro: SCIP lo
+consulta entre operaciones, y un punto con límite de 300~s terminó a los 3.079~s, con 499 nodos,
+porque cada LP tardaba varios segundos. Además la Etapa 1 no tenía límite propio. Cada punto corre
+en su propio proceso y se mata desde afuera con todo su árbol al vencer \ruta{hard_cap_s},
+registrando la etapa en la que estaba. Se validó en el estudio 04.
+\item {\bf Modo par} (\ruta{pair}): la misma instancia se resuelve con el Split y después con el
+monolítico. Como comparten el óptimo, el del Split es la referencia para medir al monolítico:
+cuándo encontró una solución cercana, cuándo llegó al óptimo y cuánto le faltaba a su cota dual.
+Separa {\em encontrar} una buena solución de {\em probar} que es óptima.
+\item {\bf Registro detallado:} tiempos por etapa, estado, objetivo, brecha, nodos, SLA,
+ubicaciones por lote, tamaño del modelo, memoria pico, cada mejora de la solución incumbente y
+la cota dual en la raíz y al final.
+\stopitemize
+
+Los datos de exploración se guardan en \ruta{experiments/opp_v5/studies/} y no en
+\ruta{results/}, para que el análisis de la tesina no los tome como corridas de tests.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Análisis exploratorio del modelo Split}, reference=sec:exploracion_split]
+
+La pregunta que motivó la exploración era práctica: los tests de stress heredados no terminaban
+nunca y hacía falta saber qué dimensión de la instancia vuelve difícil a cada etapa, para diseñar
+escenarios realistas y a la vez resolubles. Se corrieron siete estudios el 22 y 23 de
+septiembre, más uno de paralelismo el 24, con un directorio por estudio:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][width=1.8cm]
+\setupTABLE[column][2][width=5.2cm, align=flushleft]
+\setupTABLE[column][3][align=flushleft]
+\bTR \bTH Estudio \eTH \bTH Pregunta \eTH \bTH Conclusión \eTH \eTR
+\bTR \bTD 01 \eTD \bTD ¿Qué dimensión rompe primero? \eTD \bTD Los lotes rompen la Etapa 2 (en 8); la grilla rompe la Etapa 1 (15×15). Órdenes por lote y pickers no rompen. \eTD \eTR
+\bTR \bTD 02 \eTD \bTD ¿Los pesos uniformes son una degeneración? \eTD \bTD Sí, por cobertura. 2/6 acelera la Etapa 1 hasta 3,7 veces en 7×7, pero la ventaja desaparece en 15×15. \eTD \eTR
+\bTR \bTD 03 \eTD \bTD ¿Las velocidades distintas lo encarecen? \eTD \bTD Todas distintas, en un escenario sano: no. En bandas, como una cuadrilla real: de 1 a 2 velocidades cuesta unas 7 veces en la Etapa 2. \eTD \eTR
+\bTR \bTD 04 \eTD \bTD ¿Funciona el corte duro? \eTD \bTD Sí, en cualquier etapa. \eTD \eTR
+\bTR \bTD 05 \eTD \bTD ¿Qué perfil realista cae en 10--20 min? \eTD \bTD 7×7 3,6 min, 13×13 11,8 min, 15×15 más de 25 (Etapa 1). De acá salen los stress 04 a 07. \eTD \eTR
+\bTR \bTD 06 \eTD \bTD ¿Sirve la clausura métrica en almacenes realistas? \eTD \bTD No: 67 a 100 \% de los lotes vuelven al grafo completo. Se eliminó. \eTD \eTR
+\bTR \bTD 07 \eTD \bTD ¿El límite de un arco por vértice cambia respuestas o tiempo? \eTD \bTD No cambia rutas; más rápido en una escala y más lento en otra. \eTD \eTR
+\bTR \bTD 12 \eTD \bTD ¿Cuánto acelera la Etapa 1 en paralelo? \eTD \bTD ×2,2 en 13×13 y ×1,9 en 14×14, con 6 procesos. \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Salvo indicación, todas las instancias salen del generador de la sección \in[sec:perfil]. Los
+estudios 01 a 03 corrieron con la clausura métrica activada (sección \in[sec:clausura]), que es
+exacta: no cambia objetivos ni rutas, solo el tiempo de la Etapa 1. Sus tiempos de Etapa 1 son
+comparables entre sí pero no con los de estudios posteriores.
+
+\startsubsection[title={Mediciones previas: los bordes del único stress que resolvía}, reference=sec:bordes]
+
+El 22-09, antes de los estudios, se caminó cada eje desde el único stress heredado que resolvía
+(10 lotes, 10 pickers, 100 órdenes, 10×10, todo uniforme), con 120~s por Etapa 2:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Lotes / pickers \eTH \bTH Etapa 1 \eTH \bTH Etapa 2 \eTH \bTH Nodos \eTH \bTH Brecha \eTH \eTR
+\bTR \bTD 10 / 10 \eTD \bTD 11,1~s \eTD \bTD 33,0~s \eTD \bTD 24.429 \eTD \bTD 0 \% \eTD \eTR
+\bTR \bTD 10 / 12 \eTD \bTD \eTD \bTD 118,5~s \eTD \bTD 104.366 \eTD \bTD 0 \% \eTD \eTR
+\bTR \bTD 10 / 14 \eTD \bTD \eTD \bTD tope \eTD \bTD 44.215 \eTD \bTD 5,8 \% \eTD \eTR
+\bTR \bTD 10 / 16 \eTD \bTD \eTD \bTD tope \eTD \bTD 20 \eTD \bTD 213,4 \% \eTD \eTR
+\bTR \bTD 10 / 20 \eTD \bTD \eTD \bTD tope \eTD \bTD 441 \eTD \bTD 1.538,3 \% \eTD \eTR
+\bTR \bTD 12 / 10 \eTD \bTD 117,0~s \eTD \bTD tope \eTD \bTD \eTD \bTD 54,1 \% \eTD \eTR
+\bTR \bTD 14 / 10 \eTD \bTD 202,7~s \eTD \bTD tope \eTD \bTD \eTD \bTD 89,4 \% \eTD \eTR
+\bTR \bTD 16 / 10 \eTD \bTD 152,8~s \eTD \bTD tope \eTD \bTD \eTD \bTD 96,3 \% \eTD \eTR
+\eTABLE
+\blank[medium]
+
+La franja resoluble era angosta (entre 12 y 14 pickers con 10 lotes, entre 10 y 12 lotes con 10
+pickers). Con muchos pickers el solver se atascaba en la raíz: 20 nodos en 119~s, a unos 6~s por
+nodo, porque más pickers agrandan el LP sin aportar al óptimo. La Etapa 1 también crecía con los
+lotes, aunque las órdenes estaban fijas en 100 (más lotes, menos órdenes por lote): de 11,1~s con
+10 lotes a 117,0~s con 12 y 202,7~s con 14, y bajaba a 152,8~s con 16. La sospecha, que no se
+llegó a verificar, era que el salto venía en parte del generador heredado, que cambiaba la
+geometría de cada lote con la cantidad de lotes (las ubicaciones de un lote quedaban espaciadas
+de a 10 con 10 lotes y de a 12 con 12); la caída de 14 a 16 lotes es consistente con eso. Estas
+observaciones motivaron el generador nuevo, en el que la geometría de un lote no depende de
+cuántos lotes hay. Con él, de 6 a 8 lotes la Etapa 1 pasó de 12,87~s a 16,82~s (×1,31, casi la
+proporción 8/6; estudio 01).
+\stopsubsection
+
+\startsubsection[title={Estudio 01: qué dimensión rompe primero}, reference=sec:ordenes]
+
+Desde una base de 6 lotes, 2 pickers, 26 órdenes por lote, grilla 7×7, pesos 4/4 y velocidades
+uniformes, se movió un eje por vez con 300~s por resolución, en este orden: órdenes por lote (10
+a 26), lotes, pickers y grilla. Cada eje se cortaba en el primer valor que no resolvía. Las
+órdenes y los lotes pasaban a los ejes siguientes con el mayor valor que había resuelto (26
+órdenes; 6 lotes, porque 8 ya no resolvió), pero los pickers no: la fase de grilla volvió a 2.
+Los puntos de 32 a 50 órdenes por lote salen de un segundo script, que corrió al mismo tiempo que
+el barrido principal, así que sus tiempos de reloj pueden estar inflados (sección
+\in[sec:tiempos]). En la tabla, {\em Pick.} son los pickers, {\em Órd.} las órdenes por lote, {\em Ubic.} las
+ubicaciones distintas por lote, y E1 y E2 las dos etapas.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Eje \eTH \bTH Lotes \eTH \bTH Pick. \eTH \bTH Órd. \eTH \bTH Grilla \eTH \bTH Ubic. \eTH \bTH E1 (s) \eTH \bTH E2 (s) \eTH \bTH Estado \eTH \bTH Nodos E2 \eTH \bTH SLA \eTH \eTR
+\bTR \bTD Órdenes \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 10 \eTD \bTD 7×7 \eTD \bTD 7--10 \eTD \bTD 3,66 \eTD \bTD 35,57 \eTD \bTD óptimo \eTD \bTD 153.934 \eTD \bTD 96,7 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 14 \eTD \bTD 7×7 \eTD \bTD 11--13 \eTD \bTD 3,04 \eTD \bTD 10,32 \eTD \bTD óptimo \eTD \bTD 23.015 \eTD \bTD 83,3 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 18 \eTD \bTD 7×7 \eTD \bTD 12--16 \eTD \bTD 5,79 \eTD \bTD 6,32 \eTD \bTD óptimo \eTD \bTD 4.059 \eTD \bTD 75,9 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 22 \eTD \bTD 7×7 \eTD \bTD 15--19 \eTD \bTD 8,32 \eTD \bTD 7,03 \eTD \bTD óptimo \eTD \bTD 4.189 \eTD \bTD 71,2 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 26 \eTD \bTD 7×7 \eTD \bTD 18--22 \eTD \bTD 12,87 \eTD \bTD 7,98 \eTD \bTD óptimo \eTD \bTD 4.144 \eTD \bTD 67,9 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 32 \eTD \bTD 7×7 \eTD \bTD 22--25 \eTD \bTD 22,67 \eTD \bTD 12,36 \eTD \bTD óptimo \eTD \bTD 4.325 \eTD \bTD 64,6 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 40 \eTD \bTD 7×7 \eTD \bTD 25--28 \eTD \bTD 30,81 \eTD \bTD 14,07 \eTD \bTD óptimo \eTD \bTD 4.381 \eTD \bTD 61,7 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 50 \eTD \bTD 7×7 \eTD \bTD 29--33 \eTD \bTD 46,46 \eTD \bTD 14,05 \eTD \bTD óptimo \eTD \bTD 4.477 \eTD \bTD 59,3 \% \eTD \eTR
+\bTR \bTD Lotes \eTD \bTD 8 \eTD \bTD 2 \eTD \bTD 26 \eTD \bTD 7×7 \eTD \bTD 18--22 \eTD \bTD 16,82 \eTD \bTD 299,56 \eTD \bTD tope \eTD \bTD 518.628 \eTD \bTD -- \eTD \eTR
+\bTR \bTD Pickers \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 26 \eTD \bTD 7×7 \eTD \bTD 18--22 \eTD \bTD 14,81 \eTD \bTD 12,91 \eTD \bTD óptimo \eTD \bTD 14.041 \eTD \bTD 68,6 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 26 \eTD \bTD 7×7 \eTD \bTD 18--22 \eTD \bTD 13,93 \eTD \bTD 25,43 \eTD \bTD óptimo \eTD \bTD 31.317 \eTD \bTD 67,9 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 5 \eTD \bTD 26 \eTD \bTD 7×7 \eTD \bTD 18--22 \eTD \bTD 13,85 \eTD \bTD 7,29 \eTD \bTD óptimo \eTD \bTD 3.863 \eTD \bTD 69,2 \% \eTD \eTR
+\bTR \bTD Grilla \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 26 \eTD \bTD 10×10 \eTD \bTD 21--26 \eTD \bTD 50,40 \eTD \bTD 8,41 \eTD \bTD óptimo \eTD \bTD 4.313 \eTD \bTD 67,9 \% \eTD \eTR
+\bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 26 \eTD \bTD 15×15 \eTD \bTD 24--26 \eTD \bTD 464,41 \eTD \bTD -- \eTD \bTD Etapa 1 > tope \eTD \bTD -- \eTD \bTD -- \eTD \eTR
+\eTABLE
+\blank[medium]
+
+{\bf Rompen dos ejes, y en etapas distintas}: los lotes rompen la Etapa 2 y la grilla rompe la
+Etapa 1. Pasar de 6 a 8 lotes dio tope en los tres barridos donde se probó (pesos 4/4 con 26
+órdenes, pesos 2/6 con 50 y velocidades distintas con 50): es el eje más restrictivo para la
+Etapa 2. La Etapa 1 no depende de los pickers: se mantuvo entre 13,9 y 14,8~s con 3, 4 y 5.
+
+\placefigure[force][fig:etapas_ordenes]{Tiempo de cada etapa según las órdenes por lote (6 lotes, 2 pickers, 7×7, pesos 4/4; estudio 01).}
+{\startMPcode
+numeric w, h; w := 11.0cm; h := 5.5cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (0.500cm,0.000cm)--(0.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 10"), (0.500cm,-0.120cm));
+draw (1.500cm,0.000cm)--(1.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 14"), (1.500cm,-0.120cm));
+draw (2.500cm,0.000cm)--(2.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 18"), (2.500cm,-0.120cm));
+draw (3.500cm,0.000cm)--(3.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 22"), (3.500cm,-0.120cm));
+draw (4.500cm,0.000cm)--(4.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 26"), (4.500cm,-0.120cm));
+draw (6.000cm,0.000cm)--(6.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 32"), (6.000cm,-0.120cm));
+draw (8.000cm,0.000cm)--(8.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 40"), (8.000cm,-0.120cm));
+draw (10.500cm,0.000cm)--(10.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 50"), (10.500cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0"), (-0.120cm,0.000cm));
+draw (0.000cm,1.100cm)--(-0.120cm,1.100cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,1.100cm));
+draw (0.000cm,2.200cm)--(-0.120cm,2.200cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 20"), (-0.120cm,2.200cm));
+draw (0.000cm,3.300cm)--(-0.120cm,3.300cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 30"), (-0.120cm,3.300cm));
+draw (0.000cm,4.400cm)--(-0.120cm,4.400cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 40"), (-0.120cm,4.400cm));
+draw (0.000cm,5.500cm)--(-0.120cm,5.500cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 50"), (-0.120cm,5.500cm));
+label.bot(textext("Órdenes por lote"), (w/2,-0.85cm));
+label.lft(textext("Tiempo (s)") rotated 90, (-1.25cm,h/2));
+draw (0.500cm,0.403cm)--(1.500cm,0.334cm)--(2.500cm,0.637cm)--(3.500cm,0.915cm)--(4.500cm,1.416cm)--(6.000cm,2.494cm)--(8.000cm,3.389cm)--(10.500cm,5.111cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.500cm,0.403cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.500cm,0.334cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.500cm,0.637cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.500cm,0.915cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (4.500cm,1.416cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (6.000cm,2.494cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (8.000cm,3.389cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (10.500cm,5.111cm) withcolor \MPcolor{darkblue};
+draw (0.500cm,3.913cm)--(1.500cm,1.135cm)--(2.500cm,0.695cm)--(3.500cm,0.773cm)--(4.500cm,0.878cm)--(6.000cm,1.360cm)--(8.000cm,1.548cm)--(10.500cm,1.546cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (0.500cm,3.913cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (1.500cm,1.135cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (2.500cm,0.695cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.500cm,0.773cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.500cm,0.878cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (6.000cm,1.360cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (8.000cm,1.548cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (10.500cm,1.546cm) withcolor \MPcolor{redline};
+draw (1.200cm,5.350cm)--(1.800cm,5.350cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Etapa 1 (ruteo)"), (1.900cm,5.350cm));
+draw (1.200cm,4.930cm)--(1.800cm,4.930cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx Etapa 2 (asignación y secuencia)"), (1.900cm,4.930cm));
+\stopMPcode}
+
+{\bf Órdenes por lote: la Etapa 2 se vuelve más fácil.} La Etapa 1 crece con las órdenes, de
+3,7~s a 46,5~s, porque cada lote pasa por más ubicaciones. La Etapa 2 hace lo contrario de lo
+esperable: con 10 órdenes por lote tarda 35,6~s y con 26, 8,0~s, y el árbol se achica 37 veces
+(de 153.934 a 4.144 nodos), lo que descarta ruido de reloj. La caída acompaña a la del SLA. La
+explicación propuesta es que con casi todas las órdenes a tiempo las tardanzas quedan en cero,
+el objetivo se aplana y el solver no logra discriminar entre secuencias. Como el SLA y las
+órdenes por lote están atados por la fórmula, con estos datos el efecto no se puede atribuir a
+uno solo. El experimento que se había planeado para confirmarlo, fijar el tamaño y mover solo la
+ventana de fechas de entrega, estaba mal planteado: la ventana no mueve el SLA, porque lo fija el
+objetivo (sección \in[sec:espera]); para separar los dos efectos hay que mover $W^{c}$. La
+hipótesis quedó sin confirmar. La corrida con $W^{c} = 27$ (sección \in[sec:wc27]) separa una
+parte, pero no en el sentido que proponía.
+
+{\bf Pickers: el caso difícil es el intermedio.} Con 6 lotes, el pico está en 4 pickers, en los
+dos barridos donde se midió; los extremos (2 pickers, o uno por lote) son los más baratos. Con
+pocos pickers hay mucha secuencia pero pocas asignaciones distintas; con un picker por lote no
+hay nada que secuenciar; en el medio se combinan las dos cosas. Con pesos 2/6 y 50 órdenes por
+lote: 2 pickers 14,5~s, 3 pickers 31,2~s, 4 pickers 43,1~s, 5 pickers 37,4~s y 6 pickers 17,1~s.
+
+{\bf Grilla: el tamaño cuesta por sí mismo.} Una grilla más grande da más ubicaciones distintas
+por lote, porque las órdenes colisionan menos, pero eso no explica el costo: hay dos caminos para
+llegar a una cantidad parecida de ubicaciones, y cuestan órdenes de magnitud distintos.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Camino \eTH \bTH Ubicaciones por lote \eTH \bTH Etapa 1 \eTH \eTR
+\bTR \bTD 7×7, 26 órdenes por lote \eTD \bTD 18 a 22 \eTD \bTD 12,9~s \eTD \eTR
+\bTR \bTD 7×7, 50 órdenes por lote \eTD \bTD 29 a 33 \eTD \bTD 46,5~s \eTD \eTR
+\bTR \bTD 10×10, 26 órdenes por lote \eTD \bTD 21 a 26 \eTD \bTD 50,4~s \eTD \eTR
+\bTR \bTD 15×15, 26 órdenes por lote \eTD \bTD 24 a 26 \eTD \bTD 464,4~s \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Llegar a unas 31 ubicaciones agrandando los pedidos cuesta 46~s; llegar a 25 agrandando la
+grilla, 464~s: diez veces más con menos ubicaciones. El punto de 50 órdenes corrió en paralelo
+con el barrido principal; aun suponiendo que uno de los dos relojes estuviera inflado en el peor
+caso medido (2,3 veces), la diferencia sigue siendo de más de 4 veces. El mecanismo no está identificado; una
+sospecha sin verificar es que la relajación lineal del flujo, acotado por $L_b$, se debilita al
+crecer el grafo (en una grilla mayor las distancias son además numéricamente más grandes). Una
+forma de medirlo sería fijar grilla y ubicaciones por lote y escalar solo los pesos de las
+aristas. De paso: las ubicaciones por lote no saturan de golpe en 7×7 (47 ubicaciones
+utilizables) sino de forma asintótica, como en el problema del coleccionista de figuritas: con
+50 órdenes el esperado de distintas es unas 31, que es lo medido.
+\stopsubsection
+
+\startsubsection[title={Estudio 02: pesos de la grilla}]
+
+Los escenarios heredados usan el mismo peso en todas las aristas (4/4), lo que produce muchísimas
+rutas de igual costo. Se comparó contra pesos 2/6, elegidos para que la media siguiera siendo 4:
+mismas ubicaciones (misma semilla), solo cambia la asimetría.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Órd./lote \eTH \bTH Etapa 1, 4/4 \eTH \bTH Etapa 1, 2/6 \eTH \bTH Mejora \eTH \bTH Etapa 2, 4/4 \eTH \bTH Etapa 2, 2/6 \eTH \eTR
+\bTR \bTD 10 \eTD \bTD 3,66~s \eTD \bTD 2,11~s \eTD \bTD 1,7× \eTD \bTD 35,57~s \eTD \bTD 16,53~s \eTD \eTR
+\bTR \bTD 14 \eTD \bTD 3,04~s \eTD \bTD 1,72~s \eTD \bTD 1,8× \eTD \bTD 10,32~s \eTD \bTD 11,74~s \eTD \eTR
+\bTR \bTD 18 \eTD \bTD 5,79~s \eTD \bTD 2,54~s \eTD \bTD 2,3× \eTD \bTD 6,32~s \eTD \bTD 10,27~s \eTD \eTR
+\bTR \bTD 22 \eTD \bTD 8,32~s \eTD \bTD 3,02~s \eTD \bTD 2,8× \eTD \bTD 7,03~s \eTD \bTD 6,50~s \eTD \eTR
+\bTR \bTD 26 \eTD \bTD 12,87~s \eTD \bTD 5,63~s \eTD \bTD 2,3× \eTD \bTD 7,98~s \eTD \bTD 8,57~s \eTD \eTR
+\bTR \bTD 32 \eTD \bTD 22,67~s \eTD \bTD 7,54~s \eTD \bTD 3,0× \eTD \bTD 12,36~s \eTD \bTD 12,04~s \eTD \eTR
+\bTR \bTD 40 \eTD \bTD 30,81~s \eTD \bTD 10,29~s \eTD \bTD 3,0× \eTD \bTD 14,07~s \eTD \bTD 18,16~s \eTD \eTR
+\bTR \bTD 50 \eTD \bTD 46,46~s \eTD \bTD 12,60~s \eTD \bTD 3,7× \eTD \bTD 14,05~s \eTD \bTD 13,18~s \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las dos columnas de Etapa 1 salen de corridas distintas: la de 4/4 es la del estudio 01. El
+control es el barrido de velocidades del estudio 03, que se lanzó junto con el de 2/6, con pesos
+4/4 y las mismas instancias de Etapa 1 (las velocidades solo entran en la Etapa 2): dio tiempos a
+un 11 \% o menos de los del estudio 01 (14,05~s contra 12,87~s con 26 órdenes). Las relaciones de
+esta tabla son, por lo tanto, mucho mayores que el ruido entre corridas.
+
+En 7×7 los pesos asimétricos aceleran la Etapa 1 entre 1,7 y 3,7 veces, y la ventaja crece con
+las órdenes: sin empates, el solver no tiene que recorrer óptimos equivalentes para probar que no
+hay nada mejor. La Etapa 2 sube y baja sin patrón, salvo en el punto de objetivo aplanado (10
+órdenes por lote), donde baja de 35,6~s a 16,5~s y de 153.934 a 65.954 nodos. Pero al crecer la
+grilla la ventaja desaparece (26 órdenes por lote, 2 pickers):
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Grilla \eTH \bTH Etapa 1, 4/4 \eTH \bTH Etapa 1, 2/6 \eTH \bTH Relación \eTH \eTR
+\bTR \bTD 7×7 \eTD \bTD 12,87~s \eTD \bTD 7,24~s \eTD \bTD 1,8× mejor \eTD \eTR
+\bTR \bTD 10×10 \eTD \bTD 50,40~s \eTD \bTD 24,29~s \eTD \bTD 2,1× mejor \eTD \eTR
+\bTR \bTD 15×15 \eTD \bTD 464,41~s \eTD \bTD 520,20~s \eTD \bTD 0,9×, sin ganancia medible \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Esta tabla también compara corridas distintas, y acá no hay control: la columna de 4/4 es la del
+estudio 01 y la de 2/6, otra corrida. La misma instancia de 7×7 con 2/6 tardó 5,63~s en la
+corrida de la tabla anterior y 7,24~s en esta (mismo objetivo y los mismos 4.263 nodos), así que
+entre columnas hay un margen de reloj de al menos 1,3 veces. En 15×15, 464 contra 520~s está
+dentro de ese margen: lo que muestran los datos es que el 2× no se sostuvo, no que los pesos
+asimétricos empeoren la Etapa 1.
+
+Se había proyectado que con un 2× sostenido el 15×15 bajaría a unos 230~s; no ocurrió. La hipótesis
+(sin verificar) es que en una grilla grande los caminos mínimos ya toman muchos valores distintos
+aunque los pesos sean uniformes, así que la asimetría no agrega nada. {\bf Los pesos asimétricos
+ayudan donde no hacía falta y dejan de ayudar donde sí.} Se adoptaron igual en el perfil
+realista (4/5) por cobertura, porque un depósito real no tiene pasillos y travesaños del mismo
+largo, pero no como optimización.
+\stopsubsection
+
+\startsubsection[title={Estudio 03: velocidades de los pickers}]
+
+{\bf Velocidades todas distintas.} Con 2 pickers y velocidades repartidas en $[0{,}7; 1{,}3]$, la
+Etapa 2 queda prácticamente igual que con velocidades uniformes: con 26 órdenes por lote, 8,41~s
+contra 7,98~s y 3.819 nodos contra 4.144. La Etapa 1 replica la base, que es el control correcto
+porque $V_p$ solo entra en la Etapa 2. La excepción es otra vez el punto de objetivo aplanado (10
+órdenes por lote: 46,0~s contra 35,6~s). Esto corrigió una conclusión anterior, medida sobre el
+stress heredado 10/10, según la cual las velocidades distintas llevaban el tiempo de 33~s a más
+de 600~s: era una interacción con las fechas degeneradas, no una propiedad de la heterogeneidad.
+Pero con 3 pickers y 50 órdenes por lote la Etapa 2 no terminó en 300~s (384.320 nodos), cuando
+la misma forma con velocidades uniformes había resuelto en 31~s.
+
+{\bf Velocidades en bandas.} Una cuadrilla real no tiene una velocidad por persona sino dos o
+tres bandas. Con la instancia fija (6 lotes, 26 órdenes por lote, 7×7, pesos 4/4) se varió solo
+cuántas velocidades distintas hay, siempre en $[0{,}7; 1{,}3]$, con 300~s por Etapa 2:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Pickers \eTH \bTH Uniformes \eTH \bTH 2 bandas \eTH \bTH 3 bandas \eTH \bTH Todas distintas \eTH \eTR
+\bTR \bTD 3 \eTD \bTD 17,7~s (14.041 nodos) \eTD \bTD 134,2~s (273.467) \eTD \bTD 113,5~s (250.037) \eTD \bTD 112,7~s (250.037) \eTD \eTR
+\bTR \bTD 4 \eTD \bTD 26,3~s (31.317) \eTD \bTD tope (549.456) \eTD \bTD tope (204.217) \eTD \bTD tope (347.556) \eTD \eTR
+\bTR \bTD 6 \eTD \bTD 7,2~s (1.515) \eTD \bTD 110,4~s (38.727) \eTD \bTD 3.079~s, 499 nodos \eTD \bTD no medido \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf El salto está entre una y dos velocidades:} con 3 pickers, cualquier heterogeneidad
+multiplica el tiempo por unas 7 veces; agregar bandas no suma.
+\item {\bf Con 4 pickers ninguna configuración heterogénea termina en 300~s:} es la proporción
+intermedia que ya era la difícil en el estudio 01.
+\item {\bf Con 6 pickers para 6 lotes} cada lote toma su picker y no hay secuencia: la
+heterogeneidad se tolera mejor, pero ese régimen es justamente el que no ejercita la Etapa 2.
+\item {\bf Control de ruido:} con 3 pickers, \quote{3 bandas} y \quote{todas distintas} son la
+misma configuración (0,7, 1,0 y 1,3) y dieron exactamente los mismos 250.037 nodos, con tiempos a
+0,7 \%.
+\stopitemize
+
+Todos los bordes medidos antes, con velocidades uniformes, estaban sobre el caso artificialmente
+fácil: con velocidades realistas el alcance de la Etapa 2 es bastante menor. Una explicación
+posible, sin verificar, es la simetría: pickers idénticos son intercambiables y el solver puede
+descartar asignaciones equivalentes; con bandas, esa simetría se rompe en parte.
+\stopsubsection
+
+\startsubsection[title={Estudio 04: validación del corte duro}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Punto \eTH \bTH Instancia \eTH \bTH Tope \eTH \bTH Resultado \eTH \eTR
+\bTR \bTD T1, Split \eTD \bTD 5×5, 4 lotes, 2 pickers, 10 órd./lote \eTD \bTD 120~s \eTD \bTD óptimo en 3,2~s (85 nodos) \eTD \eTR
+\bTR \bTD T2, mono \eTD \bTD la misma \eTD \bTD 120~s \eTD \bTD límite de SCIP a los 89,7~s, brecha 1,66 \% \eTD \eTR
+\bTR \bTD T3, Split \eTD \bTD 7×7, 6 lotes, 4 pickers, 2 bandas \eTD \bTD 40~s \eTD \bTD límite de SCIP a los 27,7~s \eTD \eTR
+\bTR \bTD T4, Split \eTD \bTD 15×15, 6 lotes \eTD \bTD 45~s \eTD \bTD cortado en la Etapa 1 a los 45,3~s \eTD \eTR
+\eTABLE
+\blank[medium]
+
+T4 es el que importa: la Etapa 1 no tiene límite propio y el proceso se cortó a 0,3~s del tope,
+dejando registrada la etapa. T1 y T2 son además la primera comparación uno a uno: en 5×5 la mejor
+solución del monolítico ya era la óptima (8.966,27), pero no pudo demostrarlo en 90~s.
+\stopsubsection
+
+\startsubsection[title={Estudio 05: calibración del perfil realista}]
+
+El perfil que salió de los estudios anteriores (6 lotes, 3 pickers, 156 órdenes, pesos 4/5, dos
+bandas 0,8 y 1,2), variando solo la grilla. Medido de a un punto, con la máquina sola:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Grilla \eTH \bTH Ubic. por lote \eTH \bTH Etapa 1 \eTH \bTH Etapa 2 \eTH \bTH Total \eTH \bTH Nodos Etapa 2 \eTH \bTH Objetivo \eTH \bTH SLA \eTH \eTR
+\bTR \bTD 7×7 \eTD \bTD 18 a 22 \eTD \bTD 9,6~s \eTD \bTD 204,2~s \eTD \bTD 3,6 min \eTD \bTD 321.137 \eTD \bTD 79.046,86 \eTD \bTD 67,9 \% \eTD \eTR
+\bTR \bTD 13×13 \eTD \bTD 23 a 26 \eTD \bTD 445,3~s \eTD \bTD 263,8~s \eTD \bTD 11,8 min \eTD \bTD 314.331 \eTD \bTD 127.210,11 \eTD \bTD 67,9 \% \eTD \eTR
+\bTR \bTD 15×15 \eTD \bTD 24 a 26 \eTD \bTD más de 1.500~s \eTD \bTD -- \eTD \bTD cortado \eTD \bTD -- \eTD \bTD -- \eTD \bTD -- \eTD \eTR
+\eTABLE
+\blank[medium]
+
+En 17×17 la Etapa 1 tampoco terminó en 25 minutos. Antes de fijar 6 lotes y 3 pickers se probaron
+otras formas de la Etapa 2 sobre 7×7 (en paralelo, 25 minutos): ninguna terminó.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Lotes / pickers \eTH \bTH Brecha a los 25 min \eTH \bTH Nodos \eTH \eTR
+\bTR \bTD 6 / 4 \eTD \bTD 1,09 \% \eTD \bTD 1.091.348 \eTD \eTR
+\bTR \bTD 7 / 3 \eTD \bTD 2,60 \% \eTD \bTD 817.973 \eTD \eTR
+\bTR \bTD 8 / 3 \eTD \bTD 9,48 \% \eTD \bTD 633.529 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+{\bf Con velocidades realistas la Etapa 2 tolera unos dos lotes por picker}; con más, o con la
+proporción intermedia de 6 lotes para 4 pickers, ya no cierra. En la misma ronda, el monolítico
+sobre la instancia 7×7 (M0) llegó a los 25 minutos con una solución a menos del 1 \% del óptimo
+(79.822,91) y una brecha reportada del 144,3 \%. Controles: con y sin clausura, la Etapa 2 dio
+exactamente los mismos nodos; la misma instancia sola y en paralelo dio el mismo árbol, 2,3 veces
+más rápido sola. De esta calibración salieron los stress 04 a 07.
+\stopsubsection
+
+\startsubsection[title={Estudio 06: clausura métrica}, reference=sec:clausura]
+
+{\bf La idea} (22-09): la Etapa 1 indexa $z_{ijb}$ y $q_{ijb}$ por todos los arcos del almacén,
+aunque el lote tenga que alcanzar un puñado de ubicaciones; resuelve a la vez en qué orden
+visitar (un TSP con extremos fijos, NP-difícil) y cómo caminar entre paradas (camino mínimo,
+polinomial). La clausura reemplaza el grafo de cada lote por el grafo completo sobre
+$\{v_{start}\} \cup \text{requeridas} \cup \{v_{end}\}$, con distancias de camino mínimo
+calculadas de antemano con Dijkstra, y el MIP queda solo con el orden. En 100×100 con unas 25
+requeridas por lote, los arcos pasan de unos 40.000 a unos 700. Se implementó como una opción de
+la Etapa 1, sin tocar los modelos: apagada en los tests, pero encendida por defecto en la
+herramienta de exploración, y por eso los estudios 01 a 03 corrieron con ella.
+
+{\bf Las distancias.} Se descartó la fórmula Manhattan cerrada: equivale en estas grillas, pero
+con estanterías daría distancias menores que las reales sin avisar. Se usó en cambio como control:
+las distancias de Dijkstra coincidieron exactamente con la Manhattan con pesos en grillas de 6×7,
+10×10, 5×8 y 12×12, también con pesos asimétricos (vertical 3, horizontal 7).
+
+{\bf Dos mecanismos obligatorios.} Un arco de la clausura no es un arco del almacén, así que la
+ruta se expande de vuelta a arcos reales (sin eso, tests que reconstruyen el recorrido recibían
+distancias infinitas). Y la clausura permite que dos tramos crucen el mismo vértice, lo que
+(8)--(9) prohíben: si la expansión repite un vértice, ese lote se resuelve de nuevo con el grafo
+completo.
+
+{\bf Por qué la reducción es exacta.} Toda ruta válida de la Etapa 1 visita las requeridas en
+algún orden, y cada tramo entre dos paradas consecutivas cuesta al menos el camino mínimo entre
+ellas. Esa misma secuencia es una ruta de la clausura que cuesta lo mismo o menos, así que el
+problema sobre la clausura es una relajación y su óptimo es una cota inferior del óptimo real. Si
+la ruta expandida no repite vértices, es una ruta válida del modelo completo que cuesta
+exactamente esa cota, y por lo tanto es óptima. Si repite, la cota no alcanza para concluir nada,
+y por eso hace falta resolver de nuevo. La comprobación empírica: con los dos mecanismos, 53 de 53
+tests funcionales dieron el mismo resultado (44 objetivos idénticos y 9 infactibles en los dos).
+Sin ellos, 4 objetivos distintos y 3 fallas, lo que confirma que la clausura sola es una relajación.
+
+{\bf Lo que dio en los stress heredados.} La Etapa 1 mejoró entre 19 \% y 33 \% (05, 10 lotes
+en 10×10: 11,18~s a 7,76~s; 06, 25 lotes: 131,71~s a 88,17~s; 07, 10 lotes con 25 pickers:
+9,12~s a 7,41~s), pero no destrabó ningún test, porque el tiempo estaba en la Etapa 2. El 07 lo
+muestra: tiene exactamente la misma Etapa 1 que el 05 (mismos lotes,
+órdenes y grilla; solo cambian los pickers, que entran recién en la Etapa 2), resuelve esa
+Etapa 1 en 9,12~s y aun así agota los 40 minutos, con unos 2.391 de los 2.400~s en la Etapa 2.
+En esa misma medición el 05 tardó 98,89~s, de los que 87,73~s (88,7 \%) fueron Etapa 2, y al 06
+la clausura le ahorró 43,5~s frente a un tope de 2.400~s, y siguió sin terminar. En la suite funcional costó un 58,6 \% más
+(de 22,0~s a 35,0~s): son instancias donde casi todo el grafo es requerido y no hay nada que
+reducir.
+
+{\bf Lo que dio en almacenes realistas.} La pregunta siguiente fue si servía en proporciones de
+almacén real: grilla grande y listas cortas. La cuenta de arcos predecía que sí: para $k$
+requeridas la clausura tiene unos $(k+2)^2$ arcos y la grilla de lado $n$ unos $4n^2$, así que
+la clausura achica el modelo mientras el lote tenga menos de unas $2n$ ubicaciones. Pero en
+25×25 con 12 y 20 órdenes por lote y en 35×35 con 12, ninguna configuración terminó la Etapa 1
+en 15 minutos, ni con clausura ni sin ella. Para ver por qué, se resolvió cada lote sobre la clausura y
+se revisó su ruta expandida, sin pagar la segunda resolución:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Grilla \eTH \bTH Órd./lote \eTH \bTH Lotes que se resuelven de nuevo \eTH \bTH Resolución sobre la clausura \eTH \bTH Vértices repetidos por ruta \eTH \eTR
+\bTR \bTD 25×25 \eTD \bTD 12 \eTD \bTD 4 de 6 \eTD \bTD 0,16 a 0,22~s \eTD \bTD 2, 5, 2, 5 \eTD \eTR
+\bTR \bTD 13×13 \eTD \bTD 26 \eTD \bTD 6 de 6 \eTD \bTD 0,62 a 30,9~s \eTD \bTD 2, 7, 1, 1, 4, 3 \eTD \eTR
+\bTR \bTD 7×7 \eTD \bTD 26 \eTD \bTD 5 de 6 \eTD \bTD 0,25 a 3,03~s \eTD \bTD 2, 1, 3, 1, 1 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+{\bf Por qué no anduvo.} La clausura hacía lo que prometía: cada lote resolvía en décimas de
+segundo, aun en un almacén de 625 ubicaciones. Pero en el 67 \% al 100 \% de los lotes la ruta
+expandida repetía algún vértice y el tiempo se iba en la segunda resolución, que es la misma
+Etapa 1 de siempre más el costo de la clausura. Coincide con lo medido en la calibración, con los
+mismos nodos en la Etapa 2: la Etapa 1 con clausura fue más lenta que sin ella: 24,2~s contra 13,8~s en 7×7 y
+737~s contra 676~s en 13×13. La cuenta de arcos no alcanzaba para predecir si servía; lo que
+decidía era esa tasa de segunda resolución. La hipótesis, consistente con todo lo medido, es que
+en una grilla hay muchos caminos mínimos del mismo largo: Dijkstra elige uno por tramo, dos tramos
+pueden cruzarse, y casi siempre existía otro igual de corto que no se cruzaba (por eso el modelo
+con (8)--(9) llega al mismo tiempo de ruta). La segunda resolución era evitable con una expansión
+que eligiera caminos que no se crucen, pero no se intentó.
+
+{\bf Lo que quedó sin resolver de la implementación.} Era incompatible con el paralelismo de la
+Etapa 1: la segunda resolución necesitaba los datos originales del lote, y mandárselos a cada
+proceso implicaba copiar archivos de millones de filas en las instancias grandes, así que la
+combinación se rechazaba con un error explícito. Además cargaba entera la tabla de qué ubicaciones
+pide cada orden (7,5 millones de entradas en 100×100) y rearmaba el grafo para Dijkstra en cada
+lote, aunque era siempre el mismo. No se llegaron a optimizar, pero ninguno de los dos explica
+el resultado: lo que no terminaba eran las segundas resoluciones sobre el grafo completo, que sin
+clausura tampoco terminaban. {\bf La clausura
+se eliminó del código el 23-09.}
+\stopsubsection
+
+\startsubsection[title={Estudio 07: la restricción de un arco por vértice}, reference=sec:le1]
+
+(8)--(9) limitan a uno los arcos que entran y salen de cada vértice: la ruta es un camino simple.
+Hubo una discusión sobre si eso era físicamente irreal (un picker puede entrar y salir de un
+pasillo por donde vino) y si explicaba la lentitud de la Etapa 1. Se probó quitarla en una copia
+temporal del modelo:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Grilla (6 lotes, pesos 4/5) \eTH \bTH Con (8)--(9) \eTH \bTH Sin (8)--(9) \eTH \bTH Tiempos de ruta \eTH \eTR
+\bTR \bTD 7×7, 26 órd./lote \eTD \bTD 11,6~s \eTD \bTD 7,8~s \eTD \bTD idénticos (64 a 75) \eTD \eTR
+\bTR \bTD 13×13, 26 órd./lote \eTD \bTD 433~s \eTD \bTD 537~s \eTD \bTD idénticos (142 a 154) \eTD \eTR
+\bTR \bTD 25×25, 12 órd./lote \eTD \bTD no terminó en 15 min \eTD \bTD no terminó en 15 min \eTD \bTD -- \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf Las respuestas no cambian} en estos tamaños: mismos tiempos de ruta, y los 11 tests
+funcionales que verifican la ruta exacta pasan con el mismo objetivo con y sin la restricción.
+Una afirmación previa (que en el funcional 09 la restricción inflaba la ruta 13 veces) era falsa:
+el bloqueo venía de que la ruta pasaba por el nodo final, del que no se puede salir.
+\item {\bf No es una palanca de rendimiento:} 33 \% más rápido en 7×7, 24 \% más lento en 13×13.
+\item {\bf Sí cambia respuestas cuando un lote satura una grilla chica.} En la frontera del
+estudio 08, 2 lotes en 4×4 con 26 órdenes por lote dieron infactible en los dos modelos: un lote
+debe pasar por 13 de las 14 ubicaciones y el depósito y el final están en esquinas opuestas. La
+grilla es bipartita y esas esquinas son del mismo color, así que ningún camino simple entre ellas
+cubre tantos vértices; un picker real pasaría dos veces por un cruce. Sin (8)--(9) es factible. El
+test 38 documenta un caso mínimo de esta limitación.
+\stopitemize
+
+Se mantuvo la restricción: es parte de la definición del problema en los dos modelos (y en las
+heurísticas), y la equivalencia entre modelos no se ve afectada. Para la tesina conviene
+presentarla como una limitación de la formulación y evitar instancias con lotes que saturan la
+grilla.
+\stopsubsection
+
+\startsubsection[title={Estudio 12: la Etapa 1 en paralelo}, reference=sec:paralelo]
+
+Comparar dos corridas de la suite, una en secuencia y otra en paralelo, no servía: entre corridas
+distintas, la Etapa 2 de un mismo test (que no se paraleliza) varió entre ×0,58 y ×2,01, tanto
+como el efecto a medir. Por eso se resolvió solo la Etapa 1 de las instancias exactas de los stress
+05 (13×13) y 06 (14×14), con la máquina sola, en orden secuencial--paralelo--paralelo--secuencial
+para compensar el calentamiento:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Instancia \eTH \bTH Secuencial \eTH \bTH 6 procesos \eTH \bTH Mejora \eTH \eTR
+\bTR \bTD 13×13 (stress 05) \eTD \bTD 241,8~s y 243,8~s \eTD \bTD 110,1~s y 110,8~s \eTD \bTD ×2,2 \eTD \eTR
+\bTR \bTD 14×14 (stress 06) \eTD \bTD 401,4~s y 405,6~s \eTD \bTD 209,5~s y 215,9~s \eTD \bTD ×1,9 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las repeticiones quedaron a menos del 3 \% entre sí y las rutas fueron idénticas. No llega a ×6
+porque el tiempo en paralelo queda atado al lote más lento y porque la CPU tiene 4 núcleos de
+rendimiento y 8 de eficiencia. Sobre el test completo el efecto depende de cuánto pesa la Etapa
+1: en 13×13, de unos 6 a unos 4 minutos; en 15×15, donde la Etapa 1 es casi todo, de unos 28 a unos
+15; en las instancias dominadas por la Etapa 2, nada. La memoria que se reporta en paralelo es
+solo la del proceso principal.
+\stopsubsection
+
+\startsubsection[title={Qué encarece a cada etapa}]
+
+\placefigure[force][fig:etapa1_grilla]{Tiempo de la Etapa 1 según el lado de la grilla en distintos estudios (escala logarítmica). Las condiciones difieren entre series (clausura, pesos, paralelismo, máquina compartida); lo que se compara es la forma de cada curva.}
+{\startMPcode
+numeric w, h; w := 11.0cm; h := 6.0cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (0.550cm,0.000cm)--(0.550cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 7×7"), (0.550cm,-0.120cm));
+draw (1.650cm,0.000cm)--(1.650cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 8×8"), (1.650cm,-0.120cm));
+draw (2.750cm,0.000cm)--(2.750cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 9×9"), (2.750cm,-0.120cm));
+draw (3.850cm,0.000cm)--(3.850cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 10×10"), (3.850cm,-0.120cm));
+draw (4.950cm,0.000cm)--(4.950cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 11×11"), (4.950cm,-0.120cm));
+draw (6.050cm,0.000cm)--(6.050cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 12×12"), (6.050cm,-0.120cm));
+draw (7.150cm,0.000cm)--(7.150cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 13×13"), (7.150cm,-0.120cm));
+draw (8.250cm,0.000cm)--(8.250cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 14×14"), (8.250cm,-0.120cm));
+draw (9.350cm,0.000cm)--(9.350cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 15×15"), (9.350cm,-0.120cm));
+draw (10.450cm,0.000cm)--(10.450cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 16×16"), (10.450cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,0.000cm));
+draw (0.000cm,1.726cm)--(-0.120cm,1.726cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,1.726cm));
+draw (0.000cm,3.451cm)--(-0.120cm,3.451cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100"), (-0.120cm,3.451cm));
+draw (0.000cm,5.177cm)--(-0.120cm,5.177cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1.000"), (-0.120cm,5.177cm));
+label.bot(textext("Lado de la grilla"), (w/2,-0.85cm));
+label.lft(textext("Etapa 1 (s, escala log.)") rotated 90, (-1.25cm,h/2));
+draw (0.550cm,1.915cm)--(3.850cm,2.938cm)--(9.350cm,4.602cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (0.550cm,1.915cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (3.850cm,2.938cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (9.350cm,4.602cm) withcolor \MPcolor{blueline};
+draw (0.550cm,1.484cm)--(3.850cm,2.391cm)--(9.350cm,4.687cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+fill fullcircle scaled 4pt shifted (0.550cm,1.484cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (3.850cm,2.391cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (9.350cm,4.687cm) withcolor \MPcolor{blueline};
+draw (0.550cm,1.695cm)--(7.150cm,4.570cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (0.550cm,1.695cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (7.150cm,4.570cm) withcolor \MPcolor{redline};
+draw fullcircle scaled 6pt shifted (9.350cm,5.481cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline};
+draw (7.150cm,4.570cm)--(9.350cm,5.481cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline} dashed withdots;
+draw (0.550cm,0.917cm)--(7.150cm,3.434cm)--(8.250cm,3.951cm)--(9.350cm,5.098cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.550cm,0.917cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (7.150cm,3.434cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (8.250cm,3.951cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (9.350cm,5.098cm) withcolor \MPcolor{darkblue};
+draw fullcircle scaled 6pt shifted (10.450cm,5.833cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (9.350cm,5.098cm)--(10.450cm,5.833cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue} dashed withdots;
+draw (0.300cm,5.850cm)--(0.900cm,5.850cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Suite de stress: perfil realista, 6 procesos"), (1.000cm,5.850cm));
+draw (0.300cm,5.430cm)--(0.900cm,5.430cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx Estudio 05: perfil realista, secuencial"), (1.000cm,5.430cm));
+draw (0.300cm,5.010cm)--(0.900cm,5.010cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+label.rt(textext("\tfx Estudio 01: pesos 4/4, clausura activa"), (1.000cm,5.010cm));
+draw (0.300cm,4.590cm)--(0.900cm,4.590cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+label.rt(textext("\tfx Estudio 02: pesos 2/6, clausura activa"), (1.000cm,4.590cm));
+draw fullcircle scaled 6pt shifted (0.600cm,4.170cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx no terminó (cota inferior)"), (1.000cm,4.170cm));
+\stopMPcode}
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Etapa \eTH \bTH Depende de \eTH \bTH No depende de \eTH \eTR
+\bTR \bTD 1 (ruteo, un MIP por lote) \eTD \bTD tamaño de la grilla, por sí mismo; ubicaciones por lote; cantidad de lotes (un MIP por lote: con la geometría de cada lote fija, casi proporcional; de 6 a 8 lotes, ×1,31) \eTD \bTD pickers, velocidades, fechas \eTD \eTR
+\bTR \bTD 2 (asignación y secuencia) \eTD \bTD proporción lotes/pickers (pico en la intermedia); heterogeneidad de velocidades; forma del objetivo (con espera voluntaria es mucho más cara; mecanismo sin aislar) \eTD \bTD grilla y pesos de las aristas, salvo a través de los tiempos de ruta \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Esta separación de los motores de costo es lo que permitió diseñar escenarios grandes que todavía
+resuelven: cargar el eje de ruteo (grilla) manteniendo la agenda dentro de la franja resoluble.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Pruebas para mejorar el rendimiento del Split}, reference=sec:rendimiento]
+
+Esta sección reúne, en un solo lugar, todo lo que se probó para que el Split resolviera
+instancias más grandes o más rápido, con su efecto medido y la decisión que se tomó. Se
+distinguen tres tipos: cambios de formulación o de implementación del modelo, cambios del solver,
+y correcciones de los escenarios (que no aceleran el modelo pero sí cambian lo que se mide).
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][width=3.2cm, align=flushleft]
+\setupTABLE[column][2][width=2.0cm, align=flushleft]
+\setupTABLE[column][3][align=flushleft]
+\setupTABLE[column][4][width=2.3cm, align=flushleft]
+\bTR \bTH Prueba \eTH \bTH Tipo \eTH \bTH Efecto medido \eTH \bTH Decisión \eTH \eTR
+\bTR \bTD Descomposición en dos etapas \eTD \bTD Formulación \eTD \bTD Mismo óptimo que el monolítico; cierra en segundos o minutos instancias que el monolítico no cierra en 40 minutos (secciones \in[sec:exploracion_mono] y \in[sec:resultados]). \eTD \bTD Es el modelo \eTD \eTR
+\bTR \bTD $T^{exec}_{pb}$ como dato y frío como dominio $\mathcal{PB}^{elig}$ \eTD \bTD Formulación \eTD \bTD Elimina $u_{pb}$, dos Big-M por par y los pares no elegibles; la Etapa 2 tiene de 2 a 13 veces menos variables que el monolítico. \eTD \bTD Parte del modelo \eTD \eTR
+\bTR \bTD Objetivo sobre $c_b$; tardanza y adelanto solo con $B_{nb} = 1$ \eTD \bTD Formulación \eTD \bTD Menos filas, mismo problema (se llevó también al monolítico y a v4). \eTD \bTD Adoptado \eTD \eTR
+\bTR \bTD Etapa 1 en un MIP por lote \eTD \bTD Implementación \eTD \bTD Con 10 lotes, unas 3 veces más rápida que el MIP conjunto; con 20, segundos contra más de 14 minutos. \eTD \bTD Adoptado (11-09) \eTD \eTR
+\bTR \bTD Etapa 1 en paralelo (6 procesos) \eTD \bTD Implementación \eTD \bTD ×2,2 en 13×13 y ×1,9 en 14×14 sobre la Etapa 1; nada en instancias chicas. \eTD \bTD Opcional; usado en la suite de stress \eTD \eTR
+\bTR \bTD Clausura métrica de la Etapa 1 \eTD \bTD Formulación \eTD \bTD Exacta; 19 a 33 \% en stress heredados, pero 67 a 100 \% de lotes vuelven al grafo completo en grillas realistas y termina siendo más lenta. \eTD \bTD Eliminada (23-09) \eTD \eTR
+\bTR \bTD Quitar el límite de un arco por vértice \eTD \bTD Formulación \eTD \bTD Mismas rutas; 33 \% más rápido en 7×7, 24 \% más lento en 13×13; en 25×25 nada. \eTD \bTD Se mantiene la restricción \eTD \eTR
+\bTR \bTD Pesos asimétricos de la grilla \eTD \bTD Escenario \eTD \bTD Etapa 1 hasta 3,7× más rápida en 7×7; 0,9× en 15×15. \eTD \bTD Adoptado por cobertura (4/5), no como optimización \eTD \eTR
+\bTR \bTD Branching por pseudocosto en la Etapa 2 \eTD \bTD Solver \eTD \bTD ×2,2 en 10/10, pero en 10/12 el default resolvió en 118,5~s y pseudocosto agotó el tope con 3,3 \% de brecha. Nunca terminó donde el default no terminaba. \eTD \bTD Descartado: no generaliza \eTD \eTR
+\bTR \bTD $M^{seq}$ calculado por instancia \eTD \bTD Formulación \eTD \bTD Correctitud numérica: un $M^{seq}$ demasiado grande dejaba pasar solapamientos de 0,1; uno fijo de 500 no cubría el horizonte de instancias grandes. \eTD \bTD Adoptado (22-09) \eTD \eTR
+\bTR \bTD $W^{c} > $ órdenes por lote \eTD \bTD Escenario \eTD \bTD Etapa 2 de 86--203~s a 4--12~s en los stress realistas; SLA de 68 \% a 100 \%. \eTD \bTD Adoptado (26-09) por comparabilidad \eTD \eTR
+\bTR \bTD Generador sin degeneraciones \eTD \bTD Escenario \eTD \bTD Primeros stress que ejercitan a la vez secuencia, velocidades y pesos no uniformes, y que resuelven. \eTD \bTD Adoptado (23-09) \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Dos lecciones metodológicas salieron de estas pruebas y conviene dejarlas escritas en la tesina:
+
+\startitemize[n]
+\item {\bf Las conclusiones no se transfieren, ni siquiera a la instancia de al lado.} Cada vez que
+un resultado se generalizó de un punto a otro, una corrida controlada lo refutó: el pseudocosto
+(ganaba en 10/10 y perdía en 10/12), las velocidades (primero parecieron carísimas, por una
+interacción con fechas degeneradas; después inofensivas, con velocidades todas distintas; en
+bandas volvieron a ser caras) y los pesos asimétricos (que se esperaba que movieran el borde de
+la grilla). Por eso
+cada test de stress se calibró sobre su propia instancia.
+\item {\bf Lo que limita a la Etapa 1 en almacenes grandes sigue sin identificarse.} Nada de lo
+probado para acelerarla generalizó: ni la clausura, ni los pesos asimétricos, ni quitar
+(8)--(9). Lo único que ayudó fue el paralelismo, que no cambia el problema sino cuántos lotes se
+resuelven a la vez.
+\stopitemize
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Análisis exploratorio del monolítico}, reference=sec:exploracion_mono]
+
+Las mismas preguntas, aplicadas al monolítico: dónde deja de probar el óptimo, qué lo encarece y
+cuánto más lento es que el Split sobre la misma instancia. Son cuatro estudios (08 a 11), todos en
+modo par: la misma instancia se resuelve primero con el Split y después con el monolítico, y el
+óptimo del Split es la referencia.
+
+{\bf Condiciones.} Los estudios 08 y 09 corrieron mientras la suite de stress del Split ocupaba unos
+dos núcleos; el 10 en paralelo con la suite del Split y después con la del monolítico; el 11 con la
+del monolítico. Los tiempos absolutos están inflados, pero dentro de cada par los dos modelos
+corrieron uno después del otro con la misma carga, así que la proporción es comparable. Con un tope
+fijo, la carga también empeora un poco la brecha del monolítico al corte, porque procesa menos
+nodos. El Split corrió con la Etapa 1 en 6 procesos, que el monolítico no puede usar. Casi no
+influye en la comparación: el paralelismo solo se activa con más de 4 lotes, y en los puntos de 6
+lotes la Etapa 1 dura segundos. La excepción es el único punto de 10×10 (estudio 09): 31~s de
+Etapa 1, unos 60~s en secuencia según la mejora del estudio 12, contra un monolítico que no cerró
+en 300~s.
+
+\startsubsection[title={Estudio 08: la frontera del monolítico}]
+
+Una grilla de lotes (1, 2, 3, 4 y 6) por lado (3×3 a 7×7), con el perfil realista: 26 órdenes por
+lote, pesos 4/5, dos bandas de velocidad y dos lotes por picker. Tope de 10 minutos por modelo.
+Cuando el monolítico no prueba el óptimo en un lado, ese lado y los mayores se saltean para los
+lotes siguientes. En 4×4 las instancias son infactibles en los dos modelos (sección \in[sec:le1]).
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][7][width=2.3cm]
+\bTR \bTH Lotes \eTH \bTH Pickers \eTH \bTH Grilla \eTH \bTH Split (s) \eTH \bTH Mono (s) \eTH \bTH Mono / Split \eTH \bTH Mono: resultado \eTH \bTH Nodos Etapa 2 \eTH \bTH Nodos mono \eTH \eTR
+\bTR \bTD 1 \eTD \bTD 1 \eTD \bTD 3×3 a 7×7 \eTD \bTD 0,1 a 1,3 \eTD \bTD 0,2 a 0,3 \eTD \bTD 0,2 a 2 \eTD \bTD óptimo \eTD \bTD 1 \eTD \bTD 1 \eTD \eTR
+\bTR \bTD 2 \eTD \bTD 1 \eTD \bTD 3×3 \eTD \bTD 0,2 \eTD \bTD 0,3 \eTD \bTD 1,5 \eTD \bTD óptimo \eTD \bTD 3 \eTD \bTD 1 \eTD \eTR
+\bTR \bTD 2 \eTD \bTD 1 \eTD \bTD 5×5 \eTD \bTD 0,3 \eTD \bTD 3,3 \eTD \bTD 11 \eTD \bTD óptimo \eTD \bTD 3 \eTD \bTD 54 \eTD \eTR
+\bTR \bTD 2 \eTD \bTD 1 \eTD \bTD 6×6 \eTD \bTD 1,1 \eTD \bTD 13,5 \eTD \bTD 12 \eTD \bTD óptimo \eTD \bTD 3 \eTD \bTD 1 \eTD \eTR
+\bTR \bTD 2 \eTD \bTD 1 \eTD \bTD 7×7 \eTD \bTD 1,2 \eTD \bTD 17,9 \eTD \bTD 15 \eTD \bTD óptimo \eTD \bTD 3 \eTD \bTD 5.858 \eTD \eTR
+\bTR \bTD 3 \eTD \bTD 2 \eTD \bTD 3×3 \eTD \bTD 3,2 \eTD \bTD 4,7 \eTD \bTD 1,5 \eTD \bTD óptimo \eTD \bTD 31 \eTD \bTD 35 \eTD \eTR
+\bTR \bTD 3 \eTD \bTD 2 \eTD \bTD 5×5 \eTD \bTD 3,8 \eTD \bTD 8,6 \eTD \bTD 2,3 \eTD \bTD óptimo \eTD \bTD 33 \eTD \bTD 246 \eTD \eTR
+\bTR \bTD 3 \eTD \bTD 2 \eTD \bTD 6×6 \eTD \bTD 5,1 \eTD \bTD 138,8 \eTD \bTD 27 \eTD \bTD óptimo \eTD \bTD 27 \eTD \bTD 40.775 \eTD \eTR
+\bTR \bTD 3 \eTD \bTD 2 \eTD \bTD 7×7 \eTD \bTD 9,7 \eTD \bTD 570 (tope) \eTD \bTD $\ge 59$ \eTD \bTD brecha 11,4 \% \eTD \bTD 27 \eTD \bTD 45.924 \eTD \eTR
+\bTR \bTD 4 \eTD \bTD 2 \eTD \bTD 3×3 \eTD \bTD 4,9 \eTD \bTD 6,6 \eTD \bTD 1,3 \eTD \bTD óptimo \eTD \bTD 157 \eTD \bTD 143 \eTD \eTR
+\bTR \bTD 4 \eTD \bTD 2 \eTD \bTD 5×5 \eTD \bTD 6,8 \eTD \bTD 47,1 \eTD \bTD 6,9 \eTD \bTD óptimo \eTD \bTD 109 \eTD \bTD 1.496 \eTD \eTR
+\bTR \bTD 4 \eTD \bTD 2 \eTD \bTD 6×6 \eTD \bTD 8,4 \eTD \bTD 570 (tope) \eTD \bTD $\ge 68$ \eTD \bTD brecha 13,2 \% \eTD \bTD 165 \eTD \bTD 90.695 \eTD \eTR
+\bTR \bTD 6 \eTD \bTD 3 \eTD \bTD 3×3 \eTD \bTD 176,9 \eTD \bTD 192,1 \eTD \bTD 1,1 \eTD \bTD óptimo \eTD \bTD 258.121 \eTD \bTD 200.107 \eTD \eTR
+\bTR \bTD 6 \eTD \bTD 3 \eTD \bTD 5×5 \eTD \bTD 217,6 \eTD \bTD 570 (tope) \eTD \bTD $\ge 2{,}6$ \eTD \bTD brecha 3,0 \% \eTD \bTD 359.557 \eTD \bTD 102.612 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\placefigure[force][fig:frontera]{Cuántas veces más lento es el monolítico que el Split sobre la misma instancia, según la grilla y los lotes (estudio 08, escala logarítmica). Con un lote los dos tardan décimas de segundo y no se grafica. Los círculos abiertos son cotas inferiores: el monolítico no cerró en 10 minutos.}
+{\startMPcode
+numeric w, h; w := 11.0cm; h := 6.5cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (1.100cm,0.000cm)--(1.100cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 3×3"), (1.100cm,-0.120cm));
+draw (3.300cm,0.000cm)--(3.300cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 4×4"), (3.300cm,-0.120cm));
+draw (5.500cm,0.000cm)--(5.500cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 5×5"), (5.500cm,-0.120cm));
+draw (7.700cm,0.000cm)--(7.700cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 6×6"), (7.700cm,-0.120cm));
+draw (9.900cm,0.000cm)--(9.900cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 7×7"), (9.900cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0,1"), (-0.120cm,0.000cm));
+draw (0.000cm,1.511cm)--(-0.120cm,1.511cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,1.511cm));
+draw (0.000cm,3.023cm)--(-0.120cm,3.023cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,3.023cm));
+draw (0.000cm,4.534cm)--(-0.120cm,4.534cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100"), (-0.120cm,4.534cm));
+label.bot(textext("Lado de la grilla"), (w/2,-0.85cm));
+label.lft(textext("Monolítico / Split (escala log.)") rotated 90, (-1.25cm,h/2));
+draw (0.000cm,1.511cm)--(11.000cm,1.511cm) withpen pencircle scaled .5pt dashed evenly;
+label.lft(textext("\tfxx mismo tiempo"), (10.900cm,1.311cm));
+draw (1.100cm,1.777cm)--(5.500cm,3.085cm)--(7.700cm,3.157cm)--(9.900cm,3.285cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.100cm,1.777cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (5.500cm,3.085cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (7.700cm,3.157cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (9.900cm,3.285cm) withcolor \MPcolor{darkblue};
+draw (1.100cm,1.764cm)--(5.500cm,2.047cm)--(7.700cm,3.680cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (1.100cm,1.764cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (5.500cm,2.047cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (7.700cm,3.680cm) withcolor \MPcolor{redline};
+draw fullcircle scaled 6pt shifted (9.900cm,4.185cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline};
+draw (7.700cm,3.680cm)--(9.900cm,4.185cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline} dashed withdots;
+draw (1.100cm,1.707cm)--(5.500cm,2.782cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (1.100cm,1.707cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (5.500cm,2.782cm) withcolor \MPcolor{blueline};
+draw fullcircle scaled 6pt shifted (7.700cm,4.279cm) withpen pencircle scaled 1pt withcolor \MPcolor{blueline};
+draw (5.500cm,2.782cm)--(7.700cm,4.279cm) withpen pencircle scaled 1pt withcolor \MPcolor{blueline} dashed withdots;
+draw (1.100cm,1.565cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue} dashed evenly;
+fill fullcircle scaled 4pt shifted (1.100cm,1.565cm) withcolor \MPcolor{darkblue};
+draw fullcircle scaled 6pt shifted (5.500cm,2.144cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (1.100cm,1.565cm)--(5.500cm,2.144cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue} dashed withdots;
+draw (0.300cm,6.350cm)--(0.900cm,6.350cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx 2 lotes"), (1.000cm,6.350cm));
+draw (0.300cm,5.930cm)--(0.900cm,5.930cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx 3 lotes"), (1.000cm,5.930cm));
+draw (0.300cm,5.510cm)--(0.900cm,5.510cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+label.rt(textext("\tfx 4 lotes"), (1.000cm,5.510cm));
+draw (0.300cm,5.090cm)--(0.900cm,5.090cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue} dashed evenly;
+label.rt(textext("\tfx 6 lotes"), (1.000cm,5.090cm));
+draw fullcircle scaled 6pt shifted (0.600cm,4.670cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx el monolítico no cerró: cota inferior"), (1.000cm,4.670cm));
+\stopMPcode}
+
+\startitemize
+\item {\bf Con un lote no hay diferencia práctica:} los dos tardan décimas de segundo, y en las
+grillas mayores el monolítico es incluso más rápido, porque no hay nada que coordinar y el Split
+paga la preparación de dos etapas.
+\item {\bf Con dos o más lotes, la desventaja crece con la grilla:} con 2 lotes, desde 5×5, entre
+11 y 15 veces; con 3 y 4 lotes, hasta 27 veces antes de dejar de cerrar, y al menos 59 y 68 en los
+puntos cortados.
+\item {\bf Con 6 lotes en grilla chica empatan} (177~s y 192~s en 3×3): casi todo el costo es
+secuenciar y lo pagan los dos. Con la misma cantidad de lotes en 5×5 el Split sigue cerrando
+(3,6 min) y el monolítico no.
+\item {\bf Frontera a 10 minutos:} 3 lotes hasta 6×6, 4 lotes hasta 5×5, 6 lotes solo 3×3. El Split
+cierra todos esos puntos y también los que el monolítico no cierra.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Encontrar no es el problema; demostrar sí}]
+
+En los tres puntos donde no cerró, el monolítico tenía una solución a menos del 1 \% del óptimo
+antes de los 75~s, y en 6 lotes 5×5 llegó al óptimo exacto a los 85~s. El resto del tiempo lo pasó
+sin poder demostrarlo:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Punto \eTH \bTH A menos del 1 \% \eTH \bTH Llegó al óptimo \eTH \bTH Cota dual al corte \eTH \bTH Nodos mono \eTH \bTH Nodos Etapa 2 \eTH \eTR
+\bTR \bTD 3 lotes, 7×7 \eTD \bTD 41~s \eTD \bTD no \eTD \bTD 90,1 \% del óptimo \eTD \bTD 45.924 \eTD \bTD 27 \eTD \eTR
+\bTR \bTD 4 lotes, 6×6 \eTD \bTD 29~s \eTD \bTD no \eTD \bTD 88,5 \% \eTD \bTD 90.695 \eTD \bTD 165 \eTD \eTR
+\bTR \bTD 6 lotes, 5×5 \eTD \bTD 75~s \eTD \bTD 85~s \eTD \bTD 97,1 \% \eTD \bTD 102.612 \eTD \bTD 359.557 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+{\bf La relajación no arranca peor.} En casi todas las instancias, la cota dual del monolítico en
+el nodo raíz es parecida a la de la Etapa 2 del Split: la debilidad de la relajación es común y
+viene del secuenciamiento con Big-M que los dos comparten. Lo que cambia es el costo de cerrarla:
+el monolítico tiene entre 2 y 13 veces más variables, cada nodo le cuesta más y además de secuenciar
+tiene que ramificar sobre las rutas. Hay tres excepciones claras con la cota raíz del monolítico
+mucho peor: la grilla 10×10 (39 \% contra 81 \%), las velocidades en bandas (41--53 \% contra
+76--87 \%) y 6 lotes en 5×5 (48 \% contra 87 \%). En esos casos pesa justo el término que
+distingue a los modelos: el tiempo de ejecución, que en el monolítico es una variable atada con
+Big-M; con grillas grandes la ruta es larga, con velocidades distintas el término cambia por
+picker, y con muchos lotes hay más pares. Es una explicación consistente con los datos, no
+verificada.
+\stopsubsection
+
+\startsubsection[title={Estudio 09: las mismas instancias que el Split}]
+
+Las 15 instancias de los estudios 01, 02 y 03 del Split, con el mismo límite de 300~s. El Split
+obtuvo exactamente los mismos óptimos que en esos estudios, lo que confirma que son las mismas
+instancias.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][align=flushleft]
+\bTR \bTH Instancia (6 lotes, 7×7 salvo indicación) \eTH \bTH Split (s) \eTH \bTH Mono: brecha reportada \eTH \bTH Mono: mejor solución sobre el óptimo \eTH \bTH Mono: cota dual / óptimo \eTH \eTR
+\bTR \bTD 10 órdenes por lote, 2 pickers \eTD \bTD 58,4 \eTD \bTD 6,4 \% \eTD \bTD 0,70 \% \eTD \bTD 94,7 \% \eTD \eTR
+\bTR \bTD 14 órdenes \eTD \bTD 18,6 \eTD \bTD 13,0 \% \eTD \bTD 0,75 \% \eTD \bTD 89,2 \% \eTD \eTR
+\bTR \bTD 18 órdenes \eTD \bTD 13,6 \eTD \bTD 15,0 \% \eTD \bTD 0,83 \% \eTD \bTD 87,6 \% \eTD \eTR
+\bTR \bTD 22 órdenes \eTD \bTD 14,0 \eTD \bTD sin solución \eTD \bTD -- \eTD \bTD 78,4 \% \eTD \eTR
+\bTR \bTD 26 órdenes \eTD \bTD 18,9 \eTD \bTD sin solución \eTD \bTD -- \eTD \bTD 79,7 \% \eTD \eTR
+\bTR \bTD 3 pickers \eTD \bTD 24,6 \eTD \bTD 81,1 \% \eTD \bTD 0,88 \% \eTD \bTD 55,7 \% \eTD \eTR
+\bTR \bTD 4 pickers \eTD \bTD 39,4 \eTD \bTD 104,8 \% \eTD \bTD 0,73 \% \eTD \bTD 49,2 \% \eTD \eTR
+\bTR \bTD 5 pickers \eTD \bTD 14,3 \eTD \bTD 79,0 \% \eTD \bTD 4,90 \% \eTD \bTD 58,6 \% \eTD \eTR
+\bTR \bTD 10×10 \eTD \bTD 45,0 \eTD \bTD sin solución \eTD \bTD -- \eTD \bTD 39,1 \% \eTD \eTR
+\bTR \bTD Pesos 2/6, 10 órdenes \eTD \bTD 25,0 \eTD \bTD 3,9 \% \eTD \bTD 0,28 \% \eTD \bTD 96,5 \% \eTD \eTR
+\bTR \bTD Pesos 2/6, 18 órdenes \eTD \bTD 17,6 \eTD \bTD sin solución \eTD \bTD -- \eTD \bTD 85,9 \% \eTD \eTR
+\bTR \bTD Pesos 2/6, 26 órdenes \eTD \bTD 13,1 \eTD \bTD 23,3 \% \eTD \bTD 1,88 \% \eTD \bTD 82,6 \% \eTD \eTR
+\bTR \bTD Velocidades distintas, 2 pickers \eTD \bTD 16,8 \eTD \bTD sin solución \eTD \bTD -- \eTD \bTD 83,6 \% \eTD \eTR
+\bTR \bTD 2 bandas, 3 pickers \eTD \bTD 167,0 \eTD \bTD sin solución \eTD \bTD -- \eTD \bTD 59,9 \% \eTD \eTR
+\bTR \bTD 3 bandas, 3 pickers \eTD \bTD 144,6 \eTD \bTD sin solución \eTD \bTD -- \eTD \bTD 50,8 \% \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf El Split resolvió las 15, entre 13 y 167~s. El monolítico no demostró ninguna.}
+\item {\bf En 7 de las 15 el monolítico no encontró ni una solución factible en 5 minutos:} con 6
+lotes en 7×7 empieza a costarle también encontrar.
+\item {\bf Cuando encuentra, encuentra bien:} entre 0,3 \% y 1,9 \% sobre el óptimo (4,9 \% en una).
+\item {\bf Las brechas grandes son de la cota, no de la solución:} con 3 a 5 pickers la cota dual
+queda entre el 49 \% y el 59 \% del óptimo y la brecha reportada llega al 105 \%, aunque la solución
+esté a menos del 1 \%.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Estudio 10: qué factor le pega más al monolítico}]
+
+Las preguntas de los estudios 01, 02, 03 y 07 a una escala que el monolítico resuelve: base de 4
+lotes, 2 pickers, 26 órdenes por lote, 5×5, pesos 4/4 y velocidades uniformes, moviendo un factor
+por vez, con 10 minutos por modelo. En la base, el Split tarda 7,1~s y el monolítico 16,7~s.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][align=flushleft]
+\bTR \bTH Punto \eTH \bTH Split (s) \eTH \bTH Mono (s) \eTH \bTH Mono / Split \eTH \bTH Nodos mono \eTH \eTR
+\bTR \bTD Base \eTD \bTD 7,1 \eTD \bTD 16,7 \eTD \bTD 2,4 \eTD \bTD 631 \eTD \eTR
+\bTR \bTD Grilla 3×3 \eTD \bTD 5,8 \eTD \bTD 6,2 \eTD \bTD 1,1 \eTD \bTD 197 \eTD \eTR
+\bTR \bTD Grilla 6×6 \eTD \bTD 7,8 \eTD \bTD 256,1 \eTD \bTD 33 \eTD \bTD 36.381 \eTD \eTR
+\bTR \bTD Grilla 7×7 \eTD \bTD 13,5 \eTD \bTD tope, brecha 15,3 \% \eTD \bTD $\ge 44$ \eTD \bTD 56.825 \eTD \eTR
+\bTR \bTD 10 órdenes por lote \eTD \bTD 2,2 \eTD \bTD 412,8 \eTD \bTD 188 \eTD \bTD 231.579 \eTD \eTR
+\bTR \bTD 14 órdenes \eTD \bTD 2,7 \eTD \bTD 173,5 \eTD \bTD 64 \eTD \bTD 46.106 \eTD \eTR
+\bTR \bTD 18 órdenes \eTD \bTD 3,0 \eTD \bTD 28,4 \eTD \bTD 9,5 \eTD \bTD 3.132 \eTD \eTR
+\bTR \bTD 22 órdenes \eTD \bTD 5,9 \eTD \bTD 48,1 \eTD \bTD 8,2 \eTD \bTD 352 \eTD \eTR
+\bTR \bTD 32 órdenes \eTD \bTD 9,5 \eTD \bTD 46,2 \eTD \bTD 4,9 \eTD \bTD 193 \eTD \eTR
+\bTR \bTD 40 órdenes \eTD \bTD 4,3 \eTD \bTD 27,7 \eTD \bTD 6,4 \eTD \bTD 1.143 \eTD \eTR
+\bTR \bTD 50 órdenes \eTD \bTD 6,5 \eTD \bTD 27,8 \eTD \bTD 4,3 \eTD \bTD 1.631 \eTD \eTR
+\bTR \bTD 1 picker \eTD \bTD 1,4 \eTD \bTD 8,8 \eTD \bTD 6,3 \eTD \bTD 717 \eTD \eTR
+\bTR \bTD 3 pickers \eTD \bTD 2,8 \eTD \bTD 18,1 \eTD \bTD 6,5 \eTD \bTD 736 \eTD \eTR
+\bTR \bTD 4 pickers \eTD \bTD 5,4 \eTD \bTD 14,4 \eTD \bTD 2,7 \eTD \bTD 353 \eTD \eTR
+\bTR \bTD 2 lotes \eTD \bTD 2,3 \eTD \bTD 2,7 \eTD \bTD 1,2 \eTD \bTD 43 \eTD \eTR
+\bTR \bTD 3 lotes \eTD \bTD 4,3 \eTD \bTD 21,6 \eTD \bTD 5,0 \eTD \bTD 19 \eTD \eTR
+\bTR \bTD 5 lotes \eTD \bTD 9,4 \eTD \bTD 26,2 \eTD \bTD 2,8 \eTD \bTD 899 \eTD \eTR
+\bTR \bTD 6 lotes \eTD \bTD 23,9 \eTD \bTD 194,9 \eTD \bTD 8,2 \eTD \bTD 27.268 \eTD \eTR
+\bTR \bTD Pesos 2/6, 10 órdenes \eTD \bTD 1,3 \eTD \bTD 359,2 \eTD \bTD 276 \eTD \bTD 167.297 \eTD \eTR
+\bTR \bTD Pesos 2/6, 26 órdenes \eTD \bTD 6,2 \eTD \bTD 36,4 \eTD \bTD 5,9 \eTD \bTD 1.370 \eTD \eTR
+\bTR \bTD Pesos 2/6, 50 órdenes \eTD \bTD 4,1 \eTD \bTD 30,7 \eTD \bTD 7,5 \eTD \bTD 1.034 \eTD \eTR
+\bTR \bTD Velocidades distintas, 2 pickers \eTD \bTD 8,8 \eTD \bTD 25,5 \eTD \bTD 2,9 \eTD \bTD 1.137 \eTD \eTR
+\bTR \bTD 2 bandas, 3 pickers \eTD \bTD 2,8 \eTD \bTD 146,2 \eTD \bTD 52 \eTD \bTD 17.392 \eTD \eTR
+\bTR \bTD 3 bandas, 3 pickers \eTD \bTD 4,1 \eTD \bTD tope, brecha 1,7 \% \eTD \bTD $\ge 146$ \eTD \bTD 326.832 \eTD \eTR
+\bTR \bTD 2 bandas, 4 pickers \eTD \bTD 4,0 \eTD \bTD 24,7 \eTD \bTD 6,2 \eTD \bTD 846 \eTD \eTR
+\bTR \bTD Sin (8)--(9), base \eTD \bTD 8,2 \eTD \bTD 33,0 \eTD \bTD 4,0 \eTD \bTD 548 \eTD \eTR
+\bTR \bTD Sin (8)--(9), 6×6 \eTD \bTD 11,3 \eTD \bTD 105,8 \eTD \bTD 9,4 \eTD \bTD 6.339 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf La grilla es el factor principal:} en 3×3 empatan; en 6×6 el monolítico ya es 33 veces
+más lento y en 7×7 no cierra, mientras el Split tarda 14~s. Es el mismo eje que limita a la Etapa
+1, pero el monolítico lo sufre mucho antes.
+\item {\bf Las velocidades en bandas golpean al monolítico y no al Split a esta escala:} con 3
+pickers, el Split tarda lo mismo con o sin bandas (3 a 4~s); el monolítico pasa de 18~s a 146~s
+con 2 bandas y no cierra con 3. Con 4 pickers para 4 lotes (un lote por picker, sin secuencia) el
+efecto casi desaparece.
+\item {\bf Pocas órdenes por lote lo hunden:} con 10 órdenes el monolítico tarda 413~s contra 2~s
+del Split. Es el mismo punto de objetivo aplanado (SLA cercano al 100 \%) que encarece la
+Etapa 2, y al monolítico le pega mucho más fuerte.
+\item {\bf Lotes y pickers pesan menos} (1,2 a 8 veces) y los pesos 2/6 no cambian nada de forma
+sistemática.
+\item {\bf Quitar (8)--(9) tampoco es una palanca:} en 5×5 el monolítico tarda el doble y en 6×6
+la mitad, siempre con el mismo óptimo que el Split.
+\item {\bf Control de equivalencia:} los 25 óptimos del monolítico coinciden exactamente con los
+del Split, también sin (8)--(9).
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Tamaño y memoria no son el límite}]
+
+Los modelos son chicos: el mayor de los cortados tiene 4.695 variables. Con 10 minutos la memoria
+pico no pasó de 302~MB; con 40 minutos (estudio 11) llegó a 636~MB, porque el árbol sigue
+creciendo. ZIMPL compiló en menos de un segundo en todos los puntos. Hay modelos de 1.191
+variables que no cierran y de 2.199 que encuentran buenas soluciones: lo que decide es la
+estructura, no el tamaño. La excepción posible es el heredado de 100×100, donde el monolítico
+terminó sin resultado (sin memoria en una corrida anterior); su memoria no se midió.
+\stopsubsection
+
+\startsubsection[title={Estudio 11: con 40 minutos}]
+
+Los tres puntos donde el monolítico dejó de cerrar a los 10 minutos, más la instancia exacta del
+stress 04 en su versión con $W^{c} = 9$ (la misma que M0), con el tope de la suite:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Punto \eTH \bTH Split \eTH \bTH Mono, 10 min \eTH \bTH Mono, 40 min \eTH \bTH Mejor solución sobre el óptimo \eTH \bTH Cota dual (raíz → 40 min) \eTH \eTR
+\bTR \bTD 3 lotes, 7×7 \eTD \bTD óptimo en 8~s \eTD \bTD brecha 11,4 \% \eTD \bTD brecha 11,0 \% \eTD \bTD 0,05 \% \eTD \bTD 87,7 \% → 90,1 \% \eTD \eTR
+\bTR \bTD 4 lotes, 6×6 \eTD \bTD óptimo en 10~s \eTD \bTD brecha 13,2 \% \eTD \bTD brecha 10,4 \% \eTD \bTD 0 \% (a los 972~s) \eTD \bTD 87,1 \% → 90,6 \% \eTD \eTR
+\bTR \bTD 6 lotes, 5×5 \eTD \bTD óptimo en 3,9 min \eTD \bTD brecha 3,0 \% \eTD \bTD óptimo en 32 min \eTD \bTD 0 \% \eTD \bTD 47,7 \% → 100 \% \eTD \eTR
+\bTR \bTD stress 04 con $W^{c} = 9$ (6 lotes, 7×7) \eTD \bTD óptimo en 3,0 min \eTD \bTD -- \eTD \bTD brecha 143,5 \% \eTD \bTD 0,66 \% \eTD \bTD 39,1 \% → 41,3 \% \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\startitemize
+\item {\bf Cuadruplicar el tiempo casi no mueve la cota:} en 3 lotes 7×7 y 4 lotes 6×6 quedó cerca
+del 90 \% del óptimo, como a los 10 minutos, aunque recorrió seis y cuatro veces más nodos.
+\item {\bf Las soluciones ya estaban:} en 4 lotes 6×6 encontró el óptimo exacto a los 972~s y no
+pudo demostrarlo en los 24 minutos restantes.
+\item {\bf Solo 6 lotes en 5×5 cerró}, a los 32 minutos, 8 veces lo que tardó el Split: ahí la cota
+raíz era la más débil (48 \%), pero la búsqueda sí la subió.
+\item {\bf Stress 04: una solución casi óptima y una brecha del 143,5 \%}. A los 511~s ya tenía una
+solución a menos del 1 \% y terminó a 0,66 \%, pero la cota dual apenas pasó del 39 \% al 41 \%. Es
+el mismo resultado que M0 a los 25 minutos (144,3 \%): el tiempo extra no cambia nada.
+\item {\bf La brecha de una corrida corta predice bien la de una larga.} Sin el óptimo del Split, la
+solución del monolítico no se podría distinguir de una mala.
+\stopitemize
+\stopsubsection
+
+\startsubsection[title={Predicción registrada antes de la suite}]
+
+Con la suite de stress del monolítico corriendo y sin conocer sus resultados se registró la
+predicción: el test 04 no termina en 40 minutos, con buena solución y brecha grande; 05 a 19 (6 o
+más lotes en 7×7 o mayor, o cuadrillas más grandes) tampoco, y en varios puede no haber solución
+que reportar. La suite la confirmó: 0 de 19 (sección \in[sec:res_stress]).
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Resultados de las suites}, reference=sec:resultados]
+
+Los resultados finales están en CSV de nombre fijo, uno por modelo y suite. Las suites
+funcionales se corrieron el 29-09 con el código actual (el Split en secuencia) y con las
+soluciones guardadas; el único timeout (30a, 25 minutos en los dos modelos) es de una corrida
+anterior y se conservó.
+
+\startsubsection[title={Regresión temprana contra v4}]
+
+El 25-08, con la versión inicial de v5 en dos etapas, se compararon 24 pares de tests
+equivalentes con v4 (velocidades en 1 y frío desactivado). v5 completó los 24 (v4 falló 2, los
+casos 10 y 11, con 8~s); en los 22 pares exitosos en los dos, la mediana fue 0,187~s en v5 contra
+0,168~s en v4 (el costo fijo de compilar dos etapas), y la media bajó un 55 \% solo por el caso 17
+(grilla), de 6,831~s a 0,310~s. Sobre 19 instancias comparables, el objetivo de v5 coincidió con el
+de v4 con una diferencia del orden de $10^{-13}$ \%: primera validación de que la descomposición no
+pierde optimalidad.
+\stopsubsection
+
+\startsubsection[title={Suite funcional: monolítico contra Split}, reference=sec:res_funcional]
+
+Se comparan los tests comparables con la misma base que la comparación con las heurísticas (un
+test entra si todas sus instancias son comparables en estado para el Split, HC y ACO):
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Métrica \eTH \bTH Pares \eTH \eTR
+\bTR \bTD Tests en los dos modelos \eTD \bTD 63 \eTD \eTR
+\bTR \bTD Comparables \eTD \bTD 60 \eTD \eTR
+\bTR \bTD \quad resueltos en los dos \eTD \bTD 49 \eTD \eTR
+\bTR \bTD \quad infactibles en los dos \eTD \bTD 11 \eTD \eTR
+\bTR \bTD Fuera de la comparación (24b, 30a, 36c, 37a) \eTD \bTD 4 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Quedan fuera: 24b (solo Etapa 1; el monolítico no tiene etapas), 30a (timeout en los dos: sin
+referencia), 36c (rechaza la entrada antes de resolver) y 37a (verifica la espera voluntaria; sería
+comparable entre mono y Split, pero se deja fuera para mantener la base común).
+
+\startitemize
+\item {\bf Mismo óptimo:} los 49 pares resueltos tienen el mismo objetivo (diferencia máxima
+$3{,}83 \cdot 10^{-6}$, en los casos 13 y 14, dentro de la tolerancia de SCIP), y los 11
+infactibles lo son en los dos. Vale también para los tests de frío, velocidad y ruta más corta.
+\item {\bf No siempre la misma solución:} 28 pares con la misma solución y 21 óptimos alternativos
+(13 con otras rutas, 16 con otra asignación, algunos con las dos cosas). A nivel de método de
+test, la comparación automática da: migrados de v4, 15 misma solución, 20 óptimos alternativos, 8
+infactibles en los dos y 1 timeout en los dos; propios de v5, 13 misma solución, 1 óptimo
+alternativo, 4 infactibles en los dos y 1 solo del Split. Ningún desacuerdo de objetivo.
+\stopitemize
+
+{\bf Tiempos} sobre los 49 pares resueltos (\ruta{total_time} es el test completo con la compilación
+de ZIMPL; \ruta{model_time}, solo el solver, que en el Split es la Etapa 2):
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Métrica \eTH \bTH Mono (s) \eTH \bTH Split (s) \eTH \bTH Mono / Split \eTH \eTR
+\bTR \bTD total\_time suma \eTD \bTD 140,3 \eTD \bTD 24,4 \eTD \bTD 5,75× \eTD \eTR
+\bTR \bTD total\_time promedio \eTD \bTD 2,864 \eTD \bTD 0,498 \eTD \bTD 5,75× \eTD \eTR
+\bTR \bTD total\_time mediana \eTD \bTD 0,225 \eTD \bTD 0,309 \eTD \bTD 0,73× \eTD \eTR
+\bTR \bTD total\_time desvío \eTD \bTD 8,792 \eTD \bTD 0,697 \eTD \bTD -- \eTD \eTR
+\bTR \bTD total\_time mínimo \eTD \bTD 0,191 \eTD \bTD 0,226 \eTD \bTD 0,84× \eTD \eTR
+\bTR \bTD total\_time máximo \eTD \bTD 43,534 \eTD \bTD 3,863 \eTD \bTD 11,27× \eTD \eTR
+\bTR \bTD model\_time suma \eTD \bTD 124,76 \eTD \bTD 7,19 \eTD \bTD 17,35× \eTD \eTR
+\bTR \bTD model\_time mediana \eTD \bTD 0,007 \eTD \bTD 0,003 \eTD \bTD 2,33× \eTD \eTR
+\eTABLE
+\blank[medium]
+
+En 38 de los 49 pares el monolítico fue más rápido (entre 0,37× y 0,98×): son instancias chicas,
+donde compilar y resolver un modelo cuesta menos que compilar dos. La suma la dominan las grillas,
+donde el monolítico tarda hasta 28,9 veces más (caso 29). En las instancias funcionales los dos
+son intercambiables; la diferencia aparece al crecer la instancia (estudios 08 a 11). Una versión
+anterior de esta comparación (24-09) mostraba más ventaja del Split: el monolítico se había
+corrido en paralelo con el test 30a, y la suma de su \ruta{model_time} daba 198~s contra los
+125~s actuales, con el Split sin cambios. Es un ejemplo concreto de la regla de la sección
+\in[sec:tiempos], y la razón por la que los documentos viejos dan otros cocientes.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][width=4.6cm, align=flushleft]
+\bTR \bTH Caso \eTH \bTH Test \eTH \bTH Mono (s) \eTH \bTH Split (s) \eTH \bTH Mono / Split \eTH \bTH Objetivo \eTH \bTH Solución de mono \eTH \eTR
+\bTR \bTD 01 \eTD \bTD Capacidad básica \eTD \bTD 0,222 \eTD \bTD 0,260 \eTD \bTD 0,85× \eTD \bTD 30,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 02 \eTD \bTD Dos pasillos \eTD \bTD 0,226 \eTD \bTD 0,270 \eTD \bTD 0,84× \eTD \bTD 795,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 03 \eTD \bTD Dos pasillos (variante) \eTD \bTD 0,213 \eTD \bTD 0,294 \eTD \bTD 0,72× \eTD \bTD 795,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 04 \eTD \bTD Un punto por orden \eTD \bTD 0,211 \eTD \bTD 0,300 \eTD \bTD 0,70× \eTD \bTD 795,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 05 \eTD \bTD Un pasillo \eTD \bTD 0,191 \eTD \bTD 0,256 \eTD \bTD 0,75× \eTD \bTD 846,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 06a \eTD \bTD Todas las rutas llegan a tiempo \eTD \bTD 0,326 \eTD \bTD 0,320 \eTD \bTD 1,02× \eTD \bTD 30,0 \eTD \bTD otras rutas \eTD \eTR
+\bTR \bTD 06b \eTD \bTD Ruta corta si la larga atrasa \eTD \bTD 0,284 \eTD \bTD 0,335 \eTD \bTD 0,85× \eTD \bTD 20,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 08 \eTD \bTD Ubicaciones repetidas 2 \eTD \bTD 0,204 \eTD \bTD 0,295 \eTD \bTD 0,69× \eTD \bTD 69,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 09 \eTD \bTD Dos ubicaciones \eTD \bTD 0,204 \eTD \bTD 0,241 \eTD \bTD 0,84× \eTD \bTD 1.833,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 10 \eTD \bTD Dos misiones \eTD \bTD 0,200 \eTD \bTD 0,289 \eTD \bTD 0,69× \eTD \bTD 1.509,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 11 \eTD \bTD Cuatro órdenes \eTD \bTD 0,217 \eTD \bTD 0,276 \eTD \bTD 0,79× \eTD \bTD 3.666,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 13 \eTD \bTD Dos períodos, grilla \eTD \bTD 43,534 \eTD \bTD 3,863 \eTD \bTD 11,27× \eTD \bTD 3.087,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 14 \eTD \bTD Un período, grilla \eTD \bTD 43,513 \eTD \bTD 3,715 \eTD \bTD 11,71× \eTD \bTD 3.087,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 15 \eTD \bTD Tres órdenes, un picker \eTD \bTD 0,241 \eTD \bTD 0,282 \eTD \bTD 0,85× \eTD \bTD 889,0 \eTD \bTD otras rutas \eTD \eTR
+\bTR \bTD 16 \eTD \bTD Seis órdenes, dos pickers \eTD \bTD 0,504 \eTD \bTD 0,411 \eTD \bTD 1,22× \eTD \bTD 1.338,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 17 \eTD \bTD Ruta ramificada \eTD \bTD 0,249 \eTD \bTD 0,315 \eTD \bTD 0,79× \eTD \bTD 2.512,5 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 18 \eTD \bTD Ruta con desvío \eTD \bTD 0,194 \eTD \bTD 0,288 \eTD \bTD 0,67× \eTD \bTD 4.518,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 19a \eTD \bTD Ruta extendida, ubicación dup. \eTD \bTD 0,258 \eTD \bTD 0,263 \eTD \bTD 0,98× \eTD \bTD 25,0 \eTD \bTD otras rutas \eTD \eTR
+\bTR \bTD 19b \eTD \bTD Ruta extendida, penalizaciones \eTD \bTD 0,271 \eTD \bTD 0,337 \eTD \bTD 0,80× \eTD \bTD 0,0 \eTD \bTD otras rutas \eTD \eTR
+\bTR \bTD 19c \eTD \bTD Ruta extendida \eTD \bTD 0,209 \eTD \bTD 0,248 \eTD \bTD 0,85× \eTD \bTD 25,0 \eTD \bTD otras rutas \eTD \eTR
+\bTR \bTD 20 \eTD \bTD Grilla multiubicación \eTD \bTD 5,047 \eTD \bTD 0,496 \eTD \bTD 10,18× \eTD \bTD 2.620,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 22a \eTD \bTD Adelanto \eTD \bTD 0,235 \eTD \bTD 0,258 \eTD \bTD 0,91× \eTD \bTD 10.126,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 22b \eTD \bTD Atraso \eTD \bTD 0,217 \eTD \bTD 0,252 \eTD \bTD 0,86× \eTD \bTD 154,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 23a \eTD \bTD Ruta larga al picker rápido \eTD \bTD 0,258 \eTD \bTD 0,354 \eTD \bTD 0,73× \eTD \bTD 16,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 23b \eTD \bTD Rutas exportadas \eTD \bTD 0,220 \eTD \bTD 0,285 \eTD \bTD 0,77× \eTD \bTD 16,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 24a \eTD \bTD Frío excluye al picker lento \eTD \bTD 0,196 \eTD \bTD 0,504 \eTD \bTD 0,39× \eTD \bTD 9,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 25b \eTD \bTD Grilla: ubicación dup. \eTD \bTD 9,758 \eTD \bTD 0,420 \eTD \bTD 23,25× \eTD \bTD 2.434,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 25c \eTD \bTD Grilla multiubicación \eTD \bTD 5,025 \eTD \bTD 0,428 \eTD \bTD 11,75× \eTD \bTD 2.620,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 25e \eTD \bTD Grilla: penalización por fecha \eTD \bTD 1,512 \eTD \bTD 0,621 \eTD \bTD 2,44× \eTD \bTD 0,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 25f \eTD \bTD Grilla: orden igual al carro \eTD \bTD 5,643 \eTD \bTD 0,668 \eTD \bTD 8,45× \eTD \bTD 156,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 25g \eTD \bTD Grilla: ubic. compartidas \eTD \bTD 6,104 \eTD \bTD 0,448 \eTD \bTD 13,64× \eTD \bTD 3.224,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 26b \eTD \bTD Puente: adelanto \eTD \bTD 0,501 \eTD \bTD 0,641 \eTD \bTD 0,78× \eTD \bTD 20.899,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 26c \eTD \bTD Puente: ubic. compartidas \eTD \bTD 0,366 \eTD \bTD 0,417 \eTD \bTD 0,88× \eTD \bTD 2.463,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 26d \eTD \bTD Puente: atraso \eTD \bTD 0,573 \eTD \bTD 0,593 \eTD \bTD 0,97× \eTD \bTD 13.479,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 27 \eTD \bTD Pesos distintos \eTD \bTD 0,221 \eTD \bTD 0,266 \eTD \bTD 0,83× \eTD \bTD 58,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 28 \eTD \bTD Fechas ajustadas y holgadas \eTD \bTD 0,253 \eTD \bTD 0,363 \eTD \bTD 0,70× \eTD \bTD 0,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 29 \eTD \bTD Lote vacío permitido \eTD \bTD 10,170 \eTD \bTD 0,352 \eTD \bTD 28,90× \eTD \bTD 327,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+\bTR \bTD 31b \eTD \bTD Orden en un lote \eTD \bTD 0,225 \eTD \bTD 0,288 \eTD \bTD 0,78× \eTD \bTD 100,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 33a \eTD \bTD Servicio mixto \eTD \bTD 0,208 \eTD \bTD 0,278 \eTD \bTD 0,75× \eTD \bTD 106,5 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 33b \eTD \bTD Servicio unitario \eTD \bTD 0,207 \eTD \bTD 0,309 \eTD \bTD 0,67× \eTD \bTD 81,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 33c \eTD \bTD Servicio cero \eTD \bTD 0,220 \eTD \bTD 0,263 \eTD \bTD 0,84× \eTD \bTD 30,0 \eTD \bTD otra asignación \eTD \eTR
+\bTR \bTD 34a \eTD \bTD Fórmula exacta de terminación \eTD \bTD 0,226 \eTD \bTD 0,537 \eTD \bTD 0,42× \eTD \bTD 16,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 34c \eTD \bTD Frío justo en el límite \eTD \bTD 0,212 \eTD \bTD 0,383 \eTD \bTD 0,55× \eTD \bTD 9,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 35a \eTD \bTD Frío por lote, no por turno \eTD \bTD 0,214 \eTD \bTD 0,579 \eTD \bTD 0,37× \eTD \bTD 27,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 35b \eTD \bTD Tolerancia de frío \eTD \bTD 0,206 \eTD \bTD 0,563 \eTD \bTD 0,37× \eTD \bTD 9,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 36a \eTD \bTD Rápido 2×: reparte los lotes \eTD \bTD 0,210 \eTD \bTD 0,258 \eTD \bTD 0,81× \eTD \bTD 25,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 36b \eTD \bTD Rápido 4×: hace los dos \eTD \bTD 0,205 \eTD \bTD 0,261 \eTD \bTD 0,79× \eTD \bTD 16,5 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 36d \eTD \bTD Atraso con velocidad 0,5 \eTD \bTD 0,221 \eTD \bTD 0,226 \eTD \bTD 0,98× \eTD \bTD 310,0 \eTD \bTD igual \eTD \eTR
+\bTR \bTD 37b \eTD \bTD Sin demora \eTD \bTD 0,207 \eTD \bTD 0,239 \eTD \bTD 0,87× \eTD \bTD 78,0 \eTD \bTD igual \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Las letras de los casos de esta tabla siguen la numeración de los documentos de comparación del
+repositorio de implementación, que identifican cada método de test dentro de su archivo (por
+ejemplo, 34a y 34c son dos métodos distintos del archivo 34). Los 11 infactibles en los dos son: 07
+(ubicaciones repetidas), 21 y 26a (puente desconectado), 25a (tamaño infactible en grilla), 25d
+(orden mayor al carro), 30b (capacidades fraccionarias infactibles), 31a (orden en varios lotes),
+32 (orden que excede el vehículo), 34b (ningún picker elegible), 35c (la parte fija cuenta para el
+frío) y 38 (camino simple). En todos, los dos modelos tardan entre 0,13~s y 0,71~s.
+\stopsubsection
+
+\startsubsection[title={Suite de stress}, reference=sec:res_stress]
+
+El Split corre con un tope de 40 minutos por test y, en la corrida del 29-09, con la Etapa 1 en 6
+procesos. Los tiempos son la
+duración completa del test (escribir los \ruta{.dat}, compilar, Etapa 1 y Etapa 2) y son un techo
+por las suspensiones de la notebook. La Etapa 1 se estima como el tiempo total menos el de la
+Etapa 2, así que incluye la compilación y el resto de la preparación. Son los mismos datos que \ruta{models.tex} y que las dos comparaciones (CSV
+final del Split): las corridas del 29-09
+(02, 04 a 07, 09, 11 y 15), del 26-09 para el 10\footnote{La corrida del 29-09 marcó 412~s por
+suspensiones de la notebook, con el mismo objetivo.}, y los timeouts del 24-09 (01, 03) y 26-09 (08,
+12 a 19).
+
+No quedó registrado con cuántos procesos corrió la del 26-09, pero todo indica que fue en
+secuencia, que es el valor por defecto: su Etapa 1 estimada fue de unos 220~s en 13×13 y 373~s
+en 14×14, como las mediciones secuenciales del estudio 12 (242 y 403~s) y no como las paralelas
+(110 y 213~s); su 15×15 tardó 1.949~s contra 904~s el 29-09; y la memoria del proceso principal
+fue de 136 a 381~MB, contra 76 a 81~MB en los mismos tests de grilla el 29-09, con los procesos
+aparte. Consecuencias: la Etapa 1
+estimada del 10 (14,6~s) es secuencial, y es la misma instancia de Etapa 1 que la del 04 (3,4~s
+el 29-09; también 14,6~s el 26-09). Los timeouts del 12 al 19 no dependen de eso, porque su Etapa
+1 es barata y el tiempo se va en la Etapa 2. El 08 (16×16) también llegó al tope en la corrida
+del 23-09, que sí tenía la Etapa 1 en 6 procesos.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[column][6][width=2.5cm]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Caso \eTH \bTH Grilla \eTH \bTH Split total (s) \eTH \bTH Etapa 1 (estim., s) \eTH \bTH Etapa 2 (s) \eTH \bTH Objetivo \eTH \bTH SLA \eTH \bTH Mono \eTH \eTR
+\bTR \bTD 01 \eTD \bTD 100×100 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD sin resultado \eTD \eTR
+\bTR \bTD 02 \eTD \bTD 10×10 \eTD \bTD 33 \eTD \bTD 5,5 \eTD \bTD 27,3 \eTD \bTD 29.034,00 \eTD \bTD 0 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 03 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 04 \eTD \bTD 7×7 \eTD \bTD 12 \eTD \bTD 3,4 \eTD \bTD 8,9 \eTD \bTD 149.217,67 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 05 \eTD \bTD 13×13 \eTD \bTD 108 \eTD \bTD 97,8 \eTD \bTD 9,9 \eTD \bTD 241.253,92 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 06 \eTD \bTD 14×14 \eTD \bTD 202 \eTD \bTD 194,9 \eTD \bTD 6,8 \eTD \bTD 256.564,33 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 07 \eTD \bTD 15×15 \eTD \bTD 904 \eTD \bTD 900,2 \eTD \bTD 3,9 \eTD \bTD 271.907,67 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 08 \eTD \bTD 16×16 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 09 \eTD \bTD 8×21 \eTD \bTD 224 \eTD \bTD 218,3 \eTD \bTD 5,5 \eTD \bTD 275.019,30 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 10 \eTD \bTD 7×7 \eTD \bTD 86 \eTD \bTD 14,6 \eTD \bTD 71,0 \eTD \bTD 112.079,49 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 11 \eTD \bTD 13×13 \eTD \bTD 139 \eTD \bTD 127,3 \eTD \bTD 11,9 \eTD \bTD 182.253,55 \eTD \bTD 97,4 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 12 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 13 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 14 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 15 \eTD \bTD 10×10 \eTD \bTD 244 \eTD \bTD 23,4 \eTD \bTD 220,8 \eTD \bTD 97.914,92 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 16 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 17 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 18 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 19 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\eTABLE
+\blank[medium]
+
+\placefigure[force][fig:stress]{Suite de stress: tiempo total del Split y de su Etapa 2 por test (escala logarítmica). Las barras sin relleno son los timeouts del Split; el monolítico no terminó ninguno de los 19.}
+{\startMPcode
+numeric w, h; w := 12.0cm; h := 6.0cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+label.bot(textext("\tfx 01"), (0.316cm,-0.100cm));
+label.bot(textext("\tfx 02"), (0.947cm,-0.100cm));
+label.bot(textext("\tfx 03"), (1.579cm,-0.100cm));
+label.bot(textext("\tfx 04"), (2.211cm,-0.100cm));
+label.bot(textext("\tfx 05"), (2.842cm,-0.100cm));
+label.bot(textext("\tfx 06"), (3.474cm,-0.100cm));
+label.bot(textext("\tfx 07"), (4.105cm,-0.100cm));
+label.bot(textext("\tfx 08"), (4.737cm,-0.100cm));
+label.bot(textext("\tfx 09"), (5.368cm,-0.100cm));
+label.bot(textext("\tfx 10"), (6.000cm,-0.100cm));
+label.bot(textext("\tfx 11"), (6.632cm,-0.100cm));
+label.bot(textext("\tfx 12"), (7.263cm,-0.100cm));
+label.bot(textext("\tfx 13"), (7.895cm,-0.100cm));
+label.bot(textext("\tfx 14"), (8.526cm,-0.100cm));
+label.bot(textext("\tfx 15"), (9.158cm,-0.100cm));
+label.bot(textext("\tfx 16"), (9.789cm,-0.100cm));
+label.bot(textext("\tfx 17"), (10.421cm,-0.100cm));
+label.bot(textext("\tfx 18"), (11.053cm,-0.100cm));
+label.bot(textext("\tfx 19"), (11.684cm,-0.100cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,0.000cm));
+draw (0.000cm,1.666cm)--(-0.120cm,1.666cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,1.666cm));
+draw (0.000cm,3.331cm)--(-0.120cm,3.331cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100"), (-0.120cm,3.331cm));
+draw (0.000cm,4.997cm)--(-0.120cm,4.997cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1.000"), (-0.120cm,4.997cm));
+label.lft(textext("Tiempo (s, escala log.)") rotated 90, (-1.25cm,h/2));
+draw (0.000cm,5.630cm)--(12.000cm,5.630cm) withpen pencircle scaled .5pt dashed evenly;
+label.rt(textext("\tfxx tope de 40 min"), (0.100cm,5.830cm));
+draw (0.076cm,0.000cm)--(0.303cm,0.000cm)--(0.303cm,5.630cm)--(0.076cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+fill (0.707cm,0.000cm)--(0.935cm,0.000cm)--(0.935cm,2.523cm)--(0.707cm,2.523cm)--cycle withcolor \MPcolor{darkblue};
+fill (0.960cm,0.000cm)--(1.187cm,0.000cm)--(1.187cm,2.392cm)--(0.960cm,2.392cm)--cycle withcolor \MPcolor{redline};
+draw (1.339cm,0.000cm)--(1.566cm,0.000cm)--(1.566cm,5.630cm)--(1.339cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+fill (1.971cm,0.000cm)--(2.198cm,0.000cm)--(2.198cm,1.815cm)--(1.971cm,1.815cm)--cycle withcolor \MPcolor{darkblue};
+fill (2.223cm,0.000cm)--(2.451cm,0.000cm)--(2.451cm,1.581cm)--(2.223cm,1.581cm)--cycle withcolor \MPcolor{redline};
+fill (2.602cm,0.000cm)--(2.829cm,0.000cm)--(2.829cm,3.386cm)--(2.602cm,3.386cm)--cycle withcolor \MPcolor{darkblue};
+fill (2.855cm,0.000cm)--(3.082cm,0.000cm)--(3.082cm,1.658cm)--(2.855cm,1.658cm)--cycle withcolor \MPcolor{redline};
+fill (3.234cm,0.000cm)--(3.461cm,0.000cm)--(3.461cm,3.839cm)--(3.234cm,3.839cm)--cycle withcolor \MPcolor{darkblue};
+fill (3.486cm,0.000cm)--(3.714cm,0.000cm)--(3.714cm,1.387cm)--(3.486cm,1.387cm)--cycle withcolor \MPcolor{redline};
+fill (3.865cm,0.000cm)--(4.093cm,0.000cm)--(4.093cm,4.924cm)--(3.865cm,4.924cm)--cycle withcolor \MPcolor{darkblue};
+fill (4.118cm,0.000cm)--(4.345cm,0.000cm)--(4.345cm,0.985cm)--(4.118cm,0.985cm)--cycle withcolor \MPcolor{redline};
+draw (4.497cm,0.000cm)--(4.724cm,0.000cm)--(4.724cm,5.630cm)--(4.497cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+fill (5.128cm,0.000cm)--(5.356cm,0.000cm)--(5.356cm,3.914cm)--(5.128cm,3.914cm)--cycle withcolor \MPcolor{darkblue};
+fill (5.381cm,0.000cm)--(5.608cm,0.000cm)--(5.608cm,1.233cm)--(5.381cm,1.233cm)--cycle withcolor \MPcolor{redline};
+fill (5.760cm,0.000cm)--(5.987cm,0.000cm)--(5.987cm,3.219cm)--(5.760cm,3.219cm)--cycle withcolor \MPcolor{darkblue};
+fill (6.013cm,0.000cm)--(6.240cm,0.000cm)--(6.240cm,3.084cm)--(6.013cm,3.084cm)--cycle withcolor \MPcolor{redline};
+fill (6.392cm,0.000cm)--(6.619cm,0.000cm)--(6.619cm,3.571cm)--(6.392cm,3.571cm)--cycle withcolor \MPcolor{darkblue};
+fill (6.644cm,0.000cm)--(6.872cm,0.000cm)--(6.872cm,1.792cm)--(6.644cm,1.792cm)--cycle withcolor \MPcolor{redline};
+draw (7.023cm,0.000cm)--(7.251cm,0.000cm)--(7.251cm,5.630cm)--(7.023cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (7.655cm,0.000cm)--(7.882cm,0.000cm)--(7.882cm,5.630cm)--(7.655cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (8.286cm,0.000cm)--(8.514cm,0.000cm)--(8.514cm,5.630cm)--(8.286cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+fill (8.918cm,0.000cm)--(9.145cm,0.000cm)--(9.145cm,3.977cm)--(8.918cm,3.977cm)--cycle withcolor \MPcolor{darkblue};
+fill (9.171cm,0.000cm)--(9.398cm,0.000cm)--(9.398cm,3.904cm)--(9.171cm,3.904cm)--cycle withcolor \MPcolor{redline};
+draw (9.549cm,0.000cm)--(9.777cm,0.000cm)--(9.777cm,5.630cm)--(9.549cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (10.181cm,0.000cm)--(10.408cm,0.000cm)--(10.408cm,5.630cm)--(10.181cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (10.813cm,0.000cm)--(11.040cm,0.000cm)--(11.040cm,5.630cm)--(10.813cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (11.444cm,0.000cm)--(11.672cm,0.000cm)--(11.672cm,5.630cm)--(11.444cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+fill (0.400cm,-1.120cm)--(0.800cm,-1.120cm)--(0.800cm,-0.880cm)--(0.400cm,-0.880cm)--cycle withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Split: tiempo total del test"), (1.000cm,-1.000cm));
+fill (0.400cm,-1.540cm)--(0.800cm,-1.540cm)--(0.800cm,-1.300cm)--(0.400cm,-1.300cm)--cycle withcolor \MPcolor{redline};
+label.rt(textext("\tfx Split: Etapa 2 (solver)"), (1.000cm,-1.420cm));
+draw (0.400cm,-1.960cm)--(0.800cm,-1.960cm)--(0.800cm,-1.720cm)--(0.400cm,-1.720cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Split no terminó (el monolítico no terminó ninguno)"), (1.000cm,-1.840cm));
+\stopMPcode}
+
+\startitemize
+\item {\bf El monolítico termina 0 de 19; el Split, 9}, ninguno en más de 904~s (15,1 minutos).
+\item {\bf Domina la Etapa 1}, aun en paralelo, en todos los tests realistas salvo el 04 (7×7: 3,4~s
+contra 8,9~s de Etapa 2) y los de agenda pesada (10 y 15), y su crecimiento con la grilla es
+abrupto: de 13×13 a 14×14 se multiplica por
+2,0; de 14×14 a 15×15, por 4,6; 16×16 no termina.
+\item {\bf La forma de la grilla pesa:} el 8×21 (168 ubicaciones) tardó en la Etapa 1 más que el
+14×14 (196): 218~s contra 195~s el 29-09, y 433~s contra 373~s el 26-09. En la corrida del 23-09
+quedó en el medio entre 13×13 y 14×14 (243~s, contra 123~s y 270~s; estimados como total menos
+Etapa 2), así que la conclusión se apoya en dos de tres corridas.
+\item {\bf La Etapa 2 deja de pesar cuando esperar no conviene:} con $W^{c} = 27$ resuelve en menos
+de 12~s en todos los tests de grilla. Pesa en el 10 (proporción intermedia, 71~s) y en el 15 (9
+pickers para 6 lotes, 221~s).
+\item {\bf Los que tampoco termina el Split} son los de 8 lotes o más (12 a 14 y 16 a 19), el 16×16
+(08) y dos heredados (01 y 03): son las dos paredes, la de la Etapa 2 con los lotes y la de la
+Etapa 1 con la grilla. Ahí la única respuesta son las heurísticas.
+\item {\bf Memoria:} el Split usa entre 76 y 287~MB (287 en el 10, 158 en el 15, 114 en el 02 y
+entre 76 y 81 en el resto), pero esa cifra solo mide el proceso del test,
+sin los seis procesos de la Etapa 1 ni ZIMPL.
+\stopitemize
+
+\testpage[10]
+{\bf La corrida anterior, con $W^{c} = 9$} (23-09, en secuencia), da la referencia para la
+sección \in[sec:wc27]:
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Test \eTH \bTH Grilla \eTH \bTH Total \eTH \bTH Etapa 1 \eTH \bTH Etapa 2 \eTH \bTH Objetivo \eTH \bTH SLA \eTH \bTH RAM \eTH \eTR
+\bTR \bTD 04 \eTD \bTD 7×7 \eTD \bTD 2,0 min \eTD \bTD 6~s \eTD \bTD 117~s \eTD \bTD 79.046,86 \eTD \bTD 67,9 \% \eTD \bTD 148 MB \eTD \eTR
+\bTR \bTD 05 \eTD \bTD 13×13 \eTD \bTD 5,9 min \eTD \bTD 224~s \eTD \bTD 128~s \eTD \bTD 127.210,11 \eTD \bTD 67,9 \% \eTD \bTD 261 MB \eTD \eTR
+\bTR \bTD 07 \eTD \bTD 15×15 \eTD \bTD 28,5 min \eTD \bTD 1.485~s \eTD \bTD 222~s \eTD \bTD 143.318,61 \eTD \bTD 67,9 \% \eTD \bTD 261 MB \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Los objetivos de 7×7 y 13×13 son idénticos a los de la calibración, pero las dos etapas corrieron
+casi exactamente el doble de rápido: la calibración había arrancado después de media hora de 16
+procesos en paralelo, con la notebook caliente. Es la evidencia de que en esta máquina los tiempos
+absolutos varían unas dos veces entre corridas.
+
+{\bf Sobre el monolítico en stress}: el 01 terminó sin devolver un estado (ni solución ni timeout;
+en una corrida anterior, sin memoria); el 02 se canceló pasados los 40 minutos; 03 a 07, timeout. El
+04 se volvió a correr con $W^{c} = 27$ (27-09): timeout. Los 05 a 19 nunca se corrieron con
+$W^{c} = 27$: 08 a 19 figuran como timeout porque la corrida con $W^{c} = 9$ se cortó sin que
+terminara ninguno, y el test más chico (04) ya no cierra en 40 minutos. Ese punto quedó
+desestimado.
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={El Split como referencia para las heurísticas}, reference=sec:heuristicas]
+
+El Split es la referencia exacta contra la que se miden HC y ACO. Esta sección resume lo que de esa
+comparación depende de v5; el detalle de las heurísticas está en \ruta{models.tex}.
+
+\startsubsection[title={Qué es comparable}]
+
+Se comparan solo instancias donde los tres métodos resuelven exactamente los mismos datos. En la
+suite funcional, un exportador corre la suite del Split y captura cada escenario en el momento en
+que se escriben los \ruta{.dat}, con su estado y objetivo; las heurísticas resuelven exactamente
+esos escenarios (instancias \ruta{test_v5eq__*}). Los demás tests funcionales de las heurísticas
+no son comparables aunque compartan el nombre: corren con un picker y v5 con dos. En stress, los
+tres llaman al mismo constructor con los mismos argumentos.
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][4][width=6cm, align=flushleft]
+\bTR \bTH Resultado del Split \eTH \bTH Estado \eTH \bTH Objetivo \eTH \bTH Motivo \eTH \eTR
+\bTR \bTD Óptimo, sin espera \eTD \bTD Sí \eTD \bTD Sí \eTD \bTD Mismos datos, mismo objetivo \eTD \eTR
+\bTR \bTD Óptimo, con espera voluntaria \eTD \bTD Sí \eTD \bTD No \eTD \bTD El objetivo del Split es menor por diseño del modelo, no por un plan mejor \eTD \eTR
+\bTR \bTD Infactible \eTD \bTD Sí \eTD \bTD No \eTD \bTD Se verifica que la heurística tampoco encuentre solución \eTD \eTR
+\bTR \bTD Timeout \eTD \bTD No \eTD \bTD No \eTD \bTD Sin referencia; sirve para escala y para el experimento a igual tiempo \eTD \eTR
+\eTABLE
+\blank[medium]
+
+Un lote espera si su $c_{pb}$ supera la terminación del lote anterior del mismo picker más su
+$T^{exec}_{pb}$, y solo cuenta si el adelanto tiene peso. En las instancias marcadas, tomar las
+rutas más cortas y agregarles la espera óptima reproduce exactamente el objetivo del Split.
+Resultado: funcional, 70 instancias: 45 comparables en estado y objetivo, 22 solo en estado (12
+infactibles y 10 con espera) y 3 no comparables; stress, 19 escenarios: 9 comparables y 10 sin
+referencia (timeout del Split).
+
+{\bf El tamaño del efecto} en las 10 instancias con espera voluntaria (objetivos; ninguna de estas
+diferencias es una brecha):
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Caso \eTH \bTH Test \eTH \bTH Split \eTH \bTH HC \eTH \bTH ACO \eTH \bTH Lotes que esperan \eTH \eTR
+\bTR \bTD 01 \eTD \bTD Capacidad básica \eTD \bTD 30,0 \eTD \bTD 39,0 \eTD \bTD 39,0 \eTD \bTD B1 \eTD \eTR
+\bTR \bTD 06a \eTD \bTD Todas las rutas llegan a tiempo \eTD \bTD 30,0 \eTD \bTD 144,0 \eTD \bTD 144,0 \eTD \bTD B1, B2 \eTD \eTR
+\bTR \bTD 06b \eTD \bTD Ruta corta si la larga atrasa \eTD \bTD 20,0 \eTD \bTD 56,0 \eTD \bTD 56,0 \eTD \bTD B1, B2 \eTD \eTR
+\bTR \bTD 19a \eTD \bTD Ruta extendida, ubicación dup. \eTD \bTD 25,0 \eTD \bTD 320,0 \eTD \bTD 320,0 \eTD \bTD B1 \eTD \eTR
+\bTR \bTD 19c \eTD \bTD Ruta extendida \eTD \bTD 25,0 \eTD \bTD 320,0 \eTD \bTD 320,0 \eTD \bTD B1 \eTD \eTR
+\bTR \bTD 26b·1 \eTD \bTD Puente: adelanto \eTD \bTD 20.725,0 \eTD \bTD 597.462,5 \eTD \bTD 596.375,0 \eTD \bTD B2, B4 \eTD \eTR
+\bTR \bTD 26b·2 \eTD \bTD Puente: adelanto \eTD \bTD 20.899,0 \eTD \bTD 595.505,0 \eTD \bTD 595.505,0 \eTD \bTD B1, B3 \eTD \eTR
+\bTR \bTD 29 \eTD \bTD Lote vacío permitido \eTD \bTD 327,0 \eTD \bTD 426,0 \eTD \bTD 418,0 \eTD \bTD B2, B3 \eTD \eTR
+\bTR \bTD 31b \eTD \bTD Orden en un lote \eTD \bTD 100,0 \eTD \bTD 388,0 \eTD \bTD 388,0 \eTD \bTD B1, B2 \eTD \eTR
+\bTR \bTD 33c \eTD \bTD Servicio cero \eTD \bTD 30,0 \eTD \bTD 39,0 \eTD \bTD 39,0 \eTD \bTD B1 \eTD \eTR
+\eTABLE
+\blank[medium]
+
+El test 26b resuelve dos instancias (26b·1 y 26b·2). En ese test de adelanto el objetivo del
+Split es casi 30 veces menor que el de las heurísticas; en las demás, entre 1,3 y 13 veces.
+\stopsubsection
+
+\startsubsection[title={Resultados contra el óptimo del Split}]
+\startitemize
+\item {\bf Validez:} las 150 soluciones de HC y ACO verificadas contra el monolítico (56
+funcionales y 19 de stress por heurística) cumplen todas las restricciones, y el objetivo
+recalculado coincide con el reportado.
+\item {\bf Estado:} las dos heurísticas coinciden con el Split en las 67 instancias funcionales
+comparables en estado y en los 9 escenarios de stress comparables.
+\item {\bf Calidad:} ACO alcanza el óptimo en las 45 funcionales y queda a 0,06 \% como máximo en
+stress (2 óptimos de 9); HC falla en 5 funcionales de grilla (hasta 5,88 \%) y queda a 0,21 \% como
+máximo en stress (1 óptimo de 9).
+\item {\bf Tiempo hasta terminar:} en la mediana de stress, el Split tarda 53,1 veces lo que HC y
+1,7 veces lo que ACO; en funcional, 5,1 y 1,4 veces. HC resuelve todos los stress salvo el
+100×100 en menos de 5~s; ACO tarda entre 10~s y 10 minutos.
+\item {\bf Escala:} en los 10 escenarios que el Split no termina, las dos heurísticas dan una
+solución válida.
+\item {\bf Condiciones de corrida:} cada heurística corrió una sola vez por instancia, con semilla
+1, así que no se mide su variabilidad. Sus topes (30~s de reloj HC, 30 minutos ACO) se miran entre
+iteraciones y no interrumpen una iteración en curso. En el 01 de ACO la notebook se suspendió 4
+minutos, y el tope de ACO cuenta tiempo de reloj: su objetivo (988.252) quedó 6,9 \% arriba del de
+una corrida anterior sin solución guardada (924.536), y vale como solución factible, no como
+medida de calidad. Una corrida previa con unos 33 minutos de suspensión (1.051.288) se descartó.
+\stopitemize
+
+En los escenarios de stress que el Split resuelve (tiempo total de cada método; brecha
+$100 \cdot (z_{\rm heur} - z_{\rm Split}) / z_{\rm Split}$):
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][2][width=3.6cm, align=flushleft]
+\bTR \bTH Caso \eTH \bTH Escenario \eTH \bTH Lotes \eTH \bTH Grilla \eTH \bTH Split (s) \eTH \bTH HC (s) \eTH \bTH Brecha HC \eTH \bTH ACO (s) \eTH \bTH Brecha ACO \eTH \eTR
+\bTR \bTD 02 \eTD \bTD 10 pickers, atrasadas \eTD \bTD 10 \eTD \bTD 10×10 \eTD \bTD 33 \eTD \bTD 0,9 \eTD \bTD 0,00 \% \eTD \bTD 93,5 \eTD \bTD 0,00 \% \eTD \eTR
+\bTR \bTD 04 \eTD \bTD realista, 7×7 \eTD \bTD 6 \eTD \bTD 7×7 \eTD \bTD 12 \eTD \bTD 0,5 \eTD \bTD 0,01 \% \eTD \bTD 12,9 \eTD \bTD 0,00 \% \eTD \eTR
+\bTR \bTD 05 \eTD \bTD realista, 13×13 \eTD \bTD 6 \eTD \bTD 13×13 \eTD \bTD 108 \eTD \bTD 2,8 \eTD \bTD 0,05 \% \eTD \bTD 84,1 \eTD \bTD 0,01 \% \eTD \eTR
+\bTR \bTD 06 \eTD \bTD realista, 14×14 \eTD \bTD 6 \eTD \bTD 14×14 \eTD \bTD 202 \eTD \bTD 3,8 \eTD \bTD 0,04 \% \eTD \bTD 116,1 \eTD \bTD 0,01 \% \eTD \eTR
+\bTR \bTD 07 \eTD \bTD realista, 15×15 \eTD \bTD 6 \eTD \bTD 15×15 \eTD \bTD 904 \eTD \bTD 4,3 \eTD \bTD 0,04 \% \eTD \bTD 156,1 \eTD \bTD 0,01 \% \eTD \eTR
+\bTR \bTD 09 \eTD \bTD almacén alargado \eTD \bTD 6 \eTD \bTD 8×21 \eTD \bTD 224 \eTD \bTD 3,8 \eTD \bTD 0,06 \% \eTD \bTD 204,1 \eTD \bTD 0,00 \% \eTD \eTR
+\bTR \bTD 10 \eTD \bTD agenda pesada \eTD \bTD 6 \eTD \bTD 7×7 \eTD \bTD 86 \eTD \bTD 0,5 \eTD \bTD 0,02 \% \eTD \bTD 15,3 \eTD \bTD 0,00 \% \eTD \eTR
+\bTR \bTD 11 \eTD \bTD cadena de frío \eTD \bTD 6 \eTD \bTD 13×13 \eTD \bTD 139 \eTD \bTD 2,9 \eTD \bTD 0,21 \% \eTD \bTD 83,6 \eTD \bTD 0,06 \% \eTD \eTR
+\bTR \bTD 15 \eTD \bTD sobran pickers \eTD \bTD 6 \eTD \bTD 10×10 \eTD \bTD 244 \eTD \bTD 1,5 \eTD \bTD 0,07 \% \eTD \bTD 52,5 \eTD \bTD 0,00 \% \eTD \eTR
+\eTABLE
+\blank[medium]
+
+En los otros 10 escenarios (8 lotes o más, la grilla de 16×16 y el 100×100) el Split no termina en
+40 minutos y las dos heurísticas dan una solución válida: HC en menos de 5~s y ACO en minutos,
+salvo el 01 (30 lotes en 100×100), que les lleva 17 y 35 minutos.
+
+Esta comparación no es justa en tiempo: el Split corre hasta {\em probar} el óptimo, y buena parte
+de ese tiempo puede ir a cerrar la cota después de haber encontrado ya la mejor solución.
+\stopsubsection
+
+\startsubsection[title={A igual tiempo}, reference=sec:igual_tiempo]
+
+La forma estándar de comparar una metaheurística con un solver exacto es darles el mismo tiempo. El
+27-09 cada modelo exacto recibió, en cada escenario de stress, el tiempo total de la heurística como
+límite de SCIP, y se registró su mejor solución al vencer. En el Split, la Etapa 1 reparte el
+presupuesto en partes iguales entre los lotes que faltan rutear y la Etapa 2 usa lo que queda; solo
+hay solución completa si todos los lotes tienen ruta y la Etapa 2 encuentra una a tiempo, y una
+ruta cortada por tiempo no es necesariamente la mínima. El monolítico hace una sola resolución con
+todo el tiempo.
+
+{\bf Con el tiempo de HC} (0,5 a 5,7~s, salvo 1.209~s en el 01), ninguno de los dos modelos
+exactos obtiene una solución en ninguno de los 19 escenarios: la Etapa 1 no llega a rutear todos
+los lotes, y el monolítico no encuentra ninguna solución entera.
+
+{\bf Con el tiempo de ACO} (diferencia $100 \cdot (z_{\rm ACO} - z_{\rm exacto}) / z_{\rm
+exacto}$; negativa es ventaja de ACO):
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Caso \eTH \bTH Presupuesto (s) \eTH \bTH ACO \eTH \bTH Split \eTH \bTH Brecha Split \eTH \bTH ACO vs Split \eTH \bTH Monolítico \eTH \bTH ACO vs mono \eTH \eTR
+\bTR \bTD 01 \eTD \bTD 1.877,8 \eTD \bTD 917.328,0 \eTD \bTD sin solución (Etapa 1) \eTD \bTD -- \eTD \bTD -- \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 02 \eTD \bTD 31,3 \eTD \bTD 29.034,0 \eTD \bTD 29.262,0 \eTD \bTD \eTD \bTD -0,78 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 03 \eTD \bTD 412,1 \eTD \bTD 1.752.076,0 \eTD \bTD 1.763.704,0 \eTD \bTD 1.216 \% \eTD \bTD -0,66 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 04 \eTD \bTD 15,1 \eTD \bTD 149.221,0 \eTD \bTD 149.218,9 \eTD \bTD \eTD \bTD +0,001 \% \eTD \bTD 157.569,7 \eTD \bTD -5,30 \% \eTD \eTR
+\bTR \bTD 05 \eTD \bTD 95,0 \eTD \bTD 241.273,5 \eTD \bTD 241.398,5 \eTD \bTD \eTD \bTD -0,05 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 06 \eTD \bTD 109,8 \eTD \bTD 256.642,2 \eTD \bTD 256.791,0 \eTD \bTD \eTD \bTD -0,06 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 07 \eTD \bTD 194,6 \eTD \bTD 271.914,3 \eTD \bTD 272.016,8 \eTD \bTD \eTD \bTD -0,04 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 08 \eTD \bTD 129,5 \eTD \bTD 287.199,8 \eTD \bTD sin solución (Etapa 1) \eTD \bTD -- \eTD \bTD -- \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 09 \eTD \bTD 223,9 \eTD \bTD 275.046,8 \eTD \bTD sin solución (Etapa 1) \eTD \bTD -- \eTD \bTD -- \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 10 \eTD \bTD 15,2 \eTD \bTD 112.082,8 \eTD \bTD 112.083,2 \eTD \bTD \eTD \bTD -0,0004 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 11 \eTD \bTD 94,1 \eTD \bTD 182.338,5 \eTD \bTD sin solución (frío) \eTD \bTD -- \eTD \bTD -- \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 12 \eTD \bTD 29,8 \eTD \bTD 198.905,5 \eTD \bTD 198.918,8 \eTD \bTD 83,8 \% \eTD \bTD -0,007 \% \eTD \bTD 222.183,9 \eTD \bTD -10,48 \% \eTD \eTR
+\bTR \bTD 13 \eTD \bTD 42,0 \eTD \bTD 248.696,3 \eTD \bTD 248.715,4 \eTD \bTD 181,6 \% \eTD \bTD -0,008 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 14 \eTD \bTD 43,8 \eTD \bTD 298.381,2 \eTD \bTD 426.194,9 \eTD \bTD 773,8 \% \eTD \bTD -29,99 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 15 \eTD \bTD 52,9 \eTD \bTD 97.922,8 \eTD \bTD 98.018,5 \eTD \bTD \eTD \bTD -0,10 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 16 \eTD \bTD 97,1 \eTD \bTD 195.901,5 \eTD \bTD 393.929,1 \eTD \bTD \eTD \bTD -50,27 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 17 \eTD \bTD 137,1 \eTD \bTD 305.798,8 \eTD \bTD 711.264,6 \eTD \bTD \eTD \bTD -57,01 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 18 \eTD \bTD 188,2 \eTD \bTD 439.821,4 \eTD \bTD 1.149.998,9 \eTD \bTD \eTD \bTD -61,75 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\bTR \bTD 19 \eTD \bTD 365,5 \eTD \bTD 780.799,0 \eTD \bTD 1.879.853,9 \eTD \bTD \eTD \bTD -58,47 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
+\eTABLE
+\blank[medium]
+
+La columna {\em Brecha Split} solo tiene valor donde la Etapa 2 fue la que cortó con una cota dual
+registrada; vacía significa que la Etapa 2 llegó al óptimo de sus datos o que no se registró la
+cota. Hay que leerla con cuidado: aun con la Etapa 2 óptima, si alguna ruta se cortó por tiempo el
+resultado no es el óptimo del problema.
+
+\startitemize
+\item {\bf El Split da solución en 15 de los 19 escenarios}, y ACO es igual o mejor en 14 de esos 15
+(en el 04 queda 0,001 \% por debajo). En 8 la diferencia es de 0,1 \% o menos, en el 02 y el 03 de
+menos de 1 \%, y en los 5 escenarios con 12 lotes o más (14, 16 a 19) ACO queda entre 30 \% y 62
+\% mejor: con el tiempo repartido entre muchos lotes, la Etapa 1 corta rutas lejos de la mínima, y
+la Etapa 2 arrastra esas rutas.
+\item {\bf No da solución} en el 01, el 08 y el 09 (la Etapa 1 no rutea todos los lotes) ni en el
+11, donde las rutas cortadas por tiempo dejan algún lote sin picker elegible por la cadena de frío.
+En el 09 la Etapa 1 excedió el presupuesto (864~s contra 224~s), porque el límite se aplica a cada
+resolución y no al proceso completo.
+\item {\bf El monolítico da solución solo en el 04 y el 12}, entre 5 \% y 10 \% por encima de ACO.
+\item {\bf Presupuestos:} salen de otra corrida de ACO, distinta de la de la tabla de stress: por eso
+el tiempo y el objetivo de ACO difieren un poco (15,1~s contra 12,9~s en el 04; 917.328 contra
+988.252 en el 01).
+\stopitemize
+\stopsubsection
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Limitaciones y preguntas abiertas}, reference=sec:limitaciones]
+
+\startitemize
+\item {\bf Una sola semilla de generación.} Las conclusiones de la exploración son sobre una
+familia de instancias, y se vio que no se transfieren de una instancia a la vecina sin volver a
+medir.
+\item {\bf Una sola máquina, híbrida y con suspensiones.} Los tiempos absolutos varían hasta 2 veces
+entre corridas; los nodos son reproducibles para la misma versión de SCIP. Para citar tiempos en la
+tesina conviene repetir las corridas clave y reportar las condiciones.
+\item {\bf Estudios con la máquina compartida.} Los estudios 01 a 03 corrieron con la clausura y con
+uno o dos procesos en paralelo; la calibración, con hasta ocho; los estudios 08 a 11, junto a las
+suites. Valen las proporciones dentro de cada corrida, no los absolutos.
+\item {\bf Qué hace crecer la Etapa 1 con la grilla sigue sin explicación.} Ni la cantidad de
+ubicaciones por lote, ni los empates, ni el camino simple lo explican.
+\item {\bf El efecto de la forma del objetivo sobre la Etapa 2} está en parte separado: con $N_b$
+fijo, pasar $W^{c}$ de 9 a 27 la abarató entre 3 y 28 veces. No se aisló el mecanismo: el del
+objetivo aplanado no encaja con ese resultado, y la desaparición de la espera voluntaria es la
+lectura más consistente. Para separarlos falta barrer valores intermedios de $W^{c}$, por debajo y
+por encima de $N_b$.
+\item {\bf Una corrida por heurística, con semilla 1:} no se mide la variabilidad de HC y ACO
+entre semillas.
+\item {\bf La explicación de la cota débil del monolítico} (Big-M sobre el tiempo de ejecución
+variable) es consistente con los datos pero no está verificada.
+\item {\bf El monolítico en stress con $W^{c} = 27$} solo se corrió en el test 04.
+\item {\bf Límite de tiempo de SCIP por resolución:} en el experimento a igual tiempo, el Split
+puede exceder el presupuesto porque el límite se aplica a cada MIP de la Etapa 1, no al proceso.
+\item {\bf Memoria del Split:} no incluye los procesos hijos de la Etapa 1 ni ZIMPL.
+\item {\bf Diferencia de tolerancias del frío} entre los dos modelos muy cerca del borde
+($10^{-9}$ contra $\approx 10^{-6}$), documentada y sin test.
+\item {\bf Precisión numérica:} en un punto del estudio 08 (3 lotes, 6×6) el monolítico reportó
+26.709,36 contra 26.709,60 del Split ($-0{,}0009$ \%), los dos declarando optimalidad. Hipótesis
+sin verificar: con $M = 10^{6}$, un binario apenas fraccionario dentro de la tolerancia de
+integralidad afloja una restricción Big-M en cerca de una unidad. Es la misma clase de problema
+que tienen algunos tests de versiones anteriores.
+\stopitemize
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Síntesis para la tesina}, reference=sec:sintesis]
+
+\startitemize[n]
+\item {\bf Mismo problema, mismo óptimo.} El monolítico y el Split comparten datos, restricciones
+y objetivo. Los 49 pares funcionales resueltos dan el mismo objetivo y los 11 infactibles lo son en
+los dos; 21 de los 49 son óptimos alternativos, porque el objetivo no penaliza la longitud de la
+ruta. En los 40 puntos de los estudios 08 y 10 donde los dos probaron el óptimo, 39 coinciden
+exactamente y el restante difiere en 0,0009 \%.
+\item {\bf En instancias chicas da lo mismo.} El monolítico es más rápido en 38 de 49 pares por
+décimas de segundo, porque compila un modelo en vez de dos.
+\item {\bf A escala realista, solo el Split prueba el óptimo.} Con la misma instancia, el
+monolítico deja de cerrar en 10 minutos lo que el Split resuelve en segundos (3 lotes en 7×7, 4 en
+6×6, 6 en 5×5), y con 40 minutos tampoco: en la instancia del stress 04 con $W^{c} = 9$ llega a una solución a
+0,66 \% del óptimo con una brecha reportada del 143,5 \%, sobre una instancia que el Split cierra
+en unos 3 minutos; con $W^{c} = 27$ el Split la resuelve en 12~s y el monolítico tampoco termina en
+40 minutos. En la suite de stress: 0 de 19 contra 9 de 19.
+\item {\bf La dificultad del monolítico está en la cota, no en encontrar.} Encuentra soluciones a
+menos del 1 \% en segundos o pocos minutos, pero su cota dual queda estancada entre el 39 \% y el 97
+\% del óptimo. La relajación raíz es parecida a la de la Etapa 2; lo que cambia es el costo de
+cerrarla: más variables por nodo y rutas que el Split ya fijó.
+\item {\bf Las dos etapas tienen motores de costo separados.} La Etapa 1 crece con el tamaño de la
+grilla, por sí mismo y de forma abrupta (segundos en 7×7, unos 15 minutos en 15×15 con 6
+procesos, sin terminar en 16×16). La Etapa 2 crece con la proporción entre lotes y pickers (pico
+en la intermedia), con la heterogeneidad de velocidades (el salto está entre una y dos) y con la
+forma del objetivo: con espera voluntaria es entre 3 y 28 veces más cara (mecanismo sin aislar).
+\item {\bf El SLA lo fija el objetivo:} $(N_b + W^{c})/(2N_b)$. El modelo es just-in-time y espera a
+propósito si $W^{c}$ es menor que las órdenes por lote; con $W^{c} = 27$ la espera desaparece, la
+Etapa 2 baja a segundos y el SLA sube al 100 \%.
+\item {\bf Lo que mejoró el rendimiento del Split} fue estructural: la descomposición, el tiempo de
+ejecución como dato, la Etapa 1 por lote y su paralelismo (×2). La clausura métrica, los pesos
+asimétricos, quitar el camino simple y el branching por pseudocosto no generalizaron.
+\item {\bf Las simplificaciones de los escenarios heredados no eran neutras:} los pesos uniformes
+encarecen la Etapa 1 en grillas chicas, las velocidades uniformes abaratan la Etapa 2, las fechas
+imposibles dejan medio objetivo sin ejercitar y $|\mathcal{B}| \le |\mathcal{P}|$ deja la secuencia
+sin ejercitar.
+\item {\bf Alcance práctico del Split:} hasta 6 lotes en grillas de hasta 15×15 prueba el óptimo en
+minutos y sirve de referencia para medir a las heurísticas. Con 8 lotes o más, o con 16×16, no
+termina en 40 minutos, y a igual tiempo las heurísticas lo dominan.
+\stopitemize
+
+\stopsection
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\startsection[title={Apéndice: artefactos y cómo reproducir}, reference=sec:apendice]
+
+\startsubsection[title={Dónde está cada cosa en el repositorio de implementación}]
+
+\blank[medium]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][1][align=flushleft]
+\setupTABLE[column][2][align=flushleft]
+\bTR \bTH Qué \eTH \bTH Dónde \eTH \eTR
+\bTR \bTD Modelos ZIMPL \eTD \bTD \ruta{models/opp_v5_1_mono/}, \ruta{models/opp_v5_2_split/} \eTD \eTR
+\bTR \bTD Pre-chequeo de frío y velocidades \eTD \bTD \ruta{models/opp_v5_2_split/utils/cold_chain_validation.py} \eTD \eTR
+\bTR \bTD Pipeline del Split y Etapa 1 por lote \eTD \bTD \ruta{tests/opp_v5_2_split/opp_test_case_v5_2_split.py}, \ruta{stage1_decomposition.py} \eTD \eTR
+\bTR \bTD Escritura de datos y $M^{seq}$ \eTD \bTD \ruta{tests/infra/zimpl/dat_files_builder.py}, \ruta{zpl_utils.py} \eTD \eTR
+\bTR \bTD Tests funcionales y de stress \eTD \bTD \ruta{tests/opp_v5_2_split/}, \ruta{tests/opp_v5_1_mono/} \eTD \eTR
+\bTR \bTD Escenarios \eTD \bTD \ruta{tests/shared_scenarios/functional/two_stage_scenarios_v5.py}, \ruta{tests/shared_scenarios/stress/stress_scenarios_v5_designed.py} \eTD \eTR
+\bTR \bTD Herramienta y estudios \eTD \bTD \ruta{experiments/opp_v5/exploration.py}, \ruta{experiments/opp_v5/studies/01..12} \eTD \eTR
+\bTR \bTD Generadores de los reportes \eTD \bTD \ruta{experiments/opp_v5/reports/} \eTD \eTR
+\bTR \bTD Resultados de las suites \eTD \bTD \ruta{results/opp_v5_2_split/}, \ruta{results/opp_v5_1_mono/} (CSV de nombre fijo y soluciones) \eTD \eTR
+\bTR \bTD Comparaciones \eTD \bTD \ruta{results/comparability/}, \ruta{results/equal_time/} \eTD \eTR
+\bTR \bTD Verificación \eTD \bTD \ruta{verification/compare_v5.py}, \ruta{mono_compliance.py}, \ruta{run_compliance.py} \eTD \eTR
+\bTR \bTD Experimento a igual tiempo \eTD \bTD \ruta{analysis/run_equal_time_study.py} \eTD \eTR
+\eTABLE
+\blank[medium]
+\stopsubsection
+
+\startsubsection[title={Comandos}]
+
+Necesitan \ruta{zimpl} en el \ruta{PATH} y PySCIPOpt.
+
+\starttyping
+# Suites (tope de 40 min por test en stress; Etapa 1 en 6 procesos)
+python -m tests.run_suite opp_v5_2_split functional
+python -m tests.run_suite opp_v5_1_mono functional
+export OPP_STAGE1_WORKERS=6
+python -m tests.run_suite opp_v5_2_split stress \
+  --timeout-minutes 40
+python -m tests.run_suite opp_v5_1_mono stress \
+  --timeout-minutes 40
+
+# Un estudio de exploración (ejemplo: la frontera del monolítico)
+python -m experiments.opp_v5.exploration --study 08_mono_frontier \
+  --frontier --frontier-batches 1,2,3,4,6 --frontier-sides 3,4,5,6,7 \
+  --batches-per-picker 2 --orders-per-batch 26 --weights 4,5 \
+  --speed-spread 0.2 --speed-tiers 2 --hard-cap 600
+
+# Comparación Split contra mono y experimento a igual tiempo
+python -m verification.compare_v5 --verify-split-stress
+python -m analysis.run_equal_time_study --budget-from opp_aco_4
+\stoptyping
+\stopsubsection
+
+\stopsection
+
+\stoptext
