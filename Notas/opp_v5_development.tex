@@ -1,8 +1,3 @@
-% Notas de desarrollo de los modelos OPP v5 (monolítico y Split).
-% Reúne todo lo hecho sobre la familia v5 en el repositorio de implementación
-% (ttl-ungs/linear-picking-routing) como base para redactar la tesina.
-% Compilar con: context opp_v5_development.tex
-
 \setupcolors[state=start]
 \setupcolor[hex]
 \definecolor[darkblue][h=003366]
@@ -12,16 +7,18 @@
 \definecolor[greenline][h=5cb85c]
 
 \setuphead[section][style=\bfa, color=darkblue, before=\blank, after=\blank]
-\setuphead[subsection][style=\bf, color=black, before={\blank[big]}, after=\blank]
-\setuphead[subsubsection][style=\bf, color=darkblue, before=\blank, after=\blank]
+\setuphead[subsection][style=\bf, color=black, before=\blank, after=\blank]
 \setuppapersize[A4][A4]
 \setupbodyfont[11pt]
 \setuplayout[width=middle, height=middle, topspace=2cm, bottomspace=2cm]
-\mainlanguage[es]
-\setupinteraction[state=start, color=darkblue, contrastcolor=darkblue]
-\setupcombinedlist[content][list={section,subsection}]
 
-% Rutas e identificadores del código: monoespaciados y con corte de línea en / y _
+% Agregados a la cabecera de la guía de estilo del repositorio de implementación
+% (docs/guides/context_style_guide.md): idioma, sub-subsecciones con la misma regla que
+% las subsecciones, índice de secciones y subsecciones, y rutas del código en
+% monoespaciado con corte de línea en / y _.
+\mainlanguage[es]
+\setuphead[subsubsection][style=\bf, color=black, before=\blank, after=\blank]
+\setupcombinedlist[content][list={section,subsection}]
 \define[1]\ruta{{\tt\hyphenatedurl{#1}}}
 
 \starttext
@@ -180,8 +177,7 @@ flujo de Gavish-Graves.\footnote{Algunos documentos tempranos la llamaban MTZ; s
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][1][width=1.8cm]
 \setupTABLE[column][2][align=flushleft]
 \bTR \bTH Fecha (2026) \eTH \bTH Hito \eTH \eTR
@@ -364,14 +360,15 @@ la cadena de frío.
 con $\mathcal{E}^{r} = \{(i,j) \in \mathcal{E} : i \ne v_{end},\; j \ne v_{start}\}$.
 
 \startitemize
-\item (1)--(4): la ruta sale una vez del depósito, llega una vez al final, no vuelve al depósito
+\item {\bf Inicio y fin, (1)--(4):} la ruta sale una vez del depósito, llega una vez al final, no vuelve al depósito
 ni sale del final.
-\item (5)--(7): a cada locación requerida se entra y se sale; en las intermedias se conserva el
-flujo. (8)--(9): ninguna locación se pisa dos veces (camino simple).
-\item (10)--(12): flujo de Gavish-Graves. Sale del depósito con $L_b$ unidades, cada locación
+\item {\bf Visitas y continuidad, (5)--(9):} a cada locación requerida se entra y se sale; en las
+intermedias se conserva el flujo, y (8)--(9) impiden pisar dos veces la misma locación (camino
+simple).
+\item {\bf Flujo de Gavish-Graves, (10)--(12):} sale del depósito con $L_b$ unidades, cada locación
 requerida consume una, y el flujo solo circula por arcos usados: una locación requerida solo
 recibe su unidad si está conectada al depósito por la ruta, así que no quedan ciclos sueltos.
-\item (13): tiempo de ruta; el servicio de una locación se cuenta cuando la ruta sale de ella.
+\item {\bf Tiempo de ruta, (13):} el servicio de una locación se cuenta cuando la ruta sale de ella.
 \stopitemize
 \stopsubsection
 
@@ -465,17 +462,17 @@ las constantes $M$ y $M^{seq}$ son los mismos en los dos modelos.
 
 En el código, una corrida del Split hace, en orden:
 \startitemize[n]
-\item Rechaza velocidades no positivas antes de escribir nada (con $V_p = 0$, el cálculo de
+\item {\bf Validación de velocidades:} rechaza velocidades no positivas antes de escribir nada (con $V_p = 0$, el cálculo de
 $M^{seq}$ y el de $T^{exec}_{pb}$ dividen por cero; con $V_p < 0$, $T^{exec}_{pb}$ sale negativo
 y cualquier picker parecería elegible).
-\item Escribe los archivos \ruta{.dat} de la instancia (incluido $M^{seq}$).
-\item Resuelve la Etapa 1, un MIP por lote (en secuencia, o en paralelo si se pide).
-\item Exporta $R_b$ a \ruta{route_time_b.dat}, junto con velocidades y límite de frío.
-\item Chequea en Python que cada lote tenga al menos un picker elegible. Si alguno no lo tiene,
+\item {\bf Datos:} escribe los archivos \ruta{.dat} de la instancia (incluido $M^{seq}$).
+\item {\bf Etapa 1:} resuelve un MIP de ruteo por lote (en secuencia, o en paralelo si se pide).
+\item {\bf Exportación:} escribe $R_b$ en \ruta{route_time_b.dat}, junto con velocidades y límite de frío.
+\item {\bf Pre-chequeo de frío:} verifica en Python que cada lote tenga al menos un picker elegible. Si alguno no lo tiene,
 registra el resultado como infactible y no llama a ZIMPL: con un lote sin pares elegibles,
 la restricción (1) queda como una suma vacía igual a 1 y ZIMPL la rechaza al compilar
 (\quote{Error 106: Empty LHS}) en lugar de devolver infactible.
-\item Resuelve la Etapa 2 y adjunta los valores de la Etapa 1 a la solución guardada (la
+\item {\bf Etapa 2:} la resuelve y adjunta los valores de la Etapa 1 a la solución guardada (la
 Etapa 2 solo ve tiempos de ruta, no las rutas).
 \stopitemize
 \stopsubsection
@@ -655,17 +652,17 @@ grilla porque incluye el ruteo de todos los lotes; el de la Etapa 2 no depende d
 
 \startsubsection[title={Herramientas}]
 \startitemize
-\item Los modelos están escritos en {\bf ZIMPL}. Cada resolución compila el \ruta{.zpl} a
-\ruta{.lp} con el binario \ruta{zimpl} y lo resuelve con {\bf SCIP} a través de
-{\bf PySCIPOpt}, con los parámetros por defecto de SCIP. Solo los experimentos fijan un límite de
+\item {\bf Modelos y solver:} los modelos están escritos en ZIMPL. Cada resolución compila el \ruta{.zpl} a
+\ruta{.lp} con el binario \ruta{zimpl} y lo resuelve con SCIP a través de
+PySCIPOpt, con los parámetros por defecto de SCIP. Solo los experimentos fijan un límite de
 tiempo (\ruta{limits/time}); los tests corren hasta que SCIP termina o el runner los corta.
-\item Los datos se escriben en archivos \ruta{.dat} por instancia. Si un escenario no define
+\item {\bf Datos:} se escriben en archivos \ruta{.dat} por instancia. Si un escenario no define
 velocidades ni límite de frío, se escriben $V_p = 1$ para todos y $T^{cold} = 10^{9}$: así los
 tests heredados de v4 corren sin cambios en los dos modelos v5.
-\item Los tests son \ruta{unittest} y corren con \ruta{python -m tests.run_suite}, seguido del
+\item {\bf Tests:} son \ruta{unittest} y corren con \ruta{python -m tests.run_suite}, seguido del
 modelo y de la suite (\ruta{functional} o \ruta{stress}). Cada test corre en su propio proceso, y el runner lo mata (con todo su
 árbol de procesos) al vencer el tope: 25 minutos por defecto, 40 en las corridas de stress.
-\item Con \ruta{WRITE_RESULTS_CSV=1} cada corrida escribe un CSV; con \ruta{WRITE_SOLUTIONS=1}
+\item {\bf Resultados:} con \ruta{WRITE_RESULTS_CSV=1} cada corrida escribe un CSV; con \ruta{WRITE_SOLUTIONS=1}
 guarda además cada solución (instancia y valores no nulos) como JSON.
 \stopitemize
 \stopsubsection
@@ -772,8 +769,7 @@ sobre la geometría de los escenarios.
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][1][width=1.1cm]
 \setupTABLE[column][2][width=3.4cm, align=flushleft]
 \setupTABLE[column][3][align=flushleft]
@@ -871,7 +867,7 @@ atribuible. El eje principal es el tamaño del almacén.
 forma más predecible y es donde la descomposición tiene una ventaja estructural.
 \item {\bf La forma de la agenda fija: 6 lotes sobre 3 pickers}, cuya Etapa 2 mostró una
 dificultad estable frente a la grilla (321.137 nodos en 7×7 y 314.331 en 13×13).
-\item {\bf Fechas sin calibrar}: el SLA lo fija el objetivo (sección \in[sec:espera]).
+\item {\bf Fechas sin calibrar:} el SLA lo fija el objetivo (sección \in[sec:espera]).
 \item {\bf Tiempos calibrados de a una medición por vez}, porque el runner corre los tests en
 serie y en paralelo el reloj se infla.
 \stopitemize
@@ -909,8 +905,7 @@ un solo picker con 40 lotes; los demás se eliminaron por degenerados y sin eje 
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][2][width=5.4cm, align=flushleft]
 \bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH Pickers \eTH \bTH Órdenes \eTH \bTH Grilla \eTH \bTH $W^{c}$ \eTH \eTR
 \bTR \bTD 01 \eTD \bTD Heredado: almacén muy grande, un lote por picker \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \bTD 9 \eTD \eTR
@@ -939,17 +934,17 @@ Algunas decisiones puntuales:
 \startitemize
 \item {\bf 06 (14×14)} se agregó para cubrir la franja de 10 a 20 minutos entre 13×13 y 15×15,
 que en la primera corrida saltaba de unos 6 a unos 28 minutos; terminó en unos 7.
-\item {\bf 09 (8×21)}: 168 ubicaciones, una menos que el 13×13, pero con pasillos largos.
+\item {\bf 09 (8×21):} 168 ubicaciones, una menos que el 13×13, pero con pasillos largos.
 \item {\bf 10} es el de la proporción intermedia de lotes y pickers, la más difícil medida para la
 Etapa 2: es la referencia para cualquier intento de acelerarla.
-\item {\bf 11}: con esas rutas, un lote tarda 249 a 259 para un picker rápido y 308 a 324 para uno
+\item {\bf 11:} con esas rutas, un lote tarda 249 a 259 para un picker rápido y 308 a 324 para uno
 lento; $T^{cold} = 280$ excluye a la banda lenta de todos los lotes. Si cambia el generador, hay
 que volver a derivar el umbral.
 \item {\bf 15} reemplaza al heredado de 10 lotes con 25 pickers: con 5 pickers lentos y 4 rápidos,
 quién queda libre sí importa (dos lotes toman un lento o esperan a uno rápido).
 \item {\bf 16 a 19} fijan la cuadrilla en 12 y agrandan la ola: de asignación pura (16) a dos
 lotes por picker (19).
-\item Las aserciones de stress son las mismas para todos: estado óptimo o factible, rutas que
+\item {\bf Aserciones:} son las mismas para todos: estado óptimo o factible, rutas que
 cubren las ubicaciones requeridas, cada lote con un picker y sin solapamiento.
 \stopitemize
 \stopsubsection
@@ -984,7 +979,7 @@ registrando la etapa en la que estaba. Se validó en el estudio 04.
 monolítico. Como comparten el óptimo, el del Split es la referencia para medir al monolítico:
 cuándo encontró una solución cercana, cuándo llegó al óptimo y cuánto le faltaba a su cota dual.
 Separa {\em encontrar} una buena solución de {\em probar} que es óptima.
-\item {\bf Registro detallado}: tiempos por etapa, estado, objetivo, brecha, nodos, SLA,
+\item {\bf Registro detallado:} tiempos por etapa, estado, objetivo, brecha, nodos, SLA,
 ubicaciones por lote, tamaño del modelo, memoria pico, cada mejora de la solución incumbente y
 la cota dual en la raíz y al final.
 \stopitemize
@@ -1005,8 +1000,7 @@ septiembre, más uno de paralelismo el 24, con un directorio por estudio:
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][1][width=1.8cm]
 \setupTABLE[column][2][width=5.2cm, align=flushleft]
 \setupTABLE[column][3][align=flushleft]
@@ -1063,8 +1057,7 @@ ubicaciones distintas por lote, y E1 y E2 las dos etapas.
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \bTR \bTH Eje \eTH \bTH Lotes \eTH \bTH Pick. \eTH \bTH Órd. \eTH \bTH Grilla \eTH \bTH Ubic. \eTH \bTH E1 (s) \eTH \bTH E2 (s) \eTH \bTH Estado \eTH \bTH Nodos E2 \eTH \bTH SLA \eTH \eTR
 \bTR \bTD Órdenes \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 10 \eTD \bTD 7×7 \eTD \bTD 7--10 \eTD \bTD 3,66 \eTD \bTD 35,57 \eTD \bTD óptimo \eTD \bTD 153.934 \eTD \bTD 96,7 \% \eTD \eTR
 \bTR \bTD \eTD \bTD 6 \eTD \bTD 2 \eTD \bTD 14 \eTD \bTD 7×7 \eTD \bTD 11--13 \eTD \bTD 3,04 \eTD \bTD 10,32 \eTD \bTD óptimo \eTD \bTD 23.015 \eTD \bTD 83,3 \% \eTD \eTR
@@ -1261,7 +1254,7 @@ cuántas velocidades distintas hay, siempre en $[0{,}7; 1{,}3]$, con 300~s por E
 \startitemize
 \item {\bf El salto está entre una y dos velocidades:} con 3 pickers, cualquier heterogeneidad
 multiplica el tiempo por unas 7 veces; agregar bandas no suma.
-\item {\bf Con 4 pickers ninguna configuración heterogénea termina en 300~s}: es la proporción
+\item {\bf Con 4 pickers ninguna configuración heterogénea termina en 300~s:} es la proporción
 intermedia que ya era la difícil en el estudio 01.
 \item {\bf Con 6 pickers para 6 lotes} cada lote toma su picker y no hay secuencia: la
 heterogeneidad se tolera mejor, pero ese régimen es justamente el que no ejercita la Etapa 2.
@@ -1475,11 +1468,11 @@ draw (0.000cm,5.177cm)--(-0.120cm,5.177cm) withpen pencircle scaled .5pt;
 label.lft(textext("\tfx 1.000"), (-0.120cm,5.177cm));
 label.bot(textext("Lado de la grilla"), (w/2,-0.85cm));
 label.lft(textext("Etapa 1 (s, escala log.)") rotated 90, (-1.25cm,h/2));
-draw (0.550cm,1.915cm)--(3.850cm,2.938cm)--(9.350cm,4.602cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (0.550cm,1.915cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (3.850cm,2.938cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (9.350cm,4.602cm) withcolor \MPcolor{darkblue};
-draw (0.550cm,1.484cm)--(3.850cm,2.391cm)--(9.350cm,4.687cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+draw (0.550cm,1.915cm)--(3.850cm,2.938cm)--(9.350cm,4.602cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (0.550cm,1.915cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (3.850cm,2.938cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (9.350cm,4.602cm) withcolor \MPcolor{blueline};
+draw (0.550cm,1.484cm)--(3.850cm,2.391cm)--(9.350cm,4.687cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
 fill fullcircle scaled 4pt shifted (0.550cm,1.484cm) withcolor \MPcolor{blueline};
 fill fullcircle scaled 4pt shifted (3.850cm,2.391cm) withcolor \MPcolor{blueline};
 fill fullcircle scaled 4pt shifted (9.350cm,4.687cm) withcolor \MPcolor{blueline};
@@ -1488,21 +1481,21 @@ fill fullcircle scaled 4pt shifted (0.550cm,1.695cm) withcolor \MPcolor{redline}
 fill fullcircle scaled 4pt shifted (7.150cm,4.570cm) withcolor \MPcolor{redline};
 draw fullcircle scaled 6pt shifted (9.350cm,5.481cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline};
 draw (7.150cm,4.570cm)--(9.350cm,5.481cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline} dashed withdots;
-draw (0.550cm,0.917cm)--(7.150cm,3.434cm)--(8.250cm,3.951cm)--(9.350cm,5.098cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{greenline};
-fill fullcircle scaled 4pt shifted (0.550cm,0.917cm) withcolor \MPcolor{greenline};
-fill fullcircle scaled 4pt shifted (7.150cm,3.434cm) withcolor \MPcolor{greenline};
-fill fullcircle scaled 4pt shifted (8.250cm,3.951cm) withcolor \MPcolor{greenline};
-fill fullcircle scaled 4pt shifted (9.350cm,5.098cm) withcolor \MPcolor{greenline};
-draw fullcircle scaled 6pt shifted (10.450cm,5.833cm) withpen pencircle scaled 1pt withcolor \MPcolor{greenline};
-draw (9.350cm,5.098cm)--(10.450cm,5.833cm) withpen pencircle scaled 1pt withcolor \MPcolor{greenline} dashed withdots;
+draw (0.550cm,0.917cm)--(7.150cm,3.434cm)--(8.250cm,3.951cm)--(9.350cm,5.098cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.550cm,0.917cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (7.150cm,3.434cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (8.250cm,3.951cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (9.350cm,5.098cm) withcolor \MPcolor{darkblue};
+draw fullcircle scaled 6pt shifted (10.450cm,5.833cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (9.350cm,5.098cm)--(10.450cm,5.833cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue} dashed withdots;
 draw (0.300cm,5.850cm)--(0.900cm,5.850cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
-label.rt(textext("\tfx Estudio 01: pesos 4/4, clausura activa"), (1.000cm,5.850cm));
-draw (0.300cm,5.430cm)--(0.900cm,5.430cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
-label.rt(textext("\tfx Estudio 02: pesos 2/6, clausura activa"), (1.000cm,5.430cm));
-draw (0.300cm,5.010cm)--(0.900cm,5.010cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
-label.rt(textext("\tfx Estudio 05: perfil realista, secuencial"), (1.000cm,5.010cm));
-draw (0.300cm,4.590cm)--(0.900cm,4.590cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{greenline};
-label.rt(textext("\tfx Suite de stress: perfil realista, 6 procesos"), (1.000cm,4.590cm));
+label.rt(textext("\tfx Suite de stress: perfil realista, 6 procesos"), (1.000cm,5.850cm));
+draw (0.300cm,5.430cm)--(0.900cm,5.430cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx Estudio 05: perfil realista, secuencial"), (1.000cm,5.430cm));
+draw (0.300cm,5.010cm)--(0.900cm,5.010cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+label.rt(textext("\tfx Estudio 01: pesos 4/4, clausura activa"), (1.000cm,5.010cm));
+draw (0.300cm,4.590cm)--(0.900cm,4.590cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+label.rt(textext("\tfx Estudio 02: pesos 2/6, clausura activa"), (1.000cm,4.590cm));
 draw fullcircle scaled 6pt shifted (0.600cm,4.170cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 label.rt(textext("\tfx no terminó (cota inferior)"), (1.000cm,4.170cm));
 \stopMPcode}
@@ -1532,8 +1525,7 @@ y correcciones de los escenarios (que no aceleran el modelo pero sí cambian lo 
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][1][width=3.2cm, align=flushleft]
 \setupTABLE[column][2][width=2.0cm, align=flushleft]
 \setupTABLE[column][3][align=flushleft]
@@ -1596,8 +1588,7 @@ lotes siguientes. En 4×4 las instancias son infactibles en los dos modelos (sec
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][7][width=2.3cm]
 \bTR \bTH Lotes \eTH \bTH Pickers \eTH \bTH Grilla \eTH \bTH Split (s) \eTH \bTH Mono (s) \eTH \bTH Mono / Split \eTH \bTH Mono: resultado \eTH \bTH Nodos Etapa 2 \eTH \bTH Nodos mono \eTH \eTR
 \bTR \bTD 1 \eTD \bTD 1 \eTD \bTD 3×3 a 7×7 \eTD \bTD 0,1 a 1,3 \eTD \bTD 0,2 a 0,3 \eTD \bTD 0,2 a 2 \eTD \bTD óptimo \eTD \bTD 1 \eTD \bTD 1 \eTD \eTR
@@ -1617,7 +1608,7 @@ lotes siguientes. En 4×4 las instancias son infactibles en los dos modelos (sec
 \eTABLE
 \blank[medium]
 
-\placefigure[force][fig:frontera]{Cuántas veces más lento es el monolítico que el Split sobre la misma instancia, según la grilla y los lotes (estudio 08, escala logarítmica). Los círculos abiertos son cotas inferiores: el monolítico no cerró en 10 minutos.}
+\placefigure[force][fig:frontera]{Cuántas veces más lento es el monolítico que el Split sobre la misma instancia, según la grilla y los lotes (estudio 08, escala logarítmica). Con un lote los dos tardan décimas de segundo y no se grafica. Los círculos abiertos son cotas inferiores: el monolítico no cerró en 10 minutos.}
 {\startMPcode
 numeric w, h; w := 11.0cm; h := 6.5cm;
 drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
@@ -1644,51 +1635,43 @@ label.bot(textext("Lado de la grilla"), (w/2,-0.85cm));
 label.lft(textext("Monolítico / Split (escala log.)") rotated 90, (-1.25cm,h/2));
 draw (0.000cm,1.511cm)--(11.000cm,1.511cm) withpen pencircle scaled .5pt dashed evenly;
 label.lft(textext("\tfxx mismo tiempo"), (10.900cm,1.311cm));
-draw (1.100cm,1.966cm)--(3.300cm,1.966cm)--(5.500cm,1.511cm)--(7.700cm,0.283cm)--(9.900cm,0.868cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue} dashed evenly;
-fill fullcircle scaled 4pt shifted (1.100cm,1.966cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (3.300cm,1.966cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (5.500cm,1.511cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (7.700cm,0.283cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (9.900cm,0.868cm) withcolor \MPcolor{darkblue};
-draw (1.100cm,1.777cm)--(5.500cm,3.085cm)--(7.700cm,3.157cm)--(9.900cm,3.285cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
-fill fullcircle scaled 4pt shifted (1.100cm,1.777cm) withcolor \MPcolor{blueline};
-fill fullcircle scaled 4pt shifted (5.500cm,3.085cm) withcolor \MPcolor{blueline};
-fill fullcircle scaled 4pt shifted (7.700cm,3.157cm) withcolor \MPcolor{blueline};
-fill fullcircle scaled 4pt shifted (9.900cm,3.285cm) withcolor \MPcolor{blueline};
-draw (1.100cm,1.764cm)--(5.500cm,2.047cm)--(7.700cm,3.680cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.100cm,1.764cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (5.500cm,2.047cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (7.700cm,3.680cm) withcolor \MPcolor{darkblue};
-draw fullcircle scaled 6pt shifted (9.900cm,4.185cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
-draw (7.700cm,3.680cm)--(9.900cm,4.185cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue} dashed withdots;
-draw (1.100cm,1.707cm)--(5.500cm,2.782cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{greenline};
-fill fullcircle scaled 4pt shifted (1.100cm,1.707cm) withcolor \MPcolor{greenline};
-fill fullcircle scaled 4pt shifted (5.500cm,2.782cm) withcolor \MPcolor{greenline};
-draw fullcircle scaled 6pt shifted (7.700cm,4.279cm) withpen pencircle scaled 1pt withcolor \MPcolor{greenline};
-draw (5.500cm,2.782cm)--(7.700cm,4.279cm) withpen pencircle scaled 1pt withcolor \MPcolor{greenline} dashed withdots;
-draw (1.100cm,1.565cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
-fill fullcircle scaled 4pt shifted (1.100cm,1.565cm) withcolor \MPcolor{redline};
-draw fullcircle scaled 6pt shifted (5.500cm,2.144cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline};
-draw (1.100cm,1.565cm)--(5.500cm,2.144cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline} dashed withdots;
-draw (0.300cm,6.350cm)--(0.900cm,6.350cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue} dashed evenly;
-label.rt(textext("\tfx 1 lote"), (1.000cm,6.350cm));
-draw (0.300cm,5.930cm)--(0.900cm,5.930cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
-label.rt(textext("\tfx 2 lotes"), (1.000cm,5.930cm));
-draw (0.300cm,5.510cm)--(0.900cm,5.510cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
-label.rt(textext("\tfx 3 lotes"), (1.000cm,5.510cm));
-draw (0.300cm,5.090cm)--(0.900cm,5.090cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{greenline};
-label.rt(textext("\tfx 4 lotes"), (1.000cm,5.090cm));
-draw (0.300cm,4.670cm)--(0.900cm,4.670cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
-label.rt(textext("\tfx 6 lotes"), (1.000cm,4.670cm));
-draw fullcircle scaled 6pt shifted (0.600cm,4.250cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
-label.rt(textext("\tfx el monolítico no cerró: cota inferior"), (1.000cm,4.250cm));
+draw (1.100cm,1.777cm)--(5.500cm,3.085cm)--(7.700cm,3.157cm)--(9.900cm,3.285cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.100cm,1.777cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (5.500cm,3.085cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (7.700cm,3.157cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (9.900cm,3.285cm) withcolor \MPcolor{darkblue};
+draw (1.100cm,1.764cm)--(5.500cm,2.047cm)--(7.700cm,3.680cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (1.100cm,1.764cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (5.500cm,2.047cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (7.700cm,3.680cm) withcolor \MPcolor{redline};
+draw fullcircle scaled 6pt shifted (9.900cm,4.185cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline};
+draw (7.700cm,3.680cm)--(9.900cm,4.185cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline} dashed withdots;
+draw (1.100cm,1.707cm)--(5.500cm,2.782cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (1.100cm,1.707cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (5.500cm,2.782cm) withcolor \MPcolor{blueline};
+draw fullcircle scaled 6pt shifted (7.700cm,4.279cm) withpen pencircle scaled 1pt withcolor \MPcolor{blueline};
+draw (5.500cm,2.782cm)--(7.700cm,4.279cm) withpen pencircle scaled 1pt withcolor \MPcolor{blueline} dashed withdots;
+draw (1.100cm,1.565cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue} dashed evenly;
+fill fullcircle scaled 4pt shifted (1.100cm,1.565cm) withcolor \MPcolor{darkblue};
+draw fullcircle scaled 6pt shifted (5.500cm,2.144cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+draw (1.100cm,1.565cm)--(5.500cm,2.144cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue} dashed withdots;
+draw (0.300cm,6.350cm)--(0.900cm,6.350cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx 2 lotes"), (1.000cm,6.350cm));
+draw (0.300cm,5.930cm)--(0.900cm,5.930cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx 3 lotes"), (1.000cm,5.930cm));
+draw (0.300cm,5.510cm)--(0.900cm,5.510cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+label.rt(textext("\tfx 4 lotes"), (1.000cm,5.510cm));
+draw (0.300cm,5.090cm)--(0.900cm,5.090cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue} dashed evenly;
+label.rt(textext("\tfx 6 lotes"), (1.000cm,5.090cm));
+draw fullcircle scaled 6pt shifted (0.600cm,4.670cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx el monolítico no cerró: cota inferior"), (1.000cm,4.670cm));
 \stopMPcode}
 
 \startitemize
-\item {\bf Con un lote no hay diferencia práctica}: los dos tardan décimas de segundo, y en las
+\item {\bf Con un lote no hay diferencia práctica:} los dos tardan décimas de segundo, y en las
 grillas mayores el monolítico es incluso más rápido, porque no hay nada que coordinar y el Split
 paga la preparación de dos etapas.
-\item {\bf Con dos o más lotes, la desventaja crece con la grilla}: con 2 lotes, desde 5×5, entre
+\item {\bf Con dos o más lotes, la desventaja crece con la grilla:} con 2 lotes, desde 5×5, entre
 11 y 15 veces; con 3 y 4 lotes, hasta 27 veces antes de dejar de cerrar, y al menos 59 y 68 en los
 puntos cortados.
 \item {\bf Con 6 lotes en grilla chica empatan} (177~s y 192~s en 3×3): casi todo el costo es
@@ -1736,8 +1719,7 @@ instancias.
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=fit]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][1][align=flushleft]
 \bTR \bTH Instancia (6 lotes, 7×7 salvo indicación) \eTH \bTH Split (s) \eTH \bTH Mono: brecha reportada \eTH \bTH Mono: mejor solución sobre el óptimo \eTH \bTH Mono: cota dual / óptimo \eTH \eTR
 \bTR \bTD 10 órdenes por lote, 2 pickers \eTD \bTD 58,4 \eTD \bTD 6,4 \% \eTD \bTD 0,70 \% \eTD \bTD 94,7 \% \eTD \eTR
@@ -1760,10 +1742,10 @@ instancias.
 
 \startitemize
 \item {\bf El Split resolvió las 15, entre 13 y 167~s. El monolítico no demostró ninguna.}
-\item {\bf En 7 de las 15 el monolítico no encontró ni una solución factible en 5 minutos}: con 6
+\item {\bf En 7 de las 15 el monolítico no encontró ni una solución factible en 5 minutos:} con 6
 lotes en 7×7 empieza a costarle también encontrar.
-\item {\bf Cuando encuentra, encuentra bien}: entre 0,3 \% y 1,9 \% sobre el óptimo (4,9 \% en una).
-\item {\bf Las brechas grandes son de la cota, no de la solución}: con 3 a 5 pickers la cota dual
+\item {\bf Cuando encuentra, encuentra bien:} entre 0,3 \% y 1,9 \% sobre el óptimo (4,9 \% en una).
+\item {\bf Las brechas grandes son de la cota, no de la solución:} con 3 a 5 pickers la cota dual
 queda entre el 49 \% y el 59 \% del óptimo y la brecha reportada llega al 105 \%, aunque la solución
 esté a menos del 1 \%.
 \stopitemize
@@ -1777,8 +1759,7 @@ por vez, con 10 minutos por modelo. En la base, el Split tarda 7,1~s y el monol�
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=fit]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][1][align=flushleft]
 \bTR \bTH Punto \eTH \bTH Split (s) \eTH \bTH Mono (s) \eTH \bTH Mono / Split \eTH \bTH Nodos mono \eTH \eTR
 \bTR \bTD Base \eTD \bTD 7,1 \eTD \bTD 16,7 \eTD \bTD 2,4 \eTD \bTD 631 \eTD \eTR
@@ -1812,20 +1793,20 @@ por vez, con 10 minutos por modelo. En la base, el Split tarda 7,1~s y el monol�
 \blank[medium]
 
 \startitemize
-\item {\bf La grilla es el factor principal}: en 3×3 empatan; en 6×6 el monolítico ya es 33 veces
+\item {\bf La grilla es el factor principal:} en 3×3 empatan; en 6×6 el monolítico ya es 33 veces
 más lento y en 7×7 no cierra, mientras el Split tarda 14~s. Es el mismo eje que limita a la Etapa
 1, pero el monolítico lo sufre mucho antes.
-\item {\bf Las velocidades en bandas golpean al monolítico y no al Split a esta escala}: con 3
+\item {\bf Las velocidades en bandas golpean al monolítico y no al Split a esta escala:} con 3
 pickers, el Split tarda lo mismo con o sin bandas (3 a 4~s); el monolítico pasa de 18~s a 146~s
 con 2 bandas y no cierra con 3. Con 4 pickers para 4 lotes (un lote por picker, sin secuencia) el
 efecto casi desaparece.
-\item {\bf Pocas órdenes por lote lo hunden}: con 10 órdenes el monolítico tarda 413~s contra 2~s
+\item {\bf Pocas órdenes por lote lo hunden:} con 10 órdenes el monolítico tarda 413~s contra 2~s
 del Split. Es el efecto del objetivo aplanado, mucho más fuerte que en la Etapa 2.
 \item {\bf Lotes y pickers pesan menos} (1,2 a 8 veces) y los pesos 2/6 no cambian nada de forma
 sistemática.
-\item {\bf Quitar (8)--(9) tampoco es una palanca}: en 5×5 el monolítico tarda el doble y en 6×6
+\item {\bf Quitar (8)--(9) tampoco es una palanca:} en 5×5 el monolítico tarda el doble y en 6×6
 la mitad, siempre con el mismo óptimo que el Split.
-\item {\bf Control de equivalencia}: los 25 óptimos del monolítico coinciden exactamente con los
+\item {\bf Control de equivalencia:} los 25 óptimos del monolítico coinciden exactamente con los
 del Split, también sin (8)--(9).
 \stopitemize
 \stopsubsection
@@ -1857,9 +1838,9 @@ stress 04 en su versión con $W^{c} = 9$ (la misma que M0), con el tope de la su
 \blank[medium]
 
 \startitemize
-\item {\bf Cuadruplicar el tiempo casi no mueve la cota}: en 3 lotes 7×7 y 4 lotes 6×6 quedó cerca
+\item {\bf Cuadruplicar el tiempo casi no mueve la cota:} en 3 lotes 7×7 y 4 lotes 6×6 quedó cerca
 del 90 \% del óptimo, como a los 10 minutos, aunque recorrió seis y cuatro veces más nodos.
-\item {\bf Las soluciones ya estaban}: en 4 lotes 6×6 encontró el óptimo exacto a los 972~s y no
+\item {\bf Las soluciones ya estaban:} en 4 lotes 6×6 encontró el óptimo exacto a los 972~s y no
 pudo demostrarlo en los 24 minutos restantes.
 \item {\bf Solo 6 lotes en 5×5 cerró}, a los 32 minutos, 8 veces lo que tardó el Split: ahí la cota
 raíz era la más débil (48 \%), pero la búsqueda sí la subió.
@@ -1922,10 +1903,10 @@ referencia), 36c (rechaza la entrada antes de resolver) y 37a (verifica la esper
 comparable entre mono y Split, pero se deja fuera para mantener la base común).
 
 \startitemize
-\item {\bf Mismo óptimo}: los 49 pares resueltos tienen el mismo objetivo (diferencia máxima
+\item {\bf Mismo óptimo:} los 49 pares resueltos tienen el mismo objetivo (diferencia máxima
 $3{,}83 \cdot 10^{-6}$, en los casos 13 y 14, dentro de la tolerancia de SCIP), y los 11
 infactibles lo son en los dos. Vale también para los tests de frío, velocidad y ruta más corta.
-\item {\bf No siempre la misma solución}: 28 pares con la misma solución y 21 óptimos alternativos
+\item {\bf No siempre la misma solución:} 28 pares con la misma solución y 21 óptimos alternativos
 (13 con otras rutas, 16 con otra asignación, algunos con las dos cosas). A nivel de método de
 test, la comparación automática da: migrados de v4, 15 misma solución, 20 óptimos alternativos, 8
 infactibles en los dos y 1 timeout en los dos; propios de v5, 13 misma solución, 1 óptimo
@@ -1957,8 +1938,7 @@ son intercambiables; la diferencia aparece al crecer la instancia (estudios 08 a
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][2][width=4.6cm, align=flushleft]
 \bTR \bTH Caso \eTH \bTH Test \eTH \bTH Mono (s) \eTH \bTH Split (s) \eTH \bTH Mono / Split \eTH \bTH Objetivo \eTH \bTH Solución de mono \eTH \eTR
 \bTR \bTD 01 \eTD \bTD Capacidad básica \eTD \bTD 0,222 \eTD \bTD 0,260 \eTD \bTD 0,85× \eTD \bTD 30,0 \eTD \bTD igual \eTD \eTR
@@ -2035,28 +2015,28 @@ suspensiones de la notebook, con el mismo objetivo.}, y los timeouts del 24-09 (
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
-\bTR \bTH Caso \eTH \bTH Lotes \eTH \bTH Grilla \eTH \bTH Split total (s) \eTH \bTH Etapa 1 (estim., s) \eTH \bTH Etapa 2 (s) \eTH \bTH Objetivo \eTH \bTH SLA \eTH \bTH RAM (MB) \eTH \bTH Mono \eTH \eTR
-\bTR \bTD 01 \eTD \bTD 30 \eTD \bTD 100×100 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD sin resultado \eTD \eTR
-\bTR \bTD 02 \eTD \bTD 10 \eTD \bTD 10×10 \eTD \bTD 33 \eTD \bTD 5,5 \eTD \bTD 27,3 \eTD \bTD 29.034,00 \eTD \bTD 0 \% \eTD \bTD 114 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 03 \eTD \bTD 40 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 04 \eTD \bTD 6 \eTD \bTD 7×7 \eTD \bTD 12 \eTD \bTD 3,4 \eTD \bTD 8,9 \eTD \bTD 149.217,67 \eTD \bTD 100 \% \eTD \bTD 76 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 05 \eTD \bTD 6 \eTD \bTD 13×13 \eTD \bTD 108 \eTD \bTD 97,8 \eTD \bTD 9,9 \eTD \bTD 241.253,92 \eTD \bTD 100 \% \eTD \bTD 81 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 06 \eTD \bTD 6 \eTD \bTD 14×14 \eTD \bTD 202 \eTD \bTD 194,9 \eTD \bTD 6,8 \eTD \bTD 256.564,33 \eTD \bTD 100 \% \eTD \bTD 77 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 07 \eTD \bTD 6 \eTD \bTD 15×15 \eTD \bTD 904 \eTD \bTD 900,2 \eTD \bTD 3,9 \eTD \bTD 271.907,67 \eTD \bTD 100 \% \eTD \bTD 77 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 08 \eTD \bTD 6 \eTD \bTD 16×16 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 09 \eTD \bTD 6 \eTD \bTD 8×21 \eTD \bTD 224 \eTD \bTD 218,3 \eTD \bTD 5,5 \eTD \bTD 275.019,30 \eTD \bTD 100 \% \eTD \bTD 78 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 10 \eTD \bTD 6 \eTD \bTD 7×7 \eTD \bTD 86 \eTD \bTD 14,6 \eTD \bTD 71,0 \eTD \bTD 112.079,49 \eTD \bTD 100 \% \eTD \bTD 287 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 11 \eTD \bTD 6 \eTD \bTD 13×13 \eTD \bTD 139 \eTD \bTD 127,3 \eTD \bTD 11,9 \eTD \bTD 182.253,55 \eTD \bTD 97,4 \% \eTD \bTD 78 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 12 \eTD \bTD 8 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 13 \eTD \bTD 10 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 14 \eTD \bTD 12 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 15 \eTD \bTD 6 \eTD \bTD 10×10 \eTD \bTD 244 \eTD \bTD 23,4 \eTD \bTD 220,8 \eTD \bTD 97.914,92 \eTD \bTD 100 \% \eTD \bTD 158 \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 16 \eTD \bTD 12 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 17 \eTD \bTD 15 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 18 \eTD \bTD 18 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
-\bTR \bTD 19 \eTD \bTD 24 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\setupTABLE[column][6][width=2.5cm]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Caso \eTH \bTH Grilla \eTH \bTH Split total (s) \eTH \bTH Etapa 1 (estim., s) \eTH \bTH Etapa 2 (s) \eTH \bTH Objetivo \eTH \bTH SLA \eTH \bTH Mono \eTH \eTR
+\bTR \bTD 01 \eTD \bTD 100×100 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD sin resultado \eTD \eTR
+\bTR \bTD 02 \eTD \bTD 10×10 \eTD \bTD 33 \eTD \bTD 5,5 \eTD \bTD 27,3 \eTD \bTD 29.034,00 \eTD \bTD 0 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 03 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 04 \eTD \bTD 7×7 \eTD \bTD 12 \eTD \bTD 3,4 \eTD \bTD 8,9 \eTD \bTD 149.217,67 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 05 \eTD \bTD 13×13 \eTD \bTD 108 \eTD \bTD 97,8 \eTD \bTD 9,9 \eTD \bTD 241.253,92 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 06 \eTD \bTD 14×14 \eTD \bTD 202 \eTD \bTD 194,9 \eTD \bTD 6,8 \eTD \bTD 256.564,33 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 07 \eTD \bTD 15×15 \eTD \bTD 904 \eTD \bTD 900,2 \eTD \bTD 3,9 \eTD \bTD 271.907,67 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 08 \eTD \bTD 16×16 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 09 \eTD \bTD 8×21 \eTD \bTD 224 \eTD \bTD 218,3 \eTD \bTD 5,5 \eTD \bTD 275.019,30 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 10 \eTD \bTD 7×7 \eTD \bTD 86 \eTD \bTD 14,6 \eTD \bTD 71,0 \eTD \bTD 112.079,49 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 11 \eTD \bTD 13×13 \eTD \bTD 139 \eTD \bTD 127,3 \eTD \bTD 11,9 \eTD \bTD 182.253,55 \eTD \bTD 97,4 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 12 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 13 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 14 \eTD \bTD 7×7 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 15 \eTD \bTD 10×10 \eTD \bTD 244 \eTD \bTD 23,4 \eTD \bTD 220,8 \eTD \bTD 97.914,92 \eTD \bTD 100 \% \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 16 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 17 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 18 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
+\bTR \bTD 19 \eTD \bTD 10×10 \eTD \bTD timeout \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD \eTD \bTD timeout \eTD \eTR
 \eTABLE
 \blank[medium]
 
@@ -2097,36 +2077,36 @@ draw (0.000cm,5.630cm)--(12.000cm,5.630cm) withpen pencircle scaled .5pt dashed 
 label.rt(textext("\tfxx tope de 40 min"), (0.100cm,5.830cm));
 draw (0.076cm,0.000cm)--(0.303cm,0.000cm)--(0.303cm,5.630cm)--(0.076cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 fill (0.707cm,0.000cm)--(0.935cm,0.000cm)--(0.935cm,2.523cm)--(0.707cm,2.523cm)--cycle withcolor \MPcolor{darkblue};
-fill (0.960cm,0.000cm)--(1.187cm,0.000cm)--(1.187cm,2.392cm)--(0.960cm,2.392cm)--cycle withcolor \MPcolor{blueline};
+fill (0.960cm,0.000cm)--(1.187cm,0.000cm)--(1.187cm,2.392cm)--(0.960cm,2.392cm)--cycle withcolor \MPcolor{redline};
 draw (1.339cm,0.000cm)--(1.566cm,0.000cm)--(1.566cm,5.630cm)--(1.339cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 fill (1.971cm,0.000cm)--(2.198cm,0.000cm)--(2.198cm,1.815cm)--(1.971cm,1.815cm)--cycle withcolor \MPcolor{darkblue};
-fill (2.223cm,0.000cm)--(2.451cm,0.000cm)--(2.451cm,1.581cm)--(2.223cm,1.581cm)--cycle withcolor \MPcolor{blueline};
+fill (2.223cm,0.000cm)--(2.451cm,0.000cm)--(2.451cm,1.581cm)--(2.223cm,1.581cm)--cycle withcolor \MPcolor{redline};
 fill (2.602cm,0.000cm)--(2.829cm,0.000cm)--(2.829cm,3.386cm)--(2.602cm,3.386cm)--cycle withcolor \MPcolor{darkblue};
-fill (2.855cm,0.000cm)--(3.082cm,0.000cm)--(3.082cm,1.658cm)--(2.855cm,1.658cm)--cycle withcolor \MPcolor{blueline};
+fill (2.855cm,0.000cm)--(3.082cm,0.000cm)--(3.082cm,1.658cm)--(2.855cm,1.658cm)--cycle withcolor \MPcolor{redline};
 fill (3.234cm,0.000cm)--(3.461cm,0.000cm)--(3.461cm,3.839cm)--(3.234cm,3.839cm)--cycle withcolor \MPcolor{darkblue};
-fill (3.486cm,0.000cm)--(3.714cm,0.000cm)--(3.714cm,1.387cm)--(3.486cm,1.387cm)--cycle withcolor \MPcolor{blueline};
+fill (3.486cm,0.000cm)--(3.714cm,0.000cm)--(3.714cm,1.387cm)--(3.486cm,1.387cm)--cycle withcolor \MPcolor{redline};
 fill (3.865cm,0.000cm)--(4.093cm,0.000cm)--(4.093cm,4.924cm)--(3.865cm,4.924cm)--cycle withcolor \MPcolor{darkblue};
-fill (4.118cm,0.000cm)--(4.345cm,0.000cm)--(4.345cm,0.985cm)--(4.118cm,0.985cm)--cycle withcolor \MPcolor{blueline};
+fill (4.118cm,0.000cm)--(4.345cm,0.000cm)--(4.345cm,0.985cm)--(4.118cm,0.985cm)--cycle withcolor \MPcolor{redline};
 draw (4.497cm,0.000cm)--(4.724cm,0.000cm)--(4.724cm,5.630cm)--(4.497cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 fill (5.128cm,0.000cm)--(5.356cm,0.000cm)--(5.356cm,3.914cm)--(5.128cm,3.914cm)--cycle withcolor \MPcolor{darkblue};
-fill (5.381cm,0.000cm)--(5.608cm,0.000cm)--(5.608cm,1.233cm)--(5.381cm,1.233cm)--cycle withcolor \MPcolor{blueline};
+fill (5.381cm,0.000cm)--(5.608cm,0.000cm)--(5.608cm,1.233cm)--(5.381cm,1.233cm)--cycle withcolor \MPcolor{redline};
 fill (5.760cm,0.000cm)--(5.987cm,0.000cm)--(5.987cm,3.219cm)--(5.760cm,3.219cm)--cycle withcolor \MPcolor{darkblue};
-fill (6.013cm,0.000cm)--(6.240cm,0.000cm)--(6.240cm,3.084cm)--(6.013cm,3.084cm)--cycle withcolor \MPcolor{blueline};
+fill (6.013cm,0.000cm)--(6.240cm,0.000cm)--(6.240cm,3.084cm)--(6.013cm,3.084cm)--cycle withcolor \MPcolor{redline};
 fill (6.392cm,0.000cm)--(6.619cm,0.000cm)--(6.619cm,3.571cm)--(6.392cm,3.571cm)--cycle withcolor \MPcolor{darkblue};
-fill (6.644cm,0.000cm)--(6.872cm,0.000cm)--(6.872cm,1.792cm)--(6.644cm,1.792cm)--cycle withcolor \MPcolor{blueline};
+fill (6.644cm,0.000cm)--(6.872cm,0.000cm)--(6.872cm,1.792cm)--(6.644cm,1.792cm)--cycle withcolor \MPcolor{redline};
 draw (7.023cm,0.000cm)--(7.251cm,0.000cm)--(7.251cm,5.630cm)--(7.023cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 draw (7.655cm,0.000cm)--(7.882cm,0.000cm)--(7.882cm,5.630cm)--(7.655cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 draw (8.286cm,0.000cm)--(8.514cm,0.000cm)--(8.514cm,5.630cm)--(8.286cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 fill (8.918cm,0.000cm)--(9.145cm,0.000cm)--(9.145cm,3.977cm)--(8.918cm,3.977cm)--cycle withcolor \MPcolor{darkblue};
-fill (9.171cm,0.000cm)--(9.398cm,0.000cm)--(9.398cm,3.904cm)--(9.171cm,3.904cm)--cycle withcolor \MPcolor{blueline};
+fill (9.171cm,0.000cm)--(9.398cm,0.000cm)--(9.398cm,3.904cm)--(9.171cm,3.904cm)--cycle withcolor \MPcolor{redline};
 draw (9.549cm,0.000cm)--(9.777cm,0.000cm)--(9.777cm,5.630cm)--(9.549cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 draw (10.181cm,0.000cm)--(10.408cm,0.000cm)--(10.408cm,5.630cm)--(10.181cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 draw (10.813cm,0.000cm)--(11.040cm,0.000cm)--(11.040cm,5.630cm)--(10.813cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 draw (11.444cm,0.000cm)--(11.672cm,0.000cm)--(11.672cm,5.630cm)--(11.444cm,5.630cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 fill (0.400cm,-1.120cm)--(0.800cm,-1.120cm)--(0.800cm,-0.880cm)--(0.400cm,-0.880cm)--cycle withcolor \MPcolor{darkblue};
 label.rt(textext("\tfx Split: tiempo total del test"), (1.000cm,-1.000cm));
-fill (0.400cm,-1.540cm)--(0.800cm,-1.540cm)--(0.800cm,-1.300cm)--(0.400cm,-1.300cm)--cycle withcolor \MPcolor{blueline};
-label.rt(textext("\tfx Split: Etapa 2"), (1.000cm,-1.420cm));
+fill (0.400cm,-1.540cm)--(0.800cm,-1.540cm)--(0.800cm,-1.300cm)--(0.400cm,-1.300cm)--cycle withcolor \MPcolor{redline};
+label.rt(textext("\tfx Split: Etapa 2 (solver)"), (1.000cm,-1.420cm));
 draw (0.400cm,-1.960cm)--(0.800cm,-1.960cm)--(0.800cm,-1.720cm)--(0.400cm,-1.720cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 label.rt(textext("\tfx Split no terminó (el monolítico no terminó ninguno)"), (1.000cm,-1.840cm));
 \stopMPcode}
@@ -2136,23 +2116,25 @@ label.rt(textext("\tfx Split no terminó (el monolítico no terminó ninguno)"),
 \item {\bf Domina la Etapa 1}, aun en paralelo, en todos los tests realistas salvo los de agenda
 pesada (10 y 15), y su crecimiento con la grilla es abrupto: de 13×13 a 14×14 se multiplica por
 2,0; de 14×14 a 15×15, por 4,6; 16×16 no termina.
-\item {\bf La forma de la grilla pesa}: el 8×21 (168 ubicaciones) tardó en la Etapa 1 más que el
+\item {\bf La forma de la grilla pesa:} el 8×21 (168 ubicaciones) tardó en la Etapa 1 más que el
 14×14 (196).
-\item {\bf La Etapa 2 deja de pesar cuando esperar no conviene}: con $W^{c} = 27$ resuelve en menos
+\item {\bf La Etapa 2 deja de pesar cuando esperar no conviene:} con $W^{c} = 27$ resuelve en menos
 de 12~s en todos los tests de grilla. Pesa en el 10 (proporción intermedia, 71~s) y en el 15 (9
 pickers para 6 lotes, 221~s).
 \item {\bf Los que tampoco termina el Split} son los de 8 lotes o más (12 a 14 y 16 a 19), el 16×16
 (08) y dos heredados (01 y 03): son las dos paredes, la de la Etapa 2 con los lotes y la de la
 Etapa 1 con la grilla. Ahí la única respuesta son las heurísticas.
-\item {\bf Memoria}: el Split usa entre 76 y 287~MB, pero esa cifra solo mide el proceso del test,
+\item {\bf Memoria:} el Split usa entre 76 y 287~MB (287 en el 10, 158 en el 15, 114 en el 02 y
+entre 76 y 81 en el resto), pero esa cifra solo mide el proceso del test,
 sin los seis procesos de la Etapa 1 ni ZIMPL.
 \stopitemize
 
+\testpage[10]
 {\bf La corrida anterior, con $W^{c} = 9$} (23-09, en secuencia), da la referencia para la
 sección \in[sec:wc27]:
 
 \blank[medium]
-\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\bTABLE[split=yes, align=middle, frame=on, width=broad]
 \setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \bTR \bTH Test \eTH \bTH Grilla \eTH \bTH Total \eTH \bTH Etapa 1 \eTH \bTH Etapa 2 \eTH \bTH Objetivo \eTH \bTH SLA \eTH \bTH RAM \eTH \eTR
 \bTR \bTD 04 \eTD \bTD 7×7 \eTD \bTD 2,0 min \eTD \bTD 6~s \eTD \bTD 117~s \eTD \bTD 79.046,86 \eTD \bTD 67,9 \% \eTD \bTD 148 MB \eTD \eTR
@@ -2213,18 +2195,18 @@ referencia (timeout del Split).
 
 \startsubsection[title={Resultados contra el óptimo del Split}]
 \startitemize
-\item {\bf Validez}: las 150 soluciones de HC y ACO verificadas contra el monolítico (56
+\item {\bf Validez:} las 150 soluciones de HC y ACO verificadas contra el monolítico (56
 funcionales y 19 de stress por heurística) cumplen todas las restricciones, y el objetivo
 recalculado coincide con el reportado.
-\item {\bf Estado}: las dos heurísticas coinciden con el Split en las 67 instancias funcionales
+\item {\bf Estado:} las dos heurísticas coinciden con el Split en las 67 instancias funcionales
 comparables en estado y en los 9 escenarios de stress comparables.
-\item {\bf Calidad}: ACO alcanza el óptimo en las 45 funcionales y queda a 0,06 \% como máximo en
+\item {\bf Calidad:} ACO alcanza el óptimo en las 45 funcionales y queda a 0,06 \% como máximo en
 stress (2 óptimos de 9); HC falla en 5 funcionales de grilla (hasta 5,88 \%) y queda a 0,21 \% como
 máximo en stress (1 óptimo de 9).
-\item {\bf Tiempo hasta terminar}: en la mediana de stress, el Split tarda 53,1 veces lo que HC y
+\item {\bf Tiempo hasta terminar:} en la mediana de stress, el Split tarda 53,1 veces lo que HC y
 1,7 veces lo que ACO; en funcional, 5,1 y 1,4 veces. HC resuelve todos los stress salvo el
 100×100 en menos de 5~s; ACO tarda entre 10~s y 10 minutos.
-\item {\bf Escala}: en los 10 escenarios que el Split no termina, las dos heurísticas dan una
+\item {\bf Escala:} en los 10 escenarios que el Split no termina, las dos heurísticas dan una
 solución válida.
 \stopitemize
 
@@ -2233,8 +2215,7 @@ $100 \cdot (z_{\rm heur} - z_{\rm Split}) / z_{\rm Split}$):
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][2][width=3.6cm, align=flushleft]
 \bTR \bTH Caso \eTH \bTH Escenario \eTH \bTH Lotes \eTH \bTH Grilla \eTH \bTH Split (s) \eTH \bTH HC (s) \eTH \bTH Brecha HC \eTH \bTH ACO (s) \eTH \bTH Brecha ACO \eTH \eTR
 \bTR \bTD 02 \eTD \bTD 10 pickers, atrasadas \eTD \bTD 10 \eTD \bTD 10×10 \eTD \bTD 33 \eTD \bTD 0,9 \eTD \bTD 0,00 \% \eTD \bTD 93,5 \eTD \bTD 0,00 \% \eTD \eTR
@@ -2276,8 +2257,7 @@ exacto}$; negativa es ventaja de ACO):
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \bTR \bTH Caso \eTH \bTH Presupuesto (s) \eTH \bTH ACO \eTH \bTH Split \eTH \bTH Brecha Split \eTH \bTH ACO vs Split \eTH \bTH Monolítico \eTH \bTH ACO vs mono \eTH \eTR
 \bTR \bTD 01 \eTD \bTD 1.877,8 \eTD \bTD 917.328,0 \eTD \bTD sin solución (Etapa 1) \eTD \bTD -- \eTD \bTD -- \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
 \bTR \bTD 02 \eTD \bTD 31,3 \eTD \bTD 29.034,0 \eTD \bTD 29.262,0 \eTD \bTD \eTD \bTD -0,78 \% \eTD \bTD sin solución \eTD \bTD -- \eTD \eTR
@@ -2317,7 +2297,7 @@ la Etapa 2 arrastra esas rutas.
 En el 09 la Etapa 1 excedió el presupuesto (864~s contra 224~s), porque el límite se aplica a cada
 resolución y no al proceso completo.
 \item {\bf El monolítico da solución solo en el 04 y el 12}, entre 5 \% y 10 \% por encima de ACO.
-\item Los presupuestos salen de otra corrida de ACO, distinta de la de la tabla de stress: por eso
+\item {\bf Presupuestos:} salen de otra corrida de ACO, distinta de la de la tabla de stress: por eso
 el tiempo y el objetivo de ACO difieren un poco (15,1~s contra 12,9~s en el 04; 917.328 contra
 988.252 en el 01).
 \stopitemize
@@ -2346,12 +2326,12 @@ de $W^{c}$.
 \item {\bf La explicación de la cota débil del monolítico} (Big-M sobre el tiempo de ejecución
 variable) es consistente con los datos pero no está verificada.
 \item {\bf El monolítico en stress con $W^{c} = 27$} solo se corrió en el test 04.
-\item {\bf Límite de tiempo de SCIP por resolución}: en el experimento a igual tiempo, el Split
+\item {\bf Límite de tiempo de SCIP por resolución:} en el experimento a igual tiempo, el Split
 puede exceder el presupuesto porque el límite se aplica a cada MIP de la Etapa 1, no al proceso.
-\item {\bf Memoria del Split}: no incluye los procesos hijos de la Etapa 1 ni ZIMPL.
+\item {\bf Memoria del Split:} no incluye los procesos hijos de la Etapa 1 ni ZIMPL.
 \item {\bf Diferencia de tolerancias del frío} entre los dos modelos muy cerca del borde
 ($10^{-9}$ contra $\approx 10^{-6}$), documentada y sin test.
-\item {\bf Precisión numérica}: en un punto del estudio 08 (3 lotes, 6×6) el monolítico reportó
+\item {\bf Precisión numérica:} en un punto del estudio 08 (3 lotes, 6×6) el monolítico reportó
 26.709,36 contra 26.709,60 del Split ($-0{,}0009$ \%), los dos declarando optimalidad. Hipótesis
 sin verificar: con $M = 10^{6}$, un binario apenas fraccionario dentro de la tolerancia de
 integralidad afloja una restricción Big-M en cerca de una unidad. Es la misma clase de problema
@@ -2385,17 +2365,17 @@ grilla, por sí mismo y de forma abrupta (segundos en 7×7, unos 15 minutos en 1
 procesos, sin terminar en 16×16). La Etapa 2 crece con la proporción entre lotes y pickers (pico
 en la intermedia), con la heterogeneidad de velocidades (el salto está entre una y dos) y con lo
 plano del objetivo.
-\item {\bf El SLA lo fija el objetivo}: $(N_b + W^{c})/(2N_b)$. El modelo es just-in-time y espera a
+\item {\bf El SLA lo fija el objetivo:} $(N_b + W^{c})/(2N_b)$. El modelo es just-in-time y espera a
 propósito si $W^{c}$ es menor que las órdenes por lote; con $W^{c} = 27$ la espera desaparece, la
 Etapa 2 baja a segundos y el SLA sube al 100 \%.
 \item {\bf Lo que mejoró el rendimiento del Split} fue estructural: la descomposición, el tiempo de
 ejecución como dato, la Etapa 1 por lote y su paralelismo (×2). La clausura métrica, los pesos
 asimétricos, quitar el camino simple y el branching por pseudocosto no generalizaron.
-\item {\bf Las simplificaciones de los escenarios heredados no eran neutras}: los pesos uniformes
+\item {\bf Las simplificaciones de los escenarios heredados no eran neutras:} los pesos uniformes
 encarecen la Etapa 1 en grillas chicas, las velocidades uniformes abaratan la Etapa 2, las fechas
 imposibles dejan medio objetivo sin ejercitar y $|\mathcal{B}| \le |\mathcal{P}|$ deja la secuencia
 sin ejercitar.
-\item {\bf Alcance práctico del Split}: hasta 6 lotes en grillas de hasta 15×15 prueba el óptimo en
+\item {\bf Alcance práctico del Split:} hasta 6 lotes en grillas de hasta 15×15 prueba el óptimo en
 minutos y sirve de referencia para medir a las heurísticas. Con 8 lotes o más, o con 16×16, no
 termina en 40 minutos, y a igual tiempo las heurísticas lo dominan.
 \stopitemize
@@ -2409,8 +2389,7 @@ termina en 40 minutos, y a igual tiempo las heurísticas lo dominan.
 
 \blank[medium]
 \bTABLE[split=yes, align=middle, frame=on, width=broad]
-\setupTABLE[style=\tfx]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style={\tfx\bf}]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][1][align=flushleft]
 \setupTABLE[column][2][align=flushleft]
 \bTR \bTH Qué \eTH \bTH Dónde \eTH \eTR
