@@ -574,7 +574,19 @@ que ejercitan específicamente la velocidad y la cadena de frío fijan entre
 100 y 200 iteraciones, entre 30 y 60 sin mejora y 10~s de tiempo máximo.
 En los escenarios de estrés el tope de iteraciones es menor que el valor por
 defecto, pero el de iteraciones sin mejora es el doble.
-% TODO COMPLETAR: por qué se eligieron 200/60 en estrés
+Para evaluar si estos valores limitan la búsqueda, se repitieron los
+escenarios de estrés 02 a 19 con 200 y 120, 500 y 60, y 500 y 120
+iteraciones máximas e iteraciones sin mejora, respectivamente. El 01 queda
+afuera porque la búsqueda no llega a iterar (Sección~\in[sec:hc_limitaciones]).
+Con 200 y 60, la búsqueda se detiene por estancamiento en casi todos los
+escenarios y solo alcanza el tope de 200 iteraciones en el 03 y el 18. Los
+presupuestos mayores nunca empeoran la solución y la mejoran solo en tres
+escenarios: el 03, con un único {\em picker} y 40 lotes para secuenciar,
+mejora hasta un 0,65~\%; el 17 y el 18, hasta un 0,10~\% y un 0,04~\%. El
+tiempo de ejecución casi no cambia, como máximo 0,12~s, porque lo domina la
+construcción de la solución inicial y cada iteración es barata. Por lo
+tanto, con 200 y 60 la búsqueda termina, en casi todos los escenarios,
+porque deja de encontrar mejoras y no por el tope de iteraciones.
 
 Con la semilla fija, una ejecución es reproducible: la misma instancia y los
 mismos parámetros producen siempre la misma solución, siempre que la
