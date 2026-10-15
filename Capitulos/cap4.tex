@@ -12,20 +12,628 @@ mismo espacio de soluciones, aunque sin garantía de optimalidad.
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:hc]
 
-% TODO: completar
-%
-% Citas a usar al describir la construcción y mejora de rutas (HC y ACO):
-% - Ruta inicial por inserción del más lejano:
-%     ...la inserción del más lejano ({\em farthest insertion}) \cite[rosenkrantz1977analysis]...
-% - Pulido de rutas con or-opt (la tesis de Or de 1976 no está disponible; se
-%   la nombra como autor original y se cita a través de Babin et al.).
-%   OJO: el or-opt original mueve cadenas de 3, luego 2 y luego 1 vértices
-%   consecutivos (Babin et al., sección 1), pero relocate_picks del código
-%   mueve UN solo pick por vez. Describirlo como una versión simplificada:
-%     ...una versión simplificada del operador {\em or-opt}, propuesto por Or
-%     en su tesis doctoral de 1976 \cite[babin2007oropt]: mientras que el
-%     operador original reubica cadenas de tres, dos y un vértice consecutivos,
-%     aquí se reubica un pick por vez en otra posición de la secuencia...
+La primera heurística evaluada fue \ac{hc}. Para presentar su desarrollo de forma completa, primero
+se describe cómo se representa una solución (Sección~\in[sec:hc_representacion]) y cómo se la evalúa
+(Sección~\in[sec:hc_evaluacion]). Luego se explica el algoritmo en tres pasos: la verificación previa
+de factibilidad (Sección~\in[sec:hc_verificacion]), la construcción de la solución inicial
+(Sección~\in[sec:hc_solucion_inicial]) y la búsqueda estocástica de primera mejora
+(Sección~\in[sec:hc_busqueda]). Por último, se resumen sus parámetros
+(Sección~\in[sec:hc_parametros]) y sus limitaciones (Sección~\in[sec:hc_limitaciones]).
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Representación de la solución}, reference=sec:hc_representacion]
+
+El problema que resuelve \ac{hc} es el mismo que ya fue definido en el Capítulo~\in[Capitulo_3], es decir,
+determinar la ruta de cada lote, el {\em picker} que lo ejecuta y el orden en
+que cada {\em picker} ejecuta sus lotes. En este caso, lo que cambia es la forma de
+representar una solución. En los modelos lineales, una solución es una
+asignación de valores a las variables $z_{ijb}$, $x_{pb}$, $y_{bk}$ y a las
+variables de tiempo. Una metaheurística basada en una sola solución, en
+cambio, necesita una estructura sobre la cual definir sus operadores de
+movimiento (Sección~\in[sec:marco_hc]). En \ac{hc}, una solución
+$s = (\pi, a, \sigma)$ tiene tres componentes:
+\startitemize[n]
+	\item {\bf Una ruta por lote.} Para cada lote $b$ con órdenes,
+	$\pi_b = (v_1, \dots, v_k)$ es una secuencia de locaciones intermedias
+	distintas tal que $(v_{\text{start}}, v_1)$, $(v_i, v_{i+1})$ y
+	$(v_k, v_{\text{end}})$ pertenecen a $\mathcal{E}$, y que contiene todas
+	las locaciones con $a_{bi} = 1$. La secuencia puede incluir además
+	locaciones de paso, que el {\em picker} atraviesa sin recolectar.
+	\item {\bf Una asignación de lotes a pickers.} Una función
+	$a : \mathcal{B} \to \mathcal{P}$ que indica qué {\em picker} ejecuta cada
+	lote.
+	\item {\bf Una secuencia por picker.} Para cada {\em picker} $p$,
+	$\sigma_p = (b_1, \dots, b_m)$ es la lista ordenada de los lotes que tiene
+	asignados.
+\stopitemize
+Al igual que en el modelo Split, el loteo es un dato de entrada. Por lo tanto, \ac{hc} no mueve órdenes entre
+lotes, y los lotes sin órdenes no reciben ruta ni {\em picker}.
+
+Cada solución así representada corresponde a una asignación de las variables
+de decisión del Capítulo~\in[Capitulo_3]:
+\startformula
+	\startalign[n=2, align={right,left}]
+		\NC z_{ijb} = 1 \NC \quad \text{si y solo si $i$ y $j$ son consecutivos en $v_{\text{start}}, \pi_b, v_{\text{end}}$,} \NR
+		\NC x_{pb} = 1 \NC \quad \text{si y solo si $a(b) = p$,} \NR
+		\NC y_{bk} = 1 \NC \quad \text{si y solo si $b$ aparece antes que $k$ en $\sigma_{a(b)}$.} \NR
+	\stopalign
+\stopformula
+Esta representación tiene dos consecuencias. La primera es que varias
+restricciones de los modelos lineales se cumplen por construcción. Cada lote
+aparece en una sola secuencia, así que se asigna a exactamente un
+{\em picker}. Los lotes de un mismo {\em picker} se ejecutan uno detrás de
+otro, sin solaparse. Además, como cada ruta es una única secuencia, no puede
+contener subtours, y no hace falta un mecanismo equivalente a las variables
+de flujo $q_{ijb}$. Las restricciones que no se cumplen por construcción son
+descriptas en la Sección~\in[sec:hc_evaluacion].
+
+La segunda es que los tiempos no son variables de decisión, sino que se
+calculan a partir de $s$. El tiempo de ruta $r_b$ y el tiempo de ejecución
+$T^{\text{exec}}_{pb}$ se obtienen de $\pi_b$ según la
+Ecuación~\in[eq:texec]. Como cada {\em picker} empieza en el instante 0 y
+comienza un lote apenas termina el anterior, el instante de finalización del
+$k$-ésimo lote de $\sigma_p$ es
+\startplaceformula[reference=eq:hc_finalizacion]
+\startformula
+	c_{b_k} = \sum_{l=1}^{k} T^{\text{exec}}_{p\,b_l},
+\stopformula
+\stopplaceformula
+y a partir de los $c_b$ se calculan el adelanto y la demora de cada orden.
+Por lo tanto, \ac{hc} siempre reporta el instante real de finalización de
+cada lote y no puede realizar espera voluntaria que los modelos lineales sí realizan
+(Sección~\in[sec:espera_voluntaria]). Su espacio de soluciones es el
+subconjunto de las soluciones de los modelos lineales en que ningún lote
+espera.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Función de evaluación}, reference=sec:hc_evaluacion]
+
+\ac{hc} minimiza la misma función objetivo que los modelos lineales
+(Ecuación~\in[eq:mono_objetivo]). Dada una solución $s$, los instantes de
+finalización $c_b$ se obtienen con la Ecuación~\in[eq:hc_finalizacion], y el
+adelanto y la demora de cada orden $n$ se calculan respecto del lote $b(n)$
+al que pertenece:
+\startformula
+	ea_n = \max\left(0,\; T^{\text{due}}_n - c_{b(n)}\right), \qquad
+	ta_n = \max\left(0,\; c_{b(n)} - T^{\text{due}}_n\right).
+\stopformula
+Con estos valores, el objetivo de la solución es
+\startplaceformula[reference=eq:hc_objetivo]
+\startformula
+	f(s) = W^{c} \sum_{b \in \mathcal{B}} c_b \;+\; W^{\text{pen}} \left( W^{e} \sum_{n \in \mathcal{N}} ea_n + W^{t} \sum_{n \in \mathcal{N}} ta_n \right).
+\stopformula
+\stopplaceformula
+
+En los modelos lineales, las restricciones forman parte de la formulación y
+el resolvedor solo devuelve soluciones que las cumplen todas. En \ac{hc}, en
+cambio, hay que decidir cómo se trata cada una durante la búsqueda
+(Sección~\in[sec:marco_restricciones]). Las restricciones del problema se
+dividen en tres grupos.
+
+{\bf Restricciones que se cumplen por construcción.} Como se explicó en la
+Sección~\in[sec:hc_representacion], la representación garantiza que cada
+lote tenga un único {\em picker}, que los lotes de un mismo {\em picker} no
+se solapen y que ninguna ruta contenga subtours.
+
+{\bf Restricciones duras.} Las rutas deben usar solo arcos del grafo, no
+repetir locaciones y visitar todas las locaciones requeridas por el lote.
+Estas restricciones se tratan con la estrategia de rechazo, lo que implica que nunca se acepta
+una solución que las viole. En la práctica, no hace falta descartar
+soluciones, porque los operadores de movimiento solo generan vecinos que las
+cumplen. La solución inicial se valida al construirla
+(Sección~\in[sec:hc_solucion_inicial]). El movimiento 2-opt descarta las
+inversiones que usarían un arco inexistente, y la reasignación y el
+intercambio no modifican las rutas (Sección~\in[sec:hc_busqueda]). La
+capacidad de los lotes tampoco cambia durante la búsqueda.
+
+{\bf Restricción blanda} Durante la búsqueda, la {\bf cadena de frío} se trata como una restricción
+blanda, con la estrategia de penalización de la
+Ecuación~\in[eq:penalizacion]. El costo de violación es el exceso total de
+los tiempos de ejecución sobre el límite de la cadena de frío:
+\startplaceformula[reference=eq:hc_violacion]
+\startformula
+	v(s) = \sum_{b \in \mathcal{B}} \max\left(0,\; T^{\text{exec}}_{a(b)\,b} - T^{\text{cold}} - \varepsilon\right),
+\stopformula
+\stopplaceformula
+donde $\varepsilon$ es la misma tolerancia numérica de los modelos lineales.
+Las decisiones de la búsqueda se toman con la función penalizada
+\startplaceformula[reference=eq:hc_costo]
+\startformula
+	f'(s) = f(s) + \lambda \, v(s), \qquad \lambda = 1000.
+\stopformula
+\stopplaceformula
+Como $v(s)$ suma {\em cuánto} se excede cada lote, y no {\em cuántos} lotes
+se exceden, un movimiento que acerca un lote al límite sin llegar a cumplirlo
+igualmente reduce $f'$ y puede aceptarse. El peso es fijo durante toda la
+búsqueda, por lo que se trata de una penalización estática.
+
+El valor de $\lambda$ se eligió comparándolo con cuánto puede aumentar $f$
+cuando un lote tarda una unidad de tiempo más. En el peor caso, ese lote y
+todos los que le siguen en la secuencia de su {\em picker} terminan una
+unidad más tarde, y el adelanto o la demora de cada una de sus órdenes
+cambia en una unidad, de modo que el aumento de $f$ está acotado por
+\startformula
+	K = W^{c} \, |\mathcal{B}| + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) |\mathcal{N}|.
+\stopformula
+Con $\lambda > K$, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
+más de lo que una unidad de tiempo adicional en un lote puede sumar a $f$,
+de modo que reducir el exceso tiene prioridad sobre mejorar $f$. En todas
+las instancias evaluadas con un límite de cadena de frío efectivo, $K$ vale
+como máximo 318. Las únicas instancias con $K > 1000$ son dos escenarios de
+estrés con $T^{\text{cold}} = 10^9$, en los que $v(s) = 0$ siempre y
+$\lambda$ no interviene. A
+diferencia de las constantes M grande de los modelos lineales, un valor alto
+de $\lambda$ no trae problemas numéricos, porque se usa solo para comparar
+dos costos y no dentro de un resolvedor.
+
+La cadena de frío se trata como restricción blanda porque depende a la vez de la ruta del
+lote y del {\em picker} que lo ejecuta, y los movimientos de la búsqueda
+pueden cambiar ambas cosas. Si un lote no cumple el límite con su ruta y su
+{\em picker} iniciales, la búsqueda puede corregirlo reasignando el lote a un
+{\em picker} más rápido. En principio también podría acortar la ruta con
+2-opt, pero en la práctica las rutas iniciales ya salen de la construcción
+sin inversiones que las acorten, así que la corrección llega por la
+reasignación (Sección~\in[sec:hc_limitaciones]). Si la restricción fuera
+dura desde el principio, la solución inicial se descartaría completa y la
+búsqueda nunca llegaría a intentar mejorarla. Además, permitir estados infactibles
+intermedios hace posible llegar a posibles soluciones a las que no se puede llegar pasando
+únicamente por soluciones factibles \cite[talbi2009metaheuristics].
+
+A pesar de que su evaluación es blanda, la cadena de frío debe cumplirse en el resultado final.
+Para asegurarlo, durante la búsqueda se mantienen dos soluciones: la solución actual $s$, que se
+compara con sus vecinos usando $f'$, y la mejor solución factible encontrada $s^*$,
+que solo se actualiza cuando la solución aceptada cumple $v(s) = 0$ y mejora
+$f(s^*)$. Al terminar, se informa $s^*$ con su valor $f(s^*)$, que no incluye
+penalización. Si la búsqueda termina sin haber encontrado ninguna solución
+con $v(s) = 0$, la instancia se informa como infactible. Para no
+recalcular $f$ y $v$ desde cero en cada iteración, se usa una evaluación
+incremental, que se describe en la Sección~\in[sec:hc_busqueda].
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Verificación previa de factibilidad}, reference=sec:hc_verificacion]
+
+Antes de construir una solución, \ac{hc} verifica que la instancia pueda
+tener solución. El objetivo de este paso es detectar las instancias
+infactibles sin gastar tiempo de búsqueda en ellas, pero sin declarar nunca
+infactible una instancia que sí tiene solución. Por eso solo se incluyen
+chequeos exactos, es decir, condiciones que, si no se cumplen, no las cumple
+ninguna solución. Si alguno falla, la ejecución termina y la instancia se
+informa como infactible.
+
+Los primeros chequeos validan los datos de entrada:
+\startitemize[n]
+	\item {\bf Asignación de órdenes a lotes.} Debe existir la matriz
+	$B_{nb}$, y cada orden debe pertenecer a exactamente un lote. No es válido
+	que exista una orden sin lote, o que esté en dos lotes a la vez.
+	\item {\bf Capacidad de los lotes.} Para cada lote, la suma de las
+	capacidades $C_n$ de sus órdenes no puede superar la capacidad del carro.
+	Como el loteo es un dato y la búsqueda no mueve órdenes entre lotes, esta
+	restricción se verifica una sola vez.
+	\item {\bf Velocidades positivas.} Debe cumplirse $V_p > 0$ para todo
+	{\em picker}. La velocidad divide al tiempo de ruta en la
+	Ecuación~\in[eq:texec]: una velocidad nula deja el tiempo de ejecución
+	indefinido, y una negativa produce tiempos de ejecución negativos, que
+	cumplirían cualquier límite de cadena de frío. A los {\em pickers} sin
+	velocidad informada se les asigna la velocidad de referencia $V_p = 1$.
+\stopitemize
+
+El último chequeo corresponde a la cadena de frío. Como el tiempo de ruta
+nunca es negativo y las velocidades son positivas, para toda ruta y todo
+{\em picker} se cumple
+\startformula
+	T^{\text{exec}}_{pb} = F_b + \frac{r_b}{V_p} \;\geq\; F_b .
+\stopformula
+Es decir, el tiempo fijo $F_b$ es una cota inferior del tiempo de ejecución
+del lote $b$, que corresponde al caso ideal de una ruta de tiempo nulo. Si un
+lote no cumple la cadena de frío ni siquiera en ese caso, no la cumple con
+ninguna ruta ni con ningún {\em picker}, y la instancia es infactible. Por lo
+tanto, se exige
+\startplaceformula[reference=eq:hc_cota_frio]
+\startformula
+	F_b = T^{\text{setup}} + T^{\text{pick}} \sum_{n \in \mathcal{N}_b} C_n \;\leq\; T^{\text{cold}} + \varepsilon
+	\qquad \forall b \in \mathcal{B}.
+\stopformula
+\stopplaceformula
+Con $r_b = 0$ la velocidad deja de influir, de modo que esta condición no
+depende del {\em picker}.
+
+Hay dos condiciones de factibilidad que no se pueden decidir en este paso.
+La primera es la existencia de una ruta que visite todas las locaciones
+requeridas de un lote sin repetir locaciones, que se determina al construir
+la solución inicial (Sección~\in[sec:hc_solucion_inicial]). La segunda es
+la existencia de una combinación de rutas y {\em pickers} que cumpla la
+cadena de frío en todos los lotes a la vez, cuando cada lote cumple la cota
+por separado. Esta solo puede resolverla la búsqueda, con las consecuencias
+que se describen en la Sección~\in[sec:hc_limitaciones].
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Construcción de la solución inicial}, reference=sec:hc_solucion_inicial]
+
+La solución inicial se construye en dos etapas. Primero se arma la ruta de
+cada lote, de forma independiente de los demás, y después se asignan los
+lotes a los {\em pickers} y se define el orden en que cada uno los ejecuta.
+Por último, la solución se valida contra las restricciones duras
+(Sección~\in[sec:hc_evaluacion]). Si algún lote no consigue una ruta, la
+instancia se informa como infactible.
+
+{\bf Ruta inicial de cada lote.} Sea
+$\mathcal{V}_b = \{ i \in \mathcal{V}^{\text{int}} : a_{bi} = 1 \}$ el
+conjunto de locaciones que el lote $b$ debe visitar. Armar su ruta es una
+variante del TSP: hay que ir de $v_{\text{start}}$ a $v_{\text{end}}$
+pasando por todas las locaciones de $\mathcal{V}_b$, en cualquier orden y
+con la posibilidad de atravesar otras locaciones en el camino. Chen et al.
+tratan el ruteo de picking de esta forma, como un problema del viajante
+sobre las locaciones a visitar, en el que la distancia entre dos de ellas es
+la del camino más corto en el almacén \cite[chen2013antcolony]. La
+diferencia en este trabajo es que la ruta debe ser un camino simple
+(Sección~\in[sec:hc_representacion]). Esto hace que una construcción
+golosa pueda trabarse: al entrar en una zona del almacén, la ruta puede
+dejar sin salida a locaciones que todavía faltaba visitar. Por eso, en lugar
+de una única construcción, se generan varias rutas candidatas y se conserva
+la de menor distancia:
+\startitemize[n]
+	\item {\bf Vecino más cercano.} Desde el depósito, se va repetidamente a
+	la locación pendiente más cercana por el camino más corto (algoritmo de
+	Dijkstra) que no pasa por locaciones ya visitadas ni por
+	$v_{\text{end}}$. Las locaciones requeridas por las que se pasa en el
+	camino cuentan como visitadas. Cuando no quedan pendientes, se llega a
+	$v_{\text{end}}$ por el camino más corto que evita lo ya recorrido. Es la
+	heurística de ruteo que usan Coruzzolo et al.
+	\cite[coruzzolo2023orderpicking], adaptada para no repetir locaciones.
+	Es determinística, y falla si en algún paso ninguna locación pendiente es
+	alcanzable.
+	\item {\bf Inserción del más lejano.} Primero se decide el orden en que
+	se visitan las locaciones requeridas con la inserción del más lejano
+	({\em farthest insertion}) \cite[rosenkrantz1977analysis]. Se parte de la
+	secuencia $(v_{\text{start}}, v_{\text{end}})$ y, repetidamente, se toma
+	la locación pendiente más alejada de las que ya están en la secuencia y
+	se la inserta en la posición que menos alarga el recorrido. En este paso
+	las distancias son las de los caminos más cortos en el grafo, sin
+	considerar la restricción de no repetir locaciones. Después, ese orden se
+	realiza uniendo cada par de locaciones consecutivas con el camino más
+	corto que evita todo lo ya recorrido. Esta construcción se aplica dos
+	veces: sobre el grafo original y sobre el grafo invertido, en el que se
+	invierte el sentido de todos los arcos y se intercambian
+	$v_{\text{start}}$ y $v_{\text{end}}$. Una ruta del grafo invertido,
+	leída al revés, es una ruta del grafo original con la misma distancia,
+	así que esto equivale a construir la ruta desde el final hacia el
+	principio.
+	\item {\bf Construcciones aleatorias.} Se generan 20 rutas con una regla
+	aleatoria. Desde la locación actual, cada locación pendiente $r$ que se
+	puede alcanzar sin repetir locaciones recibe un peso $(1/d_r)^{\beta}$,
+	donde $d_r$ es la distancia de ese camino y $\beta = 2{,}5$, y se elige
+	una con probabilidad proporcional a su peso. Es la regla de transición
+	de \ac{aco} (Ecuación~\in[eq:aco_transicion]) sin el término de
+	feromona, y el valor de $\beta$ es el mismo que usa \ac{aco}
+	\cite[chen2013antcolony]. Antes de aceptar la locación elegida, se
+	verifica que la ruta todavía pueda completarse: cada locación pendiente
+	debe estar en algún camino simple entre la locación elegida y
+	$v_{\text{end}}$ que no pase por lo ya recorrido. Esto se comprueba de
+	forma exacta con las componentes biconexas del grafo. La condición es
+	necesaria pero no suficiente, así que la construcción todavía puede
+	trabarse. Cuando ninguna candidata la cumple, se deshace el último paso y
+	se prueba otra locación en su lugar, con un máximo de 30 retrocesos. Las
+	construcciones alternan entre el grafo original y el invertido, porque la
+	regla favorece a las locaciones cercanas y deja para el final a las más
+	alejadas del punto de partida. Cada ruta completa se mejora
+	alternando dos búsquedas locales hasta que deja de acortarse: 2-opt sobre
+	las locaciones de la ruta (Ecuación~\in[eq:2opt]) y el re-ruteo de
+	tramos, que reemplaza el tramo entre dos locaciones requeridas
+	consecutivas por el camino más corto que evita el resto de la ruta,
+	cuando este es más corto.
+\stopitemize
+
+Una vez obtenidas las soluciones candidatas, se selecciona aquella de menor distancia
+y se aplica un pulido. El pulido repite los siguientes pasos hasta que la ruta deja
+de acortarse, con un máximo de cinco rondas:
+\startitemize
+	\item {\bf 2-opt sobre las locaciones requeridas.} Se invierte el orden
+	de un bloque de hasta 8 locaciones requeridas consecutivas y se vuelven a
+	trazar los caminos entre ellas, evitando el resto de la ruta. A
+	diferencia del 2-opt sobre todas las locaciones de la ruta, que en una
+	grilla casi nunca es aplicable porque los dos nuevos arcos deben unir
+	locaciones adyacentes, este movimiento redibuja los caminos completos.
+	\item {\bf Reubicación de locaciones.} Es una versión simplificada del
+	operador {\em or-opt}, propuesto por Or en su tesis doctoral de 1976
+	\cite[babin2007oropt]. El operador original reubica cadenas de tres, dos
+	y un vértice consecutivos; aquí se reubica una sola locación requerida
+	por vez en otra posición de la secuencia, y se vuelven a trazar los
+	caminos afectados.
+	\item {\bf 2-opt y re-ruteo de tramos}, como en las construcciones
+	aleatorias.
+\stopitemize
+Si ninguna de las construcciones encuentra una ruta, se recurre a una
+búsqueda exhaustiva de tipo {\em best-first}, sobre estados formados por la
+locación actual, el conjunto de locaciones pendientes y el camino recorrido.
+Los estados se exploran primero por cantidad de locaciones pendientes y
+después por la distancia a la locación requerida más cercana, con un tope de
+2.000.000 de expansiones. Si se alcanza el tope sin encontrar una ruta, el
+lote queda sin ruta y la instancia se informa como infactible.
+
+% TODO: pensar si dejar este párrafo o no
+Esta combinación de construcciones surgió de medir versiones más simples.
+Con solo el vecino más cercano mejorado con 2-opt, en el escenario de estrés
+con grilla de 7×7 del perfil realista las rutas sumaban 490 unidades de
+tiempo, contra 425 de las rutas óptimas de la Etapa~1 del modelo Split. En
+el escenario con grilla de 14×14, un lote no conseguía ruta y la instancia
+resultaba infactible, aunque el modelo Split la resolvía. Generar varias
+soluciones de partida y mejorarlas con búsqueda local es una forma habitual
+de diversificar el inicio de una búsqueda local; Coruzzolo et al. la usan
+para el loteo \cite[coruzzolo2023orderpicking].
+Las rutas se comparan por distancia y no por tiempo de ruta $r_b$, que
+también suma el tiempo de servicio de las locaciones de paso. Ambos
+criterios coinciden cuando las locaciones no requeridas tienen
+$S_i = 0$, como en todos los escenarios de estrés, y en las instancias
+funcionales en que no es así la ruta más corta es también la de menor
+$r_b$.
+
+{\bf Asignación inicial y secuencia.} Con las rutas armadas, cada lote con
+órdenes se asigna a un {\em picker} de forma golosa, recorriendo los lotes en
+el orden de sus identificadores. Para el lote $b$ se calcula el conjunto de
+{\em pickers} con los que cumple la cadena de frío,
+\startformula
+	\mathcal{P}_b = \left\{ p \in \mathcal{P} : F_b + \frac{r_b}{V_p} \leq T^{\text{cold}} + \varepsilon \right\}.
+\stopformula
+Si $\mathcal{P}_b$ no es vacío, el lote se asigna al {\em picker} de
+$\mathcal{P}_b$ que tiene menos lotes asignados hasta el momento, con empates
+resueltos por el orden de los {\em pickers}. Si es vacío, la ruta inicial es
+demasiado larga incluso para el {\em picker} más rápido. En ese caso el lote
+se asigna al {\em picker} que minimiza $T^{\text{exec}}_{pb}$, que es el que
+lo deja más cerca de cumplir, y la búsqueda se encarga de intentar
+corregirlo. La secuencia $\sigma_p$ de cada {\em picker} es el orden en que
+recibió sus lotes. Esta asignación solo equilibra la cantidad de lotes por
+{\em picker}: no tiene en cuenta las fechas de entrega ni la duración de los
+lotes, que quedan a cargo de la búsqueda.
+
+La solución resultante cumple todas las restricciones duras, pero puede
+violar la cadena de frío, que durante la búsqueda es blanda
+(Sección~\in[sec:hc_evaluacion]). Si la cumple, $v(s) = 0$ y la solución
+inicial pasa a ser la primera mejor solución factible $s^*$.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Búsqueda estocástica de primera mejora}, reference=sec:hc_busqueda]
+
+A partir de la solución inicial, \ac{hc} aplica un esquema de búsqueda local
+estocástica de primera mejora
+\cite[hoos2015sls,talbi2009metaheuristics]. En cada iteración se elige al
+azar un único movimiento, se genera con él un único vecino y se lo acepta
+solo si reduce el costo penalizado $f'$ de la solución actual
+(Ecuación~\in[eq:hc_costo]). La vecindad no se recorre completa, así que un
+vecino rechazado no significa que la solución actual sea un óptimo local
+(puede haber otros vecinos que la mejoren y que todavía no se generaron). Por
+eso la búsqueda no puede detenerse cuando ningún vecino mejora, como el
+\ac{hc} clásico, y usa criterios de parada explícitos
+(Sección~\in[sec:marco_hc]).
+
+{\bf Movimientos.} Hay tres operadores de movimiento. En cada iteración se
+elige uno con probabilidad uniforme entre los que son aplicables a la
+solución actual:
+\startitemize[n]
+	\item {\bf 2-opt sobre la ruta de un lote.} Se elige al azar un lote
+	y se evalúan todas las inversiones de un tramo de su ruta
+	(Ecuación~\in[eq:2opt]) \cite[croes1958method]. Como el grafo del
+	almacén es dirigido, no toda inversión es posible: un tramo invertido se
+	recorre en sentido contrario, así que se descartan las inversiones que
+	usarían un arco que no existe en ese sentido, o cuyos dos nuevos arcos
+	de unión no existen. Entre las inversiones posibles se toma la mejor, de
+	acuerdo con un costo local que solo considera al lote $b$:
+	\startplaceformula[reference=eq:hc_costo_local]
+	\startformula
+		g_b(\pi_b) = T^{\text{travel}} \, d(\pi_b) + \lambda \max\left(0,\; T^{\text{exec}}_{a(b)\,b} - T^{\text{cold}}\right),
+	\stopformula
+	\stopplaceformula
+	donde $d(\pi_b)$ es la distancia de la ruta. Si ninguna inversión reduce
+	$g_b$, el movimiento no genera vecino.
+	\item {\bf Reasignación de un lote.} Se elige al azar un lote
+	y se lo pasa a otro {\em picker}, también elegido al azar, al
+	final de su secuencia. La ruta del lote no cambia, pero sí su tiempo de
+	ejecución, porque depende de la velocidad del nuevo {\em picker}. La
+	elección no se restringe a los {\em pickers} con los que el lote cumple
+	la cadena de frío. Como se explicó anteriormente, si el cambio viola o empeora
+	la cadena de frío, la penalización de $f'$ hace que se rechace.
+	Solo es aplicable si hay más de un {\em picker}.
+	\item {\bf Intercambio de dos lotes.} Se elige al azar un {\em picker}
+	con al menos dos lotes y se intercambian las posiciones de dos lotes de
+	su secuencia, también elegidos al azar. No cambia rutas ni asignaciones,
+	así que no modifica $v(s)$: solo cambia los instantes de finalización de
+	los lotes ubicados entre las dos posiciones, ambas incluidas; los lotes
+	posteriores terminan en el mismo instante que antes. Solo es aplicable si algún
+	{\em picker} tiene dos o más lotes.
+\stopitemize
+La reasignación y el intercambio cumplen el papel de los movimientos de
+inserción e intercambio de la búsqueda local que Coruzzolo et al. aplican al
+loteo y la secuenciación \cite[coruzzolo2023orderpicking], y modifican las
+componentes $a$ y $\sigma$ de la solución. El 2-opt modifica la componente
+$\pi$.
+
+El movimiento 2-opt combina las dos estrategias de selección de la
+Sección~\in[sec:marco_hc], ya que el bucle principal es de primera mejora, pero
+dentro de este movimiento se toma la mejor inversión de la ruta elegida. El
+costo local $g_b$ se usa para no recalcular la función objetivo de toda la
+solución en cada una de las $O(k^2)$ inversiones de una ruta de $k$
+locaciones. Una inversión no cambia el conjunto de locaciones de la ruta, así
+que $F_b$ y el tiempo de servicio no varían, y el tiempo de ejecución es una
+función lineal de la distancia. Además, la distancia de cada inversión se
+obtiene en tiempo constante, a partir de las distancias acumuladas a lo largo
+de la ruta en ambos sentidos. Que la inversión elegida mejore $g_b$ no
+garantiza que mejore $f'$, porque el cambio de duración del lote modifica
+los instantes de finalización de los lotes que le siguen; esa decisión la
+toma el criterio de aceptación.
+
+{\bf Aceptación.} Si el vecino $s'$ cumple $f'(s') < f'(s)$, reemplaza a la
+solución actual. La desigualdad es estricta, de modo que no se aceptan
+vecinos de igual costo. Si además $v(s') = 0$ y $f(s') < f(s^*)$, el vecino
+pasa a ser la mejor solución factible $s^*$. Las dos soluciones se
+mantienen por separado (como se explicó en la
+Sección~\in[sec:hc_evaluacion]) la solución actual puede violar la cadena
+de frío, pero $s^*$ siempre la cumple.
+
+{\bf Evaluación incremental.} Cada vecino difiere de la solución actual en
+pocos lotes, así que $f$ y $v$ no se recalculan desde cero, sino a partir
+de los valores de la última solución aceptada. Para cada {\em picker}, los
+instantes de finalización se recalculan desde la primera posición de su
+secuencia en la que cambió el lote o su ruta, ya que las posiciones
+anteriores no se ven afectadas (Ecuación~\in[eq:hc_finalizacion]). El
+adelanto y la demora se recalculan solo para las órdenes de los lotes cuyo
+instante de finalización cambió, y el exceso sobre $T^{\text{cold}}$, solo
+para los lotes cuya ruta o cuyo {\em picker} cambió, porque no depende de la
+posición en la secuencia. Los valores guardados se actualizan únicamente
+cuando el vecino es aceptado. El resultado es el mismo que el de la
+evaluación completa.
+
+{\bf Criterios de parada.} La búsqueda termina cuando se cumple el primero
+de tres criterios:
+\startitemize
+	\item {\bf Iteraciones máximas.} Se alcanzan $\text{Max}_{\text{it}}$
+	iteraciones en total.
+	\item {\bf Iteraciones sin mejora.} Se alcanzan
+	$\text{Max}_{\text{imp}}$ iteraciones consecutivas sin aceptar un
+	vecino. Cuentan tanto los vecinos rechazados como las iteraciones en que
+	el movimiento elegido no generó vecino, y el contador vuelve a cero cada
+	vez que se acepta uno. La mejora se mide sobre $f'$, no sobre $f(s^*)$.
+	\item {\bf Tiempo máximo.} El tiempo de reloj transcurrido supera
+	$\text{Max}_{\text{time}}$. Se mide desde el comienzo de la ejecución,
+	incluyendo la verificación previa y la construcción de la solución
+	inicial, y se controla al inicio de cada iteración. Por lo tanto, no
+	interrumpe la construcción ni una iteración en curso.
+\stopitemize
+Al terminar, se informa $s^*$ junto con $f(s^*)$ y la iteración en la que
+$s^*$ mejoró por última vez, que es 0 si la solución inicial fue la mejor
+encontrada. Si la búsqueda termina sin haber pasado por ninguna solución
+con $v(s) = 0$, la instancia se informa como infactible.
+
+El procedimiento completo se resume en la
+Figura~\in[fig:hc_pseudocodigo].
+
+\startplacefigure[title={Pseudocódigo de la búsqueda estocástica de primera mejora.}, reference=fig:hc_pseudocodigo]
+\startframedtext[width=broad, frame=on, align=flushleft]
+\startlines
+{\bf Entrada:} instancia, $\text{Max}_{\text{it}}$, $\text{Max}_{\text{imp}}$, $\text{Max}_{\text{time}}$, semilla
+{\bf Salida:} mejor solución factible $s^*$, o infactible
+\blank[small]
+1.\quad {\bf si} la verificación previa falla {\bf entonces devolver} infactible
+2.\quad $s \leftarrow$ solución inicial; {\bf si} no existe {\bf entonces devolver} infactible
+3.\quad $s^* \leftarrow s$ si $v(s) = 0$; si no, $s^* \leftarrow$ ninguna
+4.\quad $k \leftarrow 0$;\; $u \leftarrow 0$
+5.\quad {\bf mientras} $k < \text{Max}_{\text{it}}$ {\bf y} $u < \text{Max}_{\text{imp}}$ {\bf y} tiempo $\leq \text{Max}_{\text{time}}$ {\bf hacer}
+6.\quad\qquad $k \leftarrow k + 1$
+7.\quad\qquad elegir al azar un movimiento $m$ entre los aplicables a $s$
+8.\quad\qquad $s' \leftarrow m(s)$
+9.\quad\qquad {\bf si} $s'$ existe {\bf y} $f'(s') < f'(s)$ {\bf entonces}
+10.\quad\qquad\qquad $s \leftarrow s'$;\; $u \leftarrow 0$
+11.\quad\qquad\qquad {\bf si} $v(s) = 0$ {\bf y} $f(s) < f(s^*)$ {\bf entonces} $s^* \leftarrow s$
+12.\quad\qquad {\bf si no}
+13.\quad\qquad\qquad $u \leftarrow u + 1$
+14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
+15.\quad {\bf devolver} $s^*$, $f(s^*)$
+\stoplines
+\stopframedtext
+\stopplacefigure
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Parámetros}, reference=sec:hc_parametros]
+
+% TODO: Decidir si esta tabla queda acá o pasa al Capítulo~\in[Capitulo_5].
+La Tabla~\in[tab:hc_parametros] resume los parámetros de \ac{hc}. Los cuatro
+primeros se configuran en cada ejecución. El resto son constantes de la
+implementación, fijadas a partir de las mediciones descritas en las secciones
+anteriores.
+
+\startplacetable[reference=tab:hc_parametros, location=here, title={Parámetros de \ac{hc}. Los valores de estrés son los usados en los escenarios de estrés; la mayoría de los escenarios funcionales usa los valores por defecto.}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][4][width=6.5cm, align=flushleft]
+\bTR \bTH Parámetro \eTH \bTH Por defecto \eTH \bTH Estrés \eTH \bTH Función \eTH \eTR
+\bTR \bTD $\text{Max}_{\text{it}}$ \eTD \bTD 500 \eTD \bTD 200 \eTD \bTD Iteraciones máximas de la búsqueda. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{imp}}$ \eTD \bTD 30 \eTD \bTD 60 \eTD \bTD Iteraciones consecutivas sin aceptar un vecino antes de detenerse. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{time}}$ \eTD \bTD 30~s \eTD \bTD 30~s \eTD \bTD Tiempo de reloj máximo, controlado entre iteraciones. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD 1 \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\bTR \bTD $\lambda$ \eTD \bTD 1000 \eTD \bTD 1000 \eTD \bTD Peso de la penalización por cadena de frío (Ecuación~\in[eq:hc_costo]). \eTD \eTR
+\bTR \bTD Construcciones aleatorias \eTD \bTD 20 \eTD \bTD 20 \eTD \bTD Rutas aleatorias generadas por lote en la solución inicial. \eTD \eTR
+\bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD 2,5 \eTD \bTD Exponente de la distancia en la regla de elección de las construcciones aleatorias. \eTD \eTR
+\bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción aleatoria antes de abandonarse. \eTD \eTR
+\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el 2-opt del pulido. \eTD \eTR
+\bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de la ruta inicial. \eTD \eTR
+\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
+\bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
+\eTABLE
+\stopplacetable
+
+Los escenarios funcionales usan en su mayoría los valores por defecto. Los
+que ejercitan específicamente la velocidad y la cadena de frío fijan entre
+100 y 200 iteraciones, entre 30 y 60 sin mejora y 10~s de tiempo máximo.
+En los escenarios de estrés el tope de iteraciones es menor que el valor por
+defecto, pero el de iteraciones sin mejora es el doble.
+% TODO COMPLETAR: por qué se eligieron 200/60 en estrés
+
+Con la semilla fija, una ejecución es reproducible: la misma instancia y los
+mismos parámetros producen siempre la misma solución, siempre que la
+búsqueda no se detenga por tiempo, ya que en ese caso la cantidad de
+iteraciones depende de la velocidad de la máquina.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Limitaciones}, reference=sec:hc_limitaciones]
+
+La implementación de \ac{hc} tiene las siguientes limitaciones:
+\startitemize
+	\item {\bf No escapa de los óptimos locales.} Solo acepta vecinos que
+	reducen estrictamente $f'$ y no reinicia la búsqueda. Las construcciones
+	múltiples de la Sección~\in[sec:hc_solucion_inicial] diversifican las
+	rutas de partida, pero la búsqueda sigue una única trayectoria desde una
+	única solución inicial. De las cuatro familias de enfoques para escapar
+	de los óptimos locales (Sección~\in[sec:marco_hc]), no implementa
+	ninguna. \ac{aco} (Sección~\in[sec:aco]) aborda esta limitación
+	construyendo muchas soluciones por iteración.
+	\item {\bf En la práctica, la búsqueda puede no modificar las rutas.} El pulido
+	de la ruta inicial termina con 2-opt aplicado hasta que ninguna inversión
+	acorta la ruta, y el costo local $g_b$ (Ecuación~\in[eq:hc_costo_local])
+	crece con la distancia. Por lo tanto, el movimiento 2-opt de la búsqueda
+	casi nunca encuentra una inversión que mejore. En tres escenarios de
+	estrés del perfil realista (grilla de 7×7 con 6 lotes y 3
+	{\em pickers}, 7×7 con 10 lotes y 5 {\em pickers}, y 10×10 con 12
+	lotes y 12 {\em pickers}), el movimiento se eligió 86 veces y no generó
+	ningún vecino. Esas iteraciones, entre el 26~\% y el 48~\% del total
+	según el escenario, se consumen sin efecto y cuentan para
+	$\text{Max}_{\text{imp}}$. En consecuencia, la calidad de las rutas queda
+	determinada por la construcción inicial, y la búsqueda explora en
+	realidad solo la asignación y la secuencia.
+	\item {\bf La reasignación siempre ubica el lote al final.} Un lote
+	reasignado pasa al final de la secuencia de su nuevo {\em picker}. Para
+	llevarlo a otra posición hace falta encadenar intercambios, y cada paso
+	intermedio debe mejorar $f'$ por sí mismo para ser aceptado.
+	\item {\bf La secuencia inicial ignora las fechas de entrega.} El orden
+	inicial de cada {\em picker} es el de los identificadores de los lotes,
+	y solo se corrige mediante intercambios que mejoren de a uno.
+	\item {\bf No hay espera voluntaria.} Cada lote empieza apenas termina el
+	anterior, así que \ac{hc} explora solo las soluciones de los modelos
+	lineales en que ningún lote espera (Sección~\in[sec:espera_voluntaria]).
+	\item {\bf Puede informar infactible una instancia factible.} Si cada
+	lote cumple la cota de la Ecuación~\in[eq:hc_cota_frio], pero la
+	búsqueda agota su presupuesto sin pasar por una solución que cumpla la
+	cadena de frío en todos los lotes, la instancia se informa como
+	infactible aunque tenga solución. Lo mismo ocurre si la búsqueda
+	{\em best-first} de respaldo alcanza su tope sin encontrar la ruta de un
+	lote.
+	\item {\bf El tiempo máximo no es estricto.} Se controla entre
+	iteraciones e incluye la construcción inicial, que no se interrumpe. En
+	el escenario de estrés más grande, con una grilla de 100×100, la
+	construcción por sí sola supera los 30~s y la búsqueda no llega a
+	iterar.
+\stopitemize
+
+\stopsubsection
 
 \stopsection
 
