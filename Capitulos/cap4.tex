@@ -588,10 +588,17 @@ construcción de la solución inicial y cada iteración es barata. Por lo
 tanto, con 200 y 60 la búsqueda termina, en casi todos los escenarios,
 porque deja de encontrar mejoras y no por el tope de iteraciones.
 
-Con la semilla fija, una ejecución es reproducible: la misma instancia y los
-mismos parámetros producen siempre la misma solución, siempre que la
-búsqueda no se detenga por tiempo, ya que en ese caso la cantidad de
-iteraciones depende de la velocidad de la máquina.
+La semilla fija los sorteos de la búsqueda, pero no hace que una ejecución
+sea exactamente reproducible. El resultado depende además del orden en que
+Python recorre algunos conjuntos de locaciones durante las construcciones
+aleatorias, y ese orden cambia entre ejecuciones. Con cinco ejecuciones de
+cada escenario de estrés, con 200 iteraciones máximas y 60 sin mejora, la diferencia entre el
+mejor y el peor valor objetivo fue menor que un 0,1~\% en todos los
+escenarios salvo el 17 (0,10~\%) y el 03 (0,50~\%), con una mediana de
+0,02~\%. En el escenario 11, que tiene un límite de cadena de frío efectivo,
+algunas ejecuciones terminaron sin encontrar una solución factible
+(Sección~\in[sec:hc_limitaciones]). Además, si la búsqueda se detiene por
+tiempo, la cantidad de iteraciones depende de la velocidad de la máquina.
 
 \stopsubsection
 
