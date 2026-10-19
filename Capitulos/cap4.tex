@@ -588,17 +588,17 @@ construcción de la solución inicial y cada iteración es barata. Por lo
 tanto, con 200 y 60 la búsqueda termina, en casi todos los escenarios,
 porque deja de encontrar mejoras y no por el tope de iteraciones.
 
-La semilla fija los sorteos de la búsqueda, pero no hace que una ejecución
-sea exactamente reproducible. El resultado depende además del orden en que
-Python recorre algunos conjuntos de locaciones durante las construcciones
-aleatorias, y ese orden cambia entre ejecuciones. Con cinco ejecuciones de
-cada escenario de estrés, con 200 iteraciones máximas y 60 sin mejora, la diferencia entre el
-mejor y el peor valor objetivo fue menor que un 0,1~\% en todos los
-escenarios salvo el 17 (0,10~\%) y el 03 (0,50~\%), con una mediana de
-0,02~\%. En el escenario 11, que tiene un límite de cadena de frío efectivo,
-algunas ejecuciones terminaron sin encontrar una solución factible
-(Sección~\in[sec:hc_limitaciones]). Además, si la búsqueda se detiene por
-tiempo, la cantidad de iteraciones depende de la velocidad de la máquina.
+La semilla determina todos los sorteos de la construcción y de la búsqueda,
+así que una ejecución es reproducible. Esto significa que la misma instancia, los
+mismos parámetros y la misma semilla producen siempre la misma solución, salvo que
+la búsqueda se detenga por tiempo, ya que en ese caso la cantidad de
+iteraciones depende de la velocidad de la máquina. Al cambiar los
+sorteos en cinco ejecuciones de cada escenario de estrés, con 200
+iteraciones máximas y 60 sin mejora, la diferencia entre el mejor y el peor
+valor objetivo fue menor que un 0,1~\% en todos los escenarios salvo el 17
+(0,10~\%) y el 03 (0,50~\%), con una mediana de 0,02~\%. En el escenario 11,
+que tiene un límite de cadena de frío efectivo, algunos sorteos terminaron
+sin encontrar una solución factible (Sección~\in[sec:hc_limitaciones]).
 
 \stopsubsection
 
@@ -619,15 +619,14 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 	de la ruta inicial termina con 2-opt aplicado hasta que ninguna inversión
 	acorta la ruta, y el costo local $g_b$ (Ecuación~\in[eq:hc_costo_local])
 	crece con la distancia. Por lo tanto, el movimiento 2-opt de la búsqueda
-	casi nunca encuentra una inversión que mejore. En tres escenarios de
+	no siempre encuentra una inversión que mejore. En tres escenarios de
 	estrés del perfil realista (grilla de 7×7 con 6 lotes y 3
 	{\em pickers}, 7×7 con 10 lotes y 5 {\em pickers}, y 10×10 con 12
 	lotes y 12 {\em pickers}), el movimiento se eligió 86 veces y no generó
 	ningún vecino. Esas iteraciones, entre el 26~\% y el 48~\% del total
 	según el escenario, se consumen sin efecto y cuentan para
-	$\text{Max}_{\text{imp}}$. En consecuencia, la calidad de las rutas queda
-	determinada por la construcción inicial, y la búsqueda explora en
-	realidad solo la asignación y la secuencia.
+	$\text{Max}_{\text{imp}}$. En consecuencia, la calidad de las rutas es
+	fuertemente influenciada por la construcción inicial.
 	\item {\bf La reasignación siempre ubica el lote al final.} Un lote
 	reasignado pasa al final de la secuencia de su nuevo {\em picker}. Para
 	llevarlo a otra posición hace falta encadenar intercambios, y cada paso
@@ -659,7 +658,32 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 %----------------------------------------------------------------------------------------
 \startsection[title={Ant Colony Optimization}, reference=sec:aco]
 
-% TODO: completar
+\startsubsection[title={Representación de la solución}]
+\stopsubsection
+
+\startsubsection[title={Función de evaluación}]
+\stopsubsection
+
+\startsubsection[title={Verificación previa de factibilidad}]
+\stopsubsection
+
+\startsubsection[title={Construcción de rutas}]
+\stopsubsection
+
+\startsubsection[title={Pulido de la mejor ruta}]
+\stopsubsection
+
+\startsubsection[title={Asignación, Recombinación y Secuenciacion}]
+\stopsubsection
+
+\startsubsection[title={Actualización de feromonas}]
+\stopsubsection
+
+\startsubsection[title={Parámetros}]
+\stopsubsection
+
+\startsubsection[title={Limitaciones}]
+\stopsubsection
 
 \stopsection
 \stopchapter
