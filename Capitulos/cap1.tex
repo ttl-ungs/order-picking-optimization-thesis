@@ -3,34 +3,93 @@
 %----------------------------------------------------------------------------------------
 \startsection[title={Problema de pickeo de órdenes}, reference=sec:problema]
 
-En un centro de distribución, el {\em picking} (la recolección de los ítems
-que componen un pedido dentro de un almacén) es una de las actividades que
-más tiempo y costo insume dentro de las operaciones logísticas, llegando a
-representar hasta el 50-75\% del costo operativo total de un almacén
+En un centro de distribución, la mercadería llega de los proveedores, se
+almacena en distintas ubicaciones dentro del almacén y se envía a los
+clientes a medida que éstos realizan sus pedidos. El {\em picking}, es decir, la
+recolección de los productos que componen cada pedido, es la actividad que
+conecta ambos extremos y una de las que más tiempo y costo insume, llegando
+a representar hasta el 50-75\% del costo operativo total de un almacén
 \cite[urzua2019evaluating]. Un caso real documentado en un centro de
-distribución nacional muestra que el tiempo de preparación de un pedido podía
-llegar a las 8 horas, y que con una mejor asignación de las ubicaciones de picking
-es posible reducir significativamente ese tiempo \cite[gutierrez2019reduction].
-Reducir el tiempo de desplazamiento de los operarios tiene un impacto
-económico directo y escalable, ya que cualquier mejora se repite en cada
-turno, en cada operario y en cada pedido.
+distribución nacional muestra que el tiempo de preparación de un pedido
+podía llegar a las 8 horas, y que con una mejor asignación de las
+ubicaciones de picking es posible reducir significativamente ese tiempo
+\cite[gutierrez2019reduction]. La reducción de los tiempos de preparación y 
+mejoras de la planificación de la operación de picking generan beneficios directos
+para la empresa y para los clientes, tales como:
 
-Llamamos {\bf OPP} (del inglés {\em Order Picking Problem}) al problema
-de determinar, dado un conjunto de pedidos de clientes agrupados en lotes, a
-qué operario ({\em picker}) asignar cada lote, en qué orden secuenciarlos, y
-la ruta que cada operario debe seguir dentro del almacén para recolectar
-todas las ubicaciones requeridas por sus lotes, de forma tal de minimizar una
-función objetivo que combina el tiempo total de recolección con penalidades
-por adelanto y demora respecto de la fecha de entrega comprometida
-({\em due date}) de cada pedido. El almacén se representa como un grafo
-dirigido cuyos nodos son las ubicaciones de picking, el depósito de partida y
-el punto de entrega, y cuyos arcos representan los desplazamientos posibles
-entre ubicaciones junto con su distancia o tiempo asociado.
+\startitemize
+	\item Reducción de costos operativos, ya que los operarios pueden preparar más
+	pedidos en el mismo tiempo.
+	\item Reducción de los tiempos de entrega, ya que los pedidos se preparan con
+	mayor rapidez y se envían antes a los clientes.
+	\item Una mejor planificación de entregas, ya que los pedidos se preparan y
+	se entregan en el momento justo, evitando cuellos de botella en la zona de
+	despacho.
+	\item Una mejor experiencia de compra para los clientes, ya que reciben sus
+	pedidos en el tiempo comprometido.
+\stopitemize
 
-El agrupamiento de pedidos en lotes ({\em batching}) es un problema
-relacionado, pero distinto: en este trabajo los lotes se reciben ya
-conformados como dato de entrada, y no forman parte de lo que el modelo
-decide.
+Para recolectar varios pedidos en un mismo recorrido, los pedidos de los
+clientes (también llamados {\em órdenes}) se agrupan en {\em lotes}. Cada
+lote es ejecutado por un único operario de picking ({\em picker}): parte del
+depósito, recorre los pasillos visitando cada ubicación donde hay productos
+de alguno de sus pedidos, recoge las unidades correspondientes y termina en
+el punto de entrega, donde el lote queda listo para su despacho. Varios
+operarios trabajan en simultáneo, y cada uno ejecuta los lotes que tiene
+asignados de a uno por vez. A su vez, cada operario tiene una velocidad distinta.
+Planificar esta operación implica tomar tres decisiones:
+
+\startitemize
+	\item {\bf Asignación:} qué operario ejecuta cada lote.
+	\item {\bf Secuenciación:} en qué orden ejecuta cada operario sus lotes.
+	\item {\bf Ruteo:} qué recorrido sigue el operario dentro del almacén
+	para visitar todas las ubicaciones del lote.
+\stopitemize
+
+Para garantizar una mejora en la planificación de las entregas, cada pedido tiene
+una fecha de entrega comprometida({\em due date}), y la calidad de un plan se mide en relación con ella. Un
+pedido que termina después de su fecha incumple el compromiso con el
+cliente; uno que termina mucho antes queda esperando en la zona de
+despacho, ocupando espacio. Por este motivo, este trabajo no busca únicamente
+minimizar los tiempos de finalización de los lotes, si no que también
+busca minimizar las penalidades por adelanto y demora de cada pedido respecto
+de su fecha de entrega. Como todos los pedidos de un lote terminan en el mismo
+instante, cuando un lote reúne pedidos con fechas distintas no todos pueden
+terminar justo en su fecha.
+
+En este trabajo se consideran el trabajo diario en un centro de distribución
+de productos congelados, por lo que se tiene en cuenta el tiempo en el que
+cada producto puede permanecer fuera de la cámara de frío. A esto se lo conoce
+como {\em cadena de frío}, y es un factor crítico en la planificación de la
+operación de picking, ya que los productos refrigerados con una menor cadena
+de frío deben ser recolectados por operarios más rápidos.
+
+Llamamos {\bf OPP} (del inglés {\em Order Picking Problem}) al problema de
+decidir, a partir de un almacén, un conjunto de lotes de pedidos y un conjunto de
+operarios con velocidades distintas, qué operario ejecuta cada lote, en qué
+orden y siguiendo qué ruta, respetando la cadena de frío, de forma tal de
+minimizar la combinación de tiempos de finalización y penalidades por
+adelanto y demora. El almacén se representa como un grafo dirigido
+cuyos nodos son las ubicaciones de picking, el depósito de partida y el
+punto de entrega, y cuyos arcos representan los desplazamientos posibles
+entre ubicaciones junto con su distancia asociada. Se considera que 
+cada ubicación puede ser visitada por cada picker una única vez por lote.
+
+El agrupamiento de pedidos en lotes ({\em batching}) no forma parte de este trabajo.
+Los lotes se reciben como dato de entrada. Lo mismo ocurre con la ubicación de 
+los productos en el almacén ({\em slotting}), que también se considera dada.
+
+Las decisiones del OPP no son independientes entre sí. La duración de un
+lote depende de su ruta y de la velocidad del operario que lo ejecuta, y
+determina si se respeta la cadena de frío y cuándo queda libre ese operario
+para su siguiente lote; la asignación y la secuencia, a su vez, fijan el
+instante en que termina cada lote y, con él, el adelanto o la demora de sus
+pedidos. A esto se suma el tamaño del espacio de soluciones. Un lote que
+debe visitar 20 ubicaciones admite $20! \approx 2\mathord{,}4 \times 10^{18}$
+secuencias de visita posibles, y aun dejando el ruteo de lado, 10 lotes
+pueden repartirse y ordenarse entre 3 operarios de más de 200 millones de
+formas distintas. Por eso, el tiempo necesario para encontrar la mejor
+solución crece rápidamente con el tamaño del problema.
 
 \stopsection
 
@@ -44,7 +103,8 @@ rápidamente con el tamaño de la instancia, y los métodos {\bf heurísticos}
 (y metaheurísticos), que renuncian a la garantía de optimalidad a cambio de
 tiempos de resolución mucho menores y de mayor escalabilidad. En un contexto
 operativo real, donde las decisiones de ruteo deben tomarse en segundos y los
-almacenes pueden tener cientos de ubicaciones, esta disyuntiva entre calidad
+almacenes pueden tener cientos de ubicaciones, así como cientos de pedidos con
+diferentes niveles de urgencia. Esta disyuntiva entre calidad
 de la solución y tiempo de cómputo es central.
 
 Este trabajo recorre esa disyuntiva en cuatro pasos sucesivos, cada uno
@@ -60,13 +120,13 @@ construido sobre el anterior:
 	que la formulación de referencia no contempla: la velocidad heterogénea
 	entre operarios y los requisitos de cadena de frío. El mismo recibe el nombre de
 	{\em monolítico} porque decide ruta, asignación y secuenciación en un
-	único modelo.
+	único modelo. A diferencia del modelo de referencia //TODO
 	\item {\bf Modelo en dos etapas (Split).} Para reducir los tiempos de
 	ejecución del modelo monolítico, se lo descompone en dos modelos que se
-	resuelven uno después del otro: el primero calcula la ruta más corta de
+	resuelven secuencialmente: el primero calcula la ruta más corta de
 	cada lote, y el segundo, tomando esos tiempos de ruta como datos, decide
-	la asignación, la secuenciación y la cadena de frío. A este modelo lo
-	llamamos {\em Split}.
+	la asignación, la secuenciación y la cadena de frío. A estos modelos combinados los
+	llamamos {\em Split}, y lo consideramos como un único modelo.
 	\item {\bf Metaheurísticas.} Como el modelo Split sigue siendo
 	inviable en tiempos prácticos para instancias moderadamente grandes, se
 	programan dos metaheurísticas, basadas en \ac{hc} y en \ac{aco},
@@ -130,8 +190,7 @@ problema real (velocidad heterogénea entre operarios, requisitos de cadena de
 frío) no estaban contempladas en esa formulación.
 
 En la etapa de {\bf modelado} se formuló y programó, con el modelo de
-referencia como guía, el modelo monolítico, que lo extiende con esas
-características.
+referencia, el modelo monolítico, que lo extiende con esas características.
 
 En la etapa de {\bf optimización} se aplicaron distintas estrategias con la
 finalidad de reducir los tiempos de procesamiento del modelo monolítico, que
