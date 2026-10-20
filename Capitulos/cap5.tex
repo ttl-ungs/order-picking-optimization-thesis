@@ -27,6 +27,14 @@ Se definieron 38 casos de prueba, cada uno con una instancia de almacén y un co
 de pedidos, lotes y {\em pickers}. Cada caso tiene una descripción de lo que se espera
 que el modelo resuelva, y se verifican los resultados obtenidos con los esperados.
 
+Podemos clasificar las pruebas funcionales en tres grupos: las que verifican la correcta ejecución del
+modelo, las que verifican la correcta asignación de lotes a {\em pickers}, y las 
+que verifican la correcta secuenciación de los lotes. De todas existen pruebas de 
+factibilidad y de infactibilidad. No todas las pruebas buscan que las rutas sean 
+las esperadas, ya que algunas instancias tienen varias rutas óptimas. En esos casos, 
+se verifica que la ruta encontrada sea válida y que cumpla con las restricciones 
+del problema.
+
 El Cuadro~\in[tab:pruebas_funcionales] lista las pruebas funcionales. Cuando
 un caso agrupa varias pruebas, se distinguen con una letra.
 
@@ -117,11 +125,14 @@ del problema sobre instancias chicas, las de estrés buscan determinar
 hasta qué tamaño de instancia llega cada modelo. Para dimensionarlas se
 realizó primero un relevamiento de los modelos lineales
 (Sección~\in[sec:relevamiento]), cuyos resultados definieron los
-escenarios descriptos en la Sección~\in[sec:escenarios_estres]. Se tomó la decisión
-de que el relevamiento sea en base al modelo split debido al costo de ejecución
-considerando que sería una cota superior de las heurísticas y una inferior del modelo monolítico.
-No se realizaron relevamientos para el modelo monolítico debido a que su tiempo 
-de ejecución es mucho mayor y no se esperaba que su análisis finalice para las dimensiones consideradas.
+escenarios descriptos en la Sección~\in[sec:escenarios_estres].
+
+El relevamiento se centró en el modelo Split por su menor costo de
+ejecución: en tiempo, se esperaba que se ubicara entre las heurísticas, más
+rápidas, y el modelo monolítico, más lento. El monolítico se evaluó solo
+sobre instancias chicas, comparándolo con el Split en las mismas
+instancias (Sección~\in[sec:alcance_monolitico]), ya que en las dimensiones
+consideradas para las pruebas de estrés no se esperaba que terminara.
 
 \startsubsection[title={Relevamiento inicial}, reference=sec:relevamiento]
 
@@ -307,7 +318,7 @@ creciente de las pruebas de estrés (Sección~\in[sec:escenarios_estres]).
 
 \stopsubsubsection
 
-\startsubsubsection[title={Alcance del modelo monolítico}]
+\startsubsubsection[title={Alcance del modelo monolítico}, reference=sec:alcance_monolitico]
 
 El modelo monolítico se evaluó sobre el mismo perfil, resolviendo cada
 instancia también con el modelo Split para contar con su óptimo como
@@ -315,7 +326,9 @@ referencia. El monolítico solo logró probar el óptimo en instancias mucho
 más chicas que las de la calibración (Figura~\in[fig:relev_frontera]): con
 un tope de 10 minutos, hasta 3 lotes en una grilla de 6×6, 4 lotes en 5×5
 y 6 lotes en 3×3. El modelo Split resolvió todos esos puntos en menos de
-4 minutos.
+4 minutos. El objetivo de esta prueba de alcance es determinar cuál es la
+frontera de factibilidad del modelo monolítico contra los del modelo Split sin 
+ejecutar el monolítico en instancias más grandes.
 
 \placefigure[force][fig:relev_frontera]{Resultado del modelo monolítico en cada punto del estudio, con un tope de 10 minutos (perfil realista). En azul, el tiempo que tardó en probar el óptimo; en rojo, la brecha al momento del corte.}
 {\startMPcode
@@ -388,6 +401,15 @@ Los estudios también dieron detalles sobre la medición:
 
 \startsubsection[title={Escenarios de estrés}, reference=sec:escenarios_estres]
 
+Teniendo en cuenta los resultados del relevamiento, se definieron los escenarios de estrés que se
+usan para evaluar los modelos y heurísticas. Cada escenario se diseñó para poner 
+a prueba un aspecto particular del modelo, como la cantidad de lotes, la forma 
+del almacén, la cantidad de {\em pickers}, entre otros. En estas pruebas, se busca
+que los modelos lineales tengan instancias que puedan resolver en un tiempo razonable,
+y se definieron pruebas "en la frontera" de lo resoluble en tiempo aceptable para 
+los modelos lineales. Con esto, se espera que los modelos lineales no puedan resolver
+todas las instancias, y que las heurísticas puedan resolverlas en un tiempo razonable.
+
 El Cuadro~\in[tab:escenarios_estres] lista los escenarios de estrés. Los
 escenarios 04 a 19 usan el perfil realista definido en la
 Sección~\in[sec:relevamiento], con 26 pedidos por lote.
@@ -427,6 +449,9 @@ Sección~\in[sec:relevamiento], con 26 pedidos por lote.
 \startsection[title={Suite de testing y análisis}, reference=sec:suite_testing]
 
 % TODO: completar
+// TODO: Que iba acá??? creo que iban a ir los cuadros, pero por ahí queda mejor
+dejarlos en las secciones en las que se definen las pruebas, aunque puede ser
+que queden muy separados :pienso:
 
 \stopsection
 \stopchapter
