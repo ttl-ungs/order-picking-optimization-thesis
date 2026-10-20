@@ -401,17 +401,16 @@ inicial pasa a ser la primera mejor solución factible $s^*$.
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Búsqueda estocástica de primera mejora}, reference=sec:hc_busqueda]
 
-A partir de la solución inicial, \ac{hc} aplica un esquema de búsqueda local
-estocástica de primera mejora
-\cite[hoos2015sls,talbi2009metaheuristics]. En cada iteración se elige al
-azar un único movimiento, se genera con él un único vecino y se lo acepta
-solo si reduce el costo penalizado $f'$ de la solución actual
-(Ecuación~\in[eq:hc_costo]). La vecindad no se recorre completa, así que un
-vecino rechazado no significa que la solución actual sea un óptimo local
-(puede haber otros vecinos que la mejoren y que todavía no se generaron). Por
-eso la búsqueda no puede detenerse cuando ningún vecino mejora, como el
-\ac{hc} clásico, y usa criterios de parada explícitos
-(Sección~\in[sec:marco_hc]).
+A partir de la solución inicial, \ac{hc} aplica un esquema de búsqueda local estocástica de primera mejora
+\cite[hoos2015sls,talbi2009metaheuristics]. A diferencia de las estrategias de descenso más pronunciado
+que evalúan exhaustivamente toda la vecindad para encontrar la mejor opción, este enfoque selecciona al azar un único
+movimiento, genera un único vecino y lo acepta si reduce el costo penalizado $f'$ de la solución actual
+(Ecuación~\in[eq:hc_costo]). Esta decisión estructural permite mantener un
+bajo costo computacional por iteración al no requerir el escaneo de la
+vecindad completa. En consecuencia, un vecino rechazado no implica que la solución actual sea un
+óptimo local (puede haber otros vecinos que la mejoren y que todavía no se generaron), motivo por el cual la búsqueda
+requiere criterios de parada explícitos en lugar de detenerse simplemente
+al no hallar mejoras inmediatas
 
 {\bf Movimientos.} Hay tres operadores de movimiento. En cada iteración se
 elige uno con probabilidad uniforme entre los que son aplicables a la
@@ -448,11 +447,10 @@ solución actual:
 	posteriores terminan en el mismo instante que antes. Solo es aplicable si algún
 	{\em picker} tiene dos o más lotes.
 \stopitemize
-La reasignación y el intercambio cumplen el papel de los movimientos de
-inserción e intercambio de la búsqueda local que Coruzzolo et al. aplican al
-loteo y la secuenciación \cite[coruzzolo2023orderpicking], y modifican las
-componentes $a$ y $\sigma$ de la solución. El 2-opt modifica la componente
-$\pi$.
+La reasignación y el intercambio cumplen funcionalmente el papel de los movimientos de inserción e
+intercambio que Coruzzolo et al. validan en su búsqueda local para la optimización conjunta del loteo y la
+secuenciación de órdenes \cite[coruzzolo2023orderpicking]. Mientras el 2-opt optimiza exclusivamente la ruta ($\pi$), estos dos
+movimientos alteran las asignaciones ($a$) y el orden de ejecución ($\sigma$).
 
 El movimiento 2-opt combina las dos estrategias de selección de la
 Sección~\in[sec:marco_hc], ya que el bucle principal es de primera mejora, pero
@@ -576,15 +574,18 @@ En los escenarios de estrés el tope de iteraciones es menor que el valor por
 defecto, pero el de iteraciones sin mejora es el doble.
 Para evaluar si estos valores limitan la búsqueda, se repitieron los
 escenarios de estrés 02 a 19 con 200 y 120, 500 y 60, y 500 y 120
-iteraciones máximas e iteraciones sin mejora, respectivamente. El 01 queda
-afuera porque la búsqueda no llega a iterar (Sección~\in[sec:hc_limitaciones]).
-Con 200 y 60, la búsqueda se detiene por estancamiento en casi todos los
-escenarios y solo alcanza el tope de 200 iteraciones en el 03 y el 18. Los
-presupuestos mayores nunca empeoran la solución y la mejoran solo en tres
-escenarios: el 03, con un único {\em picker} y 40 lotes para secuenciar,
-mejora hasta un 0,65~\%; el 17 y el 18, hasta un 0,10~\% y un 0,04~\%. El
-tiempo de ejecución casi no cambia, como máximo 0,12~s, porque lo domina la
-construcción de la solución inicial y cada iteración es barata. Por lo
+iteraciones máximas e iteraciones sin mejora, respectivamente, con cinco
+semillas por escenario. El 01 queda afuera porque la búsqueda no llega a
+iterar (Sección~\in[sec:hc_limitaciones]). Con 200 y 60, la búsqueda se
+detiene por estancamiento en 82 de las 88 ejecuciones que encuentran una
+solución factible, y solo alcanza el tope de 200 iteraciones en el 03, con
+todas las semillas, y en el 18, con una. Los presupuestos mayores nunca
+empeoran la solución y la mejoran solo en cuatro escenarios: el 03, con un
+único {\em picker} y 40 lotes para secuenciar, mejora hasta un 0,59~\%; el
+15, el 17 y el 18, como máximo un 0,11~\%. Las diferencias de tiempo de
+ejecución son del orden del ruido de la medición, de hasta 2~s en uno u
+otro sentido, porque el tiempo lo domina la construcción de la solución
+inicial y cada iteración es barata. Por lo
 tanto, con 200 y 60 la búsqueda termina, en casi todos los escenarios,
 porque deja de encontrar mejoras y no por el tope de iteraciones.
 
@@ -596,9 +597,12 @@ iteraciones depende de la velocidad de la máquina. Al cambiar los
 sorteos en cinco ejecuciones de cada escenario de estrés, con 200
 iteraciones máximas y 60 sin mejora, la diferencia entre el mejor y el peor
 valor objetivo fue menor que un 0,1~\% en todos los escenarios salvo el 17
-(0,10~\%) y el 03 (0,50~\%), con una mediana de 0,02~\%. En el escenario 11,
-que tiene un límite de cadena de frío efectivo, algunos sorteos terminaron
-sin encontrar una solución factible (Sección~\in[sec:hc_limitaciones]).
+(0,12~\%) y el 03 (0,44~\%), con una mediana de 0,02~\%. Además, con una de
+las cinco semillas, dos escenarios terminaron sin solución factible: en el
+11, que tiene un límite de cadena de frío efectivo, la búsqueda no alcanzó
+una solución que lo cumpla, y en el 09 no se consiguió construir la ruta
+inicial de un lote. En ambos casos el resultado fue el mismo con los cuatro
+presupuestos de búsqueda (Sección~\in[sec:hc_limitaciones]).
 
 \stopsubsection
 
@@ -643,7 +647,9 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 	cadena de frío en todos los lotes, la instancia se informa como
 	infactible aunque tenga solución. Lo mismo ocurre si la búsqueda
 	{\em best-first} de respaldo alcanza su tope sin encontrar la ruta de un
-	lote.
+	lote. En los escenarios de estrés ocurrieron los dos casos, cada uno con
+	una de cinco semillas: el primero en el 11 y el segundo en el 09
+	(Sección~\in[sec:hc_parametros]).
 	\item {\bf El tiempo máximo no es estricto.} Se controla entre
 	iteraciones e incluye la construcción inicial, que no se interrumpe. En
 	el escenario de estrés más grande, con una grilla de 100×100, la
