@@ -3,29 +3,445 @@
 %----------------------------------------------------------------------------------------
 \startsection[title={Software utilizado}, reference=sec:software]
 
-Los modelos de esta tesina están implementados en Python. Ambos modelos exactos están resueltos
-con {\bf SCIP}, un solver de \ac{mip} de código abierto, a través de su binding de Python
-{\bf PySCIPOpt}. Las heurísticas están implementadas íntegramente en Python, sin dependencia
-de un solver externo.
-
-\stopsection
-
-%----------------------------------------------------------------------------------------
-\startsection[title={Relevamiento inicial}, reference=sec:relevamiento]
+Los modelos de esta tesina están implementados en Python 3.13. Los dos
+modelos lineales están formulados en {\bf ZIMPL} 3.6.2, un lenguaje de
+modelado algebraico para programación matemática. Cada formulación se
+compila a un archivo en formato LP, que luego se resuelve con {\bf SCIP}
+9.2.3, un solver de \ac{mip} de código abierto, a través de su interfaz
+para Python, {\bf PySCIPOpt} 5.6.0. Para resolver las relajaciones
+lineales, SCIP utiliza SoPlex 7.1.5. Las heurísticas están implementadas
+íntegramente en Python, sin depender de un solver externo.
 
 \stopsection
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Pruebas funcionales}, reference=sec:pruebas_funcionales]
 
-% TODO: completar
+Las pruebas funcionales verifican que cada modelo respete las reglas del problema sobre
+instancias chicas. El objetivo es validar que las restricciones y la función
+objetivo estén correctamente implementadas, y que los resultados sean los esperados.
+Por este motivo, las pruebas funcionales aplican para los dos modelos lineales
+y para las heurísticas, aunque no se espera que estas últimas encuentren la solución óptima.
+
+Se definieron 38 casos de prueba, cada uno con una instancia de almacén y un conjunto
+de pedidos, lotes y {\em pickers}. Cada caso tiene una descripción de lo que se espera
+que el modelo resuelva, y se verifican los resultados obtenidos con los esperados.
+
+Podemos clasificar las pruebas funcionales en tres grupos: las que verifican la correcta ejecución del
+modelo, las que verifican la correcta asignación de lotes a {\em pickers}, y las 
+que verifican la correcta secuenciación de los lotes. De todas existen pruebas de 
+factibilidad y de infactibilidad. No todas las pruebas buscan que las rutas sean 
+las esperadas, ya que algunas instancias tienen varias rutas óptimas. En esos casos, 
+se verifica que la ruta encontrada sea válida y que cumpla con las restricciones 
+del problema.
+
+El Cuadro~\in[tab:pruebas_funcionales] lista las pruebas funcionales. Cuando
+un caso agrupa varias pruebas, se distinguen con una letra.
+
+\startplacetable[reference=tab:pruebas_funcionales, location={here,split}, title={Pruebas funcionales y qué verifica cada una.}]
+	\bTABLE[split=repeat, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2][width=13cm, align=flushleft]
+	\bTABLEhead
+	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \eTR
+	\eTABLEhead
+	\bTABLEbody
+	\bTR \bTD 01 \eTD \bTD Caso básico: 2 pedidos en 2 lotes con 2 {\em pickers}. Cada {\em picker} ejecuta un lote y cada ruta es la esperada. \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD Dos pasillos, un pedido en cada uno: cada lote sigue la ruta de su pasillo y cada {\em picker} ejecuta un lote. \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD //TODO. \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD Dos pasillos con pocas ubicaciones requeridas por pedido: las rutas cubren las ubicaciones requeridas. \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD Dos pasillos en los que los pedidos comparten una ubicación: rutas esperadas, carga equilibrada entre {\em pickers} y sin superposición en el tiempo. \eTD \eTR
+	\bTR \bTD 06a \eTD \bTD Dos rutas posibles que llegan a tiempo: cada lote tiene una ruta y termina en su fecha de entrega. \eTD \eTR
+	\bTR \bTD 06b \eTD \bTD Dos rutas posibles, la larga llega tarde: se elige la corta. \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD Un lote que solo puede completarse repitiendo una ubicación: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD La instancia del caso 07 con una ubicación adicional que evita la repetición: tiene solución y la ruta es la esperada. \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD Dos pedidos de un mismo lote en dos ubicaciones: ruta esperada, carga equilibrada y sin superposición. \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD Dos pedidos en lotes distintos: ruta esperada para cada lote, carga equilibrada y sin superposición. \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD Cuatro pedidos en dos lotes que comparten ubicaciones: rutas esperadas. \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD Sin pruebas activas: verificaba la capacidad del carro dentro del modelo, que ya no la contempla. \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD 12 pedidos en 6 lotes con 3 {\em pickers}, sobre una grilla de 4×4: carga equilibrada y sin superposición en el tiempo. \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD // TODO. \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD 3 pedidos con varias ubicaciones cada uno, en un lote con un {\em picker}, sobre una grilla de 4×4: tiene solución. \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD 6 pedidos en 3 lotes con 2 {\em pickers}, sobre una grilla de 4×4 con pasillos transversales; cada pedido visita más de una ubicación: tiene solución. \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD Un lote en un grafo ramificado: la ruta es la esperada, con carga equilibrada y sin superposición. \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD Un lote de 5 pedidos cuya ruta requiere un desvío: tiene solución. \eTD \eTR
+	\bTR \bTD 19a \eTD \bTD Ruta extendida (un lote de 6 pedidos, 9 ubicaciones) con dos pedidos en la misma ubicación: tiene solución. \eTD \eTR
+	\bTR \bTD 19b \eTD \bTD La misma ruta con fecha de entrega 0 y 100: con 0 hay demora y con 100 no. \eTD \eTR
+	\bTR \bTD 19c \eTD \bTD Ruta extendida: la ruta es un camino válido que cubre todas las ubicaciones requeridas. \eTD \eTR
+	\bTR \bTD 20 \eTD \bTD Pedidos con varias ubicaciones sobre una grilla: cada lote visita todas sus ubicaciones. \eTD \eTR
+	\bTR \bTD 21 \eTD \bTD Una ubicación requerida queda inalcanzable (puente cortado): se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 22a \eTD \bTD Un lote que termina antes de su fecha de entrega: no hay demora. \eTD \eTR
+	\bTR \bTD 22b \eTD \bTD Un lote que termina después de su fecha de entrega: no hay adelanto. \eTD \eTR
+	\bTR \bTD 23a \eTD \bTD Dos lotes de distinta longitud de ruta y dos {\em pickers} de distinta velocidad: el lote de ruta larga va al {\em picker} rápido. \eTD \eTR
+	\bTR \bTD 23b \eTD \bTD Los tiempos de ruta calculados son los que usa la asignación, sin superposición entre lotes de un mismo {\em picker}. \eTD \eTR
+	\bTR \bTD 24a \eTD \bTD La cadena de frío excluye al {\em picker} lento: el lote se asigna al rápido. \eTD \eTR
+	\bTR \bTD 24b \eTD \bTD Ningún {\em picker} cumple la cadena de frío: el chequeo previo no encuentra pares elegibles. \eTD \eTR
+	\bTR \bTD 25a \eTD \bTD Grilla de 5×3 con 2 {\em pickers} y 4 lotes, uno de los cuales supera la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 25b \eTD \bTD La misma grilla, con dos pedidos de un lote en la misma ubicación: tiene solución. \eTD \eTR
+	\bTR \bTD 25c \eTD \bTD La misma grilla, con pedidos de varias ubicaciones: cada lote visita todas sus ubicaciones. \eTD \eTR
+	\bTR \bTD 25d \eTD \bTD La misma grilla, con todos los lotes por encima de la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 25e \eTD \bTD La misma grilla, con fechas de entrega extremas (0 y 100): tiene solución en ambos casos. \eTD \eTR
+	\bTR \bTD 25f \eTD \bTD La misma grilla, con la carga de cada lote exactamente igual a la capacidad del carro: tiene solución. \eTD \eTR
+	\bTR \bTD 25g \eTD \bTD La misma grilla, con lotes distintos que comparten ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 26a \eTD \bTD Grafo con un puente cortado, 2 {\em pickers} y 4 lotes: una ubicación requerida queda inalcanzable; se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 26b \eTD \bTD El mismo grafo con el puente, con fechas de entrega muy holgadas y dos tamaños de pedido: tiene solución. \eTD \eTR
+	\bTR \bTD 26c \eTD \bTD El mismo grafo, con lotes que comparten ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 26d \eTD \bTD El mismo grafo, con una fecha de entrega ajustada y un tiempo de recolección por unidad bajo y alto: tiene solución en ambos casos. \eTD \eTR
+	\bTR \bTD 27 \eTD \bTD La instancia del caso 01 con otros pesos en la función objetivo. \eTD \eTR
+	\bTR \bTD 28 \eTD \bTD Fechas de entrega ajustadas y holgadas: ambas tienen solución, porque la demora absorbe la fecha ajustada. \eTD \eTR
+	\bTR \bTD 29 \eTD \bTD Un lote vacío entre otros: tiene solución. \eTD \eTR
+	\bTR \bTD 30a \eTD \bTD Capacidades de pedido nulas y fraccionarias dentro de la capacidad del carro: tiene solución. \eTD \eTR
+	\bTR \bTD 30b \eTD \bTD Capacidades de pedido nulas y fraccionarias que superan la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 31a \eTD \bTD Un pedido asignado a más de un lote: se rechaza como infactible. \eTD \eTR
+	\bTR \bTD 31b \eTD \bTD Cada pedido asignado a un único lote: tiene solución. \eTD \eTR
+	\bTR \bTD 32 \eTD \bTD Un pedido que por sí solo supera la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 33a \eTD \bTD Tiempos de servicio distintos entre ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 33b \eTD \bTD Tiempo de servicio igual a 1 en todas las ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 33c \eTD \bTD Tiempo de servicio nulo: tiene solución. \eTD \eTR
+	\bTR \bTD 34a \eTD \bTD El tiempo de ejecución de cada lote coincide con su parte fija más el tiempo de ruta dividido por la velocidad del {\em picker}. \eTD \eTR
+	\bTR \bTD 34b \eTD \bTD Ningún {\em picker} cumple la cadena de frío: el modelo informa infactibilidad sin fallar. \eTD \eTR
+	\bTR \bTD 34c \eTD \bTD Un {\em picker} cuyo tiempo de ejecución es exactamente el límite de frío sigue siendo elegible. \eTD \eTR
+	\bTR \bTD 35a \eTD \bTD El límite de frío se aplica a cada lote y no al turno: un {\em picker} puede encadenar dos lotes aunque el segundo termine después del límite. \eTD \eTR
+	\bTR \bTD 35b \eTD \bTD Un {\em picker} que supera el límite de frío por menos que la tolerancia numérica sigue siendo elegible. \eTD \eTR
+	\bTR \bTD 35c \eTD \bTD La parte fija del lote cuenta para el límite de frío: ningún {\em picker} es elegible y se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 36a \eTD \bTD Con un {\em picker} el doble de rápido, conviene repartir los dos lotes. \eTD \eTR
+	\bTR \bTD 36b \eTD \bTD Con un {\em picker} cuatro veces más rápido, conviene que ejecute los dos lotes. \eTD \eTR
+	\bTR \bTD 36c \eTD \bTD Las velocidades nulas o negativas se rechazan antes de resolver. \eTD \eTR
+	\bTR \bTD 36d \eTD \bTD La demora se calcula con el tiempo de ruta escalado por la velocidad del {\em picker}. \eTD \eTR
+	\bTR \bTD 37a \eTD \bTD Con un peso de finalización menor que la cantidad de pedidos del lote, el lote espera hasta la fecha de entrega. \eTD \eTR
+	\bTR \bTD 37b \eTD \bTD Con un peso de finalización mayor, el lote termina lo antes posible. \eTD \eTR
+	\bTR \bTD 38 \eTD \bTD Pedidos en dos pasillos sin salida, que obligan a pasar más de una vez por el mismo nodo: se espera infactibilidad. \eTD \eTR
+	\eTABLEbody
+	\eTABLE
+\stopplacetable
 
 \stopsection
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Pruebas de estrés}, reference=sec:pruebas_estres]
 
-% TODO: completar
+Mientras que las pruebas funcionales verifican que cada modelo respete las reglas 
+del problema sobre instancias chicas, las de estrés buscan determinar
+hasta qué tamaño de instancia llega cada modelo. Para dimensionarlas se
+realizó primero un relevamiento de los modelos lineales
+(Sección~\in[sec:relevamiento]), cuyos resultados definieron los
+escenarios descriptos en la Sección~\in[sec:escenarios_estres].
+
+El relevamiento se centró en el modelo Split por su menor costo de
+ejecución: en tiempo, se esperaba que se ubicara entre las heurísticas, más
+rápidas, y el modelo monolítico, más lento. El monolítico se evaluó solo
+sobre instancias chicas, comparándolo con el Split en las mismas
+instancias (Sección~\in[sec:alcance_monolitico]), ya que en las dimensiones
+consideradas para las pruebas de estrés no se esperaba que terminara.
+
+\startsubsection[title={Relevamiento inicial}, reference=sec:relevamiento]
+
+Antes de definir los escenarios se realizó una serie de estudios
+exploratorios sobre los modelos lineales. Un test responde si una instancia
+determinada se resuelve o no; un estudio, en cambio, recorre una familia de
+instancias y muestra a partir de qué tamaño, y por qué, un modelo deja de
+resolver en tiempos razonables. En cada estudio se varió un único factor
+por vez (tamaño del almacén, cantidad de lotes, pedidos por lote, cantidad
+de {\em pickers} y sus velocidades), manteniendo fijo el resto.
+
+El almacén es una grilla de $n \times n$ ubicaciones, los productos de cada 
+pedido se ubican al azar con una semilla fija, los pedidos se reparten entre 
+los lotes por turnos y las fechas de entrega se distribuyen entre el 60\% y el 140\% de
+una estimación de la duración total de la operación, de modo que algunos
+pedidos terminen antes de su fecha y otros después.
+
+\startsubsubsection[title={Qué dimensión limita al modelo Split}]
+
+El primer estudio partió de una instancia base de 6 lotes, 2 {\em pickers},
+26 pedidos por lote, una grilla de 7×7 y velocidades uniformes, y movió un
+eje por vez con un tope de 300 segundos por resolución. El
+Cuadro~\in[tab:relev_ejes] resume el resultado.
+
+\startplacetable[reference=tab:relev_ejes, location=here, title={Eje que se movió en cada barrido y resultado del modelo Split, con un tope de 300 segundos por resolución.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][3][width=7.5cm, align=flushleft]
+	\bTR \bTH Eje \eTH \bTH Rango \eTH \bTH Resultado \eTH \eTR
+	\bTR \bTD Pedidos por lote \eTD \bTD 10 a 50 \eTD \bTD Resolvió en todo el rango (con 50: Etapa~1 en 46,5~s, Etapa~2 en 14,1~s) \eTD \eTR
+	\bTR \bTD Lotes \eTD \bTD 6 a 8 \eTD \bTD Con 8 lotes, la Etapa~2 alcanzó el tope tras explorar 518.628 nodos \eTD \eTR
+	\bTR \bTD {\em Pickers} \eTD \bTD 2 a 5 \eTD \bTD Resolvió en todo el rango, aunque no de forma monótona (Etapa~2: 12,9~s con 3, 25,4~s con 4 y 7,3~s con 5) \eTD \eTR
+	\bTR \bTD Grilla \eTD \bTD 7×7 a 15×15 \eTD \bTD Con 15×15, la Etapa~1 superó el tope \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+Solo dos ejes impidieron la resolución, y cada uno lo hizo en una etapa
+distinta: la cantidad de lotes aumenta el tiempo de la Etapa~2 (asignación y
+secuencia), mientras que el tamaño del almacén el de la Etapa~1
+(ruteo). Agregar pedidos a cada lote, en cambio, no tuvo impacto significativo: 
+la Etapa~2 exploró 153.934 nodos con 10 pedidos por lote y
+4.144 con 26. Esta separación entre las dos etapas orientó el resto de la
+exploración, ya que permite elegir qué etapa se pone bajo presión en cada
+prueba.
+
+\stopsubsubsection
+
+\startsubsubsection[title={Exploración de instancias más realistas}]
+
+Los estudios siguientes buscaron que las instancias se parecieran a un
+almacén real sin volverse imposibles de resolver.
+
+{\bf Pesos de la grilla.} Con el mismo peso en todos los desplazamientos,
+muchas rutas distintas empatan en costo, algo poco representativo de un
+almacén, donde recorrer un pasillo no cuesta lo mismo que cruzar entre
+pasillos. Con pesos asimétricos (2 y 6), la Etapa~1 llegó a ser 3,7 veces
+más rápida en la grilla de 7×7, pero la ventaja desapareció en la de
+15×15, por lo que no constituye una mejora de rendimiento. Se adoptaron
+pesos levemente distintos según la dirección del desplazamiento (4 y 5),
+por su realismo y no por su efecto en los tiempos.
+
+{\bf Velocidades de los {\em pickers}.} Si bien en un almacén real los
+operarios tienen velocidades distintas, estas velocidades no son muy distantes,
+ya que todos provienen de un mismo perfil y usan el mismo equipamiento. Por este motivo, 
+consideramos que un perfil de velocidades realista no tiene una velocidad distinta 
+por cada operario, sino unas pocas bandas de velocidad. Este cambio
+resultó el más costoso del perfil (Figura~\in[fig:relev_velocidades]).
+Con 3 {\em pickers}, pasar de una única velocidad a dos bandas multiplicó
+por 7,6 el tiempo de la Etapa~2, y una tercera banda no lo empeoró. Con 4
+{\em pickers}, cualquier configuración con más de una velocidad superó el
+tope de 300 segundos. En el estudio las bandas se ubicaron entre 0,7 y
+1,3; el perfil final adoptó dos bandas, de 0,8 y 1,2.
+
+\placefigure[force][fig:relev_velocidades]{Tiempo de la Etapa~2 según la cantidad de velocidades distintas en la cuadrilla (6 lotes, 26 pedidos por lote, grilla de 7×7). Las barras sin relleno no terminaron dentro del tope de 300 segundos.}
+{\startMPcode
+numeric w, h, u, bw; w := 11cm; h := 6cm; u := h/320; bw := 1.0cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+for t = 0, 100, 200, 300:
+  draw (0,t*u)--(-0.12cm,t*u) withpen pencircle scaled .5pt;
+  label.lft(textext("\tfx " & decimal t), (-0.12cm,t*u));
+endfor
+draw (0,300u)--(w,300u) dashed evenly withpen pencircle scaled .5pt withcolor .5white;
+label.urt(textext("\tfx tope: 300 s"), (0.1cm,300u));
+def barra(expr x, y, c) =
+  fill (x,0)--(x+bw,0)--(x+bw,y*u)--(x,y*u)--cycle withcolor c;
+enddef;
+def barracortada(expr x, y, c) =
+  draw (x,0)--(x+bw,0)--(x+bw,y*u)--(x,y*u)--cycle withpen pencircle scaled 1.5pt withcolor c;
+enddef;
+numeric c[]; c1 := 2.0cm; c2 := 5.5cm; c3 := 9.0cm;
+barra(c1-bw-0.05cm, 17.73, \MPcolor{darkblue});
+barra(c2-bw-0.05cm, 134.16, \MPcolor{darkblue});
+barra(c3-bw-0.05cm, 113.51, \MPcolor{darkblue});
+barra(c1+0.05cm, 26.29, \MPcolor{redline});
+barracortada(c2+0.05cm, 300, \MPcolor{redline});
+barracortada(c3+0.05cm, 300, \MPcolor{redline});
+label.top(textext("\tfx 17,7"), (c1-bw/2-0.05cm,17.73u));
+label.top(textext("\tfx 134,2"), (c2-bw/2-0.05cm,134.16u));
+label.top(textext("\tfx 113,5"), (c3-bw/2-0.05cm,113.51u));
+label.top(textext("\tfx 26,3"), (c1+bw/2+0.05cm,26.29u));
+label.bot(textext("\tfx Una velocidad"), (c1,-0.12cm));
+label.bot(textext("\tfx Dos bandas"), (c2,-0.12cm));
+label.bot(textext("\tfx Tres bandas"), (c3,-0.12cm));
+label.bot(textext("Velocidades de la cuadrilla"), (w/2,-0.75cm));
+label.lft(textext("Tiempo de la Etapa 2 (s)") rotated 90, (-1.1cm,h/2));
+fill unitsquare scaled 0.3cm shifted (0.3cm,h+0.75cm) withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx 3 pickers"), (0.65cm,h+0.9cm));
+fill unitsquare scaled 0.3cm shifted (2.9cm,h+0.75cm) withcolor \MPcolor{redline};
+label.rt(textext("\tfx 4 pickers"), (3.25cm,h+0.9cm));
+draw unitsquare scaled 0.3cm shifted (5.5cm,h+0.75cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx 4 pickers, sin terminar en 300 s"), (5.85cm,h+0.9cm));
+\stopMPcode}
+
+{\bf Pedidos por lote y fechas de entrega.} Se fijaron 26 pedidos por lote.
+Con esa cantidad, alrededor de dos tercios de los pedidos se completan a
+tiempo, de modo que en el objetivo actúan tanto la penalidad por adelanto
+como la de demora. Además, el peso de la finalización de los lotes se fijó
+en uno más que la cantidad de pedidos por lote (27), para que la espera
+voluntaria descripta en la Sección~\in[sec:espera_voluntaria] nunca
+resulte conveniente.
+
+{\bf Forma de la agenda.} Se fijaron 6 lotes para 3 {\em pickers}, de modo
+que cada uno ejecute dos lotes y la secuenciación tenga efecto. Con las
+velocidades en bandas, las formas más cargadas no terminaron en 25
+minutos: con 6 lotes y 4 {\em pickers} la brecha al corte fue de 1,09\%,
+con 7 lotes y 3 {\em pickers} de 2,6\%, y con 8 lotes y 3 {\em pickers}
+de 9,48\%.
+
+\stopsubsubsection
+
+\startsubsubsection[title={¿Hasta qué tamaño de almacén podemos entregar resultados?}]
+
+Con el perfil fijo, el único eje que queda libre es el tamaño del almacén.
+Se buscó qué grillas llevan al modelo Split a resolver en un rango de 10 a
+20 minutos, suficiente para exigirlo sin superar el tope de las pruebas.
+Cada medición se tomó de a una, sin otras resoluciones en paralelo
+(Figura~\in[fig:relev_calibracion]).
+
+\placefigure[force][fig:relev_calibracion]{Tiempo de cada etapa del modelo Split en la calibración del perfil realista (6 lotes, 3 {\em pickers}, 26 pedidos por lote). La franja gris marca el rango buscado.}
+{\startMPcode
+numeric w, h, u, bw; w := 11cm; h := 6cm; u := h/26; bw := 1.6cm;
+fill (0,10u)--(w,10u)--(w,20u)--(0,20u)--cycle withcolor \MPcolor{darkgray};
+label.rt(textext("\tfx rango buscado: 10 a 20 min"), (0.15cm,17u));
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+for t = 0, 5, 10, 15, 20, 25:
+  draw (0,t*u)--(-0.12cm,t*u) withpen pencircle scaled .5pt;
+  label.lft(textext("\tfx " & decimal t), (-0.12cm,t*u));
+endfor
+def segmento(expr xa, ya, yb, cc) =
+  fill (xa,ya*u)--(xa+bw,ya*u)--(xa+bw,yb*u)--(xa,yb*u)--cycle withcolor cc;
+enddef;
+numeric c[]; c1 := 2.0cm; c2 := 5.5cm; c3 := 9.0cm;
+segmento(c1-bw/2, 0, 0.160, \MPcolor{darkblue});
+segmento(c1-bw/2, 0.160, 3.564, \MPcolor{redline});
+segmento(c2-bw/2, 0, 7.421, \MPcolor{darkblue});
+segmento(c2-bw/2, 7.421, 11.818, \MPcolor{redline});
+draw (c2-bw/2,7.421u)--(c2+bw/2,7.421u) withpen pencircle scaled 1pt withcolor white;
+draw (c3-bw/2,0)--(c3+bw/2,0)--(c3+bw/2,25u)--(c3-bw/2,25u)--cycle withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.top(textext("\tfx 3,6 min"), (c1,3.564u));
+label.top(textext("\tfx 11,8 min"), (c2,11.818u));
+label.top(textext("\tfx más de 25 min"), (c3,25u));
+label.bot(textext("\tfx 7×7"), (c1,-0.12cm));
+label.bot(textext("\tfx 13×13"), (c2,-0.12cm));
+label.bot(textext("\tfx 15×15"), (c3,-0.12cm));
+label.bot(textext("Tamaño de la grilla"), (w/2,-0.75cm));
+label.lft(textext("Tiempo (min)") rotated 90, (-1.0cm,h/2));
+fill unitsquare scaled 0.3cm shifted (0.3cm,h+0.75cm) withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Etapa 1 (ruteo)"), (0.65cm,h+0.9cm));
+fill unitsquare scaled 0.3cm shifted (3.2cm,h+0.75cm) withcolor \MPcolor{redline};
+label.rt(textext("\tfx Etapa 2 (asignación y secuencia)"), (3.55cm,h+0.9cm));
+draw unitsquare scaled 0.3cm shifted (8.6cm,h+0.75cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Etapa 1 sin terminar"), (8.95cm,h+0.9cm));
+\stopMPcode}
+
+En la grilla de 7×7 casi todo el tiempo corresponde a la Etapa~2: el ruteo
+tarda menos de 10 segundos. Al pasar a 13×13 la relación se invierte y la
+Etapa~1 pasa a ser la más costosa, mientras que la Etapa~2 crece poco,
+porque la forma de la agenda es la misma. En 15×15, la Etapa~1 no terminó
+en 25 minutos. Estas mediciones definieron los escenarios de tamaño
+creciente de las pruebas de estrés (Sección~\in[sec:escenarios_estres]).
+
+\stopsubsubsection
+
+\startsubsubsection[title={Alcance del modelo monolítico}, reference=sec:alcance_monolitico]
+
+El modelo monolítico se evaluó sobre el mismo perfil, resolviendo cada
+instancia también con el modelo Split para contar con su óptimo como
+referencia. El monolítico solo logró probar el óptimo en instancias mucho
+más chicas que las de la calibración (Figura~\in[fig:relev_frontera]): con
+un tope de 10 minutos, hasta 3 lotes en una grilla de 6×6, 4 lotes en 5×5
+y 6 lotes en 3×3. El modelo Split resolvió todos esos puntos en menos de
+4 minutos. El objetivo de esta prueba de alcance es determinar cuál es la
+frontera de factibilidad del modelo monolítico contra los del modelo Split sin 
+ejecutar el monolítico en instancias más grandes.
+
+\placefigure[force][fig:relev_frontera]{Resultado del modelo monolítico en cada punto del estudio, con un tope de 10 minutos (perfil realista). En azul, el tiempo que tardó en probar el óptimo; en rojo, la brecha al momento del corte.}
+{\startMPcode
+numeric cw, ch; cw := 1.9cm; ch := 0.85cm;
+color azul, rojo, gris; azul := 0.25[white,\MPcolor{darkblue}]; rojo := 0.35[white,\MPcolor{redline}]; gris := \MPcolor{darkgray};
+def celda(expr i, j, c, s) =
+  fill ((j-1)*cw+1pt,(5-i)*ch+1pt)--(j*cw-1pt,(5-i)*ch+1pt)--(j*cw-1pt,(6-i)*ch-1pt)--((j-1)*cw+1pt,(6-i)*ch-1pt)--cycle withcolor c;
+  draw textext("\tfx " & s) shifted ((j-0.5)*cw,(5.5-i)*ch);
+enddef;
+string fila[]; fila1 := "1 lote, 1 picker"; fila2 := "2 lotes, 1 picker"; fila3 := "3 lotes, 2 pickers"; fila4 := "4 lotes, 2 pickers"; fila5 := "6 lotes, 3 pickers";
+for i = 1 upto 5: label.lft(textext("\tfx " & fila[i]), (-0.1cm,(5.5-i)*ch)); endfor
+for j = 1 upto 5: label.top(textext("\tfx " & decimal (j+2) & "×" & decimal (j+2)), ((j-0.5)*cw,5ch)); endfor
+celda(1,1,azul,"0,2 s"); celda(1,2,azul,"0,2 s"); celda(1,3,azul,"0,2 s"); celda(1,4,azul,"0,2 s"); celda(1,5,azul,"0,3 s");
+celda(2,1,azul,"0,3 s"); celda(2,2,gris,"infactible"); celda(2,3,azul,"3,3 s"); celda(2,4,azul,"13,5 s"); celda(2,5,azul,"17,9 s");
+celda(3,1,azul,"4,7 s"); celda(3,2,gris,"infactible"); celda(3,3,azul,"8,6 s"); celda(3,4,azul,"138,8 s"); celda(3,5,rojo,"11,4 \%");
+celda(4,1,azul,"6,6 s"); celda(4,2,gris,"infactible"); celda(4,3,azul,"47,1 s"); celda(4,4,rojo,"13,2 \%"); celda(4,5,white,"--");
+celda(5,1,azul,"192,1 s"); celda(5,2,gris,"infactible"); celda(5,3,rojo,"3,0 \%"); celda(5,4,white,"--"); celda(5,5,white,"--");
+label.top(textext("Tamaño de la grilla"), (2.5cw,5ch+0.5cm));
+fill unitsquare scaled 0.3cm shifted (0.5cm,-0.6cm) withcolor azul;
+label.rt(textext("\tfx probó el óptimo (tiempo)"), (0.85cm,-0.45cm));
+fill unitsquare scaled 0.3cm shifted (5.0cm,-0.6cm) withcolor rojo;
+label.rt(textext("\tfx cortado a los 10 min (brecha)"), (5.35cm,-0.45cm));
+fill unitsquare scaled 0.3cm shifted (0.5cm,-1.1cm) withcolor gris;
+label.rt(textext("\tfx infactible"), (0.85cm,-0.95cm));
+label.rt(textext("\tfx --: no se corrió"), (5.0cm,-0.95cm));
+\stopMPcode}
+
+Donde fue cortado, el monolítico ya había encontrado soluciones a menos del
+0,3\% del óptimo. Su dificultad no está en encontrar buenas soluciones,
+sino en demostrar que son óptimas. Con un tope de 40 minutos la situación
+casi no cambió, y la única instancia adicional que cerró (6 lotes en 5×5)
+le llevó 32 minutos, 8 veces lo que tardó el modelo Split. Las instancias
+de 4×4 con más de un lote resultaron infactibles para ambos modelos, y las
+celdas sin dato no se corrieron porque una grilla menor ya había alcanzado
+el tope. Por estos resultados, en las pruebas de estrés la referencia
+contra la que se comparan las heurísticas es el modelo Split.
+
+\stopsubsubsection
+
+\startsubsubsection[title={Cómo medir los tiempos}]
+
+Los estudios también dieron detalles sobre la medición:
+
+\startitemize
+	\item {\bf El límite de tiempo de SCIP no es estricto.} SCIP lo controla
+	entre operaciones, y una sola operación puede ser muy larga: una
+	resolución con un límite de 300 segundos terminó a los 3.079, tras
+	explorar apenas 499 nodos. Por eso, cada prueba se ejecuta en un proceso
+	propio, que se termina desde afuera al vencer el tope, y se verificó que
+	ese corte funciona en cualquiera de las dos etapas.
+	\item {\bf La cantidad de nodos es determinista; el reloj, no.} Ante la
+	misma instancia, SCIP recorre el mismo árbol de búsqueda: dos corridas
+	de una misma configuración exploraron exactamente 14.041 nodos, con
+	12,9 y 17,7 segundos de reloj. Entre corridas hechas en momentos
+	distintos, el tiempo de la misma instancia llegó a variar hasta el
+	doble con el mismo objetivo.
+	\item {\bf Las resoluciones en paralelo inflan el reloj.} Ejecutar
+	varias resoluciones a la vez en la misma máquina multiplicó los tiempos
+	entre 1,6 y 2,3 veces, sin cambiar la cantidad de nodos. Por eso las
+	pruebas se ejecutan de a una y sin procesos pesados corriendo en paralelo.
+	\item {\bf La Etapa~1 admite paralelismo propio.} Como resuelve cada
+	lote por separado, puede repartirse entre varios procesos. Con 6
+	procesos fue 2,2 veces más rápida en una grilla de 13×13 y 1,9 veces en
+	una de 14×14, con rutas idénticas.
+\stopitemize
+
+\stopsubsubsection
+
+\stopsubsection
+
+\startsubsection[title={Escenarios de estrés}, reference=sec:escenarios_estres]
+
+Teniendo en cuenta los resultados del relevamiento, se definieron los escenarios de estrés que se
+usan para evaluar los modelos y heurísticas. Cada escenario se diseñó para poner 
+a prueba un aspecto particular del modelo, como la cantidad de lotes, la forma 
+del almacén, la cantidad de {\em pickers}, entre otros. En estas pruebas, se busca
+que los modelos lineales tengan instancias que puedan resolver en un tiempo razonable,
+y se definieron pruebas "en la frontera" de lo resoluble en tiempo aceptable para 
+los modelos lineales. Con esto, se espera que los modelos lineales no puedan resolver
+todas las instancias, y que las heurísticas puedan resolverlas en un tiempo razonable.
+
+El Cuadro~\in[tab:escenarios_estres] lista los escenarios de estrés. Los
+escenarios 04 a 19 usan el perfil realista definido en la
+Sección~\in[sec:relevamiento], con 26 pedidos por lote.
+
+\startplacetable[reference=tab:escenarios_estres, location=here, title={Escenarios de estrés y qué se prueba en cada uno.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2][width=7cm, align=flushleft]
+	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH {\em Pickers} \eTH \bTH Pedidos \eTH \bTH Grilla \eTH \eTR
+	\bTR \bTD 01 \eTD \bTD Almacén muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD Un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD Un solo {\em picker} con 40 lotes, todos los pedidos atrasados \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD Perfil realista en un almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD Almacén alargado: efecto de la forma del almacén \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD Más peso en la agenda: ruteo barato y 4 {\em pickers} \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD Cadena de frío activa: solo los {\em pickers} rápidos pueden ejecutar los lotes \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD Más personal: 8 lotes y 4 {\em pickers} \eTD \bTD 8 \eTD \bTD 4 \eTD \bTD 208 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD Más personal: 10 lotes y 5 {\em pickers} \eTD \bTD 10 \eTD \bTD 5 \eTD \bTD 260 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD Más personal: 12 lotes y 6 {\em pickers} \eTD \bTD 12 \eTD \bTD 6 \eTD \bTD 312 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD Más {\em pickers} que lotes: quién queda libre \eTD \bTD 6 \eTD \bTD 9 \eTD \bTD 156 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD Una ola: un lote por {\em picker} \eTD \bTD 12 \eTD \bTD 12 \eTD \bTD 312 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD Tres {\em pickers} toman un segundo lote \eTD \bTD 15 \eTD \bTD 12 \eTD \bTD 390 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD La mitad de los {\em pickers} toma un segundo lote \eTD \bTD 18 \eTD \bTD 12 \eTD \bTD 468 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 19 \eTD \bTD Todos los {\em pickers} toman dos lotes \eTD \bTD 24 \eTD \bTD 12 \eTD \bTD 624 \eTD \bTD 10×10 \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+\stopsubsection
 
 \stopsection
 
@@ -33,6 +449,9 @@ de un solver externo.
 \startsection[title={Suite de testing y análisis}, reference=sec:suite_testing]
 
 % TODO: completar
+// TODO: Que iba acá??? creo que iban a ir los cuadros, pero por ahí queda mejor
+dejarlos en las secciones en las que se definen las pruebas, aunque puede ser
+que queden muy separados :pienso:
 
 \stopsection
 \stopchapter
