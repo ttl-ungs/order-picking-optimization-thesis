@@ -214,3 +214,66 @@ estructurales de las heurísticas evaluadas.
 
 \stopsection
 \stopchapter
+
+%========================================================================================
+% GUÍA DE TRABAJO - CAPÍTULO 1 (Introducción)
+% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
+% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
+% (linear-picking-routing, origin/main 75d553c del 19/10), docs/thesis/models.tex y
+% Notas/opp_v5_development.tex. Solo cubre lo que toca a modelos lineales, definición de
+% pruebas, comparación de modelos y validación de las metaheurísticas.
+% [ ] = tarea; (D) = decisión de ustedes.
+%========================================================================================
+%
+% 1. QUÉ FALTA
+% [ ] Enfoque propuesto, ítem 2: termina en "A diferencia del modelo de referencia //TODO".
+%     Completar con qué cambia respecto de Coruzzolo et al.: (a) el loteo no se decide (los
+%     lotes son dato; según el propio cap. 2, Coruzzolo también optimiza el batching);
+%     (b) se agregan V_p y T_cold; (c) los cambios de formulación que correspondan
+%     (verificarlo contra el paper: eliminación de subtours por flujo de Gavish-Graves,
+%     forma del objetivo). Ojo: "//TODO" se imprime en el PDF (en ConTeXt el comentario es
+%     %); pasa lo mismo en el cap. 5 (casos 03 y 14, y la sección 5.4).
+% [ ] Enfoque propuesto, ítem 1: dice que el modelo de Coruzzolo resuelve "asignación,
+%     secuenciación y ruteo"; el cap. 2 dice que también hace batching. Unificar y aclarar
+%     acá que el batching queda fuera de este trabajo.
+% [ ] Organización del trabajo, etapa de experimentación: agregar la validación, que es un
+%     aporte metodológico propio: se verificó que cada solución de las metaheurísticas
+%     cumple todas las restricciones del modelo monolítico (método en el cap. 5, resultados
+%     en el cap. 6).
+%
+% 2. QUÉ CORREGIR O MEJORAR
+% [ ] Objetivo específico 2 ("que alcance el mismo valor óptimo en menor tiempo") e ítem 3
+%     del enfoque: el mismo óptimo se cumple (49 de 49 pares funcionales), pero el "menor
+%     tiempo" vale solo a escala: en las instancias funcionales el monolítico es más rápido
+%     en 38 de 49 pares (compila un MIP en vez de dos). Reformular, p. ej. "...y que escale a
+%     instancias que el monolítico no resuelve" (estrés: Split 9 de 19, monolítico 0 de 19).
+% [ ] Enfoque, ítem 4, y objetivo específico 3: "sobre el mismo espacio de soluciones" no es
+%     exacto. Las metaheurísticas no hacen espera voluntaria (cap. 3), así que exploran el
+%     subconjunto de soluciones sin espera (el cap. 4 ya lo dice). Ajustar la frase.
+% [ ] Objetivo general ("robustez") y objetivo específico 5 ("tasa de convergencia"):
+%     definirlos en el cap. 5 de forma medible (p. ej. convergencia = proporción de
+%     instancias en que el método termina con solución, o prueba el óptimo, dentro del tope;
+%     robustez = variación del resultado entre semillas). Hoy cada heurística corrió una sola
+%     vez, con semilla 1: si no se mide la variabilidad, sacar "robustez" o acotarla.
+% [ ] Objetivo específico 4 ("comparar los cuatro modelos bajo condiciones equivalentes"):
+%     en estrés la referencia termina siendo solo el Split, porque el monolítico no termina
+%     ningún escenario. Anticiparlo o suavizar "los cuatro modelos".
+% [ ] "Se considera que cada ubicación puede ser visitada por cada picker una única vez por
+%     lote": es la restricción de camino simple, (8)-(9) del cap. 3. Presentarla como
+%     simplificación de la formulación y no como regla del negocio: en una grilla chica y
+%     saturada vuelve infactible una instancia físicamente posible (test 38; estudio 08).
+% [ ] Organización del trabajo, etapas de modelado y optimización: el orden real fue el
+%     inverso. El Split (opp_v5) existió primero (en el repo desde el 30/08) y el monolítico
+%     se agregó el 21/09 para medir qué aporta la descomposición; las estrategias para bajar
+%     tiempos (Etapa 1 por lote, paralelismo, clausura métrica, branching por pseudocosto,
+%     pesos asimétricos) se probaron sobre el Split (Notas, sec. "Pruebas para mejorar el
+%     rendimiento del Split").
+%     (D) Contarlo en orden lógico sin presentarlo como cronología, o ajustar el texto.
+% [ ] Opcional, sin tocar la estructura: un párrafo final con la guía de capítulos ("el
+%     Capítulo 2 presenta..."); hoy "Organización del trabajo" describe etapas del proceso.
+%
+% 3. FUENTES
+% - Notas/opp_v5_development.tex: secs. "Origen y evolución de la familia v5" (cronología)
+%   y "Síntesis para la tesina".
+% - linear-picking-routing/docs/thesis/models.tex, sec. "Conclusiones".
+%========================================================================================
