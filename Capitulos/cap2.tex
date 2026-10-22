@@ -348,3 +348,63 @@ sobre escenarios equivalentes para los cuatro enfoques.
 
 \stopsection
 \stopchapter
+
+%========================================================================================
+% GUÍA DE TRABAJO - CAPÍTULO 2 (Marco teórico y estado del arte)
+% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
+% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
+% (linear-picking-routing, origin/main 75d553c del 19/10), docs/thesis/models.tex y
+% Notas/opp_v5_development.tex. Solo cubre la base teórica que necesitan los modelos
+% lineales, la comparación de modelos y la validación de las metaheurísticas.
+% [ ] = tarea; (D) = decisión de ustedes.
+%========================================================================================
+%
+% 1. QUÉ FALTA (conceptos que usan los cap. 3 a 6 y que hoy no están acá)
+% [ ] MIP, simetría: con pickers idénticos o lotes vacíos hay muchas soluciones
+%     equivalentes que el branch and bound no puede podar. Sirve para explicar en el cap. 6
+%     el timeout del funcional 30a (10 de sus 12 lotes están vacíos: la misma solución se
+%     verifica en 0,13 s sin ellos y no cierra en 600 s con ellos) y la hipótesis sobre el
+%     costo de la Etapa 2 con velocidades uniformes contra velocidades en bandas.
+%     Ref. posible: Margot (2010), "Symmetry in integer linear programming", en
+%     50 Years of Integer Programming 1958-2008.
+% [ ] MIP, el otro lado de la M grande: hoy dice que una M grande afloja la relajación.
+%     Agregar que también trae problemas numéricos (tolerancias) y que una M chica corta
+%     soluciones factibles. El proyecto tiene los dos casos (Notas, "Historia de M_seq"):
+%     con M_seq = 100.000 SCIP aceptó como óptimas soluciones con solapamientos de ~0,1;
+%     con 500 fijo, el estrés de 40 lotes en un picker dio un infactible falso.
+% [ ] Objetivos de adelanto y demora: no son regulares (puede convenir insertar tiempo
+%     ocioso) y forman una clase difícil. Es la base teórica de la espera voluntaria
+%     (cap. 3) y de la elección W^c = 27 en estrés (cap. 5). Ref. clásica: Baker y Scudder
+%     (1990), "Sequencing with earliness and tardiness penalties: a review", Operations
+%     Research 38(1).
+% [ ] Gap: agregar que un gap grande puede venir de una cota dual débil aunque la solución
+%     sea casi óptima. El cap. 6 lo necesita (el monolítico reporta 143,5 % de gap con una
+%     solución a 0,66 % del óptimo) para justificar que la referencia sea el óptimo del
+%     Split y no el gap del monolítico.
+% [ ] Manejo de restricciones en metaheurísticas: solo están rechazo y penalización. Talbi
+%     (2009) describe también reparación, decodificación y preservación. HC y ACO usan
+%     preservación (la representación y los operadores cumplen por construcción un picker
+%     por lote, no solapamiento, sin subtours y camino simple), que hoy el cap. 4 llama
+%     "rechazo". Agregar al menos preservación para poder citarla en el cap. 4.
+% [ ] Evaluación experimental de metaheurísticas (subsección nueva, o al final de la parte
+%     de metaheurísticas): brecha contra el óptimo, comparación a igual tiempo, varias
+%     corridas con distintas semillas y reporte de medianas y dispersión, y la diferencia
+%     entre encontrar una buena solución y probar que es óptima. Es la base de la
+%     metodología del cap. 5 y de las tablas del cap. 6. Refs: Talbi (2009), cap. 1
+%     (análisis de desempeño); Barr et al. (1995), "Designing and reporting on
+%     computational experiments with heuristic methods", Journal of Heuristics 1(1).
+%
+% 2. QUÉ CORREGIR O MEJORAR
+% [ ] Trabajos relacionados, último párrafo: cuando estén los resultados, cuantificar
+%     "resolver hasta la optimalidad instancias de tamaño reducido" (Split: hasta 6 lotes en
+%     grillas de hasta 15×15 dentro de 40 min; monolítico: con 10 min, hasta 3 lotes en 6×6).
+% [ ] Unificar términos con los cap. 3 a 6: "resolvedor"/"solver", "locación"/"ubicación",
+%     "completitud"/"finalización".
+% [ ] (Opcional) La descomposición del Split puede quedar solo en el cap. 3, con su
+%     argumento de exactitud; acá alcanza con nombrar la idea de resolver en etapas.
+%
+% 3. FUENTES
+% - Notas/opp_v5_development.tex: secs. "Notación común" (historia de M_seq), "Espera
+%   voluntaria y el SLA", "Estudio 03" (hipótesis de simetría) y "Verificación cruzada"
+%   (lotes vacíos del 30a).
+%========================================================================================
