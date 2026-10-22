@@ -646,3 +646,144 @@ modelo monolítico y el modelo Split.
 
 \stopsection
 \stopchapter
+
+%========================================================================================
+% GUÍA DE TRABAJO - CAPÍTULO 3 (Modelos lineales)
+% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
+% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
+% (linear-picking-routing, origin/main 75d553c del 19/10: los .zpl y el pipeline),
+% docs/thesis/models.tex, Notas/opp_v5_development.tex y la revisión del capítulo del
+% 19/10. Foco: modelos lineales y lo que de ellos necesitan las pruebas, la comparación y
+% la validación de las metaheurísticas.
+% [ ] = tarea; (D) = decisión de ustedes.
+%========================================================================================
+%
+% 1. ORGANIZACIÓN PROPUESTA (se mantienen las secciones; se agregan piezas)
+%   3.0 Introducción y supuestos (completar la lista, ver 2.1).
+%   3.1 Notación común (+ condiciones de validez de M y M_seq, ver 2.2).
+%   3.2 Modelo monolítico (está bien; ver correcciones puntuales en 3).
+%   3.3 Modelo Split (+ argumento de exactitud corregido y cómo se ejecuta, ver 2.3).
+%   3.4 Espera voluntaria (+ fórmula del nivel de servicio y por qué no aparece en estrés).
+%   3.5 Diferencias entre las formulaciones (tabla con números, ver 3).
+%   3.6 Limitaciones de la formulación (sección nueva y corta, ver 2.4).
+%   - Pseudocódigo del pipeline del Split: al Anexo (Apendices/ap2.tex tiene la sección
+%     vacía).
+%   - Los resultados de equivalencia (mismo óptimo en 49 pares, etc.) van en el cap. 6; acá
+%     solo una referencia hacia adelante.
+%
+% 2. QUÉ FALTA
+% 2.1 Supuestos (hoy son 3; el último ítem termina en ";")
+% [ ] Sin congestión entre pickers: es lo que permite que la ruta de un lote no dependa de
+%     la asignación ni de la secuencia, y por lo tanto el Split. El cap. 2 cita a Chen et
+%     al., que sí la modelan.
+% [ ] La capacidad del carro no es una restricción del modelo (C_v figura como "NO USADO"
+%     en el .zpl): los lotes que la exceden y las órdenes que no están en exactamente un lote
+%     se rechazan antes de resolver (tests/infra/zimpl/zpl_utils.py, con funciones de
+%     models/utils/input_validation.py), con la misma regla que aplican HC y ACO. Explica
+%     los infactibles por capacidad del cap. 5 (25a, 25d, 30b, 32) y el 31a.
+% [ ] La velocidad escala el tiempo de ruta completo (traslado y servicio, r_b) y no la
+%     preparación ni la recolección (F_b). Hoy dice que "solo escala el tiempo de
+%     recorrido". Justificación (comentario del .zpl): preparación y recolección dependen de
+%     la tarea, no del desplazamiento.
+% [ ] La cadena de frío acota la ejecución de cada lote, parte fija incluida; no acota el
+%     turno del picker ni la espera hasta el despacho (tests 35a y 35c).
+% [ ] v_start distinto de v_end: lo cumplen todos los escenarios (las 68 instancias
+%     funcionales exportadas y los 19 de estrés). Como supuesto, simplifica: desaparecen los
+%     "si v_start != v_end" de (eq:mono_no_vuelve) y (eq:mono_no_sale), el conjunto E^r y
+%     la nota de que con v_start = v_end no se cuentan el primer y el último tramo (HC y ACO
+%     sí los contarían: sería una diferencia de modelado que hoy no aparece en ningún
+%     escenario).
+% [ ] La ruta es un camino simple por (eq:mono_entra_max)-(eq:mono_sale_max): presentarlo
+%     como simplificación de la formulación, no como regla del negocio (ver 2.4).
+% [ ] Todo lote de B se rutea, se asigna y entra al objetivo aunque no tenga órdenes; HC y
+%     ACO ignoran los lotes vacíos. Solo pasa en los funcionales 30a/30b, y el verificador
+%     los quita (cap. 5). Una línea alcanza.
+% 2.2 Constantes M grande
+% [ ] Condición de validez de M: debe acotar el horizonte (la mayor terminación posible,
+%     con espera incluida, y la fecha de entrega más lejana) y los tiempos de ejecución. Hoy
+%     figura solo como "dato del escenario". Valores usados: 10^3 a 10^5 en los
+%     funcionales (en las 68 instancias exportadas M >= max T_due, revisado el 21/10), 10^6
+%     en el perfil realista de estrés y 10^4 en los escenarios heredados de v4.
+% [ ] La frase "por eso se usa una cota calculada por instancia en lugar de una constante
+%     arbitraria" vale solo para M_seq: M sigue siendo un dato del escenario.
+% [ ] El piso de 500 de M_seq no está explicado: era el valor fijo anterior y cubre las
+%     instancias funcionales. La historia puede ir en una nota (Notas, "Historia de
+%     M_seq"): 100.000 -> solapamientos de ~0,1 aceptados como óptimos; 500 fijo -> el
+%     estrés de 40 lotes en un picker dio infactible falso; por instancia desde el 22/09.
+% [ ] M_seq NO es válida en general cuando hay espera voluntaria (ver 4).
+% 2.3 Modelo Split
+% [ ] Argumento de exactitud: hoy dice que una ruta más corta "solo adelanta las
+%     finalizaciones", pero con penalidad por adelanto terminar antes puede costar más. El
+%     argumento correcto: como (eq:mono_piso) y (eq:mono_seq1)-(eq:mono_seq2) son
+%     desigualdades, si en una solución óptima del monolítico se reemplaza cada ruta por la
+%     mínima, los mismos c_pb, x_pb e y_bk siguen siendo factibles (u_pb baja y la cadena de
+%     frío se relaja) y el objetivo no cambia. O sea, la exactitud del Split depende de que
+%     la espera esté permitida: conectarlo con la sección de espera voluntaria.
+% [ ] Cómo se ejecuta (acá o en el cap. 5): (1) validación de entrada (capacidad, orden en
+%     un solo lote, V_p > 0); (2) Etapa 1 = un MIP por lote reusando el mismo .zpl (con 10
+%     lotes, unas 3 veces más rápido que el MIP conjunto; con 20, segundos contra más de 14
+%     min), opcionalmente en paralelo; (3) R_b pasa a la Etapa 2; (4) prechequeo de frío en
+%     Python: si un lote no tiene picker elegible se informa infactible sin llamar a ZIMPL
+%     (con PB^elig vacío para un lote, la asignación queda como una suma vacía igual a 1 y
+%     ZIMPL falla al compilar); (5) Etapa 2.
+% [ ] Que el monolítico puede devolver, en un empate, una ruta no mínima e incluso un ciclo
+%     suelto por ubicaciones NO requeridas: el flujo de Gavish-Graves solo conecta las
+%     requeridas. Ese ciclo suma tiempo de ruta, así que nunca mejora el objetivo. Una
+%     oración en "Eliminación de subtours" (hoy se afirma que la ruta es un camino simple).
+% [ ] Propiedad útil para el cap. 5: con V_p = 1 y T_cold muy grande, ambos modelos se
+%     reducen al modelo de referencia v4. Así corren sin cambios los 30 tests migrados de
+%     v4, y en la regresión temprana del Split (25/08) 19 instancias dieron el mismo
+%     objetivo que v4.
+% 2.4 Limitaciones de la formulación (sección nueva)
+% [ ] Camino simple: en una grilla chica y saturada, una instancia físicamente posible
+%     queda infactible (2 lotes de 26 órdenes en 4×4: un lote debe pasar por 13 de las 14
+%     ubicaciones, con depósito y final en esquinas del mismo color de la grilla
+%     bipartita). El test 38 documenta un caso mínimo. En 7×7 y 13×13 no cambia los tiempos
+%     de ruta (estudio 07).
+% [ ] M_seq con espera voluntaria (ver 4), si no se corrige.
+% [ ] Sin congestión; loteo y ubicación de productos dados.
+%
+% 3. QUÉ CORREGIR O MEJORAR
+% [ ] Introducción del capítulo: "alcanza el mismo valor óptimo en menor tiempo" vale a
+%     escala; en instancias chicas el monolítico es más rápido (cap. 6).
+% [ ] Tabla de diferencias: "Cantidad de MIP: 2 (secuenciales)" -> 1 + |B| (Etapa 1: un MIP
+%     por lote; Etapa 2: uno). "Tamaño del MIP: Grande / Menor" -> números del estudio 08
+%     (Notas, "Diferencias y tamaño de los MIP"), p. ej. 3 lotes en 7×7: monolítico 1.191
+%     variables y 1.725 restricciones contra 174 y 339 de la Etapa 2; 6 lotes en 10×10:
+%     4.695 y 6.474 contra 357 y 714 (la Etapa 2 no depende de la grilla). Agregar filas:
+%     paralelismo (no / opcional en la Etapa 1) e infactibilidad por frío (la prueba SCIP /
+%     prechequeo en Python).
+% [ ] Espera voluntaria: agregar la consecuencia medida, el nivel de servicio lo fija el
+%     objetivo: SLA = (N_b + W^c) / (2 N_b) con fechas repartidas y alcanzables (verificado
+%     en los 8 tamaños del estudio 01, todos a 1,7 puntos o menos; Notas, "Espera
+%     voluntaria y el SLA"). Cerrar con cómo se evita en estrés: W^c = 27 >= 26 órdenes por
+%     lote (referencia al cap. 5).
+% [ ] "el término que se suma es M (k - suma de las binarias)": se suma del lado de la cota
+%     (forma de eq:bigm), pero en (eq:mono_seq1)-(eq:mono_seq2) aparece restando. Aclararlo.
+% [ ] Terminología: "locación" aparece unas 20 veces y los cap. 1 y 5 usan "ubicación";
+%     "completitud" convive con "finalización" y "resolvedor" con "solver".
+% [ ] (eq:mono_demora)-(eq:mono_adelanto): una nota de que en el código se escriben con
+%     M (2 - x_pb - B_nb) y solo para B_nb = 1 (es lo mismo).
+%
+% 4. DECISIONES PENDIENTES
+% (D) M_seq y espera voluntaria. La fórmula acota el tiempo de trabajo, pero con espera
+%     c_pb puede superarlo y la restricción "desactivada" se activa. Contraejemplo
+%     confirmado el 19/10 con el .zpl de la Etapa 2: 1 picker y 2 lotes; B1 con una orden de
+%     fecha 10 y B2 con cinco de fecha 2000; con M_seq = 500 el óptimo reportado es 5010 (B1
+%     termina en 1510), con una M_seq grande es 2010. Afecta a los dos modelos.
+%     Revisión de datos del 21/10 (sin volver a resolver): ninguna instancia funcional
+%     combina peso de adelanto con fechas separadas por más de M_seq/2, y en estrés la
+%     espera nunca conviene (04-19: W^c = 27 >= 26; 01-03: todo atrasado), así que los
+%     óptimos reportados no deberían estar afectados. Opciones: (a) dar la condición de
+%     validez y el contraejemplo como limitación; (b) corregir la cota (p. ej. max T_due +
+%     suma de los peores T_exec + el mayor T_exec) y volver a correr.
+% (D) Supuesto v_start != v_end (recomendado) o explicar el caso en que coinciden.
+%
+% 5. FUENTES
+% - linear-picking-routing: models/opp_v5_1_mono/opp_model_v5_1_mono.zpl,
+%   models/opp_v5_2_split/*.zpl, models/opp_v5_2_split/utils/cold_chain_validation.py,
+%   tests/infra/zimpl/dat_files_builder.py (_compute_m_seq), tests/infra/zimpl/zpl_utils.py;
+%   docs/thesis/models.tex (secs. 2 a 6).
+% - Notas/opp_v5_development.tex: secs. "El problema y sus supuestos" a "Relación entre las
+%   dos formulaciones", "Implementación" y "Estudio 07".
+%========================================================================================
