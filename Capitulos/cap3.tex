@@ -7,28 +7,47 @@ entre operarios y requisitos de cadena de frío. Primero se define la notación
 común a ambos (Sección~\in[sec:notacion]). El modelo monolítico
 (Sección~\in[sec:modelo_monolitico]) resuelve ruta, asignación y
 secuenciación en un único modelo. El modelo Split
-(Sección~\in[sec:modelo_split]) resuelve el mismo problema en dos etapas sucesivas
-y alcanza el mismo valor óptimo en menor tiempo. La
+(Sección~\in[sec:modelo_split]) resuelve el mismo problema en dos etapas
+sucesivas, con modelos más pequeños, y alcanza el mismo valor óptimo. La
 Sección~\in[sec:espera_voluntaria] describe una propiedad común a ambas
-formulaciones y, por último, la Sección~\in[sec:diferencias_modelos] resume
-las diferencias entre ellas.
+formulaciones, la Sección~\in[sec:diferencias_modelos] resume las diferencias
+entre ellas y, por último, la Sección~\in[sec:caracteristicas_formulacion] reúne
+las características particulares que comparten.
 
 Los dos modelos resuelven el mismo problema: dado un conjunto de lotes de
-pedidos, un grafo de locaciones del almacén y un conjunto de {\em pickers}
+pedidos, un grafo de ubicaciones del almacén y un conjunto de {\em pickers}
 con velocidades distintas, determinar simultáneamente la ruta de
 recolección de cada lote, la asignación de lotes a {\em pickers} y el orden
 en que cada {\em picker} ejecuta sus lotes. Se busca minimizar una función
 objetivo que combina los tiempos de finalización de los lotes con
 penalizaciones por adelanto y demora de los pedidos, sujeto a una
-restricción de cadena de frío. Se asume que:
+restricción de cadena de frío. Se asume lo siguiente:
 
 \startitemize
-	\item los lotes se reciben ya conformados y cada orden pertenece a un
-	único lote;
-	\item todos los {\em pickers} están disponibles desde el instante 0 y
-	ejecutan un lote por vez;
-	\item la ruta de un lote no depende del {\em picker} que lo ejecuta, ya que la
-	velocidad del mismo solo escala el tiempo de recorrido;
+	\item {\bf Lotes dados.} Los lotes se reciben ya conformados y cada orden
+	pertenece a un único lote. Antes de resolver se verifica que esto se
+	cumpla y que ningún lote supere la capacidad del carro. Como el loteo no
+	se decide, la capacidad no forma parte del modelo.
+	\item {\bf Disponibilidad de los pickers.} Todos los {\em pickers} están
+	disponibles desde el instante 0 y ejecutan un lote por vez.
+	\item {\bf Efecto de la velocidad.} La velocidad de un {\em picker} escala el
+	tiempo de ruta, es decir, el traslado y el servicio en las ubicaciones,
+	pero no la preparación del lote ni la recolección de las unidades, que
+	dependen de la tarea y no del desplazamiento. Como escala todo el tiempo de
+	ruta por igual, la mejor ruta de un lote es la misma para cualquier
+	{\em picker}.
+	\item {\bf Sin congestión.} Los {\em pickers} no interfieren entre sí al
+	recorrer el almacén, de modo que la ruta de un lote tampoco depende del
+	momento en que se ejecuta ni de los demás lotes.
+	\item {\bf Cadena de frío por lote.} El límite de tiempo fuera de la cámara
+	de frío se aplica a la ejecución de cada lote, incluida su parte fija, y
+	no al turno del {\em picker} ni a la espera hasta el despacho.
+	\item {\bf Extremos de la ruta.} El depósito de partida y el punto de
+	entrega son ubicaciones distintas.
+	\item {\bf Camino simple.} La ruta de un lote no pasa dos veces por la misma
+	ubicación. Es una simplificación de la formulación y no una regla de la
+	operación; sus consecuencias se discuten en la
+	Sección~\in[sec:caracteristicas_formulacion].
 \stopitemize
 
 %----------------------------------------------------------------------------------------
@@ -44,8 +63,8 @@ sola vez en esta sección.
 		\NC \mathcal{N} \NC \quad \text{órdenes de clientes} \NR
 		\NC \mathcal{B} \NC \quad \text{lotes; cada orden pertenece a un único lote} \NR
 		\NC \mathcal{P} \NC \quad \text{{\em pickers}} \NR
-		\NC \mathcal{V} \NC \quad \text{locaciones del almacén, incluidos el depósito $v_{\text{start}}$ y el nodo final $v_{\text{end}}$} \NR
-		\NC \mathcal{E} \NC \quad \text{arcos del grafo de locaciones: pares $(i,j)$ tales que se puede ir de $i$ a $j$} \NR
+		\NC \mathcal{V} \NC \quad \text{ubicaciones del almacén, incluidos el depósito $v_{\text{start}}$ y el nodo final $v_{\text{end}}$} \NR
+		\NC \mathcal{E} \NC \quad \text{arcos del grafo de ubicaciones: pares $(i,j)$ tales que se puede ir de $i$ a $j$} \NR
 	\stopalign
 \stopformula
 
@@ -53,7 +72,7 @@ Para escribir las restricciones de forma compacta se usan además los
 siguientes subconjuntos:
 \startformula
 	\startalign[n=3, align={right,left,left}]
-		\NC \mathcal{V}^{\text{int}} \EQ \mathcal{V} \setminus \{v_{\text{start}}, v_{\text{end}}\} \NC \qquad \text{(locaciones intermedias)} \NR
+		\NC \mathcal{V}^{\text{int}} \EQ \mathcal{V} \setminus \{v_{\text{start}}, v_{\text{end}}\} \NC \qquad \text{(ubicaciones intermedias)} \NR
 		\NC \delta^{+}(i) \EQ \{(i,j) \in \mathcal{E}\} \NC \qquad \text{(arcos que salen de } i\text{)} \NR
 		\NC \delta^{-}(i) \EQ \{(j,i) \in \mathcal{E}\} \NC \qquad \text{(arcos que entran a } i\text{)} \NR
 		\NC \mathcal{N}_b \EQ \{ n \in \mathcal{N} : B_{nb} = 1 \} \NC \qquad \text{(órdenes del lote } b\text{)} \NR
@@ -67,12 +86,12 @@ siguientes subconjuntos:
 {\bf Órdenes, lotes y almacén.}
 \startformula
 	\startalign[n=2, align={right,left}]
-		\NC A_{ni} \in \{0,1\} \NC \quad \text{1 si la orden $n$ tiene productos en la locación $i$} \NR
+		\NC A_{ni} \in \{0,1\} \NC \quad \text{1 si la orden $n$ tiene productos en la ubicación $i$} \NR
 		\NC B_{nb} \in \{0,1\} \NC \quad \text{1 si la orden $n$ pertenece al lote $b$} \NR
 		\NC C_n \NC \quad \text{capacidad (cantidad de unidades a recoger) de la orden $n$} \NR
 		\NC T^{\text{due}}_n \NC \quad \text{fecha de entrega ({\em due date}) de la orden $n$} \NR
 		\NC D_{ij} \NC \quad \text{distancia del arco $(i,j) \in \mathcal{E}$} \NR
-		\NC S_i \NC \quad \text{tiempo de servicio en la locación $i$} \NR
+		\NC S_i \NC \quad \text{tiempo de servicio en la ubicación $i$} \NR
 	\stopalign
 \stopformula
 
@@ -100,7 +119,7 @@ siguientes subconjuntos:
 {\bf Constantes M grande.}
 \startformula
 	\startalign[n=2, align={right,left}]
-		\NC M \NC \quad \text{constante M grande general, dato del escenario} \NR
+		\NC M \NC \quad \text{constante M grande general, dato de la instancia} \NR
 		\NC M^{\text{seq}} \NC \quad \text{constante M grande de las restricciones de secuencia, calculada por instancia} \NR
 	\stopalign
 \stopformula
@@ -119,7 +138,7 @@ resolver el modelo:
 				\NC 0 \NC \text{en caso contrario,} \NR
 			\stopcases
 		\NC \qquad \text{(1 si alguna orden del lote } b \text{ tiene productos en } i\text{)} \NR
-		\NC L_b \EQ \sum_{i \in \mathcal{V}^{\text{int}}} a_{bi} \NC \qquad \text{(cantidad de locaciones que el lote } b \text{ debe visitar)} \NR
+		\NC L_b \EQ \sum_{i \in \mathcal{V}^{\text{int}}} a_{bi} \NC \qquad \text{(cantidad de ubicaciones que el lote } b \text{ debe visitar)} \NR
 		\NC F_b \EQ T^{\text{setup}} + T^{\text{pick}} \sum_{n \in \mathcal{N}_b} C_n \NC \qquad \text{(tiempo fijo del lote)} \NR
 	\stopalign
 \stopformula
@@ -136,26 +155,49 @@ donde $r_b$ es el tiempo de ruta del lote (traslado más servicio, a
 velocidad de referencia). En el modelo monolítico $r_b$ es una variable de
 decisión; en el modelo Split es un dato que proviene de la primera etapa.
 
+Si todos los {\em pickers} tienen $V_p = 1$ y $T^{\text{cold}}$ es
+suficientemente grande, el tiempo de ejecución deja de depender del
+{\em picker} y la cadena de frío no restringe ninguna asignación. En ese caso,
+los dos modelos se reducen al problema original, sin velocidades heterogéneas
+ni cadena de frío.
+
 La constante $M^{\text{seq}}$ se calcula para cada instancia como una cota
 del tiempo total de trabajo: lo que tardaría el {\em picker} más lento en
 ejecutar todos los lotes seguidos, cada uno con una ruta de peor caso
-$R^{\max}$. Se redondea a un entero y tiene un piso de 500:
+$R^{\max}$. Como una ruta simple recorre a lo sumo $|\mathcal{V}|$ arcos y
+pasa por a lo sumo $|\mathcal{V}|$ ubicaciones, $R^{\max}$ acota el tiempo de
+cualquier ruta. El resultado se redondea a un entero y se le impone un mínimo
+de 500, que solo actúa en instancias muy pequeñas y no compromete la validez
+de la cota, porque una constante mayor sigue siendo válida:
 \startformula
 	\startalign[n=2, align={right,left}]
 		\NC M^{\text{seq}} \EQ \max\left(500,\; \sum_{b \in \mathcal{B}} \left( F_b + \frac{R^{\max}}{\min_{p \in \mathcal{P}} V_p} \right) + 1 \right), \NR
 		\NC R^{\max} \EQ T^{\text{travel}} \, |\mathcal{V}| \max_{(i,j) \in \mathcal{E}} D_{ij} \;+\; |\mathcal{V}| \max_{i \in \mathcal{V}} S_i. \NR
 	\stopalign
 \stopformula
-Como se vio en la Sección~\in[sec:marco_mip], cuanto menor es la constante
-M grande, más ajustada resulta la relajación lineal; por eso se usa una cota
-calculada por instancia en lugar de una constante arbitraria.
+Como se vio en la Sección~\in[sec:marco_mip], cuanto menor es una constante
+M grande, más ajustada resulta la relajación lineal. Por eso $M^{\text{seq}}$
+se calcula a partir de los datos de cada instancia, en lugar de fijarse en un
+valor arbitrario. La constante $M$, en cambio, es un dato de la instancia.
 
 Varias restricciones de los modelos son de tipo M grande
-(Ecuación~\in[eq:bigm]). Estas solo deben cumplirse cuando una variable binaria
+(Ecuación~\in[eq:bigm]): solo deben cumplirse cuando una variable binaria
 vale 1, por ejemplo cuando el lote $b$ está asignado al {\em picker} $p$.
-Cuando la condición involucra $k$ variables binarias a la vez, el término
-que se suma es $M \cdot (k - \text{suma de las binarias})$, que vale 0 solo
-si las $k$ binarias valen 1 y es al menos $M$ en cualquier otro caso.
+Cuando la condición involucra $k$ variables binarias a la vez, la constante se
+multiplica por $k$ menos la suma de esas binarias. Ese factor vale 0 solo si
+las $k$ binarias valen 1, y es al menos 1 en cualquier otro caso.
+
+% TODO: Ver si esto va acá o va en el marco teórico
+Para que una restricción de este tipo quede efectivamente desactivada, la
+constante debe ser al menos tan grande como el mayor valor que pueda tomar la
+expresión que acota. En estos modelos, esto implica que $M$ debe superar el
+mayor tiempo de ejecución posible de un lote y el horizonte de planificación,
+incluida la fecha de entrega más lejana, y que $M^{\text{seq}}$ debe superar
+la mayor separación posible entre las finalizaciones de dos lotes de un mismo
+{\em picker}, sumada a la duración de un lote. La cota de $M^{\text{seq}}$
+cumple esta condición cuando cada lote termina en cuanto completa su
+ejecución; la Sección~\in[sec:caracteristicas_formulacion] analiza el caso en que
+esto no ocurre.
 
 \stopsubsection
 \stopsection
@@ -172,7 +214,7 @@ lote, a qué {\em picker} se asigna y en qué orden se ejecuta.
 \startformula
 	\startalign[n=2, align={right,left}]
 		\NC z_{ijb} \in \{0,1\} \NC \quad \text{1 si la ruta del lote $b$ usa el arco $(i,j)$} \NR
-		\NC q_{ijb} \geq 0 \NC \quad \text{cantidad de locaciones del lote $b$ que quedan por visitar al recorrer el arco $(i,j)$} \NR
+		\NC q_{ijb} \geq 0 \NC \quad \text{ubicaciones requeridas del lote $b$ que quedan por visitar al recorrer el arco $(i,j)$} \NR
 		\NC r_b \geq 0 \NC \quad \text{tiempo de ruta del lote $b$ (traslado más servicio)} \NR
 	\stopalign
 \stopformula
@@ -218,32 +260,32 @@ través de los tiempos de finalización y de la cadena de frío.
 \startsubsection[title={Restricciones de ruteo}]
 
 La ruta de cada lote $b$ es un camino simple desde $v_{\text{start}}$ hasta
-$v_{\text{end}}$ que pasa por todas sus locaciones requeridas
-($a_{bi} = 1$). Puede atravesar otras locaciones, pero ninguna más de una
+$v_{\text{end}}$ que pasa por todas sus ubicaciones requeridas
+($a_{bi} = 1$). Puede atravesar otras ubicaciones, pero ninguna más de una
 vez.
 
 {\bf Inicio y fin de la ruta.}
 La ruta sale una vez del depósito (\in[eq:mono_salida]) y llega una vez al
-nodo final (\in[eq:mono_llegada]). Si el depósito y el nodo final son
-distintos, además no se vuelve al depósito (\in[eq:mono_no_vuelve]) ni se
-sale del nodo final (\in[eq:mono_no_sale]).
+nodo final (\in[eq:mono_llegada]). Además, no vuelve al depósito
+(\in[eq:mono_no_vuelve]) ni sale del nodo final (\in[eq:mono_no_sale]).
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
 		\NC \NC \sum_{(i,j) \in \delta^{+}(v_{\text{start}})} z_{ijb} = 1 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_salida]
 		\NC \NC \sum_{(i,j) \in \delta^{-}(v_{\text{end}})} z_{ijb} = 1 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_llegada]
-		\NC \NC \sum_{(i,j) \in \delta^{-}(v_{\text{start}})} z_{ijb} = 0 \NC \qquad \forall b \in \mathcal{B}, \text{ si } v_{\text{start}} \neq v_{\text{end}} \NR[eq:mono_no_vuelve]
-		\NC \NC \sum_{(i,j) \in \delta^{+}(v_{\text{end}})} z_{ijb} = 0 \NC \qquad \forall b \in \mathcal{B}, \text{ si } v_{\text{start}} \neq v_{\text{end}} \NR[eq:mono_no_sale]
+		\NC \NC \sum_{(i,j) \in \delta^{-}(v_{\text{start}})} z_{ijb} = 0 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_no_vuelve]
+		\NC \NC \sum_{(i,j) \in \delta^{+}(v_{\text{end}})} z_{ijb} = 0 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_no_sale]
 	\stopalign
 \stopformula
 \stopplaceformula
 
 {\bf Visitas y continuidad.}
-A cada locación requerida se entra (\in[eq:mono_entra]) y se sale
-(\in[eq:mono_sale]). En las locaciones intermedias, lo que entra sale
-(\in[eq:mono_flujo]). A cada locación se entra (\in[eq:mono_entra_max]) y
+A cada ubicación requerida se entra (\in[eq:mono_entra]) y se sale
+(\in[eq:mono_sale]). En las ubicaciones intermedias, lo que entra sale
+(\in[eq:mono_flujo]). A cada ubicación se entra (\in[eq:mono_entra_max]) y
 se sale (\in[eq:mono_sale_max]) como máximo una vez, de modo que ninguna se
 repite.
+% TODO: Acá estaría bueno explicar cada una de estas restricciones, si no es redundante
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
@@ -259,13 +301,13 @@ repite.
 {\bf Eliminación de subtours.}
 Las restricciones (\in[eq:mono_salida])--(\in[eq:mono_sale_max]) todavía
 admiten soluciones formadas por un camino del depósito al nodo final más un
-ciclo disjunto que visita algunas locaciones requeridas sin conectarse con el
+ciclo disjunto que visita algunas ubicaciones requeridas sin conectarse con el
 depósito. Para eliminarlos se utiliza una variante de la formulación de flujo
 de Gavish y Graves (Ecuación~\in[eq:gg]): un flujo $q$ sale del depósito con
-$L_b$ unidades, una por cada locación requerida, y cada locación requerida
+$L_b$ unidades, una por cada ubicación requerida, y cada ubicación requerida
 consume una. Como el flujo solo circula por arcos usados
 (\in[eq:mono_gg_cota]) y se origina únicamente en el depósito
-(\in[eq:mono_gg_origen]), una locación requerida solo puede recibir su
+(\in[eq:mono_gg_origen]), una ubicación requerida solo puede recibir su
 unidad (\in[eq:mono_gg_balance]) si está conectada al depósito por la ruta.
 \startplaceformula
 \startformula
@@ -277,32 +319,42 @@ unidad (\in[eq:mono_gg_balance]) si está conectada al depósito por la ruta.
 \stopformula
 \stopplaceformula
 
+El flujo, sin embargo, solo obliga a conectar las ubicaciones requeridas: un
+ciclo disjunto que pase únicamente por ubicaciones no requeridas sigue siendo
+factible. Como ese ciclo solo agrega tiempo de ruta, nunca mejora el objetivo.
+En el modelo monolítico podría aparecer únicamente en una solución óptima
+alternativa, cuando el tiempo de ruta no influye en el objetivo, y la Etapa~1
+del modelo Split, que minimiza el tiempo de ruta, no lo produce.
+
 {\bf Tiempo de ruta.}
 El tiempo de ruta es la distancia recorrida multiplicada por
-$T^{\text{travel}}$, más el tiempo de servicio de cada locación intermedia
-por la que pasa la ruta (una locación se cuenta cuando la ruta sale de ella).
-Sea $\mathcal{E}^{r} = \{(i,j) \in \mathcal{E} : i \neq v_{\text{end}},\; j \neq v_{\text{start}}\}$:
+$T^{\text{travel}}$, más el tiempo de servicio de cada ubicación intermedia
+por la que pasa la ruta (una ubicación se cuenta cuando la ruta sale de ella):
 \startplaceformula[reference=eq:mono_ruta]
 \startformula
-	r_b = T^{\text{travel}} \sum_{(i,j) \in \mathcal{E}^{r}} D_{ij} \, z_{ijb}
+	r_b = T^{\text{travel}} \sum_{(i,j) \in \mathcal{E}} D_{ij} \, z_{ijb}
 	\;+\; \sum_{i \in \mathcal{V}^{\text{int}}} S_i \sum_{(i,j) \in \delta^{+}(i)} z_{ijb}
 	\qquad \forall b \in \mathcal{B}
 \stopformula
 \stopplaceformula
-Es decir, no se suman los arcos que entran al depósito ni los que salen del
-nodo final. Si $v_{\text{start}} = v_{\text{end}}$, esto deja fuera también
-el primer y el último tramo de la ruta.
+El tiempo de servicio se cobra en toda ubicación intermedia que la ruta
+atraviesa, se recoja algo en ella o no.\footnote{En la implementación, la
+suma del traslado excluye los arcos que entran al depósito y los que salen del
+nodo final. Por (\in[eq:mono_no_vuelve]) y (\in[eq:mono_no_sale]) esos arcos
+no se usan, así que las dos expresiones coinciden.}
 
 \stopsubsection
 
 \startsubsection[title={Asignación, tiempo de ejecución y cadena de frío}, reference=sec:mono_asignacion]
 
+% TODO: Acá se ve claro lo de M, quizás no hace falta tanta explicación previa
 Cada lote se asigna a exactamente un {\em picker}
 (\in[eq:mono_asignacion]). Si el {\em picker} $p$ ejecuta el lote $b$, las
 restricciones (\in[eq:mono_u_inf]) y (\in[eq:mono_u_sup]) fijan $u_{pb}$
 exactamente en su tiempo de ejecución $F_b + r_b / V_p$
-(Ecuación~\in[eq:texec]); si no lo ejecuta, quedan desactivadas. El lote no
-puede terminar antes de lo que tarda en ejecutarse (\in[eq:mono_piso]), y
+(Ecuación~\in[eq:texec]); si no lo ejecuta, quedan desactivadas, para lo cual
+$M$ debe ser al menos el mayor tiempo de ejecución posible de un lote. El lote
+no puede terminar antes de lo que tarda en ejecutarse (\in[eq:mono_piso]), y
 su instante de finalización es el de la agenda del {\em picker} que lo
 ejecuta (\in[eq:mono_cb]).
 \startplaceformula
@@ -322,7 +374,10 @@ en la cota superior de la variable, $u_{pb} \leq T^{\text{cold}} + \varepsilon$.
 Si $x_{pb} = 1$, la restricción (\in[eq:mono_u_inf]) obliga a que
 $u_{pb} \geq F_b + r_b / V_p$, por lo que el {\em picker} $p$ solo puede
 ejecutar el lote $b$ si $F_b + r_b / V_p \leq T^{\text{cold}} + \varepsilon$.
-Si $x_{pb} = 0$, $u_{pb}$ puede valer 0 y la cota no restringe nada.
+Si $x_{pb} = 0$, $u_{pb}$ puede valer 0 y la cota no restringe nada. El límite
+se aplica a la ejecución de cada lote, incluida su parte fija $F_b$, y no a la
+jornada del {\em picker}: un mismo {\em picker} puede ejecutar varios lotes
+seguidos aunque el último termine después de $T^{\text{cold}}$.
 
 \stopsubsection
 
@@ -347,6 +402,8 @@ par de lotes $b < k$:
 	\item Si $p$ no ejecuta alguno de los dos lotes, ambas restricciones
 	quedan desactivadas.
 \stopitemize
+Para que la restricción inactiva no limite la solución, $M^{\text{seq}}$ debe
+cumplir la condición de validez de la Sección~\in[sec:notacion].
 
 \stopsubsection
 
@@ -363,8 +420,13 @@ alcanzarla:
 	\stopalign
 \stopformula
 \stopplaceformula
-Como $ta_n, ea_n \geq 0$ y el objetivo los minimiza, en el óptimo se cumple
-que $ta_n = \max(0,\, c_b - T^{\text{due}}_n)$ y
+Si $x_{pb} = 0$, las dos restricciones quedan desactivadas, siempre que $M$
+supere la fecha de entrega más lejana y el horizonte de
+planificación.\footnote{En la implementación, estas restricciones se escriben
+con el término $M (2 - x_{pb} - B_{nb})$ y se generan solo para los pares con
+$B_{nb} = 1$, lo que es equivalente.} Como $ta_n, ea_n \geq 0$ y el objetivo
+los minimiza, en el óptimo se cumple que
+$ta_n = \max(0,\, c_b - T^{\text{due}}_n)$ y
 $ea_n = \max(0,\, T^{\text{due}}_n - c_b)$.
 
 \stopsubsection
@@ -381,14 +443,52 @@ ejecutan uno después del otro:
 	asignación, la secuencia y el cumplimiento de la cadena de frío.
 \stopitemize
 
-La descomposición es posible porque la ruta de un lote no depende de qué
-{\em picker} lo ejecuta ni del orden entre lotes, y una ruta más corta nunca
-empeora el objetivo: el tiempo de ruta no aparece en la función objetivo, y
-una ruta más corta solo adelanta las finalizaciones y facilita el
-cumplimiento de la cadena de frío. Por lo tanto, ambos modelos alcanzan el
-mismo valor óptimo. Sin embargo, el conjunto de soluciones óptimas difiere. Esto
-porque el modelo monolítico puede devolver rutas no mínimas que alcanzan el mismo
-valor objetivo, mientras que el modelo Split siempre devuelve rutas mínimas.
+La descomposición se apoya en dos propiedades. La primera es que la ruta de
+un lote no depende de qué {\em picker} lo ejecuta ni del orden entre lotes,
+por los supuestos de velocidad y de ausencia de congestión. La segunda es que
+reemplazar la ruta de un lote por una más corta nunca empeora el objetivo.
+Para verlo, considérese una solución óptima del modelo monolítico y
+reemplácese la ruta de cada lote por su ruta mínima. El tiempo de ejecución
+$F_b + r_b / V_p$ de cada lote no aumenta, de modo que la cadena de frío se
+sigue cumpliendo. Además, como las restricciones que vinculan la ejecución con
+la finalización, (\in[eq:mono_piso]) y
+(\in[eq:mono_seq1])--(\in[eq:mono_seq2]), son desigualdades, los mismos
+instantes de finalización $c_{pb}$, la misma asignación $x_{pb}$ y la misma
+secuencia $y_{bk}$ siguen siendo factibles. El objetivo depende solo de las
+finalizaciones y de los adelantos y demoras, así que no cambia. Existe, por lo
+tanto, una solución óptima con rutas mínimas, que es la que busca el modelo
+Split, y ambos modelos alcanzan el mismo valor óptimo.
+
+El argumento usa que un lote puede figurar como terminado más tarde de lo que
+termina realmente, propiedad que se conoce como espera voluntaria
+(Sección~\in[sec:espera_voluntaria]). Si las finalizaciones quedaran
+determinadas por igualdades, acortar una ruta adelantaría la finalización del
+lote y podría aumentar su adelanto, y la descomposición dejaría de ser exacta
+en general.
+
+% TODO: Esto necesita más explicación - tenemos que dejar claro por qué esto
+% es así. Notar que pasa porque el modelo monolítico permite rutas no mínimas,
+% pero el modelo Split siempre busca la ruta mínima en la Etapa 1. La pregunta es,
+% hay una ruta no mínima que genere un mejor valor objetivo que la ruta mínima? 
+% La respuesta es no, porque si reemplazamos la ruta no mínima por la mínima, 
+% el tiempo de ejecución del lote no aumenta, y por lo tanto el valor objetivo 
+% no empeora. Por lo tanto, siempre podemos encontrar una solución óptima con rutas mínimas.
+% Otro tema es: por qué el modelo monolítico puede devolver rutas no mínimas? 
+% Porque no tiene un objetivo que minimice la ruta, solo minimiza el tiempo de 
+% finalización y las penalizaciones. Por lo tanto, puede haber múltiples rutas 
+% que den el mismo tiempo de finalización y penalizaciones, y algunas de esas 
+% rutas pueden no ser mínimas. En ese caso, el valor objetivo sería el mismo, 
+% pero la ruta no sería mínima. Esto no es un problema del modelo en sí, es una 
+% diferencia de enfoque de los modelos. Esto se puede charlar acá o ampliar en otra
+% sección, porque es una consecuencia interesante. También se pueden tomar 
+% resultados de los experimentos para respaldar estas afirmaciones (ambas, la que
+% dice que el modelo monolítico puede devolver rutas no mínimas y la que dice que
+% por más que la ruta no sea mínima, el valor objetivo no empeora). 
+% Esto se puede poner en la sección de experimentos, donde se comparan 
+% los resultados de ambos modelos.
+El conjunto de soluciones óptimas, en cambio, difiere: el modelo monolítico
+puede devolver rutas no mínimas que alcanzan el mismo valor objetivo, mientras
+que el modelo Split siempre devuelve rutas mínimas.
 
 \startsubsection[title={Etapa 1: ruteo de cada lote}, reference=sec:split_etapa1]
 
@@ -401,9 +501,14 @@ significado que en el modelo monolítico.
 	\min \quad \sum_{b \in \mathcal{B}} r_b
 \stopformula
 \stopplaceformula
+% TODO: acá hablamos de "resolver en paralelo". Esto no está mal, porque es uno
+% de los motivos justamente por los que dividimos el modelo en dos etapas. No es
+% la única optimización que se puede hacer (y se probaron más). El tema es que no
+% sé si este capítulo sea el lugar para hablarlo.
 Como los lotes no comparten ninguna restricción, minimizar la suma equivale a
 minimizar cada $r_b$ por separado, por lo que en la práctica cada lote se
-resuelve como un \ac{mip} independiente.
+resuelve como un \ac{mip} independiente. Al no compartir variables ni
+restricciones, esos modelos también pueden resolverse en paralelo.
 
 {\bf Restricciones.} Las mismas restricciones de ruteo del modelo
 monolítico, (\in[eq:mono_salida])--(\in[eq:mono_ruta]). Esta etapa no
@@ -431,7 +536,10 @@ $\mathcal{PB}^{\text{elig}}$ es el conjunto de pares elegibles, es decir,
 aquellos en que el {\em picker} puede ejecutar el lote sin violar la cadena
 de frío. Las variables $x_{pb}$ y $c_{pb}$ se definen solo para esos pares,
 de modo que la cadena de frío se cumple por construcción y no necesita
-ninguna restricción.
+ninguna restricción. Si algún lote no tiene ningún {\em picker} elegible, la
+restricción de asignación (\in[eq:split_asignacion]) no puede cumplirse y la
+instancia es infactible; esta condición se verifica antes de construir el
+modelo de la Etapa~2.
 
 {\bf Variables.}
 \startformula
@@ -514,6 +622,29 @@ del modelo monolítico, restringidas a los pares elegibles:
 \stopplaceformula
 
 \stopsubsection
+
+\startsubsection[title={Resolución}, reference=sec:split_resolucion]
+
+Una resolución del modelo Split sigue estos pasos:
+% TODO: revisar el ítem 1.
+\startitemize[n]
+	\item {\bf Validación de los datos.} Se verifica que cada orden pertenezca a
+	un único lote, que ningún lote supere la capacidad del carro y que todas las
+	velocidades sean positivas. Una velocidad nula dejaría indefinido el tiempo
+	de ejecución, y una negativa lo haría negativo.
+	\item {\bf Etapa 1.} Se resuelve el \ac{mip} de ruteo de cada lote y se
+	obtiene su tiempo de ruta mínimo $R_b$.
+	\item {\bf Elegibilidad.} Con los valores de $R_b$ se calculan los tiempos
+	$T^{\text{exec}}_{pb}$ y el conjunto $\mathcal{PB}^{\text{elig}}$. Si algún
+	lote no tiene {\em picker} elegible, la instancia se informa como infactible
+	sin resolver la Etapa~2.
+	\item {\bf Etapa 2.} Se resuelven la asignación y la secuencia, con los
+	tiempos de ejecución como datos.
+\stopitemize
+La validación de los datos es la misma en el modelo monolítico, que después
+se resuelve en un único paso.
+
+\stopsubsection
 \stopsection
 
 %----------------------------------------------------------------------------------------
@@ -530,6 +661,9 @@ real de finalización de cada lote.
 
 \startsubsection[title={Por qué ocurre}]
 
+% TODO: acá es importante aclarar por qué usamos desigualdades. Puede verse como
+% que las desigualdades son incorrectas, pero son necesarias para modelar lo que
+% queremos modelar.
 Las restricciones que vinculan la ejecución de un lote con su instante de
 finalización son desigualdades, no igualdades. En el modelo monolítico,
 (\in[eq:mono_u_inf])--(\in[eq:mono_u_sup]) fijan $u_{pb}$ en la duración
@@ -545,7 +679,13 @@ secuencia de un {\em picker} o entre dos lotes consecutivos.
 Por otro lado, la función objetivo (\in[eq:mono_objetivo]) no penaliza solo
 la demora sino también el adelanto: es un objetivo de tipo
 {\em just-in-time}. Si un lote termina antes de la fecha de entrega de sus
-órdenes, el resolvedor puede decidir declarar un $c_b$ mayor.
+órdenes, el resolvedor puede decidir declarar un $c_b$ mayor. Esta misma
+holgura es la que garantiza que el modelo Split alcance el óptimo del
+monolítico (Sección~\in[sec:modelo_split]).
+
+% TODO: creo que nos hace falta un ejemplo de literatura. No es un concepto que
+% nos inventamos. También estaría bueno mencionar que el modelo original de 
+% \cite{baker1981sequencing} tiene espera voluntaria, y justificar por qué.
 
 \stopsubsection
 
@@ -580,12 +720,27 @@ espera reduce el objetivo cuando
 Con $W^{\text{pen}} = W^{e} = 1$, y para un lote sin órdenes atrasadas ni
 sucesores que desplazar, la condición se reduce a $n^{e}_b > W^{c}$.
 
+Una consecuencia de esta condición es que, cuando la espera conviene, la
+proporción de órdenes que llegan a tiempo queda determinada por los pesos del
+objetivo. Con $W^{\text{pen}} = W^{e} = W^{t} = 1$ y sin sucesores que
+desplazar, un lote se demora mientras $n^{e}_b - n^{t}_b > W^{c}$, de modo
+que se detiene cuando $n^{e}_b - n^{t}_b \approx W^{c}$. Como
+$n^{e}_b + n^{t}_b = |\mathcal{N}_b|$, si las fechas de entrega de sus órdenes
+están suficientemente repartidas, la proporción de órdenes a tiempo resulta
+aproximadamente
+\startformula
+	\frac{|\mathcal{N}_b| + W^{c}}{2\,|\mathcal{N}_b|},
+\stopformula
+que depende solo del tamaño del lote y de $W^{c}$ (para $W^{c} < |\mathcal{N}_b|$;
+en caso contrario no hay espera).
+
 El costo en función de $c_b$ es lineal por tramos, y cada fecha de entrega
 es un punto de quiebre ya que, al superarla, una orden deja de aportar adelanto y
 empieza a aportar demora. Por eso, cuando conviene esperar, el instante de
 finalización óptimo coincide con la fecha de entrega de alguna orden, de
 forma análoga a una mediana ponderada.
 
+% TODO: gráfico, o algo que ayude a visualizar el ejemplo
 {\bf Ejemplo.} Sea un lote con tres órdenes cuya fecha de entrega es
 20, que termina realmente en $t = 10$, con todos los pesos iguales a 1. Si se
 reporta su instante real de finalización, su aporte al objetivo es
@@ -607,7 +762,7 @@ siguientes condiciones:
 	objetivo.
 	\item {\bf El lote termina antes de la fecha de entrega} de al menos
 	algunas de sus órdenes.
-	\item {\bf El ahorro en adelanto supera el costo en completitud.}
+	\item {\bf El ahorro en adelanto supera el costo de demorar la finalización.}
 	Demorar un lote en $\delta$ unidades cuesta $W^{c} \, \delta$ y ahorra
 	$W^{\text{pen}} W^{e} \, \delta$ por cada orden del lote que todavía está
 	antes de su fecha de entrega. Para que la espera convenga debe cumplirse
@@ -615,6 +770,10 @@ siguientes condiciones:
 	$W^{c} \geq W^{\text{pen}} W^{e} \max_{b \in \mathcal{B}} |\mathcal{N}_b|$,
 	esto no ocurre en ningún lote.
 \stopitemize
+
+% TODO: Podemos mencionar que lo vamos a ver en los experimentos... y poner el caso
+% que tenemos en los experimentos. Quizás podemos armar uno que otro test case
+% funcional y ejecutarlo en ambos modelos, así vemos claramente esto.
 
 \stopsubsection
 \stopsection
@@ -625,6 +784,7 @@ siguientes condiciones:
 El Cuadro~\in[tab:diferencias_modelos] resume las diferencias entre el
 modelo monolítico y el modelo Split.
 
+% TODO: No se si me convence esto. Quizás en formato lista es mejor.
 \startplacetable[reference=tab:diferencias_modelos, location=here, title={Diferencias entre el modelo monolítico y el modelo Split.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
@@ -632,7 +792,7 @@ modelo monolítico y el modelo Split.
 	\setupTABLE[column][2][width=4.8cm, align=flushleft]
 	\setupTABLE[column][3][width=4.8cm, align=flushleft]
 	\bTR \bTH Aspecto \eTH \bTH Monolítico \eTH \bTH Split \eTH \eTR
-	\bTR \bTD Cantidad de \ac{mip} \eTD \bTD 1 \eTD \bTD 2 (secuenciales) \eTD \eTR
+	\bTR \bTD Cantidad de \ac{mip} \eTD \bTD 1 \eTD \bTD $1 + |\mathcal{B}|$: uno de ruteo por lote (Etapa~1) y uno de asignación y secuencia (Etapa~2) \eTD \eTR
 	\bTR \bTD Tiempo de ruta ($r_b$ / $R_b$) \eTD \bTD Variable de decisión \eTD \bTD Dato (resultado de la Etapa 1) \eTD \eTR
 	\bTR \bTD $T^{\text{exec}}_{pb}$ \eTD \bTD Expresión con variable ($F_b + r_b / V_p$) \eTD \bTD Parámetro precalculado \eTD \eTR
 	\bTR \bTD Variable $u_{pb}$ \eTD \bTD Sí, con M grande en (\in[eq:mono_u_inf])--(\in[eq:mono_u_sup]) \eTD \bTD No es necesaria \eTD \eTR
@@ -640,9 +800,82 @@ modelo monolítico y el modelo Split.
 	\bTR \bTD Dominio de $x_{pb}$ \eTD \bTD $\mathcal{P} \times \mathcal{B}$ (todos los pares) \eTD \bTD $\mathcal{PB}^{\text{elig}}$ (solo pares elegibles) \eTD \eTR
 	\bTR \bTD Piso de finalización \eTD \bTD $c_{pb} \geq u_{pb}$ (\in[eq:mono_piso]) \eTD \bTD $c_{pb} \geq T^{\text{exec}}_{pb} \, x_{pb}$ (\in[eq:split_piso]) \eTD \eTR
 	\bTR \bTD Ruta mínima garantizada \eTD \bTD No (puede elegir una ruta no mínima) \eTD \bTD Sí (la Etapa 1 minimiza $r_b$) \eTD \eTR
-	\bTR \bTD Tamaño del \ac{mip} \eTD \bTD Grande (ruteo y secuenciación juntos) \eTD \bTD Menor (cada etapa por separado) \eTD \eTR
+	\bTR \bTD Tamaño \eTD \bTD $2 |\mathcal{E}| |\mathcal{B}|$ variables de ruteo en el mismo \ac{mip} que la asignación y la secuencia \eTD \bTD $2 |\mathcal{E}| + 1$ variables por cada \ac{mip} de la Etapa~1; la Etapa~2 no depende del grafo \eTD \eTR
+	\bTR \bTD Paralelismo \eTD \bTD No \eTD \bTD Los \ac{mip} de la Etapa~1 son independientes y pueden resolverse en paralelo \eTD \eTR
+	\bTR \bTD Infactibilidad por cadena de frío \eTD \bTD La detecta el resolvedor, por la cota de $u_{pb}$ \eTD \bTD Se detecta antes de la Etapa~2, si algún lote no tiene pares elegibles \eTD \eTR
 	\eTABLE
 \stopplacetable
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Características de la formulación}, reference=sec:caracteristicas_formulacion]
+
+Las dos formulaciones comparten algunas características que conviene tener
+presentes al interpretar sus soluciones.
+
+{\bf Camino simple.} Las restricciones (\in[eq:mono_entra_max]) y
+(\in[eq:mono_sale_max]) impiden que una ruta pase dos veces por la misma
+ubicación. Esto es adrede, para modelar nuestro problema. Sin embargo, en otro
+tipo de almacén, un operario puede entrar a un pasillo sin salida y volver por donde vino.
+Por eso existen instancias físicamente posibles que la formulación declara infactibles. 
+Por ejemplo, si una ubicación requerida está al fondo de un pasillo sin salida que 
+no contiene el depósito ni el punto de entrega, la única forma de visitarla es 
+volver por el mismo camino, lo que obliga a pasar dos veces por la ubicación que 
+da acceso al pasillo. Lo mismo puede ocurrir cuando un lote debe visitar casi todas las
+ubicaciones de un almacén pequeño y no existe un camino simple que las recorra
+a todas. Para que la formulación sea válida en esos casos, habría que permitir 
+rutas con ciclos, reescribiendo las restricciones de ruteo y la función objetivo para que cuenten
+el tiempo de ejecución real de la ruta, en lugar de la duración mínima de un lote. 
+Esto es posible, pero complica la formulación y la resolución, y no es parte de 
+nuestro problema.
+
+% TODO: checkear
+{\bf Validez de $M^{\text{seq}}$ con espera voluntaria.} La cota de
+$M^{\text{seq}}$ (Sección~\in[sec:notacion]) se basa en el tiempo total de
+trabajo, lo que alcanza cuando cada lote termina en cuanto completa su
+ejecución. Con espera voluntaria, en cambio, un lote puede figurar como
+terminado mucho después, cerca de la fecha de entrega de sus órdenes, y la
+separación entre las finalizaciones de dos lotes de un mismo {\em picker}
+puede superar la cota. En ese caso, la restricción de secuencia que debería
+estar inactiva pasa a restringir y puede excluir la solución óptima.
+
+Un ejemplo pequeño lo muestra. Sea un único {\em picker} con dos lotes de
+duración 10: el primero tiene una orden con fecha de entrega 10, el segundo
+tiene cinco órdenes con fecha 2000, y todos los pesos valen 1. El óptimo vale
+2010: el primer lote termina en 10 y el segundo se declara terminado en 2000,
+sin adelanto ni demora. Con $M^{\text{seq}} = 500$, en cambio, las dos
+finalizaciones no pueden separarse más de 490 unidades, y la mejor solución que
+admite el modelo vale 5010, con el primer lote demorado hasta 1510.
+
+Para que la cota sea válida también con espera, debe cubrir la fecha de
+entrega más lejana. Un lote que termina después de esa fecha tiene todas sus
+órdenes atrasadas, y demorarlo solo empeora el objetivo. Por eso siempre
+existe una solución óptima en la que, pasada esa fecha, cada {\em picker}
+ejecuta sus lotes restantes sin pausas, y ningún lote termina después de
+${\max_{n} T^{\text{due}}_n + \sum_{b} \overline{T}_b}$, donde
+$\overline{T}_b = F_b + R^{\max} / \min_{p} V_p$ es el tiempo de ejecución de
+peor caso del lote $b$, el mismo que usa la cota de la
+Sección~\in[sec:notacion]. Sumándole la duración de un lote se obtiene una
+cota válida en todos los casos:
+\startformula
+	M^{\text{seq}} \geq \max_{n \in \mathcal{N}} T^{\text{due}}_n
+	+ \sum_{b \in \mathcal{B}} \overline{T}_b + \max_{b \in \mathcal{B}} \overline{T}_b.
+\stopformula
+Cuando la espera no conviene (Sección~\in[sec:espera_voluntaria]), existe una
+solución óptima sin espera y la cota original alcanza.
+
+{\bf Lotes vacíos.} La formulación no distingue los lotes sin órdenes: si
+$\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
+nodo final, un {\em picker} y un lugar en una secuencia, y su finalización
+entra en el objetivo. Además, los lotes vacíos son intercambiables entre sí,
+lo que multiplica las soluciones equivalentes que debe considerar el
+resolvedor. Esto se considera que se debe tratar previamente, ya que los lotes
+son un parámetro del problema y no una decisión de la formulación.
+
+A estas características se suman los supuestos enunciados al comienzo del
+capítulo, en particular la ausencia de congestión y que los lotes y la
+ubicación de los productos son datos del problema.
 
 \stopsection
 \stopchapter
