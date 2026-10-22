@@ -1290,3 +1290,141 @@ La implementación de \ac{aco} tiene las siguientes limitaciones:
 
 \stopsection
 \stopchapter
+
+%========================================================================================
+% GUÍA DE TRABAJO - CAPÍTULO 4 (Metaheurísticas)
+% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
+% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
+% (linear-picking-routing, origin/main 75d553c del 19/10: models/opp_hc_4, models/opp_aco_4,
+% models/utils/route_construction.py), docs/thesis/models.tex y Notas/opp_v5_development.tex.
+% Foco: equivalencia con los modelos lineales, cómo se garantizan y verifican las
+% restricciones, datos que usa la comparación y la sección de ACO que falta.
+% [ ] = tarea; (D) = decisión de ustedes.
+%========================================================================================
+%
+% 1. ORGANIZACIÓN PROPUESTA
+% - La sección de HC está bien estructurada; repetir la misma estructura en ACO (los
+%   títulos ya están; contenido en 2.1).
+% [ ] Sección final nueva (4.3), "Equivalencia con los modelos lineales": una tabla
+%     restricción -> cómo la garantiza cada heurística -> cómo se verificó. Filas: inicio y
+%     fin de la ruta (1)-(4); visitas y camino simple (5)-(9); subtours (10)-(12); tiempo de
+%     ruta (13); un picker por lote (14); tiempo de ejecución (15)-(17); no solapamiento
+%     (19)-(20); adelanto y demora (21)-(22); cadena de frío (cota de u_pb / PB^elig);
+%     validación de entrada (capacidad, orden en un solo lote, V_p > 0). Columnas: HC y ACO
+%     (por construcción / prechequeo exacto / penalizada durante la búsqueda y exigida al
+%     reportar) y verificación externa (cap. 5: chequeos en Python y niveles 1 y 2 sobre el
+%     monolítico). Es el puente con la validación de los cap. 5 y 6.
+% [ ] En la misma sección, las diferencias que quedan, porque todas condicionan la
+%     comparación: (1) sin espera voluntaria: exploran el subconjunto sin espera, y donde el
+%     modelo exacto espera se compara solo el estado; (2) los lotes vacíos no se rutean ni se
+%     cobran (los modelos exactos sí; solo 30a/30b); (3) no prueban infactibilidad: la
+%     declaran por prechequeo exacto, por ruta imposible (búsqueda best-first con tope) o
+%     por agotar el presupuesto; (4) si el escenario no define pickers usan uno solo (por eso
+%     sus tests funcionales propios, heredados de hc_2/aco_2, no son comparables con v5;
+%     cap. 5); (5) con v_start = v_end contarían el primer y el último tramo (ningún
+%     escenario lo usa).
+% [ ] Tabla de parámetros (TODO del texto): dejar acá la definición y los valores por
+%     defecto, y en el cap. 5 qué valores usó cada suite y por qué. Los experimentos de
+%     sensibilidad (200/60 contra 500/120; cinco sorteos por escenario) conviene pasarlos al
+%     cap. 6, o a una subsección de calibración del cap. 5, junto con los de ACO (ablación y
+%     feromonas): el capítulo queda descriptivo y las dos heurísticas se tratan igual.
+% [ ] "% TODO: pensar si dejar este párrafo o no" (construcciones múltiples: 490 contra 425
+%     y el 14×14 infactible con solo vecino más cercano): dejarlo, porque justifica el diseño
+%     con datos; verificar que los números salgan del código final (estrés 04 = 7×7,
+%     06 = 14×14).
+%
+% 2. QUÉ FALTA
+% 2.1 ACO (todas las subsecciones están vacías). Contenido por subsección; fuentes:
+%     docs/thesis/models.tex, sec. "ACO: Ant Colony Optimization", y las constantes y
+%     docstrings de models/opp_aco_4/opp_aco_4.py.
+% [ ] Representación: la misma que HC (una ruta por lote, asignación y secuencia por
+%     picker), sin espera. La secuencia de cada picker se ordena por la fecha de entrega más
+%     temprana de las órdenes de cada lote.
+% [ ] Función de evaluación: la misma f; costo de búsqueda f + 1000 · exceso de frío (mismo
+%     lambda y misma tolerancia que HC). La mejor solución global se elige solo entre las
+%     hormigas que cumplen el frío, y la feromona de asignación solo la depositan los lotes
+%     que lo cumplen (filtro por lote, no por solución).
+% [ ] Verificación previa: los mismos chequeos exactos que HC (B_nb, capacidad, orden en un
+%     solo lote, V_p > 0, F_b <= T_cold + epsilon), con las mismas funciones que usa el
+%     Split (cold_chain_validation.py, input_validation.py).
+% [ ] Construcción de rutas: pick-to-pick (Chen et al. 2013): desde la última ubicación i se
+%     elige la próxima requerida r con probabilidad proporcional a tau_ir^alpha ·
+%     eta_ir^beta, con eta_ir = 1/d(i,r), y se camina por el camino más corto; d y el camino
+%     se recalculan con Dijkstra evitando lo ya visitado (camino simple), con el mismo
+%     chequeo de completabilidad que las construcciones aleatorias de HC. Hasta 10 intentos
+%     por lote alternando el sentido (desde v_start o desde v_end, en el grafo invertido); si
+%     fallan, ruta de respaldo best-first (tope de 2.000.000 de expansiones, cacheada). Cada
+%     ruta se mejora con 2-opt y re-ruteo de tramos.
+% [ ] Pulido de la mejor ruta: cuando la mejor ruta de la iteración de un lote bate su
+%     récord, se pule (2-opt sobre las requeridas, reubicación tipo or-opt y re-ruteo), con
+%     el tiempo restante repartido entre los récords.
+% [ ] Asignación, recombinación y secuenciación (corregir "Secuenciacion" en el título):
+%     ruleta sobre los pickers elegibles para la ruta recién construida, con peso
+%     (tau^P_bp)^alpha · (1 / (1 + carga_p))^beta (si ninguno es elegible, sobre todos);
+%     recombinación: en la mejor solución, cada lote toma la ruta más corta conocida y se
+%     acepta si baja f; búsqueda local de agenda sobre la mejor solución (mover un lote a
+%     otro picker en cualquier posición e intercambiar dos lotes de un mismo picker o de
+%     pickers distintos, hasta que nada mejore): son las vecindades de HC recorridas en
+%     forma exhaustiva.
+% [ ] Actualización de feromonas: ruta, esquema MAX-MIN (Stützle y Hoos 2000): empieza en
+%     tau_max = 2/rho, tau_min = tau_max/50, y depositan Delta tau = 1 la mejor ruta de la
+%     iteración y la mejor histórica de cada lote; aprende de la longitud de la ruta (como
+%     Chen et al.), no del objetivo. Asignación: evaporación más Q/g(S) de cada hormiga (solo
+%     en los lotes que cumplen el frío) y un depósito doble de la mejor solución.
+% [ ] Parámetros: 15 hormigas, 60 iteraciones, alpha = 1,0, beta = 2,5, rho = 0,15, Q = 100,
+%     tope de 1.800 s (las hormigas usan hasta la mitad; el resto queda para el pulido y la
+%     búsqueda local), 10 intentos por lote, 2.000.000 de expansiones, lambda = 1000,
+%     epsilon = 10^-9. Son los mismos en funcional y en estrés (los tests usan los valores
+%     por defecto), con semilla 1.
+% [ ] Limitaciones: el tope de tiempo se mira entre hormigas e iteraciones (en el 100×100,
+%     dos iteraciones y unos 35 min); la feromona de ruta aprende longitud y no el objetivo;
+%     picos de memoria de hasta 1,7 GB en los escenarios 06, 09 y 12, sin explicar (una sola
+%     corrida). Del estudio de ablación (27/09; escenarios 04, 06 y 15; tres semillas): la
+%     búsqueda local de agenda da la mayor parte de la mejora sobre la colonia sola (brecha
+%     media de 0,011 a 0,001 % en el 04, de 0,034 a 0,018 % en el 06 y de 0,035 a 0,007 % en
+%     el 15). Del de feromonas (81 corridas en el 04): los valores por defecto quedan cerca
+%     de los mejores (0,011 % contra 0,009 %). Datos en results/opp_aco_4/{ablation,pheromone}.
+% 2.2 Validación (las dos heurísticas)
+% [ ] Una oración con referencia hacia adelante: cada solución reportada se verificó contra
+%     el modelo monolítico, fijando sus valores en las variables del MIP (cap. 5), y todas
+%     cumplen (cap. 6). Hoy el capítulo afirma que las heurísticas cumplen las mismas
+%     restricciones, pero no dice cómo se comprobó.
+%
+% 3. QUÉ CORREGIR O MEJORAR
+% [ ] Introducción del capítulo: "sobre el mismo espacio de soluciones" contradice la
+%     sección de HC (subconjunto sin espera). Corregir.
+% [ ] HC, "Restricciones duras... estrategia de rechazo": estrictamente es preservación (los
+%     operadores solo generan vecinos válidos) más rechazo dentro del 2-opt. Alinear con el
+%     cap. 2 si se agrega preservación.
+% [ ] HC, reproducibilidad ("La semilla determina todos los sorteos..."): es cierto desde el
+%     commit 75d553c (19/10, "Add sorted()"). Antes, la ruleta de route_construction.
+%     stitch_route (construcciones aleatorias de HC y todas las hormigas de ACO) recorría un
+%     conjunto de strings cuyo orden depende de PYTHONHASHSEED, así que la misma semilla
+%     daba resultados distintos en procesos distintos (según el commit, medido el 14/10:
+%     hasta 0,5 % de dispersión en el estrés 03 y el 11 infactible en 2 de 7 procesos).
+%     Aclararlo y confirmar que el estudio de cinco sorteos y el de 200/60 contra 500/120 se
+%     corrieron con el código corregido; si no, su dispersión mezcla semilla y orden de hash.
+% [ ] Números que tienen que coincidir con el cap. 6: el texto dice que con 200/60 el tope de
+%     200 iteraciones se alcanza solo en el 03 y el 18; la tabla de convergencia de las
+%     corridas consolidadas (28/09) dice 03 y 17 (17: 200 iteraciones; 18: 108). Vienen de
+%     corridas, y versiones del código, distintas: unificar con la corrida final.
+% [ ] "En todas las instancias evaluadas con un límite de cadena de frío efectivo, K vale
+%     como máximo 318": decir sobre qué instancias se calculó y recalcularlo si cambian las
+%     suites.
+% [ ] Parámetros de HC en funcional: las 68 instancias comparables con v5 (test_v5eq__*)
+%     corren con los valores por defecto (500/30/30 s); los 100-200/30-60/10 s son de los
+%     tests propios de velocidad y frío. Precisarlo acá o en el cap. 5.
+% [ ] El código marca el estado de una solución heurística como "optimal": en el texto usar
+%     "encontró solución" (una heurística no prueba optimalidad).
+%
+% 4. DECISIONES PENDIENTES
+% (D) Versión del código de las heurísticas para los resultados: las corridas consolidadas
+%     son del 28 y 29/09, anteriores a 75d553c (ver la guía del cap. 6).
+%
+% 5. FUENTES
+% - linear-picking-routing: docs/thesis/models.tex (sec. "Heurísticas: HC y ACO", con los
+%   pseudocódigos y la tabla "Los cuatro métodos lado a lado"), models/opp_hc_4/,
+%   models/opp_aco_4/, models/utils/route_construction.py,
+%   analysis/run_aco_ablation_study.py y analysis/run_aco_pheromone_study.py.
+% - Notas/opp_v5_development.tex, sec. "El Split como referencia para las heurísticas".
+%========================================================================================
