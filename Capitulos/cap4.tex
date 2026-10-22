@@ -664,31 +664,628 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 %----------------------------------------------------------------------------------------
 \startsection[title={Ant Colony Optimization}, reference=sec:aco]
 
-\startsubsection[title={Representación de la solución}]
+La segunda metaheurística evaluada fue \ac{aco}. A diferencia de \ac{hc}, que
+mejora una única solución mediante movimientos locales, \ac{aco} construye en
+cada iteración una población de soluciones nuevas, guiada por un rastro de feromona
+acumulado en iteraciones anteriores (Sección~\in[sec:marco_aco]). Esta implementación de \ac{aco}
+es híbrida, ya que, además de la colonia, incorpora búsquedas locales
+sobre las rutas y sobre la asignación de los lotes (acciones de demonio, Sección~\in[sec:marco_aco]).
+En esta sección, se describe cómo una solucón es
+representada (Sección~\in[sec:aco_representacion]) y evaluada
+(Sección~\in[sec:aco_evaluacion]). Luego se explica la verificación previa de
+factibilidad (Sección~\in[sec:aco_verificacion]). y cómo es desarrollada la
+construcción de las rutas por parte de las hormigas
+(Sección~\in[sec:aco_construccion]), así como el pulido de las mejores rutas
+(Sección~\in[sec:aco_pulido]), la asignación y secuenciación de los lotes
+(Sección~\in[sec:aco_asignacion]) y la actualización de las feromonas
+(Sección~\in[sec:aco_feromonas]). Por último, se resumen sus parámetros
+(Sección~\in[sec:aco_parametros]) y sus limitaciones
+(Sección~\in[sec:aco_limitaciones]).
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Representación de la solución}, reference=sec:aco_representacion]
+
+\ac{aco} resuelve el mismo problema que \ac{hc} y representa las soluciones de
+la misma forma. Al igual que en \ac{hc}, una solución $s = (\pi, a, \sigma)$ está formada por una ruta
+$\pi_b$ para cada lote con órdenes, una asignación $a$ de lotes a
+{\em pickers} y una secuencia $\sigma_p$ de lotes para cada {\em picker}
+(Sección~\in[sec:hc_representacion]). Por lo tanto, vale también que la unicidad del {\em picker}, la ausencia de solapamientos y
+la ausencia de subtours se cumplen por construcción, los tiempos se calculan
+a partir de $s$ con la Ecuación~\in[eq:hc_finalizacion] y no hay espera
+voluntaria. El loteo sigue siendo un dato de entrada.
+
+En este caso, sin emabrgo, cambia el uso que se hace de la representación. En \ac{hc}, $s$ es
+el estado sobre el que se aplican los operadores de movimiento. En \ac{aco},
+cada hormiga construye una solución completa desde cero, decidiendo sus
+componentes de a uno, y lo que se transmite entre iteraciones no es una
+solución sino la feromona. Hay dos matrices de feromona, una para cada tipo de
+decisión que toma la hormiga:
+\startitemize[n]
+	\item {\bf Feromona de ruta.} Siguiendo a Chen et al., la ruta de un lote
+	se construye eligiendo el orden en que se visitan las locaciones
+	requeridas, y no arco por arco \cite[chen2013antcolony]. Por eso, la
+	feromona $\tau_{ij}$ no se ubica sobre los arcos del almacén, sino sobre
+	los pares ordenados de locaciones entre las que una hormiga puede ir de
+	una a la otra. Para cada lote $b$, con
+	$\mathcal{V}_b = \{ i \in \mathcal{V}^{\text{int}} : a_{bi} = 1 \}$, se
+	definen los pares $(i, j)$ con
+	$i \in \{v_{\text{start}}\} \cup \mathcal{V}_b$,
+	$j \in \mathcal{V}_b \cup \{v_{\text{end}}\}$ e $i \neq j$. Los pares se
+	comparten entre lotes. Por lo tanto, si dos lotes deben visitar las mismas dos
+	locaciones, lo que aprende uno sobre ir de una a la otra lo aprovecha el
+	otro, porque la geometría del almacén entre ellas es la misma.
+	\item {\bf Feromona de asignación.} Para cada par de lote y {\em picker}
+	se mantiene un valor $\tau^{P}_{bp}$, que indica qué tan conveniente
+	resultó asignar el lote $b$ al {\em picker} $p$ en las soluciones
+	anteriores.
+\stopitemize
+No hay feromona para la secuencia $\sigma_p$, la cual es construída con
+una regla fija por las hormigas(Sección~\in[sec:aco_asignacion]).
+
 \stopsubsection
 
-\startsubsection[title={Función de evaluación}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Función de evaluación}, reference=sec:aco_evaluacion]
+
+\ac{aco} usa las mismas funciones que \ac{hc}: el objetivo $f(s)$ de la
+Ecuación~\in[eq:hc_objetivo], igual al de los modelos lineales, el costo de
+violación de la cadena de frío $v(s)$ de la Ecuación~\in[eq:hc_violacion] y
+la función penalizada $f'(s) = f(s) + \lambda \, v(s)$, con
+$\lambda = 1000$ (Ecuación~\in[eq:hc_costo]). El valor de $\lambda$ se
+justifica igual que en la Sección~\in[sec:hc_evaluacion]. Las restricciones
+también se dividen en los mismos tres grupos:
+\startitemize
+	\item {\bf Restricciones que se cumplen por construcción:} un único
+	{\em picker} por lote, sin solapamientos y sin subtours.
+	\item {\bf Restricciones duras:} cada ruta usa solo arcos del grafo, no
+	repite locaciones y visita todas las locaciones requeridas, y cada lote
+	respeta la capacidad del carro. Se tratan con la estrategia de rechazo, es decir,
+	cada solución construida se valida contra ellas y, si no las cumple, la
+	hormiga se descarta y no participa de la actualización de la feromona.
+	En la práctica, la construcción solo genera rutas que las cumplen
+	(Sección~\in[sec:aco_construccion]), así que una hormiga se descarta
+	únicamente cuando no consigue armar la ruta de algún lote.
+	\item {\bf Restricción blanda:} la cadena de frío, con la penalización
+	estática $\lambda \, v(s)$.
+\stopitemize
+
+A diferencia de \ac{hc}, en \ac{aco} cada función se usa para una decisión
+distinta:
+\startitemize
+	\item El costo penalizado $f'(s^k)$ de la solución de la hormiga $k$
+	determina cuánta feromona de asignación deposita
+	(Sección~\in[sec:aco_feromonas]).
+	\item El objetivo $f$ se usa para elegir la mejor solución factible
+	$s^*$, que solo puede actualizarse con soluciones que cumplen
+	$v(s) = 0$. Al terminar se informa $s^*$ con $f(s^*)$, y si ninguna
+	hormiga construyó una solución con $v(s) = 0$, la instancia se informa
+	como infactible.
+	\item La feromona de ruta no depende de $f$ ni de $f'$, sino solo de la
+	distancia de cada ruta (Sección~\in[sec:aco_feromonas]).
+\stopitemize
+
+Además del valor total $v(s)$, para cada solución se calcula el conjunto de
+lotes que cumplen la cadena de frío por separado:
+\startplaceformula[reference=eq:aco_cumplen]
+\startformula
+	\mathcal{B}^{\text{ok}}(s) = \left\{ b \in \mathcal{B} : T^{\text{exec}}_{a(b)\,b} \leq T^{\text{cold}} + \varepsilon \right\}.
+\stopformula
+\stopplaceformula
+Este conjunto limita el depósito de feromona de asignación, ya que una hormiga solo
+refuerza la asignación de los lotes que cumplen la restricción de la cadena de frío.
+
+La cadena de frío se trata como restricción blanda por un motivo propio de
+\ac{aco}, además de los motivos ya expuestos para \ac{hc}. En una versión anterior de este trabajo,
+se la había tratado como restricción dura, y una solución que la violaba se descartaba
+completa. Sin embargo, se observó que, cuando un lote tenía un límite ajustado,
+si ninguna hormiga de la iteración superaba la validación de cadena de frío para ese lote, entonces la feromona no se actualizaba para
+{\em ningún} lote (aunque haya sólo un lote con cadena de frío ajustada). En consecuencia, la búsqueda quedaba congelada en su estado inicial, y la
+instancia podía informarse como infactible aunque tuviera solución. Es por este motivo que se decidión transformarla
+en una penalización (en lugar de la restricción dura). De esta forma, las hormigas que violan la cadena de frío siguen aportando
+información sobre los demás lotes.
+
+Sin embargo, depositar feromona para toda la solución de una hormiga que
+viola la cadena de frío refuerza justamente la ruta y la asignación que
+causaron la violación. Esto se comprobó en una instancia construida para
+este caso, con un lote para el que la construcción infactible tenía
+alrededor de un 94~\% de probabilidad y la factible un 6~\%: si todas las
+hormigas depositaban, en unas diez iteraciones la feromona de la
+construcción infactible crecía, la de la factible caía al mínimo y la
+solución factible no volvía a encontrarse. Por eso el depósito se restringe
+a $\mathcal{B}^{\text{ok}}(s)$. Para una instancia de un solo lote, esto
+equivale a la estrategia de rechazo, mientras que, en una de varios lotes,
+los lotes que cumplen siguen aprendiendo aunque otro no lo haga.
+
+A diferencia de \ac{hc}, no se usa evaluación incremental, porque cada
+hormiga construye una solución completa. $f$ y $v$ se calculan desde cero para cada hormiga.
+
 \stopsubsection
 
-\startsubsection[title={Verificación previa de factibilidad}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Verificación previa de factibilidad}, reference=sec:aco_verificacion]
+
+Antes de iniciar la colonia, \ac{aco} realiza los mismos chequeos exactos
+que \ac{hc} (Sección~\in[sec:hc_verificacion]): que exista la matriz
+$B_{nb}$ y cada orden pertenezca a exactamente un lote, que cada lote
+respete la capacidad del carro, que todas las velocidades sean positivas
+(con $V_p = 1$ para los {\em pickers} sin velocidad informada) y que cada
+lote cumpla la cota de la cadena de frío de la
+Ecuación~\in[eq:hc_cota_frio]. Si alguno falla, la instancia se informa como
+infactible sin construir ninguna solución.
+
+Se agrega un chequeo de alcanzabilidad. Toda locación requerida por algún
+lote debe poder alcanzarse desde $v_{\text{start}}$ y debe poder llegar a
+$v_{\text{end}}$ siguiendo los arcos del grafo. Se calcula con dos búsquedas
+en anchura, una desde $v_{\text{start}}$ sobre el grafo original y otra
+desde $v_{\text{end}}$ sobre el grafo invertido, en tiempo
+$O(|\mathcal{V}| + |\mathcal{E}|)$. Si una locación requerida no cumple la
+condición, ninguna ruta puede visitarla, sin importar la feromona ni la
+cantidad de intentos. Sin este chequeo, todas las hormigas de todas las
+iteraciones agotarían sus intentos de construcción sobre un lote que nunca
+tuvo solución. Al igual que los demás, es un chequeo exacto.
+
+En una versión anterior del trabajo, la cota de la cadena de frío se verificaba con una
+{\em estimación} del tiempo de ruta de cada lote, obtenida con el vecino más
+cercano. Como esa estimación podía ser peor que la ruta que construye una
+hormiga, una instancia factible podía declararse infactible antes de empezar
+la búsqueda. Por eso se reemplazó por la cota exacta con tiempo de ruta nulo,
+y la existencia de una combinación de rutas y {\em pickers} que cumpla la
+cadena de frío en todos los lotes queda a cargo de la búsqueda, como en
+\ac{hc}.
+
 \stopsubsection
 
-\startsubsection[title={Construcción de rutas}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Construcción de rutas}, reference=sec:aco_construccion]
+
+En cada iteración, $m$ hormigas construyen una solución cada una. Cada
+hormiga recorre los lotes con órdenes en el orden de sus identificadores y,
+para cada uno, primero arma su ruta y después le elige un {\em picker}
+(Sección~\in[sec:aco_asignacion]). Las rutas de los distintos lotes se
+construyen de forma independiente.
+
+{\bf Regla de transición.} Como en Chen et al., la hormiga viaja de una
+locación requerida a otra \cite[chen2013antcolony], es decir, el ruteo se
+trata como un TSP sobre las locaciones a visitar, igual que en la
+construcción inicial de \ac{hc} (Sección~\in[sec:hc_solucion_inicial]).
+Estando en la locación $i$, con $\mathcal{R}$ el conjunto de locaciones
+requeridas que todavía no visitó, la hormiga elige la siguiente locación
+$r \in \mathcal{R}$ con la regla proporcional aleatoria del {\em Ant System}
+(Ecuación~\in[eq:aco_transicion]):
+\startplaceformula[reference=eq:aco_regla_ruta]
+\startformula
+	p_{ir} = \frac{\tau_{ir}^{\alpha} \, \eta_{ir}^{\beta}}{\sum_{l \in \mathcal{R}'} \tau_{il}^{\alpha} \, \eta_{il}^{\beta}},
+	\qquad \eta_{ir} = \frac{1}{d_{ir}},
+\stopformula
+\stopplaceformula
+donde $d_{ir}$ es la distancia del camino más corto de $i$ a $r$ y
+$\mathcal{R}' \subseteq \mathcal{R}$ son las locaciones a las que existe ese
+camino. Una vez elegida $r$, la hormiga recorre ese camino, y las locaciones
+requeridas por las que pasa en el trayecto cuentan como visitadas. Cuando
+$\mathcal{R}$ queda vacío, llega a $v_{\text{end}}$ por el camino más corto.
+
+{\bf Adaptación a rutas simples.} Chen et al. toman las distancias entre
+locaciones de una tabla calculada de antemano y permiten volver a recorrer
+pasillos ya transitados. En este trabajo, en cambio, la ruta debe ser un
+camino simple (Sección~\in[sec:hc_representacion]). Por eso, $d_{ir}$ y el
+camino que se recorre se recalculan en cada paso con el algoritmo de
+Dijkstra, evitando todas las locaciones ya recorridas y $v_{\text{end}}$, que
+solo puede cerrar la ruta. Esta adaptación tiene el mismo problema que en
+\ac{hc}, es decir, la construcción puede trabarse al dejar sin salida a locaciones que
+faltaba visitar. Para reducirlo se usan los mismos tres mecanismos que en las
+construcciones aleatorias de \ac{hc}:
+\startitemize
+	\item {\bf Chequeo de completitud.} Antes de aceptar la locación elegida,
+	se verifica con las componentes biconexas del grafo que cada locación
+	pendiente esté en algún camino simple entre la locación elegida y
+	$v_{\text{end}}$ que no pase por lo ya recorrido. Si no lo está, se
+	descarta y se sortea otra con la misma regla entre las restantes.
+	\item {\bf Retrocesos.} Si ninguna candidata pasa el chequeo, se deshace
+	el último paso y se prueba otra locación en su lugar, con un máximo de 30
+	retrocesos por construcción.
+	\item {\bf Dirección de construcción.} La regla favorece a las locaciones
+	cercanas y deja para el final a las más alejadas del punto de partida.
+	Por eso la ruta puede construirse también desde $v_{\text{end}}$ hacia
+	$v_{\text{start}}$, sobre el grafo invertido. En ese caso, la feromona se
+	sigue leyendo en el sentido de la ruta final: el paso de $i$ a $r$ en el
+	grafo invertido usa $\tau_{ri}$.
+\stopitemize
+
+{\bf Intentos y respaldo.} Cada hormiga hace hasta 10 intentos de
+construcción por lote, alternando la dirección entre intentos y empezando
+por una elegida al azar. Si los 10 fallan, se usa una ruta de respaldo
+determinística: la inserción del más lejano, sobre el grafo original y, si
+no se puede realizar, sobre el invertido; si ninguna funciona, la búsqueda
+{\em best-first} con el tope de 2.000.000 de expansiones, como en
+\ac{hc} (Sección~\in[sec:hc_solucion_inicial]). La ruta de respaldo se pule
+(Sección~\in[sec:aco_pulido]) y se guarda, de modo que se calcula una sola
+vez por lote y no una vez por hormiga. Si tampoco se encuentra una ruta de
+respaldo, la hormiga se descarta.
+
+Este esquema reemplazó a una primera versión en la que la hormiga avanzaba
+arco por arco por el grafo del almacén. En los escenarios de estrés del
+perfil realista, con lotes de entre 23 y 26 locaciones requeridas, ese
+recorrido aleatorio se trababa casi siempre (193 de 200 construcciones en un
+lote de la grilla de 14×14), y aun con 1000 intentos por lote una sola
+ejecución tardaba 1822~s. Con la construcción por locaciones requeridas, un
+intento tarda entre 2 y 15~ms y tiene éxito entre el 50~\% y el 97~\% de las
+veces en la mayoría de los lotes.
+
+{\bf Búsqueda local sobre cada ruta.} Cada ruta construida por una hormiga se
+mejora alternando 2-opt sobre las locaciones de la ruta
+(Ecuación~\in[eq:2opt]) y el re-ruteo de tramos, hasta que deja de
+acortarse, igual que las construcciones aleatorias de \ac{hc}. Chen et al. no
+aplican búsqueda local, pero combinar las soluciones de las hormigas con una
+búsqueda local es una práctica habitual en \ac{aco} \cite[dorigo2004aco]. En
+el escenario de estrés con grilla de 7×7 del perfil realista, sin esta
+mejora las rutas de \ac{aco} sumaban 451 unidades de tiempo, contra 425 de
+las rutas óptimas de la Etapa~1 del modelo Split.
+
 \stopsubsection
 
-\startsubsection[title={Pulido de la mejor ruta}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Pulido de la mejor ruta}, reference=sec:aco_pulido]
+
+Para cada lote se lleva un registro de la ruta más corta construida por
+cualquier hormiga en cualquier iteración, $\pi^{bs}_b$ (del inglés
+{\em best-so-far}). Al terminar cada iteración, se toma la ruta más corta
+del lote entre las hormigas de esa iteración, $\pi^{ib}_b$ (del inglés
+{\em iteration-best}). Si es más corta que $\pi^{bs}_b$, se la somete al
+mismo pulido que la ruta inicial de \ac{hc}
+(Sección~\in[sec:hc_solucion_inicial]): 2-opt sobre bloques de hasta 8
+locaciones requeridas, reubicación de locaciones requeridas ({\em or-opt}
+simplificado), y 2-opt y re-ruteo de tramos, repetidos hasta que la ruta deja
+de acortarse, con un máximo de cinco rondas. La ruta pulida pasa a ser
+$\pi^{bs}_b$ y también reemplaza a $\pi^{ib}_b$ para la actualización de la
+feromona.
+
+El pulido es mucho más costoso que la búsqueda local que se aplica a cada
+hormiga. Por ejemplo, en la grilla de 14×14 una ejecución tarda entre 120 y 260~ms. Por
+eso no se aplica a todas las rutas, ni siquiera a la mejor de cada
+iteración, sino solo cuando aparece un nuevo récord para el lote, lo que
+ocurre con relativamente poca frecuencia. Es una forma de las acciones de
+demonio de la Sección~\in[sec:marco_aco] (una mejora centralizada que se
+aplica a las soluciones más prometedoras antes de actualizar la feromona).
+
+Cuando la ejecución tiene un tiempo máximo, el pulido también lo respeta. Si
+en una iteración hay varios récords para pulir, cada uno recibe una parte
+igual del tiempo que queda, reservando una parte más para la búsqueda local
+sobre la asignación (Sección~\in[sec:aco_asignacion]). Al vencer su plazo,
+el pulido se detiene y devuelve la mejor ruta obtenida hasta ese momento,
+que nunca es más larga que la original. Sin este reparto, en la grilla de
+100×100 los primeros pulidos consumían todo el tiempo disponible.
+
 \stopsubsection
 
-\startsubsection[title={Asignación, Recombinación y Secuenciacion}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Asignación, Recombinación y Secuenciación}, reference=sec:aco_asignacion]
+
+{\bf Asignación de cada lote.} Una vez armada la ruta de un lote $b$, la
+hormiga le elige un {\em picker}. Como la ruta ya está construida, el
+tiempo de ejecución con cada {\em picker} se conoce exactamente, y el
+conjunto de {\em pickers} con los que el lote cumple la cadena de frío,
+\startformula
+	\mathcal{P}^k_b = \left\{ p \in \mathcal{P} : F_b + \frac{r_b}{V_p} \leq T^{\text{cold}} + \varepsilon \right\},
+\stopformula
+se calcula sobre la ruta de la propia hormiga $k$ y no sobre una
+aproximación. El {\em picker} se elige entre los de $\mathcal{P}^k_b$ con
+la regla
+\startplaceformula[reference=eq:aco_regla_picker]
+\startformula
+	p_{bp} = \frac{\left(\tau^{P}_{bp}\right)^{\alpha} \, \eta_{p}^{\beta}}{\sum_{q \in \mathcal{P}^k_b} \left(\tau^{P}_{bq}\right)^{\alpha} \, \eta_{q}^{\beta}},
+	\qquad \eta_p = \frac{1}{1 + \ell_p},
+\stopformula
+\stopplaceformula
+donde $\ell_p$ es la cantidad de lotes que la hormiga ya asignó a $p$. La
+información heurística favorece a los {\em pickers} con menos lotes, de
+forma similar a la asignación inicial de \ac{hc}. Si $\mathcal{P}^k_b$ es
+vacío, porque la ruta construida es demasiado larga incluso para el
+{\em picker} más rápido, la elección se hace entre todos los {\em pickers}.
+La hormiga produce igualmente una solución completa, que viola la cadena de
+frío y es penalizada (Sección~\in[sec:aco_evaluacion]).
+
+{\bf Secuencia.} Después de asignar todos los lotes, la secuencia
+$\sigma_p$ de cada {\em picker} se ordena por fecha de entrega más
+temprana. De esta forma, cada lote se ordena según la menor $T^{\text{due}}_n$ entre sus
+órdenes, con empates resueltos por el identificador del lote. A diferencia
+de la secuencia inicial de \ac{hc}, que sigue el orden de los
+identificadores, esta regla tiene en cuenta las fechas de entrega, pero no
+la duración de los lotes ni los pesos de la función objetivo.
+
+{\bf Recombinación de las rutas más cortas.} Una hormiga se evalúa por el
+costo de toda su solución, que acopla a todos los lotes. Por eso, una ruta
+corta para un lote, construida por una hormiga que en conjunto resultó
+peor, no se refleja en $s^*$. En el escenario de 7×7 del perfil realista, la
+construcción llega a la ruta óptima de la Etapa~1 del modelo Split para la
+mayoría de los lotes, pero rara vez y cada vez en una hormiga distinta. Para
+aprovechar esas rutas, al terminar cada iteración se arma una solución
+candidata que toma $s^*$ y reemplaza la ruta de cada lote por $\pi^{bs}_b$,
+manteniendo la asignación y la secuencia. Como las rutas de los lotes son
+independientes entre sí, la candidata cumple las restricciones duras. Si
+además cumple $v = 0$ y mejora estrictamente $f(s^*)$, la reemplaza. Una ruta
+más corta no siempre reduce $f$, porque terminar antes puede aumentar el
+adelanto cuando $W^{c}$ es chico, así que la decisión la toma la función de
+evaluación. Es una forma de memoria elitista, en el espíritu del depósito
+de la mejor solución del {\em Elitist Ant System} y de MMAS
+\cite[dorigo2004aco], pero aplicada a cada lote por separado.
+
+{\bf Búsqueda local sobre la asignación.} Aun con las rutas óptimas, la
+asignación por ruleta y la secuencia por fecha de entrega no son óptimas
+para la función objetivo. En el mismo escenario de 7×7, con todas las rutas
+iguales a las de la Etapa~1 del modelo Split, \ac{aco} quedaba unas 8
+unidades por encima del modelo Split solo por la asignación y la secuencia,
+que la Etapa~2 resuelve de forma exacta. Por eso, cada vez que $s^*$ mejora,
+se le aplica una búsqueda local de primera mejora con las rutas fijas, sobre
+tres vecindarios:
+\startitemize[n]
+	\item {\bf Reasignación.} Un lote se mueve a cualquier posición de la
+	secuencia de cualquier {\em picker}, incluido el suyo. A diferencia de
+	\ac{hc}, que lo ubica siempre al final
+	(Sección~\in[sec:hc_limitaciones]), se prueban todas las posiciones.
+	\item {\bf Intercambio dentro de un picker.} Se intercambian las
+	posiciones de dos lotes de la misma secuencia.
+	\item {\bf Intercambio entre pickers.} Dos lotes asignados a
+	{\em pickers} distintos intercambian sus lugares en las secuencias.
+\stopitemize
+Un vecino se acepta si cumple las restricciones duras, cumple $v = 0$ y
+reduce estrictamente $f$. Los vecindarios se recorren en ese orden, y apenas
+se acepta un vecino se vuelve a empezar desde el primero. La búsqueda termina
+cuando ninguno de los vecinos mejora, con un máximo de $10 \, |\mathcal{B}|$
+rondas, o cuando se alcanza el tiempo máximo. Son los mismos vecindarios
+de \ac{hc}, ampliados, pero recorridos de forma exhaustiva. Un recorrido
+completo cuesta $O(|\mathcal{B}|^2 \, |\mathcal{P}|)$ evaluaciones, lo que
+es poco frente a una iteración de la colonia en los tamaños evaluados, y
+solo se aplica a $s^*$ y cuando cambia.
+
 \stopsubsection
 
-\startsubsection[title={Actualización de feromonas}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Actualización de feromonas}, reference=sec:aco_feromonas]
+
+Al terminar cada iteración, después del pulido, la recombinación y la
+búsqueda local sobre la asignación, se actualizan las dos matrices de
+feromona. Ambas usan la misma tasa de evaporación $\rho$, pero siguen
+esquemas distintos.
+
+{\bf Feromona de ruta: MAX-MIN Ant System.} La feromona de ruta se actualiza
+según MMAS \cite[stutzle2000mmas]. Primero se evaporan todos los pares,
+\startformula
+	\tau_{ij} \leftarrow \max\left(\tau_{\min},\; (1 - \rho)\, \tau_{ij}\right),
+\stopformula
+y después, para cada lote $b$, depositan feromona su mejor ruta de la
+iteración $\pi^{ib}_b$ y su mejor ruta histórica $\pi^{bs}_b$. Si
+$(v_{\text{start}}, u_1, \dots, u_q, v_{\text{end}})$ son las locaciones
+requeridas de la ruta en el orden en que la ruta las alcanza por primera
+vez, cada par de locaciones consecutivas de esa secuencia recibe
+\startformula
+	\tau_{u_l u_{l+1}} \leftarrow \min\left(\tau_{\max},\; \tau_{u_l u_{l+1}} + 1\right).
+\stopformula
+Los pares se toman sobre las locaciones requeridas, y no sobre todas las
+locaciones de la ruta, porque esas son las decisiones que toma la hormiga
+(Ecuación~\in[eq:aco_regla_ruta]). Como cada par recibe a lo sumo dos
+depósitos de una unidad por lote e iteración, el valor estacionario de
+$\tau \leftarrow (1-\rho)\,\tau + 2$ es $2 / \rho$, y se fijan
+\startplaceformula[reference=eq:aco_cotas]
+\startformula
+	\tau_{\max} = \frac{2}{\rho}, \qquad \tau_{\min} = \frac{\tau_{\max}}{50}.
+\stopformula
+\stopplaceformula
+Toda la feromona de ruta se inicializa en $\tau_{\max}$, para favorecer la
+exploración al comienzo de la búsqueda (Sección~\in[sec:marco_aco]), y
+$\tau_{\min}$ garantiza que ningún par deje de poder elegirse. La relación
+entre $\tau_{\max}$ y $\tau_{\min}$ es una elección propia. Stützle y Hoos la
+derivan de la cantidad de componentes de la solución y de una probabilidad
+objetivo, y para rutas de entre 20 y 26 locaciones requeridas resulta del
+mismo orden. Lesch et al. también usan MMAS en un \ac{aco} de ruteo de
+{\em picking}, con la misma información heurística $1/d$
+\cite[lesch2023optimizing].
+
+El depósito es de una unidad y no depende de la distancia de la ruta. Lo
+que la distingue es que solo depositan las rutas más cortas. Como en Chen et
+al., la feromona de ruta aprende solo de la longitud de las rutas, y no del
+objetivo completo \cite[chen2013antcolony]. No hace falta filtrar por
+cadena de frío, porque una ruta más corta solo puede reducir el tiempo de
+ejecución del lote.
+
+Este esquema reemplazó a uno de tipo {\em Ant System}, en el que cada hormiga
+depositaba $Q / f'(s^k)$ sobre su ruta, con $Q = 100$, un mínimo de 0,01 y
+un valor inicial de 1. Con valores de $f'$ del orden de $1{,}5 \cdot 10^5$,
+cada depósito era de alrededor de $7 \cdot 10^{-4}$, por debajo del mínimo,
+así que la feromona de ruta caía al mínimo en todos los pares y no
+transmitía información.
+
+{\bf Feromona de asignación: Ant System elitista.} La feromona de
+asignación se evapora con
+\startformula
+	\tau^{P}_{bp} \leftarrow \max\left(0{,}01,\; (1 - \rho)\, \tau^{P}_{bp}\right),
+\stopformula
+y después cada hormiga $k$ que superó la validación deposita sobre la
+asignación de los lotes que cumplen la cadena de frío
+(Ecuación~\in[eq:aco_cumplen]), y la mejor solución factible deposita el
+doble sobre todos sus lotes:
+\startformula
+	\startalign[n=2, align={right,left}]
+		\NC \tau^{P}_{b\,a^k(b)} \NC \leftarrow \tau^{P}_{b\,a^k(b)} + \frac{Q}{f'(s^k)} \qquad \forall b \in \mathcal{B}^{\text{ok}}(s^k), \NR
+		\NC \tau^{P}_{b\,a^*(b)} \NC \leftarrow \tau^{P}_{b\,a^*(b)} + \frac{2\,Q}{f(s^*)} \qquad \forall b \in \mathcal{B}. \NR
+	\stopalign
+\stopformula
+Corresponde al {\em Elitist Ant System} de la Sección~\in[sec:marco_aco],
+con $e = 2$. Los valores iniciales son $\tau^{P}_{bp} = 1$ y no hay cota
+superior.
+
+El procedimiento completo se resume en la Figura~\in[fig:aco_pseudocodigo].
+
+\startplacefigure[title={Pseudocódigo de \ac{aco}.}, reference=fig:aco_pseudocodigo]
+\startframedtext[width=broad, frame=on, align=flushleft]
+\startlines
+{\bf Entrada:} instancia, $m$, $\text{Max}_{\text{it}}$, $\text{Max}_{\text{time}}$, $\alpha$, $\beta$, $\rho$, $Q$, semilla
+{\bf Salida:} mejor solución factible $s^*$, o infactible
+\blank[small]
+1.\quad {\bf si} la verificación previa falla {\bf entonces devolver} infactible
+2.\quad inicializar $\tau_{ij} \leftarrow \tau_{\max}$, $\tau^{P}_{bp} \leftarrow 1$;\; $s^* \leftarrow$ ninguna
+3.\quad {\bf para} $t = 1, \dots, \text{Max}_{\text{it}}$ {\bf hacer}
+4.\quad\qquad {\bf para} $k = 1, \dots, m$ {\bf hacer}
+5.\quad\qquad\qquad {\bf si} se agotó el tiempo de las hormigas {\bf y} hay solución factible {\bf entonces} terminar
+6.\quad\qquad\qquad {\bf para cada} lote $b$: construir $\pi^k_b$, mejorarla y elegir $a^k(b) \in \mathcal{P}^k_b$
+7.\quad\qquad\qquad ordenar cada $\sigma^k_p$ por fecha de entrega
+8.\quad\qquad\qquad {\bf si} $s^k$ no cumple las restricciones duras {\bf entonces} descartar $s^k$
+9.\quad\qquad {\bf para cada} lote $b$: {\bf si} $\pi^{ib}_b$ es más corta que $\pi^{bs}_b$ {\bf entonces} $\pi^{bs}_b \leftarrow$ pulir$(\pi^{ib}_b)$
+10.\quad\qquad $s^* \leftarrow$ la mejor $s^k$ con $v(s^k) = 0$, si mejora $f(s^*)$
+11.\quad\qquad $s^* \leftarrow$ recombinar$(s^*, \pi^{bs})$, si mejora $f(s^*)$
+12.\quad\qquad {\bf si} $s^*$ mejoró {\bf entonces} $s^* \leftarrow$ búsqueda local sobre la asignación$(s^*)$
+13.\quad\qquad actualizar $\tau$ con $\pi^{ib}$ y $\pi^{bs}$;\; actualizar $\tau^{P}$ con las $s^k$ y $s^*$
+14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
+15.\quad {\bf devolver} $s^*$, $f(s^*)$
+\stoplines
+\stopframedtext
+\stopplacefigure
+
 \stopsubsection
 
-\startsubsection[title={Parámetros}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Parámetros}, reference=sec:aco_parametros]
+
+% TODO: Decidir si esta tabla queda acá o pasa al Capítulo~\in[Capitulo_5].
+La Tabla~\in[tab:aco_parametros] resume los parámetros de \ac{aco}. Los
+ocho primeros se configuran en cada ejecución. El resto son constantes de la
+implementación. Tanto los escenarios funcionales como los de estrés usan los
+valores por defecto; los de estrés, con semilla 1.
+
+\startplacetable[reference=tab:aco_parametros, location=here, title={Parámetros de \ac{aco}.}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][3][width=8cm, align=flushleft]
+\bTR \bTH Parámetro \eTH \bTH Valor \eTH \bTH Función \eTH \eTR
+\bTR \bTD $m$ \eTD \bTD 15 \eTD \bTD Hormigas por iteración. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{it}}$ \eTD \bTD 60 \eTD \bTD Iteraciones de la colonia. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{time}}$ \eTD \bTD 1800~s \eTD \bTD Tiempo de reloj máximo. \eTD \eTR
+\bTR \bTD $\alpha$ \eTD \bTD 1 \eTD \bTD Peso de la feromona en las reglas de elección (Ecuaciones~\in[eq:aco_regla_ruta] y \in[eq:aco_regla_picker]). \eTD \eTR
+\bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD Peso de la información heurística en las mismas reglas. \eTD \eTR
+\bTR \bTD $\rho$ \eTD \bTD 0,15 \eTD \bTD Tasa de evaporación de ambas feromonas. Define también $\tau_{\max}$ (Ecuación~\in[eq:aco_cotas]). \eTD \eTR
+\bTR \bTD $Q$ \eTD \bTD 100 \eTD \bTD Factor de depósito de la feromona de asignación. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\bTR \bTD $\lambda$ \eTD \bTD 1000 \eTD \bTD Peso de la penalización por cadena de frío (Ecuación~\in[eq:hc_costo]). \eTD \eTR
+\bTR \bTD $\tau_{\max} / \tau_{\min}$ \eTD \bTD 50 \eTD \bTD Relación entre las cotas de la feromona de ruta. \eTD \eTR
+\bTR \bTD $\tau^{P}$ inicial / mínima \eTD \bTD 1 / 0,01 \eTD \bTD Valor inicial y mínimo de la feromona de asignación. \eTD \eTR
+\bTR \bTD Peso elitista \eTD \bTD 2 \eTD \bTD Multiplicador del depósito de $s^*$ en la feromona de asignación. \eTD \eTR
+\bTR \bTD Intentos por lote \eTD \bTD 10 \eTD \bTD Construcciones por lote y por hormiga antes de usar la ruta de respaldo. \eTD \eTR
+\bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción antes de abandonarse. \eTD \eTR
+\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el pulido. \eTD \eTR
+\bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de cada récord. \eTD \eTR
+\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
+\bTR \bTD Fracción para hormigas \eTD \bTD 0,5 \eTD \bTD Parte de $\text{Max}_{\text{time}}$ que pueden usar las hormigas; el resto queda para el pulido y la búsqueda local. \eTD \eTR
+\bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
+\eTABLE
+\stopplacetable
+
+{\bf Tiempo máximo.} El tiempo se controla antes de construir cada hormiga,
+así que una iteración puede cortarse a mitad de camino. Las hormigas dejan de
+construirse al consumir la mitad de $\text{Max}_{\text{time}}$, pero solo si
+ya existe una solución factible, de esa iteración o de una anterior, para
+que el corte nunca produzca un falso infactible. La otra mitad queda para el
+pulido y la búsqueda local sobre la asignación, que respetan el plazo
+completo. En la grilla de 100×100 con $\text{Max}_{\text{time}} = 600$~s,
+dejar que las hormigas usaran todo el tiempo dejaba 11~s de pulido y nada
+para la búsqueda local, con un objetivo de 1.403.120, contra 917.328 cuando
+el posprocesamiento se completaba. El valor por defecto de 1800~s supera la
+duración de todas las ejecuciones de estrés del perfil realista, de hasta
+unos 410~s, así que solo limita a las instancias más grandes.
+
+{\bf Contribución de la búsqueda local.} Para medir cuánto del resultado
+aporta la colonia y cuánto las búsquedas locales, se ejecutaron tres
+variantes en los escenarios de estrés 04 (grilla de 7×7), 06 (grilla de
+14×14) y 15 (6 lotes y 9 {\em pickers}), con tres semillas cada uno: solo la
+colonia, sin ninguna búsqueda local; la colonia con la búsqueda local sobre
+cada ruta, el pulido y la recombinación; y la versión completa, que agrega la
+búsqueda local sobre la asignación. La Tabla~\in[tab:aco_ablacion] muestra la
+brecha respecto del objetivo del modelo Split.
+
+\startplacetable[reference=tab:aco_ablacion, location=here, title={Brecha de \ac{aco} respecto del modelo Split, en porcentaje, por variante (mínimo y máximo sobre tres semillas).}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Escenario \eTH \bTH Solo colonia \eTH \bTH + rutas \eTH \bTH Completa \eTH \eTR
+\bTR \bTD 04 (7×7) \eTD \bTD 0,008 -- 0,013 \eTD \bTD 0,007 -- 0,012 \eTD \bTD 0,000 -- 0,002 \eTD \eTR
+\bTR \bTD 06 (14×14) \eTD \bTD 0,025 -- 0,040 \eTD \bTD 0,025 -- 0,047 \eTD \bTD 0,010 -- 0,030 \eTD \eTR
+\bTR \bTD 15 \eTD \bTD 0,026 -- 0,046 \eTD \bTD 0,008 -- 0,019 \eTD \bTD 0,005 -- 0,008 \eTD \eTR
+\eTABLE
+\stopplacetable
+
+La colonia sola ya queda a menos de un 0,05~\% del modelo Split. Las
+búsquedas locales sobre las rutas reducen la brecha sobre todo en el
+escenario 15, donde la suma de los tiempos de ruta baja de entre 685 y 712 a
+entre 672 y 676; en el 04 y el 06 su efecto queda dentro de la variación
+entre semillas. La búsqueda local sobre la asignación reduce la brecha en
+los tres escenarios, y es la que más la reduce en el 04 y el 06. Con la
+versión completa, en el escenario 04 una de las semillas alcanza el objetivo
+del modelo Split. Los tiempos de ejecución de
+las tres variantes son similares, porque los domina la construcción de las
+hormigas: unos 15~s en el 04, entre 109 y 116~s en el 06 y entre 44 y 51~s
+en el 15.
+
+{\bf Sensibilidad a $\alpha$, $\beta$ y $\rho$.} Para evaluar los valores
+de la colonia, se ejecutó el escenario 04 sin búsquedas locales, con todas
+las combinaciones de $\alpha \in \{0{,}5;\ 1;\ 2\}$,
+$\beta \in \{1;\ 2{,}5;\ 4\}$ y $\rho \in \{0{,}05;\ 0{,}15;\ 0{,}30\}$, y tres
+semillas por combinación. Los rangos abarcan los valores por defecto y los
+que reportan Alaya y Solnon \cite[alaya2007antcolony] y Lesch et al.
+\cite[lesch2023optimizing]. La brecha media fue de 0,011~\% con los valores
+por defecto, de 0,009~\% con la mejor combinación ($\alpha = 2$,
+$\beta = 4$, $\rho = 0{,}05$) y de 0,082~\% con la peor ($\alpha = 0{,}5$,
+$\beta = 1$, $\rho = 0{,}05$). El parámetro con más efecto es $\beta$: con
+$\beta = 1$, la brecha media fue de al menos 0,018~\% en todas las
+combinaciones, mientras que con $\beta = 4$ no superó el 0,028~\%. Los
+valores por defecto quedan, por lo tanto, cerca de los mejores, y las
+diferencias entre ellos son menores que las que aporta la búsqueda local.
+
+{\bf Reproducibilidad.} La semilla determina todos los sorteos de la
+construcción, de modo que la misma instancia, los mismos parámetros y la
+misma semilla producen la misma solución, salvo que la ejecución se detenga
+por tiempo. Para que esto valga también entre procesos distintos, los
+candidatos de cada sorteo se recorren en un orden fijo, independiente del
+orden interno de los conjuntos de Python.
+
 \stopsubsection
 
-\startsubsection[title={Limitaciones}]
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Limitaciones}, reference=sec:aco_limitaciones]
+
+La implementación de \ac{aco} tiene las siguientes limitaciones:
+\startitemize
+	\item {\bf Costo computacional.} Cada iteración construye $m$ soluciones
+	completas, y cada paso de la construcción ejecuta el algoritmo de
+	Dijkstra y un chequeo de completitud. Por eso \ac{aco} es mucho más lento
+	que \ac{hc}, cuyo tiempo lo domina una única construcción inicial. En la
+	grilla de 14×14, una ejecución tarda unos 110~s, y en la de 100×100 las
+	60 iteraciones completas llevarían unas 5~horas, por lo que la ejecución
+	termina siempre por tiempo.
+	\item {\bf No hay criterio de estancamiento.} La colonia ejecuta siempre
+	$\text{Max}_{\text{it}}$ iteraciones, salvo que se alcance el tiempo
+	máximo, aunque $s^*$ deje de mejorar mucho antes.
+	\item {\bf El tiempo máximo no es estricto.} Se controla antes de cada
+	hormiga y no interrumpe una construcción en curso. Además, no detiene la
+	búsqueda mientras no exista una solución factible, así que una instancia
+	en la que ninguna hormiga cumple la cadena de frío corre las
+	$\text{Max}_{\text{it}}$ iteraciones completas.
+	\item {\bf La información heurística de la asignación es limitada.}
+	$\eta_p$ solo equilibra la cantidad de lotes por {\em picker}: no
+	considera su velocidad, la duración de los lotes ni las fechas de
+	entrega. La secuencia por fecha de entrega tampoco considera la duración
+	de los lotes. Ambas se corrigen solo en $s^*$, con la búsqueda local
+	sobre la asignación.
+	\item {\bf Las rutas se eligen por distancia.} Tanto la feromona de ruta
+	como $\pi^{bs}_b$ favorecen las rutas más cortas. Bajo esta función
+	objetivo, una ruta más corta no siempre es mejor, porque puede aumentar
+	el adelanto; la recombinación lo tiene en cuenta al decidir si la
+	acepta, pero la colonia no aprende rutas más largas aunque convengan.
+	\item {\bf No hay espera voluntaria.} Como en \ac{hc}, cada lote empieza
+	apenas termina el anterior (Sección~\in[sec:espera_voluntaria]).
+	\item {\bf Puede informar infactible una instancia factible.} Si ninguna
+	hormiga construye una solución que cumpla la cadena de frío en todos los
+	lotes, o si la búsqueda {\em best-first} de respaldo alcanza su tope sin
+	encontrar la ruta de un lote, la instancia se informa como infactible
+	aunque tenga solución.
+\stopitemize
+
 \stopsubsection
 
 \stopsection
