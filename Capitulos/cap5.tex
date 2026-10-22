@@ -17,26 +17,101 @@ lineales, SCIP utiliza SoPlex 7.1.5. Las heurísticas están implementadas
 %----------------------------------------------------------------------------------------
 \startsection[title={Pruebas funcionales}, reference=sec:pruebas_funcionales]
 
-Las pruebas funcionales verifican que cada modelo respete las reglas del problema sobre
-instancias chicas. El objetivo es validar que las restricciones y la función
-objetivo estén correctamente implementadas, y que los resultados sean los esperados.
-Por este motivo, las pruebas funcionales aplican para los dos modelos lineales
-y para las heurísticas, aunque no se espera que estas últimas encuentren la solución óptima.
+Las pruebas funcionales verifican, sobre instancias chicas, que cada modelo
+respete las reglas del problema. Su objetivo es validar que las restricciones
+y la función objetivo estén correctamente implementadas y que los resultados
+sean los esperados.
 
-Se definieron 38 casos de prueba, cada uno con una instancia de almacén y un conjunto
-de pedidos, lotes y {\em pickers}. Cada caso tiene una descripción de lo que se espera
-que el modelo resuelva, y se verifican los resultados obtenidos con los esperados.
+% TODO: "manual" es raro. Me refiero a que los pensamos nosotras jajajaja. Los de
+% las pruebas de stress son sistemáticos, salen de una exploración. Estos no.
+Se definieron 38 casos de prueba de forma manual. Cada caso arma una instancia, 
+con un almacén y un conjunto de pedidos, lotes y {\em pickers}, la resuelve y 
+compara el resultado con el esperado. Un caso puede agrupar varias pruebas sobre
+variantes de una misma instancia; cada una se distingue con una letra, que
+sigue el orden alfabético de los nombres de las pruebas en el código. En
+total, el modelo Split corre 64 pruebas y el monolítico 63. La diferencia es
+la prueba 24b, que verifica el chequeo de elegibilidad previo a la Etapa~2, un
+paso que solo existe en el Split. Las demás pruebas son las mismas en los dos
+modelos y se construyen a partir de las mismas instancias.
 
-Podemos clasificar las pruebas funcionales en tres grupos: las que verifican la correcta ejecución del
-modelo, las que verifican la correcta asignación de lotes a {\em pickers}, y las 
-que verifican la correcta secuenciación de los lotes. De todas existen pruebas de 
-factibilidad y de infactibilidad. No todas las pruebas buscan que las rutas sean 
-las esperadas, ya que algunas instancias tienen varias rutas óptimas. En esos casos, 
-se verifica que la ruta encontrada sea válida y que cumpla con las restricciones 
-del problema.
+{\bf Qué cubren.} Los casos recorren los distintos aspectos del problema:
+\startitemize
+	\item {\bf Ruteo}: rutas esperadas en pasillos, grillas y grafos
+	ramificados (01 a 05, 09 a 11 y 15 a 20), lotes que comparten ubicaciones
+	(11, 25b, 25g y 26c) y rutas imposibles, ya sea porque una ubicación
+	requerida es inalcanzable (21 y 26a) o porque la ruta debería repetir una
+	ubicación (07 y 38; el 08 es la variante factible del 07).
+	\item {\bf Asignación y secuencia}: carga repartida entre los
+	{\em pickers} y lotes de un mismo {\em picker} sin superposición en el
+	tiempo (01, 05, 09, 10, 13, 14 y 17).
+	\item {\bf Datos de entrada}: capacidad del carro (25a, 25d, 25f, 30 y 32),
+	pedidos asignados a más de un lote (31) y velocidades no positivas (36c).
+	\item {\bf Fechas de entrega y pesos del objetivo}: adelanto, demora y
+	elección de la ruta según la fecha de entrega (06, 19b, 22, 25e, 26b, 26d,
+	27 y 28).
+	\item {\bf Velocidades de los {\em pickers}}: 23, 36a, 36b y 36d.
+	\item {\bf Cadena de frío}: 24, 34 y 35.
+	\item {\bf Espera voluntaria}: 37.
+	\item {\bf Tiempos de servicio y lotes vacíos}: 33 y 29, respectivamente.
+\stopitemize
 
-El Cuadro~\in[tab:pruebas_funcionales] lista las pruebas funcionales. Cuando
-un caso agrupa varias pruebas, se distinguen con una letra.
+{\bf Qué se verifica.} No todas las pruebas verifican lo mismo. Algunas
+comparan la ruta de cada lote con una ruta esperada y controlan, además, que
+la carga se reparta entre los {\em pickers} y que los lotes de un mismo
+{\em picker} no se superpongan. Cuando la instancia admite varias rutas
+óptimas, en cambio, solo se verifica que la ruta sea un camino válido que
+cubra todas las ubicaciones requeridas. Otras pruebas verifican el estado de
+la resolución, el valor del objetivo, la asignación de los lotes o el
+adelanto y la demora de los pedidos.
+
+{\bf Pruebas de infactibilidad.} Una instancia puede no tener solución por
+tres causas, que conviene distinguir porque no se detectan en el mismo
+momento:
+\startitemize
+	\item {\bf Datos de entrada inválidos}, que se detectan antes de resolver:
+	lotes que superan la capacidad del carro (25a, 25d, 30b y 32) y un pedido
+	asignado a más de un lote (31a).
+	\item {\bf Rutas imposibles}, que detecta el resolvedor: una ubicación
+	requerida inalcanzable (21 y 26a) o una ruta que debería repetir una
+	ubicación (07 y 38).
+	\item {\bf Cadena de frío}: algún lote no puede ser ejecutado por ningún
+	{\em picker} dentro del límite (24b, 34b y 35c). En el modelo Split se
+	detecta en el chequeo previo a la Etapa~2; en el monolítico, la detecta el
+	resolvedor.
+\stopitemize
+La prueba 36c no es de infactibilidad: rechaza los datos de entrada, porque
+una velocidad nula o negativa deja indefinido el tiempo de ejecución.
+
+% TODO: Acá tenemos que ver si queremos mencionar esas pruebas de las heurísticas o no.
+% Conviene separarlas de todas formas (en el codigo)
+{\bf Aplicación a las heurísticas.} Las heurísticas no garantizan encontrar
+el óptimo, por lo que sus pruebas no pueden exigir los mismos valores que las
+de los modelos lineales. Además, la mayoría de las pruebas funcionales propias
+de HC y ACO resuelven sus instancias con un único {\em picker}, de modo que no
+son comparables con las de los modelos lineales aunque compartan el nombre.
+Para evaluarlas sobre las mismas instancias, se capturan las que resuelve el
+modelo Split en sus pruebas funcionales, en el momento en que escribe sus
+archivos de datos, junto con el estado y el objetivo que obtiene. Las pruebas
+del Split definen 70 instancias, porque algunas resuelven más de una variante,
+y HC y ACO resuelven 68 de ellas: la 36c queda afuera porque sus datos se
+rechazan antes de resolver, y la 37a porque verifica precisamente la espera
+voluntaria, que las heurísticas no modelan (Sección~\in[sec:espera_voluntaria]).
+En estas pruebas solo se exige que el estado, con o sin solución, coincida con
+el del Split; los objetivos se comparan después, en el análisis
+(Sección~\in[sec:comparacion]).
+
+{\bf Un caso sin resolver.} El caso 30a no termina dentro del tope de tiempo
+(Sección~\in[sec:ejecucion]) en ninguno de los dos modelos lineales, a pesar
+de tener solo 4 pedidos. De sus 12 lotes, 10 están vacíos y son
+intercambiables entre sí, lo que multiplica las soluciones equivalentes que
+el resolvedor debe descartar (Sección~\in[sec:caracteristicas_formulacion]). Al
+verificar una solución de esta instancia (Sección~\in[sec:validacion]), SCIP
+no terminó en 600 segundos con los lotes vacíos y terminó en 0,13 segundos
+sin ellos. Este caso es una prueba de una de las características del modelo, mencionadas
+en el capítulo~\in[sec:caracteristicas_formulacion].
+
+El Cuadro~\in[tab:pruebas_funcionales] lista los casos y qué verifica cada
+uno.
 
 \startplacetable[reference=tab:pruebas_funcionales, location={here,split}, title={Pruebas funcionales y qué verifica cada una.}]
 	\bTABLE[split=repeat, align=middle, frame=on, width=fit]
@@ -144,11 +219,14 @@ resolver en tiempos razonables. En cada estudio se varió un único factor
 por vez (tamaño del almacén, cantidad de lotes, pedidos por lote, cantidad
 de {\em pickers} y sus velocidades), manteniendo fijo el resto.
 
-El almacén es una grilla de $n \times n$ ubicaciones, los productos de cada 
-pedido se ubican al azar con una semilla fija, los pedidos se reparten entre 
-los lotes por turnos y las fechas de entrega se distribuyen entre el 60\% y el 140\% de
-una estimación de la duración total de la operación, de modo que algunos
-pedidos terminen antes de su fecha y otros después.
+% TODO: Tengo que verificar ese porcentaje. No es claro.
+En todos los estudios, el almacén es una grilla de $n \times n$ ubicaciones,
+con el depósito y el punto de entrega en esquinas opuestas. Cada pedido se
+ubica al azar en una de las ubicaciones, con una semilla fija, los pedidos se
+reparten entre los lotes por turnos y las fechas de entrega se distribuyen
+entre el 60\% y el 140\% de una estimación de la duración total de la
+operación, de modo que algunos pedidos terminen antes de su fecha y otros
+después.
 
 \startsubsubsection[title={Qué dimensión limita al modelo Split}]
 
@@ -247,13 +325,22 @@ draw unitsquare scaled 0.3cm shifted (5.5cm,h+0.75cm) withpen pencircle scaled 1
 label.rt(textext("\tfx 4 pickers, sin terminar en 300 s"), (5.85cm,h+0.9cm));
 \stopMPcode}
 
-{\bf Pedidos por lote y fechas de entrega.} Se fijaron 26 pedidos por lote.
-Con esa cantidad, alrededor de dos tercios de los pedidos se completan a
-tiempo, de modo que en el objetivo actúan tanto la penalidad por adelanto
-como la de demora. Además, el peso de la finalización de los lotes se fijó
-en uno más que la cantidad de pedidos por lote (27), para que la espera
-voluntaria descripta en la Sección~\in[sec:espera_voluntaria] nunca
-resulte conveniente.
+% TODO: ojo acá--no es que no miramos la demora, aclarar eso. Si no, parece
+% que solo testeamos el adelanto.
+{\bf Pedidos por lote y peso de la finalización.} Se fijaron 26 pedidos por
+lote. Durante la exploración, con un peso de finalización $W^{c} = 9$,
+alrededor de dos tercios de los pedidos se completaban a tiempo, de modo que
+en el objetivo actuaban tanto la penalidad por adelanto como la de demora.
+Con ese peso, sin embargo, a los modelos lineales les convenía la espera
+voluntaria (Sección~\in[sec:espera_voluntaria]), que las heurísticas no
+pueden reproducir, y los objetivos de unos y otras dejaban de ser
+comparables. Por eso, en la suite final el peso de finalización se fijó en
+uno más que la cantidad de pedidos por lote ($W^{c} = 27$), de modo que
+esperar nunca resulte conveniente. Con este peso los lotes terminan lo antes
+posible y prácticamente todos los pedidos llegan a tiempo, por lo que en el
+objetivo actúa casi solo el adelanto. El cambio también abarató la Etapa~2:
+en los escenarios de grilla del perfil realista, su tiempo bajó de entre 86 y
+203 segundos a entre 4 y 12 segundos.
 
 {\bf Forma de la agenda.} Se fijaron 6 lotes para 3 {\em pickers}, de modo
 que cada uno ejecute dos lotes y la secuenciación tenga efecto. Con las
@@ -316,6 +403,22 @@ porque la forma de la agenda es la misma. En 15×15, la Etapa~1 no terminó
 en 25 minutos. Estas mediciones definieron los escenarios de tamaño
 creciente de las pruebas de estrés (Sección~\in[sec:escenarios_estres]).
 
+% TODO: Estos detalles quizás merezcan una(s) sección(es) a parte:
+% * el tema de procesos y memoria, que no se había previsto y que nos obligó a
+%   cambiar la forma de ejecutar la Etapa 1, y que explica por qué no se
+%   puede extrapolar de la calibración a la suite final.
+% * el tema de la variabilidad de los tiempos de reloj
+% * el tema de la ejecución en paralelo
+% * el tema de otras optimizaciones intentadas en la etapa 1, que no dieron resultado
+Los tiempos de la calibración no son los de la suite final
+(Capítulo~\in[Capitulo_6]), por tres motivos: después se cambió el peso de
+la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
+(Sección~\in[sec:ejecucion]) y el tiempo de reloj de una misma instancia
+varía hasta el doble entre corridas. Además, cada escenario se calibró sobre
+su propia instancia, porque una lección general del relevamiento es que sus
+conclusiones no se transfieren de una instancia a otra, ni siquiera a
+instancias vecinas, como ya se vio con los pesos asimétricos de la grilla.
+
 \stopsubsubsection
 
 \startsubsubsection[title={Alcance del modelo monolítico}, reference=sec:alcance_monolitico]
@@ -368,17 +471,135 @@ contra la que se comparan las heurísticas es el modelo Split.
 
 \stopsubsubsection
 
-\startsubsubsection[title={Cómo medir los tiempos}]
+\stopsubsection
 
-Los estudios también dieron detalles sobre la medición:
+\startsubsection[title={Escenarios de estrés}, reference=sec:escenarios_estres]
 
+A partir de los resultados del relevamiento se definieron los escenarios de
+estrés con los que se evalúan los modelos y las heurísticas. Cada escenario
+pone a prueba un aspecto particular del problema, como el tamaño o la forma
+del almacén, la cantidad de lotes o la de {\em pickers}. Los escenarios se
+ubicaron \quotation{en la frontera} de lo que los modelos lineales pueden
+resolver en un tiempo aceptable, por lo que se espera que estos no resuelvan
+todas las instancias y que las heurísticas sí puedan hacerlo en un tiempo
+razonable.
+
+El Cuadro~\in[tab:escenarios_estres] lista los escenarios, agrupados según el
+aspecto que ponen a prueba. Los escenarios 04 a 19 usan el perfil realista
+surgido del relevamiento, cuyos parámetros resume el
+Cuadro~\in[tab:perfil_realista], y cada grupo modifica un único aspecto: el
+tamaño del almacén (04 a 08), su forma (09), la agenda de los {\em pickers}
+(10, 11 y 15) y el tamaño del almacén (12 a 14 y 16 a 19). La cadena de
+frío solo está activa en el escenario 11, con un límite de 280: con las rutas
+de esa instancia, ningún {\em picker} lento puede ejecutar un lote dentro de
+ese tiempo.
+
+\startplacetable[reference=tab:perfil_realista, location=here, title={Parámetros del perfil realista (escenarios 04 a 19).}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][1][width=4.5cm, align=flushleft]
+	\setupTABLE[column][2][width=8.5cm, align=flushleft]
+	\bTR \bTH Parámetro \eTH \bTH Valor \eTH \eTR
+	\bTR \bTD Agenda base \eTD \bTD 6 lotes y 3 {\em pickers} \eTD \eTR
+	\bTR \bTD Pedidos \eTD \bTD 26 por lote, de 5 unidades cada uno; cada pedido en una ubicación elegida al azar (semilla 20260922) \eTD \eTR
+	\bTR \bTD Grilla \eTD \bTD Pesos 4 y 5 según la dirección; depósito y punto de entrega en esquinas opuestas \eTD \eTR
+	\bTR \bTD Velocidades \eTD \bTD Dos bandas, 0,8 y 1,2, alternadas entre los {\em pickers} \eTD \eTR
+	\bTR \bTD Tiempos \eTD \bTD $T^{\text{setup}} = T^{\text{pick}} = 1$, $T^{\text{travel}} = 0\mathord{,}5$ y $S_i = 0$, de modo que $F_b = 131$ \eTD \eTR
+	\bTR \bTD Fechas de entrega \eTD \bTD Repartidas entre el 60\% y el 140\% de una estimación de la duración de la operación \eTD \eTR
+	\bTR \bTD Pesos del objetivo \eTD \bTD $W^{c} = 27$ y $W^{\text{pen}} = W^{e} = W^{t} = 1$ \eTD \eTR
+	\bTR \bTD Cadena de frío \eTD \bTD $T^{\text{cold}} = 10^{9}$ (inactiva), salvo en el escenario 11 ($T^{\text{cold}} = 280$) \eTD \eTR
+	\bTR \bTD Constante $M$ \eTD \bTD $10^{6}$ \eTD \eTR
+	\bTR \bTD Capacidad del carro \eTD \bTD 1,5 veces la carga de un lote, por lo que nunca restringe \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+Los escenarios 01 a 03 no tienen velocidades ni cadena de frío, y conservan sus
+datos originales: todos los {\em pickers} tienen la misma velocidad, todos
+los arcos de la grilla tienen el mismo peso, cada pedido tiene 10 unidades y
+todas las fechas de entrega valen 30. Esa fecha es imposible de cumplir, de
+modo que todos los pedidos llegan tarde, no hay adelanto que recortar y el
+peso de finalización puede quedar en $W^{c} = 9$ sin que convenga esperar.
+Además, en los escenarios 01 y 02 hay tantos {\em pickers} como lotes, así
+que cada uno ejecuta un solo lote y la secuencia no interviene. Se
+conservaron por lo que aportan: el 01 es el almacén más grande de la suite
+(100×100), el 02 era el único de los heredados que el modelo Split resolvía
+y el 03 concentra 40 lotes en un único {\em picker}, lo que pone a prueba la
+secuencia.
+
+En todos los escenarios se verifica lo mismo, con los cuatro métodos: que se
+obtenga una solución, que las rutas cubran las ubicaciones requeridas, que
+cada lote tenga un {\em picker} asignado y que los lotes de un mismo
+{\em picker} no se superpongan en el tiempo.
+
+% TODO: acá no sé si quedó bien determinado "qué se estresa" en cada escenario.
+% quizás haya que repensar el cuadro.
+\startplacetable[reference=tab:escenarios_estres, location=here, title={Escenarios de estrés y qué se prueba en cada uno.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2][width=7cm, align=flushleft]
+	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH {\em Pickers} \eTH \bTH Pedidos \eTH \bTH Grilla \eTH \eTR
+	\bTR \bTD[nc=6, style=bold, align=flushleft] Sin cadena de frío \eTD \eTR
+	\bTR \bTD 01 \eTD \bTD Almacén muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD Un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD Un solo {\em picker} con 40 lotes, todos los pedidos atrasados \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD[nc=6, style=bold, align=flushleft] Tamaño del almacén \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD Perfil realista en un almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \eTR
+	\bTR \bTD[nc=6, style=bold, align=flushleft] Forma del almacén \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD Almacén alargado: efecto de la forma del almacén \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \eTR
+	\bTR \bTD[nc=6, style=bold, align=flushleft] Agenda de los {\em pickers} \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD Más peso en la agenda: ruteo barato y 4 {\em pickers} \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD Cadena de frío activa: solo los {\em pickers} rápidos pueden ejecutar los lotes \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD Más {\em pickers} que lotes: quién queda libre \eTD \bTD 6 \eTD \bTD 9 \eTD \bTD 156 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD[nc=6, style=bold, align=flushleft] Tamaño de la cuadrilla \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD Más personal: 8 lotes y 4 {\em pickers} \eTD \bTD 8 \eTD \bTD 4 \eTD \bTD 208 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD Más personal: 10 lotes y 5 {\em pickers} \eTD \bTD 10 \eTD \bTD 5 \eTD \bTD 260 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD Más personal: 12 lotes y 6 {\em pickers} \eTD \bTD 12 \eTD \bTD 6 \eTD \bTD 312 \eTD \bTD 7×7 \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD Una ola: un lote por {\em picker} \eTD \bTD 12 \eTD \bTD 12 \eTD \bTD 312 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD Tres {\em pickers} toman un segundo lote \eTD \bTD 15 \eTD \bTD 12 \eTD \bTD 390 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD La mitad de los {\em pickers} toma un segundo lote \eTD \bTD 18 \eTD \bTD 12 \eTD \bTD 468 \eTD \bTD 10×10 \eTD \eTR
+	\bTR \bTD 19 \eTD \bTD Todos los {\em pickers} toman dos lotes \eTD \bTD 24 \eTD \bTD 12 \eTD \bTD 624 \eTD \bTD 10×10 \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+\stopsubsection
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Suite de testing y análisis}, reference=sec:suite_testing]
+
+Esta sección describe cómo se ejecutan las pruebas y cómo se comparan sus
+resultados. Los casos de prueba quedan descriptos en las secciones en que se
+definen (Secciones~\in[sec:pruebas_funcionales] y~\in[sec:pruebas_estres]),
+y los resultados se presentan en el Capítulo~\in[Capitulo_6].
+
+\startsubsection[title={Ejecución}, reference=sec:ejecucion]
+
+% TODO: creo que esto hay que reescribirlo. Parece que solo comparamos modelos
+% lineales.
+Todas las pruebas, funcionales y de estrés, se ejecutan con un mismo
+programa, que recibe el método y la suite que se quiere correr. Cada prueba
+se ejecuta en un proceso propio y las pruebas se ejecutan de a una, en serie.
+El tope de tiempo es de 25 minutos por prueba en la suite funcional y de 40
+minutos en la de estrés. Al vencer el tope, el programa termina desde afuera
+el proceso de la prueba, junto con todos los procesos que este haya lanzado,
+y la prueba se registra como no terminada ({\em timeout}). A SCIP no se le
+fija un límite de tiempo propio: se usa con sus parámetros por defecto y el
+corte lo hace el programa.
+
+Este esquema responde a lo que se aprendió sobre la medición durante el
+relevamiento (Sección~\in[sec:relevamiento]):
 \startitemize
 	\item {\bf El límite de tiempo de SCIP no es estricto.} SCIP lo controla
 	entre operaciones, y una sola operación puede ser muy larga: una
 	resolución con un límite de 300 segundos terminó a los 3.079, tras
 	explorar apenas 499 nodos. Por eso, cada prueba se ejecuta en un proceso
 	propio, que se termina desde afuera al vencer el tope, y se verificó que
-	ese corte funciona en cualquiera de las dos etapas.
+	ese corte funciona en cualquiera de las dos etapas del modelo Split.
 	\item {\bf La cantidad de nodos es determinista; el reloj, no.} Ante la
 	misma instancia, SCIP recorre el mismo árbol de búsqueda: dos corridas
 	de una misma configuración exploraron exactamente 14.041 nodos, con
@@ -395,63 +616,264 @@ Los estudios también dieron detalles sobre la medición:
 	una de 14×14, con rutas idénticas.
 \stopitemize
 
-\stopsubsubsection
+El paralelismo de la Etapa~1 es distinto del que se evita entre pruebas:
+ocurre dentro de una misma prueba, que sigue ejecutándose sola en la
+máquina. La suite de estrés del modelo Split se ejecutó con la Etapa~1
+repartida en seis procesos, mientras que el monolítico, que no puede
+descomponerse, y las heurísticas usan un único proceso. Por lo tanto, en
+estrés el Split no se compara con los demás métodos en igualdad de recursos.
+Para controlar este efecto, el Split se comparó con y sin paralelismo, y en
+ambos casos resultó más rápido que el monolítico. En la suite funcional, la
+Etapa~1 se ejecutó en un solo proceso.
+
+{\bf Qué se registra.} Cada corrida de una suite produce un archivo CSV por
+método, con una fila por prueba: el estado, el tiempo total, el tiempo del
+resolvedor, el valor objetivo, la memoria pico y la proporción de pedidos
+que llegan a tiempo. En las heurísticas se registran, además, la cantidad de
+iteraciones y la iteración en que se encontró la mejor solución. Cada
+solución puede guardarse también, junto con su instancia, en un archivo
+JSON, lo que permite verificarla después sin volver a resolver
+(Sección~\in[sec:validacion]).
+
+{\bf Qué tiempo se compara.} El tiempo total de una prueba incluye todo lo
+que hace el método para entregar una solución: en los modelos lineales,
+escribir los archivos de datos, compilar el modelo con ZIMPL y resolverlo, y
+en el Split, las dos etapas completas. El tiempo del resolvedor, en cambio,
+cubre solo la última resolución de SCIP, que en el Split es la de la
+Etapa~2. Para comparar métodos se usa el tiempo total. En las instancias
+chicas, este tiempo lo domina la compilación de los modelos, más que su
+resolución.
+
+{\bf Parámetros de las heurísticas.} HC y ACO se ejecutan una vez por
+instancia, con semilla 1. En las instancias funcionales capturadas del
+Split (Sección~\in[sec:pruebas_funcionales]) usan sus valores por defecto.
+En estrés, HC usa los valores de estrés del Cuadro~\in[tab:hc_parametros]
+y ACO, sus valores por defecto (Cuadro~\in[tab:aco_parametros]).
 
 \stopsubsection
 
-\startsubsection[title={Escenarios de estrés}, reference=sec:escenarios_estres]
+\startsubsection[title={Comparación}, reference=sec:comparacion]
 
-Teniendo en cuenta los resultados del relevamiento, se definieron los escenarios de estrés que se
-usan para evaluar los modelos y heurísticas. Cada escenario se diseñó para poner 
-a prueba un aspecto particular del modelo, como la cantidad de lotes, la forma 
-del almacén, la cantidad de {\em pickers}, entre otros. En estas pruebas, se busca
-que los modelos lineales tengan instancias que puedan resolver en un tiempo razonable,
-y se definieron pruebas "en la frontera" de lo resoluble en tiempo aceptable para 
-los modelos lineales. Con esto, se espera que los modelos lineales no puedan resolver
-todas las instancias, y que las heurísticas puedan resolverlas en un tiempo razonable.
+La comparación tiene dos partes: el modelo monolítico contra el Split, para
+validar que la descomposición alcanza el mismo óptimo y probar que divir el modelo
+generó resultados, y el Split contra las heurísticas, para medir cuánto se pierde 
+en calidad y cuánto se gana en tiempo, una vez determinado que el modelo Split
+es el mejor de los modelos exactos en relación con el tiempo de resolución.
 
-El Cuadro~\in[tab:escenarios_estres] lista los escenarios de estrés. Los
-escenarios 04 a 19 usan el perfil realista definido en la
-Sección~\in[sec:relevamiento], con 26 pedidos por lote.
+{\bf Mismos datos.} Solo se comparan instancias en las que los métodos
+resuelven exactamente los mismos datos. En la suite funcional, las
+heurísticas resuelven las instancias capturadas del Split
+(Sección~\in[sec:pruebas_funcionales]). En la de estrés, los cuatro métodos
+construyen cada escenario con la misma llamada al mismo generador y con los
+mismos argumentos, y se verificó que los datos resultantes son idénticos en
+los 19 escenarios.
 
-\startplacetable[reference=tab:escenarios_estres, location=here, title={Escenarios de estrés y qué se prueba en cada uno.}]
+{\bf Monolítico contra Split.} Los dos modelos lineales corren las mismas
+pruebas funcionales, así que se comparan prueba a prueba. Quedan afuera
+cuatro: la 24b, que solo existe en el Split; la 30a, que no termina en
+ninguno de los dos; la 36c, que rechaza los datos antes de resolver, y la
+37a, que verifica la espera voluntaria y se excluye para mantener la misma
+base que la comparación con las heurísticas. Quedan así 60 pares, 49 con
+solución y 11 infactibles. En cada par se comparan el estado, el valor
+objetivo, con una tolerancia relativa de $10^{-6}$, y la solución: las
+rutas, la asignación y el orden de los lotes de cada {\em picker}. Comparar
+la solución permite distinguir los pares que llegan a la misma solución de
+los que alcanzan el mismo objetivo con soluciones distintas, es decir, con
+óptimos alternativos. En estrés, la referencia termina siendo el modelo Split,
+por su velocidad y su capacidad de resolver instancias más grandes
+(Sección~\in[sec:alcance_monolitico]).
+
+% TODO: acá creo que la "linea temporal" es importante, porque no es que definimos
+% que el modelo split es referencia porque sí, si no que primero ejecutamos los
+% tests de stress de monolítico y split, y vimos que el split resolvía más rápido.
+% Ahí decidimos que el split es la referencia para comparar con heurísticas.
+% No quiero que parezca que estas cosas fueron suposiciones.
+
+{\bf Split contra heurísticas.} Qué se compara en cada instancia depende
+del resultado del Split, como resume el Cuadro~\in[tab:comparabilidad].
+
+\startplacetable[reference=tab:comparabilidad, location=here, title={Qué se compara entre el modelo Split y las heurísticas, según el resultado del Split.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
-	\setupTABLE[column][2][width=7cm, align=flushleft]
-	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH {\em Pickers} \eTH \bTH Pedidos \eTH \bTH Grilla \eTH \eTR
-	\bTR \bTD 01 \eTD \bTD Almacén muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \eTR
-	\bTR \bTD 02 \eTD \bTD Un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 03 \eTD \bTD Un solo {\em picker} con 40 lotes, todos los pedidos atrasados \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 04 \eTD \bTD Perfil realista en un almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 05 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
-	\bTR \bTD 06 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \eTR
-	\bTR \bTD 07 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \eTR
-	\bTR \bTD 08 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \eTR
-	\bTR \bTD 09 \eTD \bTD Almacén alargado: efecto de la forma del almacén \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \eTR
-	\bTR \bTD 10 \eTD \bTD Más peso en la agenda: ruteo barato y 4 {\em pickers} \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 11 \eTD \bTD Cadena de frío activa: solo los {\em pickers} rápidos pueden ejecutar los lotes \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
-	\bTR \bTD 12 \eTD \bTD Más personal: 8 lotes y 4 {\em pickers} \eTD \bTD 8 \eTD \bTD 4 \eTD \bTD 208 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 13 \eTD \bTD Más personal: 10 lotes y 5 {\em pickers} \eTD \bTD 10 \eTD \bTD 5 \eTD \bTD 260 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 14 \eTD \bTD Más personal: 12 lotes y 6 {\em pickers} \eTD \bTD 12 \eTD \bTD 6 \eTD \bTD 312 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 15 \eTD \bTD Más {\em pickers} que lotes: quién queda libre \eTD \bTD 6 \eTD \bTD 9 \eTD \bTD 156 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 16 \eTD \bTD Una ola: un lote por {\em picker} \eTD \bTD 12 \eTD \bTD 12 \eTD \bTD 312 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 17 \eTD \bTD Tres {\em pickers} toman un segundo lote \eTD \bTD 15 \eTD \bTD 12 \eTD \bTD 390 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 18 \eTD \bTD La mitad de los {\em pickers} toma un segundo lote \eTD \bTD 18 \eTD \bTD 12 \eTD \bTD 468 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 19 \eTD \bTD Todos los {\em pickers} toman dos lotes \eTD \bTD 24 \eTD \bTD 12 \eTD \bTD 624 \eTD \bTD 10×10 \eTD \eTR
+	\setupTABLE[column][1][width=3.8cm, align=flushleft]
+	\setupTABLE[column][4][width=6.4cm, align=flushleft]
+	\bTR \bTH Resultado del Split \eTH \bTH Estado \eTH \bTH Objetivo \eTH \bTH Motivo \eTH \eTR
+	\bTR \bTD Óptimo, sin espera \eTD \bTD Sí \eTD \bTD Sí \eTD \bTD Mismos datos y mismo objetivo. \eTD \eTR
+	\bTR \bTD Óptimo, con espera voluntaria \eTD \bTD Sí \eTD \bTD No \eTD \bTD El Split obtiene un objetivo menor por una propiedad de la formulación, no por un plan mejor. \eTD \eTR
+	\bTR \bTD Infactible \eTD \bTD Sí \eTD \bTD No \eTD \bTD Solo se verifica que la heurística tampoco encuentre solución. \eTD \eTR
+	\bTR \bTD Sin terminar \eTD \bTD No \eTD \bTD No \eTD \bTD No hay referencia; la instancia sirve para medir la escala y para el experimento a igual tiempo. \eTD \eTR
 	\eTABLE
 \stopplacetable
+
+Para detectar la espera voluntaria se reconstruye la agenda de cada
+{\em picker} en la solución del Split: un lote espera si figura como
+terminado después del instante en que podría haber terminado, es decir, la
+finalización del lote anterior del mismo {\em picker} (o cero, si es el
+primero) más su tiempo de ejecución. La espera solo se tiene en cuenta si el
+adelanto pesa en el objetivo ($W^{\text{pen}} W^{e} > 0$). Con esta regla,
+de las 70 instancias funcionales, 45 se comparan en estado y objetivo, 22
+solo en estado (12 infactibles y 10 con espera voluntaria) y 3 no se
+comparan (30a, 36c y 37a). En estrés no hay espera que descartar
+(Sección~\in[sec:escenarios_estres]), así que los escenarios que el Split
+resuelve dentro del tope se comparan en estado y objetivo, y el resto no
+tiene referencia.
+
+{\bf Métricas.} Sobre esa base se calculan las siguientes medidas:
+\startitemize
+	\item {\bf Coincidencia de estado}: que el método encuentre solución
+	donde el Split la encuentra y no la encuentre donde el Split prueba que
+	no existe.
+	\item {\bf Brecha}: $100 \cdot (z_{\text{heur}} - z_{\text{Split}}) / z_{\text{Split}}$,
+	solo en las instancias comparables en objetivo. Como la referencia es un
+	óptimo probado, una brecha negativa indicaría un error.
+	\item {\bf Cociente de tiempos}: el tiempo total del Split dividido por el
+	de la heurística. Si el Split no terminó, el cociente calculado con el
+	tope es una cota inferior.
+	\item {\bf Nivel de servicio}: la proporción de pedidos que llegan a tiempo.
+	\item {\bf Memoria pico}: la del Split no incluye la de los procesos de la
+	Etapa~1 ni la de ZIMPL.
+	\item {\bf Iteración de la mejor solución}, en las heurísticas.
+\stopitemize
+Para resumir los tiempos y las brechas se usan medianas además de medias,
+porque sus distribuciones son muy asimétricas: unas pocas instancias
+concentran los valores extremos, y en la suite funcional los tiempos dependen
+sobre todo de la compilación de los modelos.
+
+{\bf A igual tiempo.} En las comparaciones anteriores, cada método corre
+hasta su propio criterio de parada: el Split, hasta probar el óptimo o
+alcanzar el tope, y las heurísticas, hasta detenerse. Como complemento, se
+realizó el experimento habitual para comparar una metaheurística con un
+resolvedor exacto, que consiste en darles el mismo tiempo. En cada escenario
+de estrés, cada modelo lineal recibe como límite de tiempo de SCIP el tiempo
+total que tardó la heurística en ese escenario, y se registra la mejor
+solución que tiene al vencer el límite. En el Split, la Etapa~1 reparte el
+tiempo en partes iguales entre los lotes que faltan rutear y la Etapa~2 usa
+lo que queda; solo hay una solución completa si todos los lotes tienen ruta y
+la Etapa~2 encuentra una solución a tiempo. El monolítico hace una única
+resolución con todo el tiempo. Como SCIP controla su límite entre
+operaciones, y el límite no cubre la escritura de los datos ni la
+compilación, el tiempo transcurrido puede superar el presupuesto. En el caso
+de ACO, además, los presupuestos se tomaron de una corrida anterior a la
+consolidada, por lo que no coinciden exactamente con los tiempos que se
+informan en el Capítulo~\in[Capitulo_6].
 
 \stopsubsection
 
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Suite de testing y análisis}, reference=sec:suite_testing]
+\startsection[title={Validación de las soluciones}, reference=sec:validacion]
 
-% TODO: completar
-// TODO: Que iba acá??? creo que iban a ir los cuadros, pero por ahí queda mejor
-dejarlos en las secciones en las que se definen las pruebas, aunque puede ser
-que queden muy separados :pienso:
+% TODO: esto creo que voy a tener que volverlo a ver. no me convence en general.
+
+Las heurísticas no prueban optimalidad, pero sus soluciones deben cumplir
+todas las restricciones del problema. Un objetivo bajo no sirve de nada si la
+solución viola alguna restricción, y comparar el objetivo de una heurística
+con el del Split solo tiene sentido si las dos soluciones son factibles para
+el mismo modelo. Esta sección describe cómo se verifica que cada solución de
+HC y ACO es factible y qué controles se aplican a los modelos lineales.
+
+\startsubsection[title={Factibilidad por diseño}]
+
+Las heurísticas cumplen buena parte de las restricciones por la forma en que
+representan y modifican una solución (Capítulo~\in[Capitulo_4]). La
+representación asigna cada lote a un único {\em picker}, la secuencia de cada
+{\em picker} impide que sus lotes se superpongan y la ruta de cada lote es un
+camino simple del depósito al punto de entrega, por lo que no puede contener
+subtours ni repetir ubicaciones. Además, antes de buscar, aplican a los datos
+de entrada las mismas verificaciones previas que los modelos lineales, con
+las mismas funciones del código. La cadena de frío es la excepción: durante
+la búsqueda se permite violarla a cambio de una penalización, pero solo se
+informa como resultado una solución que la cumple.
+
+\stopsubsection
+
+\startsubsection[title={Verificación contra el modelo monolítico}]
+
+Que una solución cumpla las restricciones por diseño depende de que la
+implementación sea correcta. Para no depender de ello, cada solución de las
+heurísticas se verifica de forma independiente contra el modelo monolítico,
+que funciona como única fuente de las restricciones. En lugar de volver a
+programarlas, los valores de la solución se fijan, por nombre, sobre las
+variables del modelo monolítico ya compilado, sin modificar ninguna
+restricción, y SCIP decide si son factibles. La verificación usa las
+soluciones guardadas durante la ejecución de las pruebas
+(Sección~\in[sec:ejecucion]), sin volver a ejecutar las heurísticas, y tiene
+tres capas, de la más barata a la más costosa:
+\startitemize[n]
+	\item {\bf Chequeos directos.} La solución se recalcula sin el
+	resolvedor. Se verifica que cada lote tenga un único {\em picker} y que
+	este exista; que las rutas usen solo ubicaciones y arcos del grafo, no
+	repitan ubicaciones y cubran las ubicaciones requeridas; que se cumpla la
+	cadena de frío, con la misma tolerancia que los modelos lineales
+	($\varepsilon = 10^{-9}$); que los tiempos de ejecución y de finalización
+	informados coincidan con los recalculados, y que el objetivo informado
+	coincida con el que da la fórmula del modelo monolítico.
+	\item {\bf Decisiones fijas.} Se fijan las rutas, la asignación y la
+	secuencia de cada {\em picker}, y se dejan libres los tiempos. Si el
+	modelo resulta factible, las decisiones de la heurística son válidas. El
+	objetivo que obtiene SCIP puede ser menor que el informado, porque el
+	modelo puede recurrir a la espera voluntaria.
+	\item {\bf Solución completa fija.} Se fijan, además, los instantes de
+	finalización informados. Si el modelo resulta factible y le asigna a la
+	solución el mismo objetivo que informó la heurística, con una tolerancia
+	relativa de $10^{-6}$, la solución informada es exactamente una solución
+	del modelo monolítico.
+\stopitemize
+Una solución se considera válida solo si pasa las tres capas.
+
+{\bf Ajustes del verificador.} Para que la verificación sea posible, el
+verificador hace tres ajustes, que quedan anotados en su reporte. Primero,
+quita de la instancia los lotes sin pedidos que la solución no usa: los
+modelos lineales rutean, asignan y cobran todos los lotes
+(Sección~\in[sec:caracteristicas_formulacion]), mientras que las heurísticas
+ignoran los vacíos. Segundo, cuando todas las rutas están fijas, resuelve
+sobre el subgrafo formado por los arcos de esas rutas, lo que es exactamente
+equivalente y resultó necesario en el almacén de 100×100, donde ZIMPL se
+quedaba sin memoria al compilar el modelo completo; como control, 248
+soluciones dieron el mismo veredicto con y sin este recorte. Tercero, si las
+constantes M grandes de la instancia son demasiado chicas para la solución,
+las reemplaza por valores válidos, porque una constante chica puede excluir
+soluciones factibles (Sección~\in[sec:notacion]) y el rechazo no se debería a
+una violación.
+
+{\bf Validación del verificador.} Para comprobar que el verificador detecta
+errores, se introdujeron cuatro a propósito en una solución chica: un arco
+que no existe en el grafo, dos lotes del mismo {\em picker} superpuestos en
+el tiempo, una violación de la cadena de frío y un objetivo mal informado. El
+verificador detectó los cuatro.
+
+{\bf Qué no cubre.} La verificación no prueba que una solución sea óptima,
+solo que es factible y que su objetivo está bien calculado. Tampoco puede
+verificar una respuesta de infactibilidad, porque no hay solución que fijar:
+en ese caso solo se contrasta el estado de la heurística con el del Split,
+teniendo en cuenta que una heurística que no encuentra solución no prueba
+que no exista. Como control adicional, ninguna heurística puede obtener un
+objetivo menor que un óptimo probado del Split: una brecha negativa indicaría
+un error en alguno de los dos métodos.
+
+\stopsubsection
+
+\startsubsection[title={Controles sobre los modelos lineales}]
+
+Los modelos lineales también se controlan entre sí. La comparación entre el
+monolítico y el Split (Sección~\in[sec:comparacion]) verifica, prueba a
+prueba, que alcanzan el mismo óptimo, como establece el argumento de
+exactitud de la Sección~\in[sec:modelo_split]. Además, las soluciones de
+estrés del Split se verificaron contra el modelo monolítico con el mismo
+procedimiento que las de las heurísticas. Como las dos etapas del Split usan
+las mismas restricciones que el monolítico, este control no busca errores de
+formulación sino de implementación: comprueba que las soluciones obtenidas
+por etapas cumplen todas las restricciones del modelo completo.
+
+\stopsubsection
+
+% TODO: estoy casi segura que falta una sección de experimentos. más que nada
+% porque se hicieron en el modelo Split, y seguro tambien se hicieron en las 
+% metaheurísticas. el tema ahí es que creo que no tengo pruebas de eso D: 
+% el codigo no está en el repo porque no sirvió mucho, solo sirvió el paralelismo
+% (que ahora que lo menciono, no se si lo justifique bien y si dije a partir de 
+% qué tamaño es conveniente)
 
 \stopsection
 \stopchapter
