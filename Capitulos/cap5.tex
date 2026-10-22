@@ -488,22 +488,9 @@ que queden muy separados :pienso:
 %     frontera y referenciarla desde el otro.
 %
 % 2. QUÉ FALTA
-% 2.1 Software (5.1)
-% [ ] Confirmar con Lucía que usó las mismas versiones (se tomaron de la máquina de Xime).
-% [ ] (Opcional) SCIP corre con sus parámetros por defecto y en las pruebas no se le fija
-%     límite de tiempo (lo corta el runner, 5.4); ZIMPL se llama con nombres de hasta 8.192
-%     caracteres (con el truncado por defecto se corrompían los nombres de las variables de
-%     arco en instancias grandes y la Etapa 1 devolvía rutas que no llegaban al nodo final;
-%     Notas, "Errores y correcciones que importan para la tesina").
 % 2.2 Pruebas funcionales (5.2)
-% [ ] Completar las filas 03 y 14 del cuadro (dicen "//TODO", que se imprime en el PDF):
-%     03 es la misma instancia que 02 (variante heredada de v4; mismo objetivo, 795) y 14 la
-%     misma que 13 (en v4 diferían en una asignación fija por períodos que v5 no usa;
-%     objetivo 3.087). Decirlo así o fusionar las filas.
 % [ ] Cantidades: 38 archivos; 64 métodos de test en el Split y 63 en el monolítico (el 24b
-%     corre solo la Etapa 1). 30 archivos migrados de v4 (un adaptador cambia la resolución
-%     por la de v5 y hereda escenarios y aserciones sin tocarlas, con V_p = 1 y T_cold =
-%     10^9) y 8 propios de v5 (06, 23, 24 y 34 a 38), con valores exactos calculados a mano.
+%     corre solo la Etapa 1). 
 %     Los dos modelos corren los mismos métodos con el mismo constructor de escenario.
 % [ ] Reemplazar la clasificación en tres grupos (ejecución / asignación / secuenciación),
 %     que no se corresponde con el cuadro, por: origen (v4 o v5); qué se prueba (ruteo y
@@ -519,13 +506,10 @@ que queden muy separados :pienso:
 %     ruta imposible (07, 21, 26a, 38) y cadena de frío (24b, 34b, 35c: prechequeo en el
 %     Split, SCIP en el monolítico). El 36c no es un infactible: rechaza la entrada
 %     (velocidad no positiva).
-% [ ] Cobertura del objetivo: de los 42 tests con solución de la corrida del 22/09, 7
-%     mezclan órdenes adelantadas y atrasadas, 5 tienen solo adelanto, 19 solo atraso (casi
-%     todos migrados de v4) y 11 ninguno: las dos mitades del objetivo se ejercitan (Notas,
-%     "Tests propios de v5").
 % [ ] El timeout conocido: el 30a, 25 min en los dos modelos. Tiene 10 de sus 12 lotes
 %     vacíos (permutaciones equivalentes); la misma solución sin esos lotes se verifica en
 %     0,13 s. Y qué tests quedan fuera de las comparaciones y por qué (24b, 30a, 36c, 37a).
+%	  Esto sirve para justificar la necesidad de un preprocesamiento de los lotes.
 % [ ] Cómo se aplican a las heurísticas: sus tests funcionales propios (heredados de hc_2 y
 %     aco_2) corren con un solo picker y no son comparables con v5 aunque compartan el
 %     nombre. Para comparar se capturan las instancias que resuelve el Split en el momento en
@@ -553,11 +537,8 @@ que queden muy separados :pienso:
 %     pesados corriendo en paralelo" si no se distingue el paralelismo dentro de un test del
 %     de tests en paralelo, y afecta la comparación de tiempos con el monolítico (no se puede
 %     paralelizar) y con las heurísticas (un proceso). El propio .env.example recomienda 1
-%     para medir tiempos. (D) ver 4.
-% [ ] El CSV de estrés del Split junta corridas del 24/09 (01, 03), del 26/09 (08, 10,
-%     12-19) y del 29/09 (02, 04-07, 09, 11, 15), y la notebook se suspendió durante algunas:
-%     los tiempos de los tests resueltos son un techo y los timeouts valen (el tope cuenta
-%     solo tiempo despierto).
+%     para medir tiempos. (D) ver 4. Se comparó con y sin paralelismo, y le gana al monolítico
+%     en todos los casos.
 % [ ] Tabla de parámetros del perfil realista (Notas, "Principios del rediseño y perfil
 %     realista"): 26 órdenes por lote con C_n = 5 (F_b = 131), pesos 4/5, velocidades 0,8 y
 %     1,2 (bandas alternadas), T_setup = T_pick = 1, T_travel = 0,5, S_i = 0, W^c = 27,
@@ -572,10 +553,6 @@ que queden muy separados :pienso:
 %     heredado que resolvía, 10 lotes y 10 pickers en 10×10; un picker con 40 lotes).
 % [ ] Aserciones de estrés, iguales para los cuatro métodos: hay solución, las rutas cubren
 %     las ubicaciones requeridas, cada lote tiene un picker y no hay solapamiento en un picker.
-% [ ] Dato para redactar el monolítico en estrés: 01 "sin resultado" (el proceso terminó sin
-%     estado), 02-07 timeout (el 02 se cortó pasados los 40 min y la fila se cargó a mano),
-%     el 04 se volvió a correr con W^c = 27 (timeout), y 08-19 figuran como timeout sin
-%     haberse corrido con W^c = 27 (decisión ya tomada: no se vuelven a correr).
 % [ ] Detalles: "en la frontera" va con \quote{} (hoy tiene comillas rectas); "grilla de
 %     n×n" no incluye al 09, que es de 8×21.
 % 2.4 Ejecución de las pruebas (5.4; hoy "// TODO", visible en el PDF)
@@ -664,14 +641,6 @@ que queden muy separados :pienso:
 % [ ] La lección "las conclusiones no se transfieren ni a la instancia de al lado" (Notas,
 %     "Pruebas para mejorar el rendimiento del Split") justifica calibrar cada test de
 %     estrés sobre su propia instancia: puede cerrar 5.3.1.
-%
-% 4. DECISIONES PENDIENTES
-% (D) Tiempos de estrés del Split: volver a correr en serie (OPP_STAGE1_WORKERS=1) los 9 que
-%     resuelven, para comparar tiempos en igualdad con el monolítico y las heurísticas, o
-%     dejar los actuales (6 procesos) y declararlo. Si se corre, con la notebook enchufada y
-%     sin suspensión.
-% (D) Estudio de variabilidad entre semillas (quedó para después el 29/09): hace falta si se
-%     reporta robustez; ver la guía del cap. 6.
 %
 % 5. FUENTES
 % - linear-picking-routing: docs/thesis/models.tex (secs. "Comparabilidad", "Validez y
