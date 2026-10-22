@@ -3,3 +3,73 @@
 % TODO: completar
 
 \stopchapter
+
+%========================================================================================
+% GUÍA DE TRABAJO - CAPÍTULO 7 (Conclusión y discusión)
+% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
+% Armada el 21/10/2026 a partir del repo de implementación (linear-picking-routing,
+% origin/main 75d553c del 19/10), docs/thesis/models.tex, las dos comparaciones de
+% docs/thesis/ y Notas/opp_v5_development.tex. Foco: conclusiones de la comparación de
+% modelos y de la validación. Revisar los números si se vuelven a correr las heurísticas
+% (guía del cap. 6).
+% [ ] = tarea; (D) = decisión de ustedes.
+%========================================================================================
+%
+% 1. ORGANIZACIÓN PROPUESTA (el flujo de la plantilla: discusión, conclusiones,
+%    recomendaciones, trabajo futuro)
+%   7.1 Discusión: los resultados frente a la literatura y a las decisiones de modelado.
+%   7.2 Conclusiones: una por objetivo específico del cap. 1, en el mismo orden.
+%   7.3 Recomendaciones: cuándo conviene cada método.
+%   7.4 Limitaciones.
+%   7.5 Trabajo futuro.
+%
+% 2. QUÉ TIENE QUE DECIR
+% [ ] Discusión: Coruzzolo et al. no pudieron resolver su MIP sobre el caso real; acá los
+%     modelos exactos prueban el óptimo solo a escala chica (Split: hasta 6 lotes en grillas
+%     de hasta 15×15; monolítico: con 10 min, hasta 3 lotes en 6×6), lo que es consistente y
+%     justifica las heurísticas. La descomposición conserva el óptimo y es la que escala. La
+%     espera voluntaria es una propiedad de las formulaciones con objetivo de adelanto y
+%     demora y terminación como desigualdad: condiciona qué se puede comparar.
+% [ ] Conclusiones por objetivo: (1) monolítico formulado, implementado y validado (mismo
+%     óptimo que el Split; se reduce a v4); (2) Split: mismo óptimo en 49 de 49 pares, algo
+%     más lento en instancias chicas y el único que resuelve a escala (estrés: 9 de 19 contra
+%     0 de 19); (3) HC y ACO equivalentes salvo la espera voluntaria, con todas sus
+%     soluciones verificadas contra el monolítico (150 de 150); (4) pruebas: 64 funcionales
+%     y 19 de estrés, con un perfil realista sin las degeneraciones de las heredadas;
+%     (5) estado 67/67 y 9/9, brechas (en estrés ACO <= 0,06 % y HC <= 0,21 %), tiempos (en
+%     la mediana de estrés HC unas 53 veces y ACO 1,7 veces más rápidos que el Split) y, a
+%     igual tiempo, las heurísticas dominan; (6) limitaciones estructurales (ver 7.4).
+% [ ] Recomendación (models.tex, "Conclusiones"): hasta 6 lotes en grillas de hasta 15×15,
+%     el Split da el óptimo probado en minutos y sirve de referencia; por encima, o cuando
+%     importa el tiempo de respuesta, las heurísticas: ACO cuando importa la calidad y HC
+%     cuando importan los segundos (por ejemplo, para replanificar).
+% [ ] Limitaciones de la formulación: camino simple; sin congestión; loteo y ubicación de
+%     productos dados; validez de M_seq con espera voluntaria (si no se corrige, guía del
+%     cap. 3); los lotes vacíos se rutean y se cobran.
+% [ ] Limitaciones experimentales: instancias generadas, no datos reales, con una sola
+%     semilla de generación; tiempos de una notebook (variación de hasta 2 veces entre
+%     corridas, Etapa 1 en paralelo, suspensiones); una corrida por heurística con semilla 1
+%     (si no se hace el estudio de semillas); referencia de objetivo solo donde el Split
+%     termina (9 de 19 en estrés); 10 instancias funcionales comparables solo en estado por
+%     la espera.
+% [ ] Limitaciones de las heurísticas: HC no escapa de óptimos locales y en la práctica casi
+%     no modifica las rutas después de la construcción; los topes de tiempo no son estrictos
+%     (en el 100×100, 17 min HC y 35 min ACO); ACO tiene picos de memoria sin explicar.
+% [ ] Trabajo futuro: identificar qué limita a la Etapa 1 en grillas grandes (el mecanismo no
+%     se identificó); acelerar la Etapa 2 (p. ej. romper la simetría entre pickers de la
+%     misma banda; el branching por pseudocosto ya se probó y no generalizó); una expansión
+%     sin cruces para la clausura métrica (se descartó porque los lotes volvían al grafo
+%     completo, pero eso era evitable y no se intentó); escapar de óptimos locales en HC
+%     (reinicios, recocido simulado o búsqueda tabú: las familias del cap. 2); heurísticas
+%     que inserten espera, o un modelo exacto sin espera, para comparar también donde hoy se
+%     compara solo el estado; integrar el loteo (como Coruzzolo); congestión (en el repo hay
+%     variantes hc_3 y aco_3 que la modelan, fuera del alcance); depósitos con estanterías y
+%     datos reales.
+% [ ] Actualizar el resumen y escribir el abstract (hoy "% TODO") con estas conclusiones.
+%
+% 3. FUENTES
+% - linear-picking-routing/docs/thesis/models.tex, sec. "Conclusiones"; las secciones de
+%   conclusiones y limitaciones de las dos comparaciones de docs/thesis/.
+% - Notas/opp_v5_development.tex: secs. "Limitaciones y preguntas abiertas" y "Síntesis
+%   para la tesina".
+%========================================================================================
