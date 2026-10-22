@@ -455,3 +455,230 @@ que queden muy separados :pienso:
 
 \stopsection
 \stopchapter
+
+%========================================================================================
+% GUÍA DE TRABAJO - CAPÍTULO 5 (Metodología)
+% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
+% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
+% (linear-picking-routing, origin/main 75d553c del 19/10: tests/, verification/,
+% analysis/, experiments/opp_v5/), docs/thesis/models.tex, las dos comparaciones de
+% docs/thesis/ y Notas/opp_v5_development.tex. Foco: definición de las pruebas, cómo se
+% comparan los modelos y cómo se valida que las metaheurísticas cumplan las restricciones.
+% [ ] = tarea; (D) = decisión de ustedes.
+%========================================================================================
+%
+% 1. ORGANIZACIÓN PROPUESTA
+%   5.1 Software utilizado (está; ver 2.1).
+%   5.2 Pruebas funcionales: propósito, cómo se diseñaron, qué se afirma, cómo se aplican a
+%       las heurísticas y el cuadro (con columnas nuevas).
+%   5.3 Pruebas de estrés: relevamiento (está) y escenarios (cuadro con W^c y T^cold, y la
+%       tabla de parámetros del perfil realista).
+%   5.4 Ejecución de las pruebas (reemplaza "Suite de testing y análisis"): runner, topes,
+%       ejecución en serie, paralelismo de la Etapa 1, resultados y parámetros por suite.
+%   5.5 Comparabilidad y métricas (nueva): qué instancias se comparan, con qué medidas, y el
+%       experimento a igual tiempo.
+%   5.6 Validación de las soluciones (nueva): cómo se sabe que las metaheurísticas cumplen
+%       todas las restricciones, y los controles cruzados entre los modelos exactos.
+%   - Respuesta al TODO de 5.4 ("¿qué iba acá?, ¿los cuadros?"): los cuadros quedan donde se
+%     definen las pruebas (5.2 y 5.3); en 5.4 a 5.6 va cómo se ejecutan, se comparan y se
+%     validan, sin resultados (que van al cap. 6).
+%   - Evitar duplicar con el cap. 6: el alcance del monolítico (5.3.1.4) acá solo como
+%     motivo para usar al Split de referencia en estrés; el análisis completo (cocientes de
+%     tiempo, cota dual, 40 min) en 6.1. Decidir en cuál de los dos queda la figura de la
+%     frontera y referenciarla desde el otro.
+%
+% 2. QUÉ FALTA
+% 2.1 Software (5.1)
+% [ ] Confirmar con Lucía que usó las mismas versiones (se tomaron de la máquina de Xime).
+% [ ] (Opcional) SCIP corre con sus parámetros por defecto y en las pruebas no se le fija
+%     límite de tiempo (lo corta el runner, 5.4); ZIMPL se llama con nombres de hasta 8.192
+%     caracteres (con el truncado por defecto se corrompían los nombres de las variables de
+%     arco en instancias grandes y la Etapa 1 devolvía rutas que no llegaban al nodo final;
+%     Notas, "Errores y correcciones que importan para la tesina").
+% 2.2 Pruebas funcionales (5.2)
+% [ ] Completar las filas 03 y 14 del cuadro (dicen "//TODO", que se imprime en el PDF):
+%     03 es la misma instancia que 02 (variante heredada de v4; mismo objetivo, 795) y 14 la
+%     misma que 13 (en v4 diferían en una asignación fija por períodos que v5 no usa;
+%     objetivo 3.087). Decirlo así o fusionar las filas.
+% [ ] Cantidades: 38 archivos; 64 métodos de test en el Split y 63 en el monolítico (el 24b
+%     corre solo la Etapa 1). 30 archivos migrados de v4 (un adaptador cambia la resolución
+%     por la de v5 y hereda escenarios y aserciones sin tocarlas, con V_p = 1 y T_cold =
+%     10^9) y 8 propios de v5 (06, 23, 24 y 34 a 38), con valores exactos calculados a mano.
+%     Los dos modelos corren los mismos métodos con el mismo constructor de escenario.
+% [ ] Reemplazar la clasificación en tres grupos (ejecución / asignación / secuenciación),
+%     que no se corresponde con el cuadro, por: origen (v4 o v5); qué se prueba (ruteo y
+%     grafo; datos de entrada: capacidad, orden en un solo lote, velocidades; fechas de
+%     entrega y pesos; velocidades; cadena de frío; espera voluntaria; tiempos de servicio;
+%     lotes vacíos); y resultado esperado (factible o infactible, con la causa). Puede ir
+%     como columnas del cuadro.
+% [ ] Qué se afirma: algunos tests comparan la ruta con una esperada (más carga equilibrada
+%     y no solapamiento); otros solo el estado, valores del objetivo, asignaciones o la
+%     cobertura de las ubicaciones requeridas (cuando hay varias rutas óptimas).
+% [ ] Infactibles por causa (importa para comparar estados en el cap. 6): validación de
+%     entrada antes de resolver (capacidad: 25a, 25d, 30b, 32; orden en dos lotes: 31a),
+%     ruta imposible (07, 21, 26a, 38) y cadena de frío (24b, 34b, 35c: prechequeo en el
+%     Split, SCIP en el monolítico). El 36c no es un infactible: rechaza la entrada
+%     (velocidad no positiva).
+% [ ] Cobertura del objetivo: de los 42 tests con solución de la corrida del 22/09, 7
+%     mezclan órdenes adelantadas y atrasadas, 5 tienen solo adelanto, 19 solo atraso (casi
+%     todos migrados de v4) y 11 ninguno: las dos mitades del objetivo se ejercitan (Notas,
+%     "Tests propios de v5").
+% [ ] El timeout conocido: el 30a, 25 min en los dos modelos. Tiene 10 de sus 12 lotes
+%     vacíos (permutaciones equivalentes); la misma solución sin esos lotes se verifica en
+%     0,13 s. Y qué tests quedan fuera de las comparaciones y por qué (24b, 30a, 36c, 37a).
+% [ ] Cómo se aplican a las heurísticas: sus tests funcionales propios (heredados de hc_2 y
+%     aco_2) corren con un solo picker y no son comparables con v5 aunque compartan el
+%     nombre. Para comparar se capturan las instancias que resuelve el Split en el momento en
+%     que escribe sus .dat: 70 instancias, de las que HC y ACO corren 68 como test_v5eq__*
+%     (el 36c no se captura porque rechaza la entrada y el 37a se excluye), con semilla 1 y
+%     sus parámetros por defecto. Su test solo afirma que el estado coincida con el del
+%     Split; los objetivos se comparan en el análisis (5.5).
+% [ ] Nota sobre las letras de los casos: siguen el orden alfabético de los métodos de cada
+%     archivo, como en los documentos del repo de implementación.
+% 2.3 Pruebas de estrés (5.3)
+% [ ] Corregir la contradicción de "Pedidos por lote y fechas de entrega": dice que con 26
+%     órdenes por lote unos dos tercios llegan a tiempo y actúan las dos penalidades, y a la
+%     vez que W^c = 27 evita la espera. Los dos tercios son con W^c = 9, el de la exploración
+%     (SLA = (N_b + W^c) / (2 N_b), cap. 3). Con W^c = 27 (desde el 26/09, para que los
+%     objetivos sean comparables con las heurísticas) el SLA es 100 % en el perfil realista
+%     (97,4 % en el 11): en 04-19 actúa casi solo el adelanto, y en 01-03 solo la demora
+%     (todo atrasado). Contar el cambio y su efecto: la Etapa 2 de los tests de grilla bajó
+%     de 86-203 s a 4-12 s, y en el 10 unas 11 veces (Notas, "El cambio de W^c de 9 a 27").
+% [ ] Aclarar que los tiempos de la calibración (3,6 / 11,8 / más de 25 min) no son los de la
+%     suite final (12 s, 108 s y 904 s en 7×7, 13×13 y 15×15): cambió W^c, la Etapa 1 corrió
+%     en 6 procesos y el reloj varía hasta 2 veces entre corridas. Si no, el cap. 6 los
+%     contradice.
+% [ ] Paralelismo de la Etapa 1: la suite de estrés del Split corrió con
+%     OPP_STAGE1_WORKERS=6. Contradice "las pruebas se ejecutan de a una y sin procesos
+%     pesados corriendo en paralelo" si no se distingue el paralelismo dentro de un test del
+%     de tests en paralelo, y afecta la comparación de tiempos con el monolítico (no se puede
+%     paralelizar) y con las heurísticas (un proceso). El propio .env.example recomienda 1
+%     para medir tiempos. (D) ver 4.
+% [ ] El CSV de estrés del Split junta corridas del 24/09 (01, 03), del 26/09 (08, 10,
+%     12-19) y del 29/09 (02, 04-07, 09, 11, 15), y la notebook se suspendió durante algunas:
+%     los tiempos de los tests resueltos son un techo y los timeouts valen (el tope cuenta
+%     solo tiempo despierto).
+% [ ] Tabla de parámetros del perfil realista (Notas, "Principios del rediseño y perfil
+%     realista"): 26 órdenes por lote con C_n = 5 (F_b = 131), pesos 4/5, velocidades 0,8 y
+%     1,2 (bandas alternadas), T_setup = T_pick = 1, T_travel = 0,5, S_i = 0, W^c = 27,
+%     W^pen = W^e = W^t = 1, M = 10^6, T_cold = 10^9 salvo en el 11, depósito y final en
+%     esquinas opuestas, capacidad del carro 1,5 veces la carga de un lote (nunca activa),
+%     semilla 20260922.
+% [ ] Cuadro de escenarios: agregar W^c (9 en 01-03, 27 en 04-19) y T^cold (280 en el 11,
+%     10^9 en el resto), y agrupar por eje: tamaño (04-08), forma (09), agenda (10, 11, 15)
+%     y cuadrilla (12-14, 16-19). Explicar que 01-03 son heredados de v4 con sus
+%     degeneraciones (todas las órdenes atrasadas, |B| = |P| en 01-02, V_p = 1, pesos 4/4,
+%     C_n = 10, T_due = 30) y por qué se conservaron (el más grande, 100×100; el único
+%     heredado que resolvía, 10 lotes y 10 pickers en 10×10; un picker con 40 lotes).
+% [ ] Aserciones de estrés, iguales para los cuatro métodos: hay solución, las rutas cubren
+%     las ubicaciones requeridas, cada lote tiene un picker y no hay solapamiento en un picker.
+% [ ] Dato para redactar el monolítico en estrés: 01 "sin resultado" (el proceso terminó sin
+%     estado), 02-07 timeout (el 02 se cortó pasados los 40 min y la fila se cargó a mano),
+%     el 04 se volvió a correr con W^c = 27 (timeout), y 08-19 figuran como timeout sin
+%     haberse corrido con W^c = 27 (decisión ya tomada: no se vuelven a correr).
+% [ ] Detalles: "en la frontera" va con \quote{} (hoy tiene comillas rectas); "grilla de
+%     n×n" no incluye al 09, que es de 8×21.
+% 2.4 Ejecución de las pruebas (5.4; hoy "// TODO", visible en el PDF)
+% [ ] Runner: python -m tests.run_suite <modelo> functional|stress. Cada test corre en su
+%     propio proceso y en serie; tope de 25 min (funcional) y 40 min (estrés) con corte
+%     externo de todo el árbol de procesos (el límite de SCIP no es estricto: uno de 300 s
+%     terminó a los 3.079 s).
+% [ ] Resultados: un CSV por modelo y suite (estado, total_time, model_time, objetivo,
+%     memoria pico, SLA; en las heurísticas también iteraciones e iteración de la mejor
+%     solución), de nombre fijo; con WRITE_SOLUTIONS=1 cada solución se guarda como JSON
+%     (instancia y valores) para verificarla sin volver a correr (5.6).
+% [ ] Qué tiempo se compara: total_time incluye escribir los .dat y compilar ZIMPL;
+%     model_time es solo el solver (en el Split, la Etapa 2). Entre métodos, total_time.
+% [ ] Parámetros por suite: HC en estrés, 200 iteraciones, 60 sin mejora y 30 s; en las
+%     instancias funcionales comparables, sus valores por defecto (500/30/30 s); ACO con sus
+%     valores por defecto en las dos suites (cap. 4). Una corrida por instancia, semilla 1.
+% 2.5 Comparabilidad y métricas (5.5, nueva)
+% [ ] Regla de comparabilidad (cuadro de models.tex, sec. "Comparabilidad"): Split óptimo
+%     sin espera -> estado y objetivo; con espera voluntaria -> solo estado; infactible ->
+%     solo estado; timeout -> nada (sirve para escala y para igual tiempo). Cómo se detecta
+%     la espera: un lote espera si su c_pb supera la terminación del anterior del mismo
+%     picker más su T_exec, y solo cuenta si W^pen · W^e > 0; se comprobó que las rutas
+%     mínimas más la espera óptima reproducen exactamente el objetivo del Split. Conteos:
+%     funcional, 70 instancias: 45 en estado y objetivo, 22 solo en estado (12 infactibles y
+%     10 con espera) y 3 no comparables (30a, 36c, 37a); estrés, 19: 9 y 10 sin referencia.
+% [ ] Monolítico contra Split: la misma base (60 pares: 49 resueltos y 11 infactibles;
+%     fuera 24b, 30a, 36c y 37a). Se comparan estado, objetivo (tolerancia relativa 10^-6) y
+%     solución (rutas, asignación y orden por picker), para separar "misma solución" de
+%     "óptimo alternativo" (verification/compare_v5.py).
+% [ ] Métricas: coincidencia de estado; brecha = 100 · (z_heur - z_Split) / z_Split solo
+%     donde el objetivo es comparable; cociente de tiempos Split / heurística (mediana; es una
+%     cota inferior si el Split no terminó); SLA; memoria pico (la del Split no incluye los
+%     procesos de la Etapa 1 ni ZIMPL); iteración de la mejor solución. Por qué medianas:
+%     distribuciones sesgadas y tiempos funcionales dominados por la compilación de ZIMPL.
+%     Si se mantiene "robustez" en el cap. 1, definirla y medirla con varias semillas.
+% [ ] Experimento a igual tiempo: cada modelo exacto recibe como límite de SCIP el tiempo
+%     total de la heurística en ese escenario; en el Split la Etapa 1 reparte el presupuesto
+%     en partes iguales entre los lotes que faltan y la Etapa 2 usa lo que queda; el
+%     monolítico hace una sola resolución. El límite se aplica por resolución, así que puede
+%     excederse (en el 09 la Etapa 1 usó 864 s contra 224 s), y los presupuestos salen de una
+%     corrida de ACO del 27/09, distinta de la consolidada (analysis/run_equal_time_study.py).
+% 2.6 Validación de las soluciones (5.6, nueva): cómo sabemos que las metaheurísticas
+%     cumplen todas las restricciones
+% [ ] Mismos datos: en funcional, el escenario capturado cuando el Split escribe sus .dat;
+%     en estrés, la misma llamada al mismo generador con los mismos argumentos (verificado
+%     para los 19 el 28/09).
+% [ ] Por diseño (resumen del cap. 4): representación y operadores que cumplen por
+%     construcción un picker por lote, no solapamiento, sin subtours y camino simple; los
+%     mismos prechequeos exactos que los modelos exactos (mismas funciones del código); la
+%     cadena de frío se penaliza en la búsqueda pero solo se reporta una solución que la
+%     cumple.
+% [ ] Verificación independiente contra el monolítico (verification/mono_compliance.py y
+%     run_compliance.py): el monolítico es la única fuente de las restricciones; los valores
+%     de la solución se fijan por nombre sobre el LP compilado, sin reescribir ninguna
+%     restricción. Tres capas: (1) chequeos en Python (picker en P y uno solo por lote, nodos
+%     en V, arcos en E, sin revisitas, ubicaciones requeridas cubiertas, cadena de frío con
+%     epsilon = 10^-9, T_exec y terminaciones reportadas iguales a las recalculadas, objetivo
+%     recalculado con la fórmula del monolítico); (2) nivel 1 en SCIP: rutas, asignación y
+%     secuencia fijas y tiempos libres -> las decisiones son factibles (su objetivo puede ser
+%     menor si el modelo esperaría); (3) nivel 2: también las terminaciones reportadas fijas
+%     -> la solución exacta reportada es factible y el modelo le asigna el mismo objetivo
+%     (tolerancia relativa 10^-6). Veredicto "compliant" solo si pasan las tres.
+% [ ] Ajustes del verificador (todos quedan anotados en el reporte): saca de B los lotes sin
+%     órdenes que la solución no usa (decisión del 28/09: el modelo exacto los rutea y los
+%     cobra, las heurísticas no); con todas las rutas fijas corre sobre el subgrafo de esas
+%     rutas, que es exactamente equivalente (necesario en el 100×100, donde ZIMPL se quedaba
+%     sin memoria; control: 248 soluciones con el mismo veredicto con y sin recorte); si la M
+%     del escenario es demasiado chica para la solución, la reemplaza (artefacto, no
+%     violación).
+% [ ] Validación del verificador: se le introdujeron cuatro errores a una solución chica
+%     (arco inexistente, dos terminaciones superpuestas del mismo picker, violación de la
+%     cadena de frío y objetivo mal reportado) y detectó los cuatro.
+% [ ] Qué no cubre: no verifica optimalidad; las respuestas "infactible" no se pueden
+%     verificar (no hay solución), solo se contrastan con el estado del Split, y una
+%     heurística no prueba infactibilidad. Control adicional: ninguna heurística puede
+%     quedar por debajo de un óptimo probado (una brecha negativa sería un error).
+% [ ] Controles de los modelos exactos: Split contra monolítico (compare_v5); las 9
+%     soluciones de estrés del Split verificadas contra el monolítico (--verify-split-stress);
+%     reducción a v4 (cap. 3).
+%
+% 3. QUÉ CORREGIR O MEJORAR
+% [ ] Introducción de 5.2: "las pruebas funcionales aplican para los dos modelos lineales y
+%     para las heurísticas": precisar cómo (instancias capturadas, 2.2) y que en las
+%     heurísticas solo se afirma el estado.
+% [ ] Topes (25 min funcional, 40 min estrés): decirlos en 5.2 y 5.3, o una vez en 5.4.
+% [ ] La lección "las conclusiones no se transfieren ni a la instancia de al lado" (Notas,
+%     "Pruebas para mejorar el rendimiento del Split") justifica calibrar cada test de
+%     estrés sobre su propia instancia: puede cerrar 5.3.1.
+%
+% 4. DECISIONES PENDIENTES
+% (D) Tiempos de estrés del Split: volver a correr en serie (OPP_STAGE1_WORKERS=1) los 9 que
+%     resuelven, para comparar tiempos en igualdad con el monolítico y las heurísticas, o
+%     dejar los actuales (6 procesos) y declararlo. Si se corre, con la notebook enchufada y
+%     sin suspensión.
+% (D) Estudio de variabilidad entre semillas (quedó para después el 29/09): hace falta si se
+%     reporta robustez; ver la guía del cap. 6.
+%
+% 5. FUENTES
+% - linear-picking-routing: docs/thesis/models.tex (secs. "Comparabilidad", "Validez y
+%   estado" y "A igual tiempo"), docs/specs/comparabilidad_v5_heuristicas.md (es una foto
+%   del 28/09; si no coincide, manda el CSV), experiments/opp_v5/stress_test_design.md,
+%   tests/infra/factories/v5_equivalence.py, tests/infra/execution/, verification/,
+%   .env.example.
+% - Notas/opp_v5_development.tex: secs. "Diseño de las pruebas", "Implementación",
+%   "Verificación cruzada" y "La suite de stress final".
+%========================================================================================
