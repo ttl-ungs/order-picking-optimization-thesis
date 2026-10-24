@@ -1,0 +1,84 @@
+\startchapter[title={Pruebas funcionales}, reference=Anexo_Pruebas]
+
+El Cuadro~\in[tab:pruebas_funcionales] lista los casos de prueba funcionales
+descriptos en la Sección~\in[sec:pruebas_funcionales]. Cuando un caso agrupa
+varias pruebas, cada una se distingue con una letra.
+
+\startplacetable[reference=tab:pruebas_funcionales, location={here,split}, title={Pruebas funcionales y qué verifica cada una.}]
+	\bTABLE[split=repeat, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2][width=13cm, align=flushleft]
+	\bTABLEhead
+	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \eTR
+	\eTABLEhead
+	\bTABLEbody
+	\bTR \bTD 01 \eTD \bTD Caso básico: 2 pedidos en 2 lotes con 2 {\em pickers}. Cada {\em picker} ejecuta un lote y cada ruta es la esperada. \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD Dos pasillos, un pedido en cada uno: cada lote sigue la ruta de su pasillo y cada {\em picker} ejecuta un lote. \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD //TODO. \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD Dos pasillos con pocas ubicaciones requeridas por pedido: las rutas cubren las ubicaciones requeridas. \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD Dos pasillos en los que los pedidos comparten una ubicación: rutas esperadas, carga equilibrada entre {\em pickers} y sin superposición en el tiempo. \eTD \eTR
+	\bTR \bTD 06a \eTD \bTD Dos rutas posibles que llegan a tiempo: cada lote tiene una ruta y termina en su fecha de entrega. \eTD \eTR
+	\bTR \bTD 06b \eTD \bTD Dos rutas posibles, la larga llega tarde: se elige la corta. \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD Un lote que solo puede completarse repitiendo una ubicación: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD La instancia del caso 07 con una ubicación adicional que evita la repetición: tiene solución y la ruta es la esperada. \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD Dos pedidos de un mismo lote en dos ubicaciones: ruta esperada, carga equilibrada y sin superposición. \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD Dos pedidos en lotes distintos: ruta esperada para cada lote, carga equilibrada y sin superposición. \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD Cuatro pedidos en dos lotes que comparten ubicaciones: rutas esperadas. \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD Sin pruebas activas: verificaba la capacidad del carro dentro del modelo, que ya no la contempla. \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD 12 pedidos en 6 lotes con 3 {\em pickers}, sobre una grilla de 4×4: carga equilibrada y sin superposición en el tiempo. \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD // TODO. \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD 3 pedidos con varias ubicaciones cada uno, en un lote con un {\em picker}, sobre una grilla de 4×4: tiene solución. \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD 6 pedidos en 3 lotes con 2 {\em pickers}, sobre una grilla de 4×4 con pasillos transversales; cada pedido visita más de una ubicación: tiene solución. \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD Un lote en un grafo ramificado: la ruta es la esperada, con carga equilibrada y sin superposición. \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD Un lote de 5 pedidos cuya ruta requiere un desvío: tiene solución. \eTD \eTR
+	\bTR \bTD 19a \eTD \bTD Ruta extendida (un lote de 6 pedidos, 9 ubicaciones) con dos pedidos en la misma ubicación: tiene solución. \eTD \eTR
+	\bTR \bTD 19b \eTD \bTD La misma ruta con fecha de entrega 0 y 100: con 0 hay demora y con 100 no. \eTD \eTR
+	\bTR \bTD 19c \eTD \bTD Ruta extendida: la ruta es un camino válido que cubre todas las ubicaciones requeridas. \eTD \eTR
+	\bTR \bTD 20 \eTD \bTD Pedidos con varias ubicaciones sobre una grilla: cada lote visita todas sus ubicaciones. \eTD \eTR
+	\bTR \bTD 21 \eTD \bTD Una ubicación requerida queda inalcanzable (puente cortado): se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 22a \eTD \bTD Un lote que termina antes de su fecha de entrega: no hay demora. \eTD \eTR
+	\bTR \bTD 22b \eTD \bTD Un lote que termina después de su fecha de entrega: no hay adelanto. \eTD \eTR
+	\bTR \bTD 23a \eTD \bTD Dos lotes de distinta longitud de ruta y dos {\em pickers} de distinta velocidad: el lote de ruta larga va al {\em picker} rápido. \eTD \eTR
+	\bTR \bTD 23b \eTD \bTD Los tiempos de ruta calculados son los que usa la asignación, sin superposición entre lotes de un mismo {\em picker}. \eTD \eTR
+	\bTR \bTD 24a \eTD \bTD La cadena de frío excluye al {\em picker} lento: el lote se asigna al rápido. \eTD \eTR
+	\bTR \bTD 24b \eTD \bTD Ningún {\em picker} cumple la cadena de frío: el chequeo previo no encuentra pares elegibles. \eTD \eTR
+	\bTR \bTD 25a \eTD \bTD Grilla de 5×3 con 2 {\em pickers} y 4 lotes, uno de los cuales supera la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 25b \eTD \bTD La misma grilla, con dos pedidos de un lote en la misma ubicación: tiene solución. \eTD \eTR
+	\bTR \bTD 25c \eTD \bTD La misma grilla, con pedidos de varias ubicaciones: cada lote visita todas sus ubicaciones. \eTD \eTR
+	\bTR \bTD 25d \eTD \bTD La misma grilla, con todos los lotes por encima de la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 25e \eTD \bTD La misma grilla, con fechas de entrega extremas (0 y 100): tiene solución en ambos casos. \eTD \eTR
+	\bTR \bTD 25f \eTD \bTD La misma grilla, con la carga de cada lote exactamente igual a la capacidad del carro: tiene solución. \eTD \eTR
+	\bTR \bTD 25g \eTD \bTD La misma grilla, con lotes distintos que comparten ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 26a \eTD \bTD Grafo con un puente cortado, 2 {\em pickers} y 4 lotes: una ubicación requerida queda inalcanzable; se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 26b \eTD \bTD El mismo grafo con el puente, con fechas de entrega muy holgadas y dos tamaños de pedido: tiene solución. \eTD \eTR
+	\bTR \bTD 26c \eTD \bTD El mismo grafo, con lotes que comparten ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 26d \eTD \bTD El mismo grafo, con una fecha de entrega ajustada y un tiempo de recolección por unidad bajo y alto: tiene solución en ambos casos. \eTD \eTR
+	\bTR \bTD 27 \eTD \bTD La instancia del caso 01 con otros pesos en la función objetivo. \eTD \eTR
+	\bTR \bTD 28 \eTD \bTD Fechas de entrega ajustadas y holgadas: ambas tienen solución, porque la demora absorbe la fecha ajustada. \eTD \eTR
+	\bTR \bTD 29 \eTD \bTD Un lote vacío entre otros: tiene solución. \eTD \eTR
+	\bTR \bTD 30a \eTD \bTD Capacidades de pedido nulas y fraccionarias dentro de la capacidad del carro: tiene solución. \eTD \eTR
+	\bTR \bTD 30b \eTD \bTD Capacidades de pedido nulas y fraccionarias que superan la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 31a \eTD \bTD Un pedido asignado a más de un lote: se rechaza como infactible. \eTD \eTR
+	\bTR \bTD 31b \eTD \bTD Cada pedido asignado a un único lote: tiene solución. \eTD \eTR
+	\bTR \bTD 32 \eTD \bTD Un pedido que por sí solo supera la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 33a \eTD \bTD Tiempos de servicio distintos entre ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 33b \eTD \bTD Tiempo de servicio igual a 1 en todas las ubicaciones: tiene solución. \eTD \eTR
+	\bTR \bTD 33c \eTD \bTD Tiempo de servicio nulo: tiene solución. \eTD \eTR
+	\bTR \bTD 34a \eTD \bTD El tiempo de ejecución de cada lote coincide con su parte fija más el tiempo de ruta dividido por la velocidad del {\em picker}. \eTD \eTR
+	\bTR \bTD 34b \eTD \bTD Ningún {\em picker} cumple la cadena de frío: el modelo informa infactibilidad sin fallar. \eTD \eTR
+	\bTR \bTD 34c \eTD \bTD Un {\em picker} cuyo tiempo de ejecución es exactamente el límite de frío sigue siendo elegible. \eTD \eTR
+	\bTR \bTD 35a \eTD \bTD El límite de frío se aplica a cada lote y no al turno: un {\em picker} puede encadenar dos lotes aunque el segundo termine después del límite. \eTD \eTR
+	\bTR \bTD 35b \eTD \bTD Un {\em picker} que supera el límite de frío por menos que la tolerancia numérica sigue siendo elegible. \eTD \eTR
+	\bTR \bTD 35c \eTD \bTD La parte fija del lote cuenta para el límite de frío: ningún {\em picker} es elegible y se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 36a \eTD \bTD Con un {\em picker} el doble de rápido, conviene repartir los dos lotes. \eTD \eTR
+	\bTR \bTD 36b \eTD \bTD Con un {\em picker} cuatro veces más rápido, conviene que ejecute los dos lotes. \eTD \eTR
+	\bTR \bTD 36c \eTD \bTD Las velocidades nulas o negativas se rechazan antes de resolver. \eTD \eTR
+	\bTR \bTD 36d \eTD \bTD La demora se calcula con el tiempo de ruta escalado por la velocidad del {\em picker}. \eTD \eTR
+	\bTR \bTD 37a \eTD \bTD Con un peso de finalización menor que la cantidad de pedidos del lote, el lote espera hasta la fecha de entrega. \eTD \eTR
+	\bTR \bTD 37b \eTD \bTD Con un peso de finalización mayor, el lote termina lo antes posible. \eTD \eTR
+	\bTR \bTD 38 \eTD \bTD Pedidos en dos pasillos sin salida, que obligan a pasar más de una vez por el mismo nodo: se espera infactibilidad. \eTD \eTR
+	\eTABLEbody
+	\eTABLE
+\stopplacetable
+
+\stopchapter

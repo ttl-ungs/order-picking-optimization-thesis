@@ -1,0 +1,248 @@
+\startchapter[title={Relevamiento de los modelos lineales}, reference=Anexo_Relevamiento]
+
+Antes de definir los escenarios de estrés (Sección~\in[sec:escenarios_estres]) se
+realizó una serie de estudios exploratorios sobre los modelos lineales, cuyas
+conclusiones resume la Sección~\in[sec:relevamiento]. Un test responde si una instancia
+determinada se resuelve o no; un estudio, en cambio, recorre una familia de
+instancias y muestra a partir de qué tamaño, y por qué, un modelo deja de
+resolver en tiempos razonables. En cada estudio se varió un único factor
+por vez (tamaño del almacén, cantidad de lotes, pedidos por lote, cantidad
+de {\em pickers} y sus velocidades), manteniendo fijo el resto.
+
+% TODO: Tengo que verificar ese porcentaje. No es claro.
+En todos los estudios, el almacén es una grilla de $n \times n$ ubicaciones,
+con el depósito y el punto de entrega en esquinas opuestas. Cada pedido se
+ubica al azar en una de las ubicaciones, con una semilla fija, los pedidos se
+reparten entre los lotes por turnos y las fechas de entrega se distribuyen
+entre el 60\% y el 140\% de una estimación de la duración total de la
+operación, de modo que algunos pedidos terminen antes de su fecha y otros
+después.
+
+\startsection[title={Qué dimensión limita al modelo Split}]
+
+El primer estudio partió de una instancia base de 6 lotes, 2 {\em pickers},
+26 pedidos por lote, una grilla de 7×7 y velocidades uniformes, y movió un
+eje por vez con un tope de 300 segundos por resolución. El
+Cuadro~\in[tab:relev_ejes] resume el resultado.
+
+\startplacetable[reference=tab:relev_ejes, location=here, title={Eje que se movió en cada barrido y resultado del modelo Split, con un tope de 300 segundos por resolución.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][3][width=7.5cm, align=flushleft]
+	\bTR \bTH Eje \eTH \bTH Rango \eTH \bTH Resultado \eTH \eTR
+	\bTR \bTD Pedidos por lote \eTD \bTD 10 a 50 \eTD \bTD Resolvió en todo el rango (con 50: Etapa~1 en 46,5~s, Etapa~2 en 14,1~s) \eTD \eTR
+	\bTR \bTD Lotes \eTD \bTD 6 a 8 \eTD \bTD Con 8 lotes, la Etapa~2 alcanzó el tope tras explorar 518.628 nodos \eTD \eTR
+	\bTR \bTD {\em Pickers} \eTD \bTD 2 a 5 \eTD \bTD Resolvió en todo el rango, aunque no de forma monótona (Etapa~2: 12,9~s con 3, 25,4~s con 4 y 7,3~s con 5) \eTD \eTR
+	\bTR \bTD Grilla \eTD \bTD 7×7 a 15×15 \eTD \bTD Con 15×15, la Etapa~1 superó el tope \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+Solo dos ejes impidieron la resolución, y cada uno lo hizo en una etapa
+distinta: la cantidad de lotes aumenta el tiempo de la Etapa~2 (asignación y
+secuencia), mientras que el tamaño del almacén el de la Etapa~1
+(ruteo). Agregar pedidos a cada lote, en cambio, no tuvo impacto significativo: 
+la Etapa~2 exploró 153.934 nodos con 10 pedidos por lote y
+4.144 con 26. Esta separación entre las dos etapas orientó el resto de la
+exploración, ya que permite elegir qué etapa se pone bajo presión en cada
+prueba.
+
+\stopsection
+
+\startsection[title={Exploración de instancias más realistas}]
+
+Los estudios siguientes buscaron que las instancias se parecieran a un
+almacén real sin volverse imposibles de resolver.
+
+{\bf Pesos de la grilla.} Con el mismo peso en todos los desplazamientos,
+muchas rutas distintas empatan en costo, algo poco representativo de un
+almacén, donde recorrer un pasillo no cuesta lo mismo que cruzar entre
+pasillos. Con pesos asimétricos (2 y 6), la Etapa~1 llegó a ser 3,7 veces
+más rápida en la grilla de 7×7, pero la ventaja desapareció en la de
+15×15, por lo que no constituye una mejora de rendimiento. Se adoptaron
+pesos levemente distintos según la dirección del desplazamiento (4 y 5),
+por su realismo y no por su efecto en los tiempos.
+
+{\bf Velocidades de los {\em pickers}.} Si bien en un almacén real los
+operarios tienen velocidades distintas, estas velocidades no son muy distantes,
+ya que todos provienen de un mismo perfil y usan el mismo equipamiento. Por este motivo, 
+consideramos que un perfil de velocidades realista no tiene una velocidad distinta 
+por cada operario, sino unas pocas bandas de velocidad. Este cambio
+resultó el más costoso del perfil (Figura~\in[fig:relev_velocidades]).
+Con 3 {\em pickers}, pasar de una única velocidad a dos bandas multiplicó
+por 7,6 el tiempo de la Etapa~2, y una tercera banda no lo empeoró. Con 4
+{\em pickers}, cualquier configuración con más de una velocidad superó el
+tope de 300 segundos. En el estudio las bandas se ubicaron entre 0,7 y
+1,3; el perfil final adoptó dos bandas, de 0,8 y 1,2.
+
+\placefigure[force][fig:relev_velocidades]{Tiempo de la Etapa~2 según la cantidad de velocidades distintas en la cuadrilla (6 lotes, 26 pedidos por lote, grilla de 7×7). Las barras sin relleno no terminaron dentro del tope de 300 segundos.}
+{\startMPcode
+numeric w, h, u, bw; w := 11cm; h := 6cm; u := h/320; bw := 1.0cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+for t = 0, 100, 200, 300:
+  draw (0,t*u)--(-0.12cm,t*u) withpen pencircle scaled .5pt;
+  label.lft(textext("\tfx " & decimal t), (-0.12cm,t*u));
+endfor
+draw (0,300u)--(w,300u) dashed evenly withpen pencircle scaled .5pt withcolor .5white;
+label.urt(textext("\tfx tope: 300 s"), (0.1cm,300u));
+def barra(expr x, y, c) =
+  fill (x,0)--(x+bw,0)--(x+bw,y*u)--(x,y*u)--cycle withcolor c;
+enddef;
+def barracortada(expr x, y, c) =
+  draw (x,0)--(x+bw,0)--(x+bw,y*u)--(x,y*u)--cycle withpen pencircle scaled 1.5pt withcolor c;
+enddef;
+numeric c[]; c1 := 2.0cm; c2 := 5.5cm; c3 := 9.0cm;
+barra(c1-bw-0.05cm, 17.73, \MPcolor{darkblue});
+barra(c2-bw-0.05cm, 134.16, \MPcolor{darkblue});
+barra(c3-bw-0.05cm, 113.51, \MPcolor{darkblue});
+barra(c1+0.05cm, 26.29, \MPcolor{redline});
+barracortada(c2+0.05cm, 300, \MPcolor{redline});
+barracortada(c3+0.05cm, 300, \MPcolor{redline});
+label.top(textext("\tfx 17,7"), (c1-bw/2-0.05cm,17.73u));
+label.top(textext("\tfx 134,2"), (c2-bw/2-0.05cm,134.16u));
+label.top(textext("\tfx 113,5"), (c3-bw/2-0.05cm,113.51u));
+label.top(textext("\tfx 26,3"), (c1+bw/2+0.05cm,26.29u));
+label.bot(textext("\tfx Una velocidad"), (c1,-0.12cm));
+label.bot(textext("\tfx Dos bandas"), (c2,-0.12cm));
+label.bot(textext("\tfx Tres bandas"), (c3,-0.12cm));
+label.bot(textext("Velocidades de la cuadrilla"), (w/2,-0.75cm));
+label.lft(textext("Tiempo de la Etapa 2 (s)") rotated 90, (-1.1cm,h/2));
+fill unitsquare scaled 0.3cm shifted (0.3cm,h+0.75cm) withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx 3 pickers"), (0.65cm,h+0.9cm));
+fill unitsquare scaled 0.3cm shifted (2.9cm,h+0.75cm) withcolor \MPcolor{redline};
+label.rt(textext("\tfx 4 pickers"), (3.25cm,h+0.9cm));
+draw unitsquare scaled 0.3cm shifted (5.5cm,h+0.75cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx 4 pickers, sin terminar en 300 s"), (5.85cm,h+0.9cm));
+\stopMPcode}
+
+% TODO: ojo acá--no es que no miramos la demora, aclarar eso. Si no, parece
+% que solo testeamos el adelanto.
+{\bf Pedidos por lote y peso de la finalización.} Se fijaron 26 pedidos por
+lote. Durante la exploración, con un peso de finalización $W^{c} = 9$,
+alrededor de dos tercios de los pedidos se completaban a tiempo, de modo que
+en el objetivo actuaban tanto la penalidad por adelanto como la de demora.
+Con ese peso, sin embargo, a los modelos lineales les convenía la espera
+voluntaria (Sección~\in[sec:espera_voluntaria]), que las heurísticas no
+pueden reproducir, y los objetivos de unos y otras dejaban de ser
+comparables. Por eso, en la suite final el peso de finalización se fijó en
+uno más que la cantidad de pedidos por lote ($W^{c} = 27$), de modo que
+esperar nunca resulte conveniente. Con este peso los lotes terminan lo antes
+posible y prácticamente todos los pedidos llegan a tiempo, por lo que en el
+objetivo actúa casi solo el adelanto. El cambio también abarató la Etapa~2:
+en los escenarios de grilla del perfil realista, su tiempo bajó de entre 86 y
+203 segundos a entre 4 y 12 segundos.
+
+{\bf Forma de la agenda.} Se fijaron 6 lotes para 3 {\em pickers}, de modo
+que cada uno ejecute dos lotes y la secuenciación tenga efecto. Con las
+velocidades en bandas, las formas más cargadas no terminaron en 25
+minutos: con 6 lotes y 4 {\em pickers} la brecha al corte fue de 1,09\%,
+con 7 lotes y 3 {\em pickers} de 2,6\%, y con 8 lotes y 3 {\em pickers}
+de 9,48\%.
+
+\stopsection
+
+\startsection[title={¿Hasta qué tamaño de almacén podemos entregar resultados?}]
+
+Con el perfil fijo, el único eje que queda libre es el tamaño del almacén.
+Se buscó qué grillas llevan al modelo Split a resolver en un rango de 10 a
+20 minutos, suficiente para exigirlo sin superar el tope de las pruebas.
+Cada medición se tomó de a una, sin otras resoluciones en paralelo
+(Figura~\in[fig:relev_calibracion]).
+
+\placefigure[force][fig:relev_calibracion]{Tiempo de cada etapa del modelo Split en la calibración del perfil realista (6 lotes, 3 {\em pickers}, 26 pedidos por lote). La franja gris marca el rango buscado.}
+{\startMPcode
+numeric w, h, u, bw; w := 11cm; h := 6cm; u := h/26; bw := 1.6cm;
+fill (0,10u)--(w,10u)--(w,20u)--(0,20u)--cycle withcolor \MPcolor{darkgray};
+label.rt(textext("\tfx rango buscado: 10 a 20 min"), (0.15cm,17u));
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+for t = 0, 5, 10, 15, 20, 25:
+  draw (0,t*u)--(-0.12cm,t*u) withpen pencircle scaled .5pt;
+  label.lft(textext("\tfx " & decimal t), (-0.12cm,t*u));
+endfor
+def segmento(expr xa, ya, yb, cc) =
+  fill (xa,ya*u)--(xa+bw,ya*u)--(xa+bw,yb*u)--(xa,yb*u)--cycle withcolor cc;
+enddef;
+numeric c[]; c1 := 2.0cm; c2 := 5.5cm; c3 := 9.0cm;
+segmento(c1-bw/2, 0, 0.160, \MPcolor{darkblue});
+segmento(c1-bw/2, 0.160, 3.564, \MPcolor{redline});
+segmento(c2-bw/2, 0, 7.421, \MPcolor{darkblue});
+segmento(c2-bw/2, 7.421, 11.818, \MPcolor{redline});
+draw (c2-bw/2,7.421u)--(c2+bw/2,7.421u) withpen pencircle scaled 1pt withcolor white;
+draw (c3-bw/2,0)--(c3+bw/2,0)--(c3+bw/2,25u)--(c3-bw/2,25u)--cycle withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.top(textext("\tfx 3,6 min"), (c1,3.564u));
+label.top(textext("\tfx 11,8 min"), (c2,11.818u));
+label.top(textext("\tfx más de 25 min"), (c3,25u));
+label.bot(textext("\tfx 7×7"), (c1,-0.12cm));
+label.bot(textext("\tfx 13×13"), (c2,-0.12cm));
+label.bot(textext("\tfx 15×15"), (c3,-0.12cm));
+label.bot(textext("Tamaño de la grilla"), (w/2,-0.75cm));
+label.lft(textext("Tiempo (min)") rotated 90, (-1.0cm,h/2));
+fill unitsquare scaled 0.3cm shifted (0.3cm,h+0.75cm) withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Etapa 1 (ruteo)"), (0.65cm,h+0.9cm));
+fill unitsquare scaled 0.3cm shifted (3.2cm,h+0.75cm) withcolor \MPcolor{redline};
+label.rt(textext("\tfx Etapa 2 (asignación y secuencia)"), (3.55cm,h+0.9cm));
+draw unitsquare scaled 0.3cm shifted (8.6cm,h+0.75cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Etapa 1 sin terminar"), (8.95cm,h+0.9cm));
+\stopMPcode}
+
+En la grilla de 7×7 casi todo el tiempo corresponde a la Etapa~2: el ruteo
+tarda menos de 10 segundos. Al pasar a 13×13 la relación se invierte y la
+Etapa~1 pasa a ser la más costosa, mientras que la Etapa~2 crece poco,
+porque la forma de la agenda es la misma. En 15×15, la Etapa~1 no terminó
+en 25 minutos. Estas mediciones definieron los escenarios de tamaño
+creciente de las pruebas de estrés (Sección~\in[sec:escenarios_estres]).
+
+\stopsection
+
+\startsection[title={Alcance del modelo monolítico}, reference=sec:alcance_monolitico]
+
+El modelo monolítico se evaluó sobre el mismo perfil, resolviendo cada
+instancia también con el modelo Split para contar con su óptimo como
+referencia. El monolítico solo logró probar el óptimo en instancias mucho
+más chicas que las de la calibración (Figura~\in[fig:relev_frontera]): con
+un tope de 10 minutos, hasta 3 lotes en una grilla de 6×6, 4 lotes en 5×5
+y 6 lotes en 3×3. El modelo Split resolvió todos esos puntos en menos de
+4 minutos. El objetivo de esta prueba de alcance es determinar cuál es la
+frontera de factibilidad del modelo monolítico contra los del modelo Split sin 
+ejecutar el monolítico en instancias más grandes.
+
+\placefigure[force][fig:relev_frontera]{Resultado del modelo monolítico en cada punto del estudio, con un tope de 10 minutos (perfil realista). En azul, el tiempo que tardó en probar el óptimo; en rojo, la brecha al momento del corte.}
+{\startMPcode
+numeric cw, ch; cw := 1.9cm; ch := 0.85cm;
+color azul, rojo, gris; azul := 0.25[white,\MPcolor{darkblue}]; rojo := 0.35[white,\MPcolor{redline}]; gris := \MPcolor{darkgray};
+def celda(expr i, j, c, s) =
+  fill ((j-1)*cw+1pt,(5-i)*ch+1pt)--(j*cw-1pt,(5-i)*ch+1pt)--(j*cw-1pt,(6-i)*ch-1pt)--((j-1)*cw+1pt,(6-i)*ch-1pt)--cycle withcolor c;
+  draw textext("\tfx " & s) shifted ((j-0.5)*cw,(5.5-i)*ch);
+enddef;
+string fila[]; fila1 := "1 lote, 1 picker"; fila2 := "2 lotes, 1 picker"; fila3 := "3 lotes, 2 pickers"; fila4 := "4 lotes, 2 pickers"; fila5 := "6 lotes, 3 pickers";
+for i = 1 upto 5: label.lft(textext("\tfx " & fila[i]), (-0.1cm,(5.5-i)*ch)); endfor
+for j = 1 upto 5: label.top(textext("\tfx " & decimal (j+2) & "×" & decimal (j+2)), ((j-0.5)*cw,5ch)); endfor
+celda(1,1,azul,"0,2 s"); celda(1,2,azul,"0,2 s"); celda(1,3,azul,"0,2 s"); celda(1,4,azul,"0,2 s"); celda(1,5,azul,"0,3 s");
+celda(2,1,azul,"0,3 s"); celda(2,2,gris,"infactible"); celda(2,3,azul,"3,3 s"); celda(2,4,azul,"13,5 s"); celda(2,5,azul,"17,9 s");
+celda(3,1,azul,"4,7 s"); celda(3,2,gris,"infactible"); celda(3,3,azul,"8,6 s"); celda(3,4,azul,"138,8 s"); celda(3,5,rojo,"11,4 \%");
+celda(4,1,azul,"6,6 s"); celda(4,2,gris,"infactible"); celda(4,3,azul,"47,1 s"); celda(4,4,rojo,"13,2 \%"); celda(4,5,white,"--");
+celda(5,1,azul,"192,1 s"); celda(5,2,gris,"infactible"); celda(5,3,rojo,"3,0 \%"); celda(5,4,white,"--"); celda(5,5,white,"--");
+label.top(textext("Tamaño de la grilla"), (2.5cw,5ch+0.5cm));
+fill unitsquare scaled 0.3cm shifted (0.5cm,-0.6cm) withcolor azul;
+label.rt(textext("\tfx probó el óptimo (tiempo)"), (0.85cm,-0.45cm));
+fill unitsquare scaled 0.3cm shifted (5.0cm,-0.6cm) withcolor rojo;
+label.rt(textext("\tfx cortado a los 10 min (brecha)"), (5.35cm,-0.45cm));
+fill unitsquare scaled 0.3cm shifted (0.5cm,-1.1cm) withcolor gris;
+label.rt(textext("\tfx infactible"), (0.85cm,-0.95cm));
+label.rt(textext("\tfx --: no se corrió"), (5.0cm,-0.95cm));
+\stopMPcode}
+
+Donde fue cortado, el monolítico ya había encontrado soluciones a menos del
+0,3\% del óptimo. Su dificultad no está en encontrar buenas soluciones,
+sino en demostrar que son óptimas. Con un tope de 40 minutos la situación
+casi no cambió, y la única instancia adicional que cerró (6 lotes en 5×5)
+le llevó 32 minutos, 8 veces lo que tardó el modelo Split. Las instancias
+de 4×4 con más de un lote resultaron infactibles para ambos modelos, y las
+celdas sin dato no se corrieron porque una grilla menor ya había alcanzado
+el tope. Por estos resultados, en las pruebas de estrés la referencia
+contra la que se comparan las heurísticas es el modelo Split.
+
+\stopsection
+
+\stopchapter
