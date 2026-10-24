@@ -4,8 +4,9 @@
 \startsection[title={Introducción}, reference=sec:estado_arte_intro]
 
 En este capítulo se presentan los fundamentos teóricos de los métodos de
-resolución utilizados en esta tesina y se revisan los trabajos relacionados
-con el problema de ruteo de picking.
+resolución utilizados en esta tesina y de los objetivos que penalizan el
+adelanto y la demora, y se revisan los trabajos relacionados con el problema
+de ruteo de picking.
 
 \stopsection
 
@@ -118,6 +119,50 @@ podarse rápidamente; en algunos casos, los cortes reducen hasta en un 98\% la b
 \cite[hillier2010investigacion]. Por esta misma razón, en las restricciones de tipo M grande resulta vital escoger
 el menor valor de $M$ que preserve la validez de la formulación: un valor innecesariamente grande afloja la relajación y debilita severamente
 el rendimiento computacional del algoritmo.
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Secuenciación con adelanto y demora}, reference=sec:marco_adelanto_demora]
+
+En los problemas de secuenciación ({\em scheduling}), cada trabajo $j$ tiene
+una fecha de entrega $d_j$ y, una vez programado, un instante de finalización
+$C_j$. Su demora es $T_j = \max(0,\, C_j - d_j)$ y su adelanto,
+$E_j = \max(0,\, d_j - C_j)$. Los objetivos clásicos, como el tiempo total
+de finalización o la demora total, solo penalizan que los trabajos terminen
+tarde. Son objetivos {\em regulares}: no disminuyen cuando aumenta algún
+instante de finalización, de modo que demorar un trabajo nunca los mejora. En
+los entornos de producción {\em just-in-time}, en cambio, terminar antes de
+tiempo también tiene un costo, por ejemplo de almacenamiento o de espera
+hasta el despacho, y el objetivo penaliza tanto el adelanto como la demora
+\cite[baker1990sequencing].
+
+Un objetivo de este tipo no es regular: si un trabajo termina antes de su
+fecha de entrega, demorarlo reduce su adelanto. Por eso, la mejor
+programación puede incluir {\em tiempo ocioso insertado} ({\em inserted idle
+time}), es decir, períodos en los que un recurso permanece inactivo aunque
+haya trabajos esperando para ser procesados \cite[kanet2000inserted]. Por
+ejemplo, si un trabajo dura 10 unidades de tiempo, tiene fecha de entrega 20
+y el recurso está libre desde el instante 0, comenzarlo de inmediato lo hace
+terminar en 10, con un adelanto de 10. Si, en cambio, se lo comienza en el
+instante 10, termina justo en su fecha de entrega y no paga penalización.
+
+Esta propiedad tiene dos consecuencias. La primera es que elegir el orden de
+los trabajos no alcanza: dada una secuencia, también hay que decidir cuánto
+tiempo ocioso insertar antes de cada trabajo \cite[baker1990sequencing]. La
+segunda es que un método que solo genera programaciones sin tiempo ocioso
+insertado, en las que cada trabajo comienza apenas termina el anterior,
+explora un subconjunto de las soluciones posibles y puede no alcanzar el
+óptimo \cite[kanet2000inserted].
+
+El problema de esta tesina tiene un objetivo de este tipo. Combina un término
+regular, la suma de los instantes de finalización de los lotes, con
+penalizaciones por el adelanto y la demora de los pedidos, de modo que,
+cuando el adelanto pesa lo suficiente, insertar tiempo ocioso puede convenir.
+En los modelos lineales del Capítulo~\in[Capitulo_3], el tiempo ocioso
+insertado aparece como espera voluntaria (Sección~\in[sec:espera_voluntaria]),
+y se da en casos con características particulares. Las metaheurísticas del 
+Capítulo~\in[Capitulo_4] solo generan programaciones sin tiempo ocioso insertado.
 
 \stopsection
 

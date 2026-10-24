@@ -693,14 +693,17 @@ caja(y5, h, "Solución: rutas, asignación y secuencia");
 %----------------------------------------------------------------------------------------
 \startsection[title={Espera voluntaria}, reference=sec:espera_voluntaria]
 
-En ambos modelos, un lote puede figurar como terminado más tarde de lo que
-termina realmente. Esto le permite acercar su instante de finalización a la
-fecha de entrega de sus órdenes y pagar menos penalización por adelanto. A
-este comportamiento se le conoce como {\em espera voluntaria}. Es una propiedad
-de la formulación, compartida por los dos modelos lineales, y debe tenerse en
-cuenta al comparar sus resultados con los de las metaheurísticas del
-Capítulo~\in[Capitulo_4], que no pueden esperar porque reportan el instante
-real de finalización de cada lote.
+En ambos modelos, un lote puede terminar más tarde de lo que permite su
+ejecución, porque el {\em picker} puede demorar su inicio. Esto le permite
+acercar su instante de finalización a la fecha de entrega de sus órdenes y
+pagar menos penalización por adelanto. A este comportamiento se lo denomina
+{\em espera voluntaria}, y es la forma que toma en estos modelos el tiempo
+ocioso insertado de los problemas con adelanto y demora
+(Sección~\in[sec:marco_adelanto_demora]). Es una propiedad compartida por los
+dos modelos lineales, y debe tenerse en cuenta al comparar sus resultados con
+los de las metaheurísticas del Capítulo~\in[Capitulo_4], que solo generan
+programaciones sin tiempo ocioso: cada lote comienza apenas termina el
+anterior.
 
 \startsubsection[title={Por qué ocurre}]
 
