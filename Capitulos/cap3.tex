@@ -3,7 +3,9 @@
 En este capítulo se presentan los dos modelos lineales desarrollados en esta
 tesina. Ambos parten del modelo de referencia de Coruzzolo et al.
 \cite[coruzzolo2023orderpicking] y lo extienden con velocidad heterogénea
-entre operarios y requisitos de cadena de frío. Primero se define la notación
+entre operarios y requisitos de cadena de frío. Si todos los operarios tienen
+la misma velocidad y el límite de la cadena de frío es suficientemente
+grande, los dos modelos se reducen al problema original. Primero se define la notación
 común a ambos (Sección~\in[sec:notacion]). El modelo monolítico
 (Sección~\in[sec:modelo_monolitico]) resuelve ruta, asignación y
 secuenciación en un único modelo. El modelo Split
@@ -128,8 +130,12 @@ siguientes subconjuntos:
 
 \startsubsection[title={Parámetros derivados}]
 
-Los siguientes parámetros se calculan a partir de los datos, antes de
-resolver el modelo:
+Antes de resolver, a partir de los datos se calculan algunos parámetros
+auxiliares. Para cada lote $b$, $a_{bi}$ indica qué ubicaciones debe
+visitar: vale 1 si alguna de sus órdenes tiene productos en la ubicación $i$.
+A partir de él, $L_b$ cuenta esas ubicaciones. Por último, $F_b$ es el tiempo
+fijo del lote, es decir, la preparación más la recolección de todas sus
+unidades:
 \startformula
 	\startalign[n=3, align={right,left,left}]
 		\NC a_{bi} \EQ
@@ -143,9 +149,10 @@ resolver el modelo:
 	\stopalign
 \stopformula
 
-El tiempo fijo $F_b$ no depende de la ruta ni del {\em picker}. El tiempo
-que tarda el {\em picker} $p$ en ejecutar el lote $b$ es su tiempo fijo más
-el tiempo de ruta ajustado por la velocidad del {\em picker}:
+{\bf Tiempo de ejecución.} El tiempo fijo $F_b$ no depende de la ruta ni del
+{\em picker}. El tiempo que tarda el {\em picker} $p$ en ejecutar el lote $b$
+es ese tiempo fijo más el tiempo de ruta ajustado por la velocidad del
+{\em picker}:
 \startplaceformula[reference=eq:texec]
 \startformula
 	T^{\text{exec}}_{pb} = F_b + \frac{r_b}{V_p},
@@ -153,15 +160,14 @@ el tiempo de ruta ajustado por la velocidad del {\em picker}:
 \stopplaceformula
 donde $r_b$ es el tiempo de ruta del lote (traslado más servicio, a
 velocidad de referencia). En el modelo monolítico $r_b$ es una variable de
-decisión; en el modelo Split es un dato que proviene de la primera etapa.
+decisión, así que $T^{\text{exec}}_{pb}$ no es un dato sino una expresión que
+depende de la ruta elegida. En el modelo Split, en cambio, $r_b$ proviene de
+la primera etapa, y $T^{\text{exec}}_{pb}$ se conoce antes de resolver la
+segunda.
 
-Si todos los {\em pickers} tienen $V_p = 1$ y $T^{\text{cold}}$ es
-suficientemente grande, el tiempo de ejecución deja de depender del
-{\em picker} y la cadena de frío no restringe ninguna asignación. En ese caso,
-los dos modelos se reducen al problema original, sin velocidades heterogéneas
-ni cadena de frío.
-
-La constante $M^{\text{seq}}$ se calcula para cada instancia como una cota
+{\bf Constante de las restricciones de secuencia.} Las restricciones de
+secuencia (Sección~\in[sec:mono_asignacion]) usan una constante M grande
+propia, $M^{\text{seq}}$, que se calcula para cada instancia como una cota
 del tiempo total de trabajo: lo que tardaría el {\em picker} más lento en
 ejecutar todos los lotes seguidos, cada uno con una ruta de peor caso
 $R^{\max}$. Como una ruta simple recorre a lo sumo $|\mathcal{V}|$ arcos y
@@ -178,26 +184,8 @@ de la cota, porque una constante mayor sigue siendo válida:
 Como se vio en la Sección~\in[sec:marco_mip], cuanto menor es una constante
 M grande, más ajustada resulta la relajación lineal. Por eso $M^{\text{seq}}$
 se calcula a partir de los datos de cada instancia, en lugar de fijarse en un
-valor arbitrario. La constante $M$, en cambio, es un dato de la instancia.
-
-Varias restricciones de los modelos son de tipo M grande
-(Ecuación~\in[eq:bigm]): solo deben cumplirse cuando una variable binaria
-vale 1, por ejemplo cuando el lote $b$ está asignado al {\em picker} $p$.
-Cuando la condición involucra $k$ variables binarias a la vez, la constante se
-multiplica por $k$ menos la suma de esas binarias. Ese factor vale 0 solo si
-las $k$ binarias valen 1, y es al menos 1 en cualquier otro caso.
-
-% TODO: Ver si esto va acá o va en el marco teórico
-Para que una restricción de este tipo quede efectivamente desactivada, la
-constante debe ser al menos tan grande como el mayor valor que pueda tomar la
-expresión que acota. En estos modelos, esto implica que $M$ debe superar el
-mayor tiempo de ejecución posible de un lote y el horizonte de planificación,
-incluida la fecha de entrega más lejana, y que $M^{\text{seq}}$ debe superar
-la mayor separación posible entre las finalizaciones de dos lotes de un mismo
-{\em picker}, sumada a la duración de un lote. La cota de $M^{\text{seq}}$
-cumple esta condición cuando cada lote termina en cuanto completa su
-ejecución; la Sección~\in[sec:caracteristicas_formulacion] analiza el caso en que
-esto no ocurre.
+valor arbitrario. La constante general $M$, en cambio, es un dato de la
+instancia.
 
 \stopsubsection
 \stopsection
@@ -345,15 +333,16 @@ no se usan, así que las dos expresiones coinciden.}
 
 \stopsubsection
 
-\startsubsection[title={Asignación, tiempo de ejecución y cadena de frío}, reference=sec:mono_asignacion]
+\startsubsection[title={Asignación, secuencia y fechas de entrega}, reference=sec:mono_asignacion]
 
 % TODO: Acá se ve claro lo de M, quizás no hace falta tanta explicación previa
-Cada lote se asigna a exactamente un {\em picker}
-(\in[eq:mono_asignacion]). Si el {\em picker} $p$ ejecuta el lote $b$, las
-restricciones (\in[eq:mono_u_inf]) y (\in[eq:mono_u_sup]) fijan $u_{pb}$
-exactamente en su tiempo de ejecución $F_b + r_b / V_p$
-(Ecuación~\in[eq:texec]); si no lo ejecuta, quedan desactivadas, para lo cual
-$M$ debe ser al menos el mayor tiempo de ejecución posible de un lote. El lote
+{\bf Asignación y tiempo de ejecución.} Cada lote se asigna a exactamente un
+{\em picker} (\in[eq:mono_asignacion]). Si el {\em picker} $p$ ejecuta el
+lote $b$, las restricciones (\in[eq:mono_u_inf]) y (\in[eq:mono_u_sup]), de
+tipo M grande (Ecuación~\in[eq:bigm]), fijan $u_{pb}$ exactamente en su
+tiempo de ejecución $F_b + r_b / V_p$ (Ecuación~\in[eq:texec]); si no lo
+ejecuta, quedan desactivadas, para lo cual $M$ debe ser al menos el mayor
+tiempo de ejecución posible de un lote. El lote
 no puede terminar antes de lo que tarda en ejecutarse (\in[eq:mono_piso]), y
 su instante de finalización es el de la agenda del {\em picker} que lo
 ejecuta (\in[eq:mono_cb]).
@@ -369,7 +358,7 @@ ejecuta (\in[eq:mono_cb]).
 \stopformula
 \stopplaceformula
 
-La cadena de frío no necesita una restricción aparte, ya que está contenida
+{\bf Cadena de frío.} No necesita una restricción aparte, ya que está contenida
 en la cota superior de la variable, $u_{pb} \leq T^{\text{cold}} + \varepsilon$.
 Si $x_{pb} = 1$, la restricción (\in[eq:mono_u_inf]) obliga a que
 $u_{pb} \geq F_b + r_b / V_p$, por lo que el {\em picker} $p$ solo puede
@@ -379,12 +368,8 @@ se aplica a la ejecución de cada lote, incluida su parte fija $F_b$, y no a la
 jornada del {\em picker}: un mismo {\em picker} puede ejecutar varios lotes
 seguidos aunque el último termine después de $T^{\text{cold}}$.
 
-\stopsubsection
-
-\startsubsection[title={Secuencia sin solapamiento}]
-
-Un {\em picker} ejecuta un lote por vez. Para cada {\em picker} $p$ y cada
-par de lotes $b < k$:
+{\bf Secuencia sin solapamiento.} Un {\em picker} ejecuta un lote por vez.
+Para cada {\em picker} $p$ y cada par de lotes $b < k$:
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
@@ -393,6 +378,12 @@ par de lotes $b < k$:
 	\stopalign
 \stopformula
 \stopplaceformula
+Cada una de estas restricciones debe cumplirse solo bajo una condición que
+involucra tres variables binarias. La primera, cuando $x_{pb} = x_{pk} =
+y_{bk} = 1$: el factor $3 - x_{pb} - x_{pk} - y_{bk}$ vale 0 solo en ese caso
+y es al menos 1 en cualquier otro, de modo que la restricción queda
+desactivada. La segunda usa $1 - y_{bk}$ en lugar de $y_{bk}$, porque su
+condición es $y_{bk} = 0$. En consecuencia:
 \startitemize
 	\item Si $p$ ejecuta ambos lotes y $y_{bk} = 1$ ($b$ va primero), solo
 	está activa (\in[eq:mono_seq1]): $k$ termina, como mínimo, su tiempo de
@@ -402,14 +393,15 @@ par de lotes $b < k$:
 	\item Si $p$ no ejecuta alguno de los dos lotes, ambas restricciones
 	quedan desactivadas.
 \stopitemize
+% TODO: Ver si esto va acá o va en el marco teórico
 Para que la restricción inactiva no limite la solución, $M^{\text{seq}}$ debe
-cumplir la condición de validez de la Sección~\in[sec:notacion].
+superar la mayor separación posible entre las finalizaciones de dos lotes de
+un mismo {\em picker}, sumada a la duración de un lote. La cota de la
+Sección~\in[sec:notacion] cumple esta condición cuando cada lote termina en
+cuanto completa su ejecución; la Sección~\in[sec:caracteristicas_formulacion]
+analiza el caso en que esto no ocurre.
 
-\stopsubsection
-
-\startsubsection[title={Adelanto y demora}]
-
-Cada orden termina cuando termina su lote. Su demora es el tiempo en que se
+{\bf Adelanto y demora.} Cada orden termina cuando termina su lote. Su demora es el tiempo en que se
 excede de la fecha de entrega, y su adelanto, el tiempo que le falta para
 alcanzarla:
 \startplaceformula
@@ -625,24 +617,75 @@ del modelo monolítico, restringidas a los pares elegibles:
 
 \startsubsection[title={Resolución}, reference=sec:split_resolucion]
 
-Una resolución del modelo Split sigue estos pasos:
-% TODO: revisar el ítem 1.
-\startitemize[n]
-	\item {\bf Validación de los datos.} Se verifica que cada orden pertenezca a
-	un único lote, que ningún lote supere la capacidad del carro y que todas las
-	velocidades sean positivas. Una velocidad nula dejaría indefinido el tiempo
-	de ejecución, y una negativa lo haría negativo.
-	\item {\bf Etapa 1.} Se resuelve el \ac{mip} de ruteo de cada lote y se
-	obtiene su tiempo de ruta mínimo $R_b$.
-	\item {\bf Elegibilidad.} Con los valores de $R_b$ se calculan los tiempos
-	$T^{\text{exec}}_{pb}$ y el conjunto $\mathcal{PB}^{\text{elig}}$. Si algún
-	lote no tiene {\em picker} elegible, la instancia se informa como infactible
-	sin resolver la Etapa~2.
-	\item {\bf Etapa 2.} Se resuelven la asignación y la secuencia, con los
-	tiempos de ejecución como datos.
-\stopitemize
-La validación de los datos es la misma en el modelo monolítico, que después
-se resuelve en un único paso.
+La Figura~\in[fig:split_flujo] muestra cómo se resuelve una instancia con el
+modelo Split.
+% TODO: revisar la validación de los datos (antes, el ítem 1 de una lista).
+Primero se validan los datos: se verifica que cada orden pertenezca a un
+único lote, que ningún lote supere la capacidad del carro y que todas las
+velocidades sean positivas, ya que una velocidad nula dejaría indefinido el
+tiempo de ejecución y una negativa lo haría negativo. Si alguna de estas
+condiciones no se cumple, la instancia se informa como infactible sin
+construir ningún modelo.
+
+Después se resuelve la Etapa~1, que consiste en un \ac{mip} de ruteo por
+lote, independientes entre sí (Sección~\in[sec:split_etapa1]). Cada uno
+devuelve el tiempo de ruta mínimo $R_b$ de su lote. Con esos valores se
+calculan los tiempos de ejecución $T^{\text{exec}}_{pb}$ y el conjunto de
+pares elegibles $\mathcal{PB}^{\text{elig}}$. Si algún lote no tiene ningún
+{\em picker} elegible, la instancia se informa como infactible sin resolver
+la Etapa~2. En caso contrario, se resuelve la Etapa~2, que decide la
+asignación y la secuencia con los tiempos de ejecución como datos y completa
+la solución.
+
+El modelo monolítico comparte la validación de los datos, pero después
+resuelve un único \ac{mip} que decide a la vez las rutas, la asignación y la
+secuencia. En ese caso, si la cadena de frío vuelve infactible la instancia,
+lo detecta el resolvedor.
+
+\startplacefigure[title={Flujo de resolución del modelo Split. Las flechas rojas marcan los casos en que la instancia se informa como infactible antes de resolver la Etapa~2.}, reference=fig:split_flujo]
+\startMPcode
+numeric w, h, dy, hs; w := 7.6cm; h := 0.9cm; dy := 1.5cm; hs := 1.8cm;
+color borde, relleno, rojo;
+borde := \MPcolor{darkblue}; relleno := \MPcolor{darkgray}; rojo := \MPcolor{redline};
+def caja(expr cy, hh, txt) =
+  fill unitsquare xyscaled (w, hh) shifted (-w/2, cy - hh/2) withcolor relleno;
+  draw unitsquare xyscaled (w, hh) shifted (-w/2, cy - hh/2) withpen pencircle scaled .8pt withcolor borde;
+  draw textext(txt) shifted (0, cy);
+enddef;
+def flecha(expr ya, yb) =
+  drawarrow (0, ya) -- (0, yb) withpen pencircle scaled .8pt;
+enddef;
+def salida(expr cy, txt) =
+  drawarrow (w/2, cy) -- (w/2 + 0.9cm, cy) withpen pencircle scaled .8pt withcolor rojo;
+  label.rt(textext(txt), (w/2 + 0.95cm, cy)) withcolor rojo;
+enddef;
+numeric y[];
+y0 := 0; y1 := y0 - dy; y2 := y1 - h/2 - 0.6cm - hs/2; y3 := y2 - hs/2 - 0.9cm - h/2;
+y4 := y3 - dy; y5 := y4 - dy;
+caja(y0, h, "Datos de la instancia");
+flecha(y0 - h/2, y1 + h/2);
+caja(y1, h, "Validación de los datos");
+salida(y1, "\framed[frame=off, align=flushleft, offset=0pt]{\tfx infactible:\crlf datos inválidos}");
+flecha(y1 - h/2, y2 + hs/2);
+caja(y2, hs, "");
+draw textext("Etapa 1: un MIP de ruteo por cada lote") shifted (0, y2 + 0.45cm);
+numeric xs[]; xs1 := -2.55cm; xs2 := -0.85cm; xs3 := 0.85cm; xs4 := 2.55cm;
+string ls[]; ls1 := "\tfx lote 1"; ls2 := "\tfx lote 2"; ls3 := "$\cdots$"; ls4 := "\tfx lote $|\mathcal{B}|$";
+for i = 1 upto 4:
+  fill unitsquare xyscaled (1.4cm, 0.6cm) shifted (xs[i] - 0.7cm, y2 - 0.6cm) withcolor white;
+  draw unitsquare xyscaled (1.4cm, 0.6cm) shifted (xs[i] - 0.7cm, y2 - 0.6cm) withpen pencircle scaled .5pt withcolor borde;
+  draw textext(ls[i]) shifted (xs[i], y2 - 0.3cm);
+endfor;
+flecha(y2 - hs/2, y3 + h/2);
+label.rt(textext("$R_b$"), (0.1cm, (y2 - hs/2 + y3 + h/2)/2));
+caja(y3, h, "Elegibilidad: $T^{\text{exec}}_{pb}$ y $\mathcal{PB}^{\text{elig}}$");
+salida(y3, "\framed[frame=off, align=flushleft, offset=0pt]{\tfx infactible: algún lote\crlf sin {\em picker} elegible}");
+flecha(y3 - h/2, y4 + h/2);
+caja(y4, h, "Etapa 2: un MIP de asignación y secuencia");
+flecha(y4 - h/2, y5 + h/2);
+caja(y5, h, "Solución: rutas, asignación y secuencia");
+\stopMPcode
+\stopplacefigure
 
 \stopsubsection
 \stopsection
