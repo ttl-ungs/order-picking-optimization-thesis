@@ -482,15 +482,14 @@ informan en el Capítulo~\in[Capitulo_6].
 % TODO: esto creo que voy a tener que volverlo a ver. no me convence en general.
 
 Las heurísticas no prueban optimalidad, pero sus soluciones deben cumplir
-todas las restricciones del problema. Un objetivo bajo no sirve de nada si la
-solución viola alguna restricción, y comparar el objetivo de una heurística
-con el del Split solo tiene sentido si las dos soluciones son factibles para
-el mismo modelo. Esta sección describe cómo se verifica que cada solución de
-HC y ACO es factible y qué controles se aplican a los modelos lineales.
+todas las restricciones del problema. Como no surgen de un modelo lineal,
+nada garantiza de antemano que lo hagan, y comparar el objetivo de una
+heurística con el del Split solo tiene sentido si las dos soluciones son
+factibles para el mismo modelo. Esta sección describe cómo se verifica que
+cada solución de HC y ACO es factible y qué controles se aplican a los
+modelos lineales.
 
-\startsubsection[title={Factibilidad por diseño}]
-
-Las heurísticas cumplen buena parte de las restricciones por la forma en que
+{\bf Factibilidad por diseño.} Las heurísticas cumplen buena parte de las restricciones por la forma en que
 representan y modifican una solución (Capítulo~\in[Capitulo_4]). La
 representación asigna cada lote a un único {\em picker}, la secuencia de cada
 {\em picker} impide que sus lotes se superpongan y la ruta de cada lote es un
@@ -501,62 +500,70 @@ las mismas funciones del código. La cadena de frío es la excepción: durante
 la búsqueda se permite violarla a cambio de una penalización, pero solo se
 informa como resultado una solución que la cumple.
 
-\stopsubsection
-
-\startsubsection[title={Verificación contra el modelo monolítico}]
-
-Que una solución cumpla las restricciones por diseño depende de que la
-implementación sea correcta. Para no depender de ello, cada solución de las
-heurísticas se verifica de forma independiente contra el modelo monolítico,
-que funciona como única fuente de las restricciones. En lugar de volver a
-programarlas, los valores de la solución se fijan, por nombre, sobre las
-variables del modelo monolítico ya compilado, sin modificar ninguna
-restricción, y SCIP decide si son factibles. La verificación usa las
-soluciones guardadas durante la ejecución de las pruebas
+{\bf Verificación contra el modelo monolítico.} Que una solución cumpla las
+restricciones por diseño depende de que la implementación sea correcta. Para
+no depender de ello, cada solución se verifica de forma independiente,
+usando el modelo monolítico como base: la solución se traduce a las
+variables del modelo con la correspondencia de la
+Sección~\in[sec:hc_representacion], esos valores se fijan en el modelo y
+SCIP decide si son factibles. Así, las restricciones no se vuelven a
+programar, sino que se verifican las mismas que resuelven los modelos
+lineales. La verificación usa las soluciones guardadas durante las pruebas
 (Sección~\in[sec:ejecucion]), sin volver a ejecutar las heurísticas, y tiene
-tres capas, de la más barata a la más costosa:
+tres pasos (Figura~\in[fig:verificacion]):
 \startitemize[n]
 	\item {\bf Chequeos directos.} La solución se recalcula sin el
-	resolvedor. Se verifica que cada lote tenga un único {\em picker} y que
-	este exista; que las rutas usen solo ubicaciones y arcos del grafo, no
-	repitan ubicaciones y cubran las ubicaciones requeridas; que se cumpla la
-	cadena de frío, con la misma tolerancia que los modelos lineales
-	($\varepsilon = 10^{-9}$); que los tiempos de ejecución y de finalización
-	informados coincidan con los recalculados, y que el objetivo informado
-	coincida con el que da la fórmula del modelo monolítico.
-	\item {\bf Decisiones fijas.} Se fijan las rutas, la asignación y la
-	secuencia de cada {\em picker}, y se dejan libres los tiempos. Si el
-	modelo resulta factible, las decisiones de la heurística son válidas. El
-	objetivo que obtiene SCIP puede ser menor que el informado, porque el
-	modelo puede recurrir a la espera voluntaria.
-	\item {\bf Solución completa fija.} Se fijan, además, los instantes de
-	finalización informados. Si el modelo resulta factible y le asigna a la
-	solución el mismo objetivo que informó la heurística, con una tolerancia
-	relativa de $10^{-6}$, la solución informada es exactamente una solución
-	del modelo monolítico.
+	resolvedor: rutas, asignación, cadena de frío, tiempos y objetivo. Además
+	de detectar errores, estos chequeos indican qué restricción falla, algo
+	que el resolvedor no informa.
+	\item {\bf Nivel 1: decisiones fijas.} Se fijan las rutas, la asignación
+	y la secuencia, y se dejan libres los tiempos. Si el modelo resulta
+	factible, las decisiones de la heurística son válidas. El objetivo que
+	obtiene SCIP puede ser menor que el informado, porque el modelo puede
+	insertar tiempo ocioso (Sección~\in[sec:espera_voluntaria]).
+	\item {\bf Nivel 2: solución completa fija.} Se fijan, además, los
+	instantes de finalización informados. Si el modelo resulta factible y le
+	asigna a la solución el mismo objetivo que informó la heurística, la
+	solución informada es exactamente una solución del modelo monolítico.
 \stopitemize
-Una solución se considera válida solo si pasa las tres capas.
+Una solución se considera válida solo si pasa los tres pasos. El
+Anexo~\in[Anexo_Verificacion] detalla los chequeos, los ajustes que hace el
+verificador para poder aplicarse a todas las instancias, la prueba de que
+detecta errores y su pseudocódigo.
 
-{\bf Ajustes del verificador.} Para que la verificación sea posible, el
-verificador hace tres ajustes, que quedan anotados en su reporte. Primero,
-quita de la instancia los lotes sin pedidos que la solución no usa: los
-modelos lineales rutean, asignan y cobran todos los lotes
-(Sección~\in[sec:caracteristicas_formulacion]), mientras que las heurísticas
-ignoran los vacíos. Segundo, cuando todas las rutas están fijas, resuelve
-sobre el subgrafo formado por los arcos de esas rutas, lo que es exactamente
-equivalente y resultó necesario en el almacén de 100×100, donde ZIMPL se
-quedaba sin memoria al compilar el modelo completo; como control, 248
-soluciones dieron el mismo veredicto con y sin este recorte. Tercero, si las
-constantes M grandes de la instancia son demasiado chicas para la solución,
-las reemplaza por valores válidos, porque una constante chica puede excluir
-soluciones factibles (Sección~\in[sec:mono_asignacion]) y el rechazo no se debería a
-una violación.
-
-{\bf Validación del verificador.} Para comprobar que el verificador detecta
-errores, se introdujeron cuatro a propósito en una solución chica: un arco
-que no existe en el grafo, dos lotes del mismo {\em picker} superpuestos en
-el tiempo, una violación de la cadena de frío y un objetivo mal informado. El
-verificador detectó los cuatro.
+\startplacefigure[title={Pasos de la verificación de una solución heurística contra el modelo monolítico. Una solución es válida solo si pasa los tres.}, reference=fig:verificacion]
+\startMPcode
+numeric w, h, dy; w := 7.6cm; h := 0.9cm; dy := 1.5cm;
+color borde, relleno, rojo;
+borde := \MPcolor{darkblue}; relleno := \MPcolor{darkgray}; rojo := \MPcolor{redline};
+def caja(expr cy, txt) =
+  fill unitsquare xyscaled (w, h) shifted (-w/2, cy - h/2) withcolor relleno;
+  draw unitsquare xyscaled (w, h) shifted (-w/2, cy - h/2) withpen pencircle scaled .8pt withcolor borde;
+  draw textext(txt) shifted (0, cy);
+enddef;
+def flecha(expr ya, yb) =
+  drawarrow (0, ya) -- (0, yb) withpen pencircle scaled .8pt;
+enddef;
+def salida(expr cy, txt) =
+  drawarrow (w/2, cy) -- (w/2 + 0.9cm, cy) withpen pencircle scaled .8pt withcolor rojo;
+  label.rt(textext(txt), (w/2 + 0.95cm, cy)) withcolor rojo;
+enddef;
+numeric y[];
+for i = 0 upto 4: y[i] := -i * dy; endfor;
+caja(y0, "Solución de la heurística");
+flecha(y0 - h/2, y1 + h/2);
+caja(y1, "Chequeos directos");
+salida(y1, "\framed[frame=off, align=flushleft, offset=0pt]{\tfx con violaciones}");
+flecha(y1 - h/2, y2 + h/2);
+caja(y2, "Nivel 1: rutas, asignación y secuencia fijas");
+salida(y2, "\framed[frame=off, align=flushleft, offset=0pt]{\tfx decisiones\crlf infactibles}");
+flecha(y2 - h/2, y3 + h/2);
+caja(y3, "Nivel 2: también las finalizaciones fijas");
+salida(y3, "\framed[frame=off, align=flushleft, offset=0pt]{\tfx infactible u\crlf objetivo distinto}");
+flecha(y3 - h/2, y4 + h/2);
+caja(y4, "Solución válida");
+\stopMPcode
+\stopplacefigure
 
 {\bf Qué no cubre.} La verificación no prueba que una solución sea óptima,
 solo que es factible y que su objetivo está bien calculado. Tampoco puede
@@ -567,11 +574,7 @@ que no exista. Como control adicional, ninguna heurística puede obtener un
 objetivo menor que un óptimo probado del Split: una brecha negativa indicaría
 un error en alguno de los dos métodos.
 
-\stopsubsection
-
-\startsubsection[title={Controles sobre los modelos lineales}]
-
-Los modelos lineales también se controlan entre sí. La comparación entre el
+{\bf Controles sobre los modelos lineales.} Los modelos lineales también se controlan entre sí. La comparación entre el
 monolítico y el Split (Sección~\in[sec:comparacion]) verifica, prueba a
 prueba, que alcanzan el mismo óptimo, como establece el argumento de
 exactitud de la Sección~\in[sec:modelo_split]. Además, las soluciones de
@@ -580,8 +583,6 @@ procedimiento que las de las heurísticas. Como las dos etapas del Split usan
 las mismas restricciones que el monolítico, este control no busca errores de
 formulación sino de implementación: comprueba que las soluciones obtenidas
 por etapas cumplen todas las restricciones del modelo completo.
-
-\stopsubsection
 
 % TODO: estoy casi segura que falta una sección de experimentos. más que nada
 % porque se hicieron en el modelo Split, y seguro tambien se hicieron en las 

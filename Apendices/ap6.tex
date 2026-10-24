@@ -1,0 +1,153 @@
+\startchapter[title={Verificación de las soluciones}, reference=Anexo_Verificacion]
+
+Este anexo detalla el verificador de soluciones descripto en la
+Sección~\in[sec:validacion].
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Chequeos directos}]
+
+Antes de usar el resolvedor, la solución se recalcula a partir de los datos
+de la instancia y se verifica que:
+\startitemize
+	\item cada lote tenga un único {\em picker} y que ese {\em picker}
+	exista;
+	\item las rutas usen solo ubicaciones y arcos del grafo, no repitan
+	ubicaciones y cubran todas las ubicaciones requeridas de su lote;
+	\item cada lote cumpla la cadena de frío con el {\em picker} asignado,
+	con la misma tolerancia que los modelos lineales ($\varepsilon = 10^{-9}$);
+	\item los tiempos de ejecución y los instantes de finalización informados
+	coincidan con los recalculados;
+	\item el objetivo informado coincida con el que da la fórmula del modelo
+	monolítico (Ecuación~\in[eq:mono_objetivo]).
+\stopitemize
+Cada chequeo que falla se registra con un mensaje que indica la restricción y
+el lote involucrados.
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Cómo se fija una solución en el modelo}]
+
+El modelo monolítico se compila con ZIMPL a un archivo en formato LP, en el
+que cada variable tiene un nombre formado por la variable y sus índices. El
+verificador lee ese archivo y fija las variables de la solución por nombre,
+igualando sus cotas inferior y superior al valor correspondiente, sin
+modificar ninguna restricción. En el nivel~1 se fijan $z_{ijb}$ (1 en los
+arcos de la ruta del lote y 0 en el resto), $x_{pb}$ (1 para el
+{\em picker} asignado y 0 para los demás) e $y_{bk}$ (según el orden de los
+lotes en la secuencia de cada {\em picker}). En el nivel~2 se fijan, además,
+los instantes de finalización $c_{pb}$ y $c_b$ informados. Las demás
+variables, como el flujo $q_{ijb}$, el tiempo de ruta $r_b$, el tiempo de
+ejecución $u_{pb}$ y el adelanto y la demora de cada orden, quedan libres y
+las completa el resolvedor. Si el nivel~1 resulta infactible, el verificador
+busca qué lote lo provoca, para que el reporte indique dónde está la
+violación.
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Ajustes del verificador}]
+
+Para que la verificación pueda aplicarse a todas las instancias, el
+verificador hace tres ajustes, que quedan anotados en su reporte:
+\startitemize[n]
+	\item {\bf Lotes vacíos.} Quita de la instancia los lotes sin pedidos que
+	la solución no usa. Los modelos lineales rutean, asignan y cobran todos
+	los lotes (Sección~\in[sec:caracteristicas_formulacion]), mientras que las
+	heurísticas ignoran los vacíos.
+	\item {\bf Subgrafo de las rutas.} Cuando todas las rutas están fijas,
+	resuelve sobre el subgrafo formado por los arcos de esas rutas, el
+	depósito y el punto de entrega. Es exactamente equivalente, porque un arco
+	que no usa ninguna ruta vale 0 en todas, y resultó necesario en el almacén
+	de 100×100, donde ZIMPL se quedaba sin memoria al compilar el modelo
+	completo. Como control, 248 soluciones dieron el mismo veredicto, los
+	mismos estados y los mismos objetivos con y sin este recorte.
+	\item {\bf Constantes M grandes.} Si las constantes $M$ o $M^{\text{seq}}$
+	de la instancia son demasiado chicas para la solución, las reemplaza por
+	valores válidos, porque una constante chica puede excluir soluciones
+	factibles (Sección~\in[sec:mono_asignacion]) y el rechazo no se debería a
+	una violación.
+\stopitemize
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Validación del verificador}]
+
+Para comprobar que el verificador detecta errores, se introdujeron cuatro a
+propósito en una solución chica: un arco que no existe en el grafo, dos lotes
+del mismo {\em picker} superpuestos en el tiempo, una violación de la cadena
+de frío y un objetivo mal informado. El verificador detectó los cuatro.
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Pseudocódigo}]
+
+La Figura~\in[fig:verificador_pseudocodigo] resume el procedimiento que el
+verificador aplica a cada solución. La solución $s = (\pi, a, \sigma)$ tiene
+la forma de la Sección~\in[sec:hc_representacion], y la heurística informa
+además el tiempo de ejecución $\hat{T}_b$ y el instante de finalización
+$\hat{c}_b$ de cada lote, y el valor objetivo $\hat{f}$. Los valores sin
+sombrero son los que recalcula el verificador.
+
+\startplacefigure[title={Pseudocódigo del verificador de soluciones.}, reference=fig:verificador_pseudocodigo]
+\startframedtext[width=broad, frame=on, align=flushleft]
+\startlines
+{\bf Entrada:} instancia; solución $s = (\pi, a, \sigma)$ con los valores informados $\hat{T}_b$, $\hat{c}_b$ y $\hat{f}$
+{\bf Salida:} válida o con violaciones, y un registro $R$ con los motivos
+\blank[small]
+{\em Preparación}
+1.\quad quitar de $\mathcal{B}$ los lotes sin órdenes que no aparecen en $s$
+2.\quad $R \leftarrow \emptyset$;\; $\mathcal{F} \leftarrow \emptyset$ \hfill {\em lotes que se fijarán en el modelo}
+{\em Chequeos directos}
+3.\quad {\bf para cada} lote $b \in \mathcal{B}$ {\bf hacer}
+4.\quad\qquad {\bf si} $b$ no tiene exactamente un {\em picker} en $s$ {\bf entonces}
+\dontleavehmode\hphantom{00.}\quad\qquad\qquad registrar en $R$ y seguir con el próximo lote
+5.\quad\qquad {\bf si} la ruta $(v_{\text{start}}, \pi_b, v_{\text{end}})$ usa ubicaciones o arcos inexistentes {\bf entonces}
+\dontleavehmode\hphantom{00.}\quad\qquad\qquad registrar en $R$ y seguir con el próximo lote
+6.\quad\qquad {\bf si} la ruta repite ubicaciones o no cubre las requeridas por $b$ {\bf entonces}
+\dontleavehmode\hphantom{00.}\quad\qquad\qquad registrar en $R$
+7.\quad\qquad $T_b \leftarrow F_b + r_b / V_{a(b)}$, con el tiempo de ruta $r_b$ calculado sobre $\pi_b$
+8.\quad\qquad {\bf si} $T_b > T^{\text{cold}} + \varepsilon$ {\bf o} $T_b \neq \hat{T}_b$ {\bf entonces} registrar en $R$
+9.\quad\qquad agregar $b$ a $\mathcal{F}$
+10.\quad {\bf para cada} {\em picker} $p$ {\bf hacer}
+11.\quad\qquad recorrer $\sigma_p$ desde el instante 0 y calcular cada $c_b$ acumulando los $T_b$
+12.\quad\qquad {\bf si} algún $c_b \neq \hat{c}_b$ {\bf entonces} registrar en $R$
+13.\quad calcular $f$ con la Ecuación~\in[eq:mono_objetivo] y los $c_b$
+14.\quad {\bf si} $f \neq \hat{f}$ {\bf entonces} registrar en $R$
+{\em Modelo}
+15.\quad {\bf si} $\mathcal{F} = \mathcal{B}$ {\bf entonces} reducir el grafo a las ubicaciones y los arcos de las rutas
+16.\quad {\bf si} $M$ o $M^{\text{seq}}$ son chicas para los tiempos de $s$ {\bf entonces}
+\dontleavehmode\hphantom{00.}\quad\qquad reemplazarlas por valores válidos
+17.\quad compilar el modelo monolítico con ZIMPL
+{\em Nivel 1: decisiones fijas}
+18.\quad fijar $z_{ijb}$ y $x_{pb}$ para los lotes de $\mathcal{F}$, e $y_{bk}$ según $\sigma$; resolver con SCIP
+19.\quad {\bf si} el modelo es infactible {\bf entonces}
+20.\quad\qquad liberar por grupos las decisiones fijadas y registrar en $R$
+\dontleavehmode\hphantom{00.}\quad\qquad\qquad cuáles restablecen la factibilidad
+21.\quad\qquad {\bf devolver} con violaciones, $R$
+{\em Nivel 2: solución completa fija}
+22.\quad fijar además $c_{pb}$ y $c_b$ en los valores $\hat{c}_b$; resolver con SCIP; sea $f^*$ su objetivo
+23.\quad {\bf si} $R = \emptyset$, el nivel 2 tiene solución y $f^* = \hat{f}$ {\bf entonces devolver} válida
+24.\quad {\bf devolver} con violaciones, $R$
+\stoplines
+\stopframedtext
+\stopplacefigure
+
+Las comparaciones entre valores informados y recalculados se hacen con una
+tolerancia relativa de $10^{-6}$. Los lotes que no llegan a $\mathcal{F}$,
+porque su ruta usa ubicaciones o arcos inexistentes, no se fijan: quedan
+libres en los niveles de SCIP, y su violación ya está registrada. En el
+diagnóstico del paso~20, las decisiones se liberan primero por tipo (rutas,
+secuencia, y asignación junto con secuencia) y después lote por lote, para
+indicar qué ruta provoca la infactibilidad. Si la verificación no puede
+ejecutarse, por ejemplo porque el modelo no compila, el resultado se informa
+como un error del verificador y no como un veredicto sobre la solución. Las
+instancias en las que la heurística no encontró solución no tienen nada que
+fijar y no se verifican.
+
+% TODO: no estoy segura de esto en general, podemos ver si queda o no. quizas ya
+% es mucho ruido
+\stopsection
+\stopchapter
