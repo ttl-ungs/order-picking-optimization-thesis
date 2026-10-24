@@ -722,17 +722,7 @@ sucesores que desplazar, la condición se reduce a $n^{e}_b > W^{c}$.
 
 Una consecuencia de esta condición es que, cuando la espera conviene, la
 proporción de órdenes que llegan a tiempo queda determinada por los pesos del
-objetivo. Con $W^{\text{pen}} = W^{e} = W^{t} = 1$ y sin sucesores que
-desplazar, un lote se demora mientras $n^{e}_b - n^{t}_b > W^{c}$, de modo
-que se detiene cuando $n^{e}_b - n^{t}_b \approx W^{c}$. Como
-$n^{e}_b + n^{t}_b = |\mathcal{N}_b|$, si las fechas de entrega de sus órdenes
-están suficientemente repartidas, la proporción de órdenes a tiempo resulta
-aproximadamente
-\startformula
-	\frac{|\mathcal{N}_b| + W^{c}}{2\,|\mathcal{N}_b|},
-\stopformula
-que depende solo del tamaño del lote y de $W^{c}$ (para $W^{c} < |\mathcal{N}_b|$;
-en caso contrario no hay espera).
+objetivo y por el tamaño del lote (Anexo~\in[Anexo_Modelos]).
 
 El costo en función de $c_b$ es lineal por tramos, y cada fecha de entrega
 es un punto de quiebre ya que, al superarla, una orden deja de aportar adelanto y
@@ -830,40 +820,15 @@ el tiempo de ejecución real de la ruta, en lugar de la duración mínima de un 
 Esto es posible, pero complica la formulación y la resolución, y no es parte de 
 nuestro problema.
 
-% TODO: checkear
 {\bf Validez de $M^{\text{seq}}$ con espera voluntaria.} La cota de
 $M^{\text{seq}}$ (Sección~\in[sec:notacion]) se basa en el tiempo total de
 trabajo, lo que alcanza cuando cada lote termina en cuanto completa su
-ejecución. Con espera voluntaria, en cambio, un lote puede figurar como
-terminado mucho después, cerca de la fecha de entrega de sus órdenes, y la
-separación entre las finalizaciones de dos lotes de un mismo {\em picker}
-puede superar la cota. En ese caso, la restricción de secuencia que debería
-estar inactiva pasa a restringir y puede excluir la solución óptima.
-
-Un ejemplo pequeño lo muestra. Sea un único {\em picker} con dos lotes de
-duración 10: el primero tiene una orden con fecha de entrega 10, el segundo
-tiene cinco órdenes con fecha 2000, y todos los pesos valen 1. El óptimo vale
-2010: el primer lote termina en 10 y el segundo se declara terminado en 2000,
-sin adelanto ni demora. Con $M^{\text{seq}} = 500$, en cambio, las dos
-finalizaciones no pueden separarse más de 490 unidades, y la mejor solución que
-admite el modelo vale 5010, con el primer lote demorado hasta 1510.
-
-Para que la cota sea válida también con espera, debe cubrir la fecha de
-entrega más lejana. Un lote que termina después de esa fecha tiene todas sus
-órdenes atrasadas, y demorarlo solo empeora el objetivo. Por eso siempre
-existe una solución óptima en la que, pasada esa fecha, cada {\em picker}
-ejecuta sus lotes restantes sin pausas, y ningún lote termina después de
-${\max_{n} T^{\text{due}}_n + \sum_{b} \overline{T}_b}$, donde
-$\overline{T}_b = F_b + R^{\max} / \min_{p} V_p$ es el tiempo de ejecución de
-peor caso del lote $b$, el mismo que usa la cota de la
-Sección~\in[sec:notacion]. Sumándole la duración de un lote se obtiene una
-cota válida en todos los casos:
-\startformula
-	M^{\text{seq}} \geq \max_{n \in \mathcal{N}} T^{\text{due}}_n
-	+ \sum_{b \in \mathcal{B}} \overline{T}_b + \max_{b \in \mathcal{B}} \overline{T}_b.
-\stopformula
-Cuando la espera no conviene (Sección~\in[sec:espera_voluntaria]), existe una
-solución óptima sin espera y la cota original alcanza.
+ejecución. Con espera voluntaria, en cambio, la separación entre las
+finalizaciones de dos lotes de un mismo {\em picker} puede superar la cota, y
+la restricción de secuencia que debería estar inactiva puede excluir la
+solución óptima. El Anexo~\in[Anexo_Modelos] muestra un ejemplo y una cota
+válida en todos los casos. Cuando la espera no conviene
+(Sección~\in[sec:espera_voluntaria]), la cota original alcanza.
 
 {\bf Lotes vacíos.} La formulación no distingue los lotes sin órdenes: si
 $\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
