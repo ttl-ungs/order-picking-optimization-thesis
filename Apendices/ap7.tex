@@ -1,0 +1,93 @@
+\startchapter[title={Resultados detallados}, reference=Anexo_Resultados]
+
+Este anexo reúne los cuadros detallados de los resultados del
+Capítulo~\in[Capitulo_6].
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Monolítico contra Split en las pruebas funcionales}]
+
+El Cuadro~\in[tab:res_pares] detalla los 49 pares que los dos modelos
+lineales resuelven, y el Cuadro~\in[tab:res_infactibles], los 11 que los dos
+declaran infactibles. Los casos corresponden a los del
+Anexo~\in[Anexo_Pruebas].
+
+\startplacetable[reference=tab:res_pares, location={here,split}, title={Pares resueltos por los dos modelos lineales: tiempo total, objetivo y diferencias en la solución del monolítico.}]
+	\bTABLE[split=repeat, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTABLEhead
+	\bTR \bTH Caso \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \bTH Objetivo \eTH \bTH Solución del monolítico \eTH \eTR
+	\eTABLEhead
+	\bTABLEbody
+	\bTR \bTD 01 \eTD \bTD 0,222 \eTD \bTD 0,260 \eTD \bTD 0,85× \eTD \bTD 30,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD 0,226 \eTD \bTD 0,270 \eTD \bTD 0,84× \eTD \bTD 795,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD 0,213 \eTD \bTD 0,294 \eTD \bTD 0,72× \eTD \bTD 795,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD 0,211 \eTD \bTD 0,300 \eTD \bTD 0,70× \eTD \bTD 795,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD 0,191 \eTD \bTD 0,256 \eTD \bTD 0,75× \eTD \bTD 846,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 06a \eTD \bTD 0,326 \eTD \bTD 0,320 \eTD \bTD 1,02× \eTD \bTD 30,0 \eTD \bTD otras rutas \eTD \eTR
+	\bTR \bTD 06b \eTD \bTD 0,284 \eTD \bTD 0,335 \eTD \bTD 0,85× \eTD \bTD 20,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD 0,204 \eTD \bTD 0,295 \eTD \bTD 0,69× \eTD \bTD 69,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD 0,204 \eTD \bTD 0,241 \eTD \bTD 0,84× \eTD \bTD 1.833,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD 0,200 \eTD \bTD 0,289 \eTD \bTD 0,69× \eTD \bTD 1.509,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD 0,217 \eTD \bTD 0,276 \eTD \bTD 0,79× \eTD \bTD 3.666,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD 43,534 \eTD \bTD 3,863 \eTD \bTD 11,27× \eTD \bTD 3.087,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD 43,513 \eTD \bTD 3,715 \eTD \bTD 11,71× \eTD \bTD 3.087,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD 0,241 \eTD \bTD 0,282 \eTD \bTD 0,85× \eTD \bTD 889,0 \eTD \bTD otras rutas \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD 0,504 \eTD \bTD 0,411 \eTD \bTD 1,22× \eTD \bTD 1.338,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD 0,249 \eTD \bTD 0,315 \eTD \bTD 0,79× \eTD \bTD 2.512,5 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD 0,194 \eTD \bTD 0,288 \eTD \bTD 0,67× \eTD \bTD 4.518,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 19a \eTD \bTD 0,258 \eTD \bTD 0,263 \eTD \bTD 0,98× \eTD \bTD 25,0 \eTD \bTD otras rutas \eTD \eTR
+	\bTR \bTD 19b \eTD \bTD 0,271 \eTD \bTD 0,337 \eTD \bTD 0,80× \eTD \bTD 0,0 \eTD \bTD otras rutas \eTD \eTR
+	\bTR \bTD 19c \eTD \bTD 0,209 \eTD \bTD 0,248 \eTD \bTD 0,85× \eTD \bTD 25,0 \eTD \bTD otras rutas \eTD \eTR
+	\bTR \bTD 20 \eTD \bTD 5,047 \eTD \bTD 0,496 \eTD \bTD 10,18× \eTD \bTD 2.620,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 22a \eTD \bTD 0,235 \eTD \bTD 0,258 \eTD \bTD 0,91× \eTD \bTD 10.126,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 22b \eTD \bTD 0,217 \eTD \bTD 0,252 \eTD \bTD 0,86× \eTD \bTD 154,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 23a \eTD \bTD 0,258 \eTD \bTD 0,354 \eTD \bTD 0,73× \eTD \bTD 16,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 23b \eTD \bTD 0,220 \eTD \bTD 0,285 \eTD \bTD 0,77× \eTD \bTD 16,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 24a \eTD \bTD 0,196 \eTD \bTD 0,504 \eTD \bTD 0,39× \eTD \bTD 9,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 25b \eTD \bTD 9,758 \eTD \bTD 0,420 \eTD \bTD 23,25× \eTD \bTD 2.434,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 25c \eTD \bTD 5,025 \eTD \bTD 0,428 \eTD \bTD 11,75× \eTD \bTD 2.620,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 25e \eTD \bTD 1,512 \eTD \bTD 0,621 \eTD \bTD 2,44× \eTD \bTD 0,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 25f \eTD \bTD 5,643 \eTD \bTD 0,668 \eTD \bTD 8,45× \eTD \bTD 156,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 25g \eTD \bTD 6,104 \eTD \bTD 0,448 \eTD \bTD 13,64× \eTD \bTD 3.224,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 26b \eTD \bTD 0,501 \eTD \bTD 0,641 \eTD \bTD 0,78× \eTD \bTD 20.899,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 26c \eTD \bTD 0,366 \eTD \bTD 0,417 \eTD \bTD 0,88× \eTD \bTD 2.463,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 26d \eTD \bTD 0,573 \eTD \bTD 0,593 \eTD \bTD 0,97× \eTD \bTD 13.479,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 27 \eTD \bTD 0,221 \eTD \bTD 0,266 \eTD \bTD 0,83× \eTD \bTD 58,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 28 \eTD \bTD 0,253 \eTD \bTD 0,363 \eTD \bTD 0,70× \eTD \bTD 0,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 29 \eTD \bTD 10,170 \eTD \bTD 0,352 \eTD \bTD 28,90× \eTD \bTD 327,0 \eTD \bTD otras rutas y asignación \eTD \eTR
+	\bTR \bTD 31b \eTD \bTD 0,225 \eTD \bTD 0,288 \eTD \bTD 0,78× \eTD \bTD 100,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 33a \eTD \bTD 0,208 \eTD \bTD 0,278 \eTD \bTD 0,75× \eTD \bTD 106,5 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 33b \eTD \bTD 0,207 \eTD \bTD 0,309 \eTD \bTD 0,67× \eTD \bTD 81,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 33c \eTD \bTD 0,220 \eTD \bTD 0,263 \eTD \bTD 0,84× \eTD \bTD 30,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 34a \eTD \bTD 0,226 \eTD \bTD 0,537 \eTD \bTD 0,42× \eTD \bTD 16,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 34c \eTD \bTD 0,212 \eTD \bTD 0,383 \eTD \bTD 0,55× \eTD \bTD 9,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 35a \eTD \bTD 0,214 \eTD \bTD 0,579 \eTD \bTD 0,37× \eTD \bTD 27,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 35b \eTD \bTD 0,206 \eTD \bTD 0,563 \eTD \bTD 0,37× \eTD \bTD 9,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 36a \eTD \bTD 0,210 \eTD \bTD 0,258 \eTD \bTD 0,81× \eTD \bTD 25,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 36b \eTD \bTD 0,205 \eTD \bTD 0,261 \eTD \bTD 0,79× \eTD \bTD 16,5 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 36d \eTD \bTD 0,221 \eTD \bTD 0,226 \eTD \bTD 0,98× \eTD \bTD 310,0 \eTD \bTD igual \eTD \eTR
+	\bTR \bTD 37b \eTD \bTD 0,207 \eTD \bTD 0,239 \eTD \bTD 0,87× \eTD \bTD 78,0 \eTD \bTD igual \eTD \eTR
+	\eTABLEbody
+	\eTABLE
+\stopplacetable
+
+\startplacetable[reference=tab:res_infactibles, location=here, title={Pares que los dos modelos lineales declaran infactibles: tiempo total.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTR \bTH Caso \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \eTR
+	\bTR \bTD 07 \eTD \bTD 0,134 \eTD \bTD 0,183 \eTD \bTD 0,73× \eTD \eTR
+	\bTR \bTD 21 \eTD \bTD 0,220 \eTD \bTD 0,199 \eTD \bTD 1,11× \eTD \eTR
+	\bTR \bTD 25a \eTD \bTD 0,140 \eTD \bTD 0,335 \eTD \bTD 0,42× \eTD \eTR
+	\bTR \bTD 25d \eTD \bTD 0,137 \eTD \bTD 0,295 \eTD \bTD 0,47× \eTD \eTR
+	\bTR \bTD 26a \eTD \bTD 0,141 \eTD \bTD 0,191 \eTD \bTD 0,74× \eTD \eTR
+	\bTR \bTD 30b \eTD \bTD 0,140 \eTD \bTD 0,708 \eTD \bTD 0,20× \eTD \eTR
+	\bTR \bTD 31a \eTD \bTD 0,142 \eTD \bTD 0,213 \eTD \bTD 0,67× \eTD \eTR
+	\bTR \bTD 32 \eTD \bTD 0,140 \eTD \bTD 0,214 \eTD \bTD 0,65× \eTD \eTR
+	\bTR \bTD 34b \eTD \bTD 0,214 \eTD \bTD 0,276 \eTD \bTD 0,77× \eTD \eTR
+	\bTR \bTD 35c \eTD \bTD 0,215 \eTD \bTD 0,270 \eTD \bTD 0,80× \eTD \eTR
+	\bTR \bTD 38 \eTD \bTD 0,202 \eTD \bTD 0,179 \eTD \bTD 1,12× \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+\stopsection
+\stopchapter

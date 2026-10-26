@@ -1,9 +1,342 @@
 \startchapter[title={Resultados}, reference=Capitulo_6]
 
+Este capítulo presenta los resultados de las pruebas definidas en el
+Capítulo~\in[Capitulo_5]. Primero se comparan los dos modelos lineales
+(Sección~\in[sec:comparacion_lineales]) y después el modelo Split con las
+metaheurísticas (Sección~\in[sec:comparacion_split_metaheuristicas]). Todos
+los tiempos son de reloj, medidos en una misma notebook en las condiciones
+descriptas en la Sección~\in[sec:ejecucion].
+
 %----------------------------------------------------------------------------------------
 \startsection[title={Comparación entre modelos lineales}, reference=sec:comparacion_lineales]
 
-% TODO: completar
+Esta sección compara el modelo monolítico con el Split en tres situaciones:
+las pruebas funcionales, una misma instancia del perfil realista en almacenes
+de tamaño creciente y las pruebas de estrés. La comparación sigue las reglas
+de la Sección~\in[sec:comparacion].
+
+\startsubsection[title={Mismo óptimo}]
+
+De los 60 pares comparables de las pruebas funcionales, los 49 que los dos
+modelos resuelven tienen el mismo valor objetivo, con una diferencia máxima
+de $3\mathord{,}83 \cdot 10^{-6}$ (casos 13 y 14), dentro de la tolerancia de
+SCIP, y los 11 que son infactibles lo son en los dos modelos. Esto confirma
+en la práctica el argumento de exactitud de la Sección~\in[sec:modelo_split],
+también en las pruebas de cadena de frío, de velocidades y de elección de la
+ruta más corta.
+
+Los dos modelos, sin embargo, no siempre llegan a la misma solución. En 28
+pares devuelven la misma; en los otros 21, el monolítico devuelve un óptimo
+alternativo, con otras rutas (13 pares), otra asignación (16) o ambas cosas.
+Es lo esperable: como el objetivo no penaliza la longitud de la ruta, el
+monolítico puede elegir cualquier ruta que no empeore las penalizaciones,
+mientras que la Etapa~1 del Split siempre devuelve la ruta mínima. Las
+asignaciones distintas, por su parte, son empates del objetivo que cada
+resolución rompe de forma distinta. El Anexo~\in[Anexo_Resultados] detalla
+cada par.
+
+\stopsubsection
+
+\startsubsection[title={Tiempos en las pruebas funcionales}]
+
+El Cuadro~\in[tab:res_tiempos_lineales] resume los tiempos de los 49 pares
+resueltos.
+
+\startplacetable[reference=tab:res_tiempos_lineales, location=here, title={Tiempos de los 49 pares resueltos en las pruebas funcionales. El tiempo total incluye escribir los datos y compilar los modelos; el del resolvedor cubre solo la última resolución de SCIP, que en el Split es la de la Etapa~2.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTR \bTH Medida \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \eTR
+	\bTR \bTD Tiempo total: suma \eTD \bTD 140,3 \eTD \bTD 24,4 \eTD \bTD 5,75 \eTD \eTR
+	\bTR \bTD Tiempo total: mediana \eTD \bTD 0,225 \eTD \bTD 0,309 \eTD \bTD 0,73 \eTD \eTR
+	\bTR \bTD Tiempo total: máximo \eTD \bTD 43,5 \eTD \bTD 3,9 \eTD \bTD 11,27 \eTD \eTR
+	\bTR \bTD Tiempo del resolvedor: suma \eTD \bTD 124,8 \eTD \bTD 7,2 \eTD \bTD 17,35 \eTD \eTR
+	\bTR \bTD Tiempo del resolvedor: mediana \eTD \bTD 0,007 \eTD \bTD 0,003 \eTD \bTD 2,33 \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+En la suma, el monolítico tardó 5,75 veces más que el Split, pero en la
+mediana la relación se invierte: el monolítico fue más rápido en 38 de los
+49 pares, con entre 0,37 y 0,98 veces el tiempo del Split. Son instancias
+chicas, en las que el resolvedor tarda milisegundos y el tiempo total lo
+pone la compilación, y compilar un único modelo cuesta menos que compilar los
+de las dos etapas. La suma la dominan las instancias de grilla, en las que
+el monolítico llega a tardar 28,9 veces más (caso 29), como muestra la
+Figura~\in[fig:res_lineales_dispersion]. En el tiempo del resolvedor la
+diferencia es mayor, porque el monolítico resuelve un \ac{mip} con más
+variables y restricciones que cualquiera de las dos etapas.
+
+\placefigure[force][fig:res_lineales_dispersion]{Tiempo total de cada par resuelto en las pruebas funcionales: monolítico contra Split (escala logarítmica en los dos ejes). Por encima de la diagonal, el monolítico fue más lento.}
+{\startMPcode
+numeric w, h; w := 8cm; h := 8cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (0.000cm,0.000cm)--(0.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 0,1"), (0.000cm,-0.120cm));
+draw (2.667cm,0.000cm)--(2.667cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 1"), (2.667cm,-0.120cm));
+draw (5.333cm,0.000cm)--(5.333cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 10"), (5.333cm,-0.120cm));
+draw (8.000cm,0.000cm)--(8.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 100"), (8.000cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0,1"), (-0.120cm,0.000cm));
+draw (0.000cm,2.667cm)--(-0.120cm,2.667cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,2.667cm));
+draw (0.000cm,5.333cm)--(-0.120cm,5.333cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,5.333cm));
+draw (0.000cm,8.000cm)--(-0.120cm,8.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100"), (-0.120cm,8.000cm));
+label.bot(textext("Split, tiempo total (s, escala log.)"), (w/2,-0.85cm));
+label.lft(textext("Monolítico, tiempo total (s, escala log.)") rotated 90, (-1.25cm,h/2));
+draw (0.000cm,0.000cm)--(8.000cm,8.000cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+fill fullcircle scaled 4pt shifted (1.107cm,0.921cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.149cm,0.946cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.249cm,0.873cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.273cm,0.866cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.087cm,0.749cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.346cm,1.368cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.402cm,1.207cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.254cm,0.823cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.021cm,0.824cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.229cm,0.803cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.175cm,0.899cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (4.232cm,7.037cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (4.187cm,7.036cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.202cm,1.020cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.638cm,1.872cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.329cm,1.058cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.226cm,0.769cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.119cm,1.096cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.407cm,1.154cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.050cm,0.855cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.854cm,4.541cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.099cm,0.987cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.069cm,0.896cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.463cm,1.097cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.213cm,0.915cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.872cm,0.779cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.661cm,5.305cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.683cm,4.536cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.114cm,3.145cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.199cm,4.671cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.736cm,4.762cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.151cm,1.866cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.654cm,1.502cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.061cm,2.022cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.135cm,0.921cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.493cm,1.074cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.457cm,5.353cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.226cm,0.938cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.184cm,0.847cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.307cm,0.843cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.120cm,0.912cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.947cm,0.943cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.555cm,0.870cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.033cm,0.882cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.000cm,0.837cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.099cm,0.860cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.110cm,0.832cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.944cm,0.921cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.009cm,0.843cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.600cm,7.850cm) withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx par resuelto"), (1.000cm,7.850cm));
+draw (0.300cm,7.430cm)--(0.900cm,7.430cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+label.rt(textext("\tfx igual tiempo"), (1.000cm,7.430cm));
+\stopMPcode}
+
+\stopsubsection
+
+\startsubsection[title={Escala}]
+
+Para ver qué pasa cuando la instancia crece, se resolvió con los dos modelos
+una misma instancia del perfil realista (Cuadro~\in[tab:perfil_realista]) en
+grillas de 3×3 a 7×7, con 1 a 6 lotes y un tope de 10 minutos. En 4×4 la
+instancia es infactible y no se grafica. La Figura~\in[fig:res_lineales_escala]
+muestra el resultado, y el Anexo~\in[Anexo_Relevamiento] presenta el mismo
+estudio desde el punto de vista del relevamiento.
+
+\placefigure[force][fig:res_lineales_escala]{Tiempo hasta probar el óptimo de una misma instancia del perfil realista, según la grilla y la cantidad de lotes, con un tope de 10 minutos (escala logarítmica, la misma en los dos paneles).}
+{\startcombination[2*1]
+{\startMPcode
+numeric w, h; w := 6.4cm; h := 6.5cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (0.533cm,0.000cm)--(0.533cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 3×3"), (0.533cm,-0.120cm));
+draw (1.867cm,0.000cm)--(1.867cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 4×4"), (1.867cm,-0.120cm));
+draw (3.200cm,0.000cm)--(3.200cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 5×5"), (3.200cm,-0.120cm));
+draw (4.533cm,0.000cm)--(4.533cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 6×6"), (4.533cm,-0.120cm));
+draw (5.867cm,0.000cm)--(5.867cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 7×7"), (5.867cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0,1"), (-0.120cm,0.000cm));
+draw (0.000cm,1.226cm)--(-0.120cm,1.226cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,1.226cm));
+draw (0.000cm,2.452cm)--(-0.120cm,2.452cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,2.452cm));
+draw (0.000cm,3.679cm)--(-0.120cm,3.679cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100"), (-0.120cm,3.679cm));
+draw (0.000cm,4.905cm)--(-0.120cm,4.905cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1.000"), (-0.120cm,4.905cm));
+label.bot(textext("Grilla"), (w/2,-0.85cm));
+label.lft(textext("Tiempo hasta el óptimo (s, escala log.)") rotated 90, (-1.25cm,h/2));
+draw (0.000cm,4.633cm)--(6.400cm,4.633cm) withpen pencircle scaled .5pt dashed evenly;
+label.lft(textext("\tfxx tope: 10 min"), (6.300cm,4.433cm));
+draw (0.533cm,0.369cm)--(3.200cm,0.585cm)--(4.533cm,1.277cm)--(5.867cm,1.323cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.533cm,0.369cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.200cm,0.585cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (4.533cm,1.277cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (5.867cm,1.323cm) withcolor \MPcolor{darkblue};
+draw (0.533cm,1.846cm)--(3.200cm,1.937cm)--(4.533cm,2.094cm)--(5.867cm,2.436cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (0.533cm,1.846cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.200cm,1.937cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.533cm,2.094cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (5.867cm,2.436cm) withcolor \MPcolor{redline};
+draw (0.533cm,2.072cm)--(3.200cm,2.247cm)--(4.533cm,2.360cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (0.533cm,2.072cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (3.200cm,2.247cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (4.533cm,2.360cm) withcolor \MPcolor{blueline};
+draw (0.533cm,3.982cm)--(3.200cm,4.093cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (0.533cm,3.982cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.200cm,4.093cm) withcolor \MPcolor{greenline};
+draw (0.300cm,6.400cm)--(0.900cm,6.400cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx 2 lotes"), (1.000cm,6.400cm));
+draw (0.300cm,5.980cm)--(0.900cm,5.980cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+label.rt(textext("\tfx 3 lotes"), (1.000cm,5.980cm));
+draw (0.300cm,5.560cm)--(0.900cm,5.560cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+label.rt(textext("\tfx 4 lotes"), (1.000cm,5.560cm));
+draw (0.300cm,5.140cm)--(0.900cm,5.140cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{greenline};
+label.rt(textext("\tfx 6 lotes"), (1.000cm,5.140cm));
+\stopMPcode}{Split}
+{\startMPcode
+numeric w, h; w := 6.4cm; h := 6.5cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (0.533cm,0.000cm)--(0.533cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 3×3"), (0.533cm,-0.120cm));
+draw (1.867cm,0.000cm)--(1.867cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 4×4"), (1.867cm,-0.120cm));
+draw (3.200cm,0.000cm)--(3.200cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 5×5"), (3.200cm,-0.120cm));
+draw (4.533cm,0.000cm)--(4.533cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 6×6"), (4.533cm,-0.120cm));
+draw (5.867cm,0.000cm)--(5.867cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 7×7"), (5.867cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0,1"), (-0.120cm,0.000cm));
+draw (0.000cm,1.226cm)--(-0.120cm,1.226cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,1.226cm));
+draw (0.000cm,2.452cm)--(-0.120cm,2.452cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,2.452cm));
+draw (0.000cm,3.679cm)--(-0.120cm,3.679cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100"), (-0.120cm,3.679cm));
+draw (0.000cm,4.905cm)--(-0.120cm,4.905cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1.000"), (-0.120cm,4.905cm));
+label.bot(textext("Grilla"), (w/2,-0.85cm));
+label.lft(textext("Tiempo hasta el óptimo (s, escala log.)") rotated 90, (-1.25cm,h/2));
+draw (0.000cm,4.633cm)--(6.400cm,4.633cm) withpen pencircle scaled .5pt dashed evenly;
+label.rt(textext("\tfxx tope: 10 min"), (0.100cm,4.833cm));
+draw (0.533cm,0.585cm)--(3.200cm,1.862cm)--(4.533cm,2.612cm)--(5.867cm,2.762cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.533cm,0.585cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.200cm,1.862cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (4.533cm,2.612cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (5.867cm,2.762cm) withcolor \MPcolor{darkblue};
+draw (0.533cm,2.050cm)--(3.200cm,2.372cm)--(4.533cm,3.853cm)--(5.867cm,4.633cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (0.533cm,2.050cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.200cm,2.372cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.533cm,3.853cm) withcolor \MPcolor{redline};
+draw fullcircle scaled 6pt shifted (5.867cm,4.633cm) withpen pencircle scaled 1pt withcolor \MPcolor{redline};
+draw (0.533cm,2.231cm)--(3.200cm,3.278cm)--(4.533cm,4.633cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (0.533cm,2.231cm) withcolor \MPcolor{blueline};
+fill fullcircle scaled 4pt shifted (3.200cm,3.278cm) withcolor \MPcolor{blueline};
+draw fullcircle scaled 6pt shifted (4.533cm,4.633cm) withpen pencircle scaled 1pt withcolor \MPcolor{blueline};
+draw (0.533cm,4.026cm)--(3.200cm,4.633cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (0.533cm,4.026cm) withcolor \MPcolor{greenline};
+draw fullcircle scaled 6pt shifted (3.200cm,4.633cm) withpen pencircle scaled 1pt withcolor \MPcolor{greenline};
+draw fullcircle scaled 6pt shifted (0.600cm,6.400cm) withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx no termina (cortado al tope)"), (1.000cm,6.400cm));
+\stopMPcode}{Monolítico}
+\stopcombination}
+
+El contraste es de forma y no de grado. En el Split las curvas crecen
+despacio: con hasta 4 lotes resuelve cualquier grilla en menos de 10
+segundos. En el monolítico, en cambio, se disparan: con 3 lotes pasa de 9
+segundos en 5×5 a 139 en 6×6, y no prueba el óptimo dentro del tope con 3
+lotes en 7×7, 4 lotes en 6×6 y 6 lotes en 5×5. Entre los puntos que los dos
+cierran, el monolítico tarda hasta 27 veces más (3 lotes en 6×6); donde no
+cierra, al menos 71 veces más (4 lotes en 6×6, que el Split resuelve en 8,4
+segundos).
+
+La razón es estructural, como anticipaba el
+Cuadro~\in[tab:diferencias_modelos]. El \ac{mip} del monolítico crece con la
+grilla, porque incluye el ruteo de todos los lotes, mientras que el de la
+Etapa~2 no depende de ella, porque recibe las rutas ya resueltas
+(Cuadro~\in[tab:res_tamano_mip]). La Etapa~1, por su parte, consiste en
+\ac{mip} chicos de ruteo, uno por lote, que en estas instancias se resuelven
+en pocos segundos.
+
+\startplacetable[reference=tab:res_tamano_mip, location=here, title={Tamaño del \ac{mip} que resuelve SCIP: el modelo monolítico completo y la Etapa~2 del Split.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTR \bTH Instancia \eTH \bTH Monolítico: variables \eTH \bTH Monolítico: restricciones \eTH \bTH Etapa~2: variables \eTH \bTH Etapa~2: restricciones \eTH \eTR
+	\bTR \bTD 3 lotes, 3×3 \eTD \bTD 327 \eTD \bTD 573 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
+	\bTR \bTD 3 lotes, 5×5 \eTD \bTD 663 \eTD \bTD 1.029 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
+	\bTR \bTD 3 lotes, 6×6 \eTD \bTD 903 \eTD \bTD 1.347 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
+	\bTR \bTD 3 lotes, 7×7 \eTD \bTD 1.191 \eTD \bTD 1.725 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
+	\bTR \bTD 4 lotes, 3×3 \eTD \bTD 438 \eTD \bTD 772 \eTD \bTD 234 \eTD \bTD 460 \eTD \eTR
+	\bTR \bTD 4 lotes, 5×5 \eTD \bTD 886 \eTD \bTD 1.380 \eTD \bTD 234 \eTD \bTD 460 \eTD \eTR
+	\bTR \bTD 4 lotes, 6×6 \eTD \bTD 1.206 \eTD \bTD 1.804 \eTD \bTD 234 \eTD \bTD 460 \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+Más tiempo no resuelve el problema. Con un tope de 40 minutos, el monolítico
+sigue sin probar el óptimo en esos puntos, ni en la instancia del escenario
+de estrés 04 resuelta con el peso de finalización de la exploración
+($W^{c} = 9$), como muestra el Cuadro~\in[tab:res_40min]. Encuentra
+soluciones muy buenas, a menos del 1~\% del óptimo, pero no puede demostrar
+que lo son: su cota dual casi no avanza, y en la instancia del escenario 04
+informa un gap de 143,5~\% al cabo de 40 minutos, cuando el Split prueba el
+óptimo en 181 segundos. Sin el óptimo del Split, la solución del monolítico
+no podría distinguirse de una mala.
+
+\startplacetable[reference=tab:res_40min, location=here, title={Resultado del monolítico con un tope de 40 minutos, frente al tiempo del Split en la misma instancia. La distancia al óptimo se mide contra el óptimo del Split.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTR \bTH Instancia \eTH \bTH Split (s) \eTH \bTH Monolítico \eTH \bTH ¿Prueba el óptimo? \eTH \bTH Distancia al óptimo \eTH \bTH Gap informado \eTH \eTR
+	\bTR \bTD 3 lotes, 7×7 \eTD \bTD 8,2 \eTD \bTD 40,0 min \eTD \bTD no \eTD \bTD 0,05~\% \eTD \bTD 11,0~\% \eTD \eTR
+	\bTR \bTD 4 lotes, 6×6 \eTD \bTD 9,5 \eTD \bTD 40,0 min \eTD \bTD no \eTD \bTD 0,00~\% \eTD \bTD 10,4~\% \eTD \eTR
+	\bTR \bTD 6 lotes, 5×5 \eTD \bTD 231,7 \eTD \bTD 32,0 min \eTD \bTD sí \eTD \bTD 0,00~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD Estrés 04 ($W^{c} = 9$): 6 lotes, 7×7 \eTD \bTD 181,4 \eTD \bTD 40,0 min \eTD \bTD no \eTD \bTD 0,66~\% \eTD \bTD 143,5~\% \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+Estos estudios se ejecutaron con la máquina compartida con otras corridas,
+por lo que sus tiempos absolutos están inflados. Lo que se compara es la
+relación entre los dos modelos sobre la misma instancia, resueltos uno
+después del otro.
+
+\stopsubsection
+
+\startsubsection[title={Pruebas de estrés}]
+
+En las pruebas de estrés, el monolítico no termina ninguno de los 19
+escenarios dentro del tope de 40 minutos; en el 01, el proceso terminó sin
+devolver un estado. El Split termina 9, ninguno en más de 15,1 minutos. Los
+escenarios que el Split tampoco termina son los del perfil realista con 8
+lotes o más (12 a 14 y 16 a 19), la grilla de 16×16 (08) y dos de los
+heredados (01 y 03). Son dos límites distintos: la Etapa~2 se encarece con
+la cantidad de lotes y la Etapa~1, con el tamaño del almacén, como ya
+mostraba el relevamiento (Sección~\in[sec:relevamiento]).
+
+En síntesis, las dos formulaciones alcanzan el mismo óptimo, pero solo el
+Split lo prueba a escala realista. Por eso, el Split es la referencia contra
+la que se comparan las metaheurísticas, y el monolítico queda como juez de la
+verificación de sus soluciones (Sección~\in[sec:validacion]).
+
+\stopsubsection
 
 \stopsection
 
