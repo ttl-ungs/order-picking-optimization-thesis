@@ -4,8 +4,9 @@ Este capítulo presenta los resultados de las pruebas definidas en el
 Capítulo~\in[Capitulo_5]. Primero se comparan los dos modelos lineales
 (Sección~\in[sec:comparacion_lineales]); después se muestra que las
 soluciones de las metaheurísticas son válidas (Sección~\in[sec:validez_resultados])
-y, por último, se las compara con el modelo Split
-(Sección~\in[sec:comparacion_split_metaheuristicas]). Todos
+y se las compara con el modelo Split
+(Sección~\in[sec:comparacion_split_metaheuristicas]). Por último, la
+Sección~\in[sec:sintesis_resultados] resume los resultados. Todos
 los tiempos son de reloj, medidos en una misma máquina en las condiciones
 descriptas en la Sección~\in[sec:ejecucion].
 
@@ -846,6 +847,47 @@ escenarios de estrés; en los demás, la calidad de las heurísticas solo puede
 compararse entre ellas.
 
 \stopsubsection
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Síntesis de los resultados}, reference=sec:sintesis_resultados]
+
+Los cuatro métodos resuelven el mismo problema, con los mismos datos, las
+mismas restricciones y el mismo objetivo. La única diferencia de modelado es
+el tiempo ocioso insertado, que los modelos lineales admiten como espera
+voluntaria y las heurísticas no; por eso, las instancias en las que el Split
+lo usa se comparan solo en estado. Sobre esa base, los resultados de este
+capítulo pueden resumirse así:
+\startitemize
+	\item {\bf Los dos modelos lineales alcanzan el mismo óptimo}, pero solo el
+	Split lo prueba a escala realista: en el perfil realista, hasta 6 lotes en
+	grillas de hasta 15×15, dentro del tope de 40 minutos. El monolítico
+	encuentra buenas soluciones, pero no logra demostrar que son óptimas.
+	\item {\bf Las soluciones de las heurísticas son válidas}: las 150
+	verificadas cumplen todas las restricciones del modelo monolítico, y las dos
+	heurísticas coinciden con el Split en el estado de todas las instancias
+	comparables.
+	\item {\bf ACO queda prácticamente en el óptimo}: lo alcanza en todas las
+	instancias funcionales comparables y, en estrés, queda a lo sumo a un
+	0,06~\%. HC falla el óptimo en 5 instancias de grilla y, en estrés, queda a
+	lo sumo a un 0,21~\%.
+	\item {\bf HC es el método más rápido}: en estrés, su tiempo es unas 53
+	veces menor que el del Split en la mediana, frente a 1,7 veces en el caso de
+	ACO.
+	\item {\bf Las heurísticas resuelven donde el Split no termina}: en los 10
+	escenarios de estrés sin referencia, las dos dan una solución válida, y ACO
+	obtiene el mejor objetivo en 9 de ellos.
+\stopitemize
+
+Ninguno de los tres métodos domina a los otros en calidad y en tiempo a la
+vez, de modo que la elección depende del tamaño de la instancia y de lo que
+importe en cada caso. Hasta 6 lotes en grillas de hasta 15×15, el Split
+prueba el óptimo en minutos y sirve como referencia. Por encima de ese
+tamaño, o cuando el tiempo de respuesta es determinante, las heurísticas son
+la alternativa: ACO cuando importa la calidad de la solución, y HC cuando
+importa responder en segundos, por ejemplo para volver a planificar durante
+la operación.
 
 \stopsection
 \stopchapter
