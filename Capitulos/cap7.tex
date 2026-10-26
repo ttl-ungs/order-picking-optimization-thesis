@@ -2,6 +2,167 @@
 
 % TODO: completar
 
+Este capítulo discute los resultados frente a la literatura y a las
+decisiones de modelado (Sección~\in[sec:discusion]), presenta las
+conclusiones en relación con los objetivos planteados en el
+Capítulo~\in[Capitulo_1] (Sección~\in[sec:conclusiones]), resume las
+limitaciones del trabajo (Sección~\in[sec:limitaciones]) y propone líneas de
+trabajo futuro (Sección~\in[sec:trabajo_futuro]).
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Discusión}, reference=sec:discusion]
+
+Coruzzolo et al. formularon la optimización conjunta del loteo, la
+asignación, la secuenciación y el ruteo como un modelo lineal entero mixto,
+pero no pudieron resolverlo sobre su caso de estudio y recurrieron a una
+heurística constructiva con búsqueda local iterada, sin poder contrastar sus
+resultados con el óptimo \cite[coruzzolo2023orderpicking]. Los resultados de
+esta tesina son consistentes con esa experiencia: aun sin decidir el loteo, el
+modelo monolítico solo prueba el óptimo en instancias pequeñas
+(Sección~\in[sec:comparacion_lineales]). La descomposición en dos etapas
+amplía ese alcance sin perder optimalidad, y es lo que permite medir la
+calidad de las heurísticas contra un óptimo probado en instancias de tamaño
+realista, una de las limitaciones de los trabajos revisados en la
+Sección~\in[sec:trabajos_relacionados].
+
+La dificultad del monolítico no está en encontrar buenas soluciones, sino en
+probar que lo son: su cota dual casi no avanza. Es un comportamiento
+esperable en un modelo que reúne en un mismo problema el ruteo, la
+asignación y la secuencia mediante restricciones de tipo M grande, ya que
+estas constantes debilitan la relajación lineal
+(Sección~\in[sec:marco_mip]). El Split, en cambio, resuelve la asignación y la
+secuencia sobre un modelo cuyo tamaño no depende del almacén.
+
+La espera voluntaria resultó ser más que un detalle de la formulación. Es la
+forma que toma en los modelos lineales el tiempo ocioso insertado, propio de
+los objetivos que penalizan el adelanto y la demora
+(Sección~\in[sec:marco_adelanto_demora]), y tiene dos consecuencias. Por un
+lado, es la propiedad que hace exacta la descomposición
+(Sección~\in[sec:modelo_split]). Por otro, separa el espacio de soluciones de
+los modelos lineales del de las metaheurísticas, que solo generan
+programaciones sin tiempo ocioso. Como anticipa la literatura
+\cite[kanet2000inserted], restringirse a ese subconjunto puede excluir el
+óptimo, y es lo que ocurre en las 10 instancias funcionales que solo pueden
+compararse en estado. En las pruebas de estrés, la elección del peso de la
+finalización evitó que este efecto distorsionara la comparación.
+
+Por último, las metaheurísticas construyen las rutas sobre las ubicaciones
+requeridas, como proponen Chen et al. \cite[chen2013antcolony], con la
+adaptación necesaria para producir caminos simples. A diferencia de ese
+trabajo, esta tesina no modela la congestión entre operarios, de modo que
+sus resultados no permiten evaluar el efecto de la interferencia entre
+{\em pickers}.
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Conclusiones}, reference=sec:conclusiones]
+
+Los objetivos específicos planteados en la Sección~\in[sec:objetivo] se
+cumplieron de la siguiente manera:
+\startitemize[n]
+	\item Se formuló e implementó un modelo lineal monolítico que extiende el
+	modelo de referencia con velocidades heterogéneas y cadena de frío
+	(Capítulo~\in[Capitulo_3]). Las pruebas funcionales verifican que respeta
+	las reglas del problema y, cuando todos los operarios tienen la misma
+	velocidad y la cadena de frío no restringe, el modelo se reduce al
+	problema original.
+	\item Se desarrolló un modelo en dos etapas que alcanza el mismo valor
+	óptimo que el monolítico: lo hace en los 49 pares que los dos resuelven, y
+	los 11 pares infactibles lo son en ambos. La mejora en tiempo, en cambio,
+	depende de la escala. En las instancias pequeñas, el monolítico es algo
+	más rápido, porque compila un único modelo; a escala realista, solo el
+	Split prueba el óptimo, en 9 de los 19 escenarios de estrés, frente a
+	ninguno del monolítico.
+	\item Se diseñaron e implementaron dos metaheurísticas, basadas en HC y en
+	ACO, equivalentes a los modelos lineales salvo por el tiempo ocioso
+	insertado (Capítulo~\in[Capitulo_4]). La verificación independiente contra
+	el modelo monolítico confirmó que sus 150 soluciones cumplen todas las
+	restricciones del problema.
+	\item Se definieron 38 casos de pruebas funcionales y 19 escenarios de
+	estrés, con un perfil realista calibrado para exigir a los modelos sin las
+	degeneraciones de los escenarios heredados, y reglas de comparabilidad que
+	garantizan que los cuatro métodos resuelven exactamente los mismos datos
+	(Capítulo~\in[Capitulo_5]).
+	\item Se compararon los métodos sobre esos escenarios
+	(Capítulo~\in[Capitulo_6]). Las heurísticas encuentran una solución en
+	todas las instancias factibles y en ninguna de las infactibles. ACO queda
+	prácticamente en el óptimo y HC, a menos de un 0,21~\% en estrés, con
+	tiempos que en la mediana son entre 1,7 y 53 veces menores que los del
+	Split.
+	\item Se identificaron limitaciones estructurales de las heurísticas, que
+	se resumen en la Sección~\in[sec:limitaciones] y dan lugar a las líneas de
+	trabajo futuro de la Sección~\in[sec:trabajo_futuro].
+\stopitemize
+
+En cuanto al objetivo general, los resultados caracterizan el compromiso
+entre calidad de la solución y tiempo de cómputo de cada enfoque, y las
+condiciones en las que conviene cada uno (Sección~\in[sec:sintesis_resultados]).
+La robustez, en cambio, se evaluó solo en parte. En HC, la diferencia entre
+la mejor y la peor de cinco semillas fue menor al 0,5~\% en todos los
+escenarios de estrés, aunque con una de ellas dos escenarios terminaron sin
+solución factible (Sección~\in[sec:hc_parametros]). En ACO, la variación entre
+semillas no se midió con la versión final.
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Limitaciones}, reference=sec:limitaciones]
+
+{\bf De la formulación.} La ruta de cada lote debe ser un camino simple, lo
+que deja afuera los almacenes con pasillos sin salida; no se modela la
+congestión entre operarios, y los lotes y la ubicación de los productos son
+datos del problema. Además, la cota de $M^{\text{seq}}$ puede no ser válida
+cuando conviene la espera voluntaria (Anexo~\in[Anexo_Modelos]), y los lotes
+vacíos se rutean y se cobran en el objetivo
+(Sección~\in[sec:caracteristicas_formulacion]).
+
+{\bf De la experimentación.} Las instancias son generadas y no provienen de
+una operación real. Los tiempos son de reloj, medidos en una computadora
+portátil, y pueden variar hasta el doble entre corridas; en las pruebas de
+estrés, además, la Etapa~1 del Split se ejecutó en paralelo. Cada heurística
+se ejecutó una sola vez por instancia, con semilla 1. La referencia de
+objetivo existe solo donde el Split termina, y 10 instancias funcionales
+pueden compararse solo en estado.
+
+{\bf De las heurísticas.} HC no escapa de los óptimos locales y, en la
+práctica, casi no modifica las rutas que obtiene en la construcción inicial
+(Sección~\in[sec:hc_limitaciones]). En las dos heurísticas, el tope de tiempo
+no es estricto: en el escenario de 100×100, HC tardó 17 minutos y ACO, 35.
+ACO, por su parte, tiene picos de memoria que no siguen al tamaño de la
+instancia (Sección~\in[sec:aco_limitaciones]).
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Trabajo futuro}, reference=sec:trabajo_futuro]
+
+A partir de estos resultados y limitaciones, se proponen las siguientes
+líneas de trabajo:
+\startitemize
+	\item Medir la variabilidad entre semillas de las dos heurísticas con su
+	versión final, para completar la evaluación de su robustez.
+	\item Corregir la cota de $M^{\text{seq}}$ para que sea válida también con
+	espera voluntaria (Anexo~\in[Anexo_Modelos]), y preprocesar los lotes para
+	descartar los vacíos antes de resolver.
+	\item Identificar qué encarece la Etapa~1 en los almacenes grandes, y
+	acelerar la Etapa~2, por ejemplo con restricciones que rompan la simetría
+	entre {\em pickers} de una misma banda de velocidad, que son
+	intercambiables entre sí.
+	\item Incorporar en HC mecanismos para escapar de los óptimos locales,
+	como los reinicios, el recocido simulado o la búsqueda tabú
+	(Sección~\in[sec:marco_hc]).
+	\item Extender las heurísticas para que inserten tiempo ocioso, de modo que
+	puedan compararse en objetivo también en las instancias en las que el
+	modelo lineal lo aprovecha.
+	\item Permitir rutas que repitan ubicaciones, para representar almacenes
+	con pasillos sin salida.
+	\item Incorporar el loteo como decisión, como en el modelo de referencia, y
+	la congestión entre operarios.
+	\item Evaluar los métodos con datos de una operación real.
+\stopitemize
+
+\stopsection
 \stopchapter
 
 %========================================================================================
