@@ -90,4 +90,256 @@ Anexo~\in[Anexo_Pruebas].
 \stopplacetable
 
 \stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Split contra metaheurísticas}]
+
+La Figura~\in[fig:res_funcional_tiempos] compara el tiempo total del Split y
+de cada heurística en las 33 instancias funcionales con tiempo conocido
+(Sección~\in[sec:comparacion_split_metaheuristicas]). Los
+Cuadros~\in[tab:res_sla] y~\in[tab:res_convergencia] y la
+Figura~\in[fig:res_memoria] detallan el nivel de servicio, la convergencia y
+la memoria en los escenarios de estrés.
+
+\placefigure[force][fig:res_funcional_tiempos]{Tiempo total de cada instancia funcional: Split contra cada heurística (escala logarítmica en los dos ejes). Por debajo de la diagonal, la heurística fue más rápida.}
+{\startMPcode
+numeric w, h; w := 8cm; h := 8cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+draw (0.000cm,0.000cm)--(0.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 0,01"), (0.000cm,-0.120cm));
+draw (2.667cm,0.000cm)--(2.667cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 0,1"), (2.667cm,-0.120cm));
+draw (5.333cm,0.000cm)--(5.333cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 1"), (5.333cm,-0.120cm));
+draw (8.000cm,0.000cm)--(8.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 10"), (8.000cm,-0.120cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0,01"), (-0.120cm,0.000cm));
+draw (0.000cm,2.667cm)--(-0.120cm,2.667cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0,1"), (-0.120cm,2.667cm));
+draw (0.000cm,5.333cm)--(-0.120cm,5.333cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,5.333cm));
+draw (0.000cm,8.000cm)--(-0.120cm,8.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,8.000cm));
+label.bot(textext("Split, tiempo total (s, escala log.)"), (w/2,-0.85cm));
+label.lft(textext("Heurística, tiempo total (s, escala log.)") rotated 90, (-1.25cm,h/2));
+draw (0.000cm,0.000cm)--(8.000cm,8.000cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+fill fullcircle scaled 4pt shifted (3.939cm,2.043cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.753cm,2.196cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.920cm,2.210cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.687cm,1.979cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.896cm,2.231cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.842cm,2.172cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (6.898cm,2.294cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (6.853cm,2.330cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.869cm,2.266cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.304cm,2.537cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.996cm,2.082cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.893cm,2.057cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.521cm,2.543cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.766cm,1.967cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.736cm,2.326cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.130cm,2.047cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.879cm,1.884cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.539cm,2.378cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.328cm,2.202cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.349cm,2.245cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.403cm,2.319cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.321cm,2.291cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.802cm,1.976cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.851cm,2.081cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.974cm,2.175cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.222cm,1.936cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.614cm,1.991cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.700cm,1.978cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.667cm,2.015cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.765cm,1.826cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.776cm,2.092cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.611cm,1.950cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.676cm,1.807cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.939cm,4.019cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.753cm,3.913cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.920cm,3.396cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.687cm,2.965cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.896cm,3.330cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.842cm,3.776cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (6.898cm,5.711cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (6.853cm,5.814cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.869cm,4.370cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.304cm,5.346cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.996cm,3.630cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.893cm,3.842cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.521cm,5.484cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.766cm,3.436cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.736cm,3.687cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.130cm,3.603cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.879cm,3.201cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.539cm,2.705cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.328cm,5.310cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.349cm,5.487cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.403cm,5.409cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.321cm,5.315cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.802cm,3.533cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.851cm,3.604cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.974cm,3.438cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.222cm,2.706cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.614cm,3.214cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.700cm,3.485cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.667cm,2.951cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.765cm,3.340cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.776cm,3.301cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.611cm,2.790cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.676cm,3.043cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (0.600cm,7.850cm) withcolor \MPcolor{greenline};
+label.rt(textext("\tfx HC"), (1.000cm,7.850cm));
+fill fullcircle scaled 4pt shifted (0.600cm,7.430cm) withcolor \MPcolor{redline};
+label.rt(textext("\tfx ACO"), (1.000cm,7.430cm));
+draw (0.300cm,7.010cm)--(0.900cm,7.010cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
+label.rt(textext("\tfx igual tiempo"), (1.000cm,7.010cm));
+\stopMPcode}
+
+\startplacetable[reference=tab:res_sla, location=here, title={Porcentaje de pedidos que llegan a tiempo en cada escenario de estrés. El Split no tiene dato en los escenarios que no termina.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTR \bTH Caso \eTH \bTH Split \eTH \bTH HC \eTH \bTH ACO \eTH \eTR
+	\bTR \bTD 01 \eTD \bTD -- \eTD \bTD 0,0~\% \eTD \bTD 0,0~\% \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD 0,0~\% \eTD \bTD 0,0~\% \eTD \bTD 0,0~\% \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD -- \eTD \bTD 0,0~\% \eTD \bTD 0,0~\% \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD 97,4~\% \eTD \bTD 96,8~\% \eTD \bTD 97,4~\% \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\bTR \bTD 19 \eTD \bTD -- \eTD \bTD 100,0~\% \eTD \bTD 100,0~\% \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+\startplacetable[reference=tab:res_convergencia, location=here, title={Iteraciones de cada heurística en los escenarios de estrés e iteración en la que encontró su mejor solución (0 es la solución inicial).}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTR \bTH Caso \eTH \bTH HC: iteraciones \eTH \bTH HC: mejor en \eTH \bTH ACO: iteraciones \eTH \bTH ACO: mejor en \eTH \bTH ACO: cortó por tiempo \eTH \eTR
+	\bTR \bTD 01 \eTD \bTD 0 \eTD \bTD 0 \eTD \bTD 2 \eTD \bTD 1 \eTD \bTD sí \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD 60 \eTD \bTD 0 \eTD \bTD 60 \eTD \bTD 1 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD 200 \eTD \bTD 197 \eTD \bTD 60 \eTD \bTD 2 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD 61 \eTD \bTD 1 \eTD \bTD 60 \eTD \bTD 15 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD 66 \eTD \bTD 6 \eTD \bTD 60 \eTD \bTD 26 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD 63 \eTD \bTD 3 \eTD \bTD 60 \eTD \bTD 26 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD 60 \eTD \bTD 0 \eTD \bTD 60 \eTD \bTD 32 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD 65 \eTD \bTD 5 \eTD \bTD 60 \eTD \bTD 25 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD 66 \eTD \bTD 6 \eTD \bTD 60 \eTD \bTD 36 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD 87 \eTD \bTD 27 \eTD \bTD 60 \eTD \bTD 42 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD 68 \eTD \bTD 8 \eTD \bTD 60 \eTD \bTD 41 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD 89 \eTD \bTD 29 \eTD \bTD 60 \eTD \bTD 39 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD 102 \eTD \bTD 42 \eTD \bTD 60 \eTD \bTD 37 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD 113 \eTD \bTD 53 \eTD \bTD 60 \eTD \bTD 54 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD 75 \eTD \bTD 15 \eTD \bTD 60 \eTD \bTD 18 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD 60 \eTD \bTD 0 \eTD \bTD 60 \eTD \bTD 16 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD 200 \eTD \bTD 157 \eTD \bTD 60 \eTD \bTD 25 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD 108 \eTD \bTD 48 \eTD \bTD 60 \eTD \bTD 51 \eTD \bTD no \eTD \eTR
+	\bTR \bTD 19 \eTD \bTD 157 \eTD \bTD 97 \eTD \bTD 60 \eTD \bTD 39 \eTD \bTD no \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+\placefigure[force][fig:res_memoria]{Memoria pico de cada método en los escenarios de estrés (escala logarítmica). El Split no tiene dato en los escenarios que no termina, y su valor no incluye los procesos de la Etapa~1 ni ZIMPL.}
+{\startMPcode
+numeric w, h; w := 12cm; h := 6cm;
+drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
+drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
+label.bot(textext("\tfx 01"), (0.316cm,-0.100cm));
+label.bot(textext("\tfx 02"), (0.947cm,-0.100cm));
+label.bot(textext("\tfx 03"), (1.579cm,-0.100cm));
+label.bot(textext("\tfx 04"), (2.211cm,-0.100cm));
+label.bot(textext("\tfx 05"), (2.842cm,-0.100cm));
+label.bot(textext("\tfx 06"), (3.474cm,-0.100cm));
+label.bot(textext("\tfx 07"), (4.105cm,-0.100cm));
+label.bot(textext("\tfx 08"), (4.737cm,-0.100cm));
+label.bot(textext("\tfx 09"), (5.368cm,-0.100cm));
+label.bot(textext("\tfx 10"), (6.000cm,-0.100cm));
+label.bot(textext("\tfx 11"), (6.632cm,-0.100cm));
+label.bot(textext("\tfx 12"), (7.263cm,-0.100cm));
+label.bot(textext("\tfx 13"), (7.895cm,-0.100cm));
+label.bot(textext("\tfx 14"), (8.526cm,-0.100cm));
+label.bot(textext("\tfx 15"), (9.158cm,-0.100cm));
+label.bot(textext("\tfx 16"), (9.789cm,-0.100cm));
+label.bot(textext("\tfx 17"), (10.421cm,-0.100cm));
+label.bot(textext("\tfx 18"), (11.053cm,-0.100cm));
+label.bot(textext("\tfx 19"), (11.684cm,-0.100cm));
+draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,0.000cm));
+draw (0.000cm,1.156cm)--(-0.120cm,1.156cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 30"), (-0.120cm,1.156cm));
+draw (0.000cm,2.422cm)--(-0.120cm,2.422cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 100"), (-0.120cm,2.422cm));
+draw (0.000cm,3.578cm)--(-0.120cm,3.578cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 300"), (-0.120cm,3.578cm));
+draw (0.000cm,4.844cm)--(-0.120cm,4.844cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1.000"), (-0.120cm,4.844cm));
+label.lft(textext("Memoria pico (MB, escala log.)") rotated 90, (-1.25cm,h/2));
+fill (0.234cm,0.000cm)--(0.398cm,0.000cm)--(0.398cm,4.695cm)--(0.234cm,4.695cm)--cycle withcolor \MPcolor{greenline};
+fill (0.404cm,0.000cm)--(0.568cm,0.000cm)--(0.568cm,4.699cm)--(0.404cm,4.699cm)--cycle withcolor \MPcolor{redline};
+fill (0.695cm,0.000cm)--(0.859cm,0.000cm)--(0.859cm,2.560cm)--(0.695cm,2.560cm)--cycle withcolor \MPcolor{darkblue};
+fill (0.865cm,0.000cm)--(1.029cm,0.000cm)--(1.029cm,0.924cm)--(0.865cm,0.924cm)--cycle withcolor \MPcolor{greenline};
+fill (1.036cm,0.000cm)--(1.200cm,0.000cm)--(1.200cm,0.936cm)--(1.036cm,0.936cm)--cycle withcolor \MPcolor{redline};
+fill (1.497cm,0.000cm)--(1.661cm,0.000cm)--(1.661cm,1.010cm)--(1.497cm,1.010cm)--cycle withcolor \MPcolor{greenline};
+fill (1.667cm,0.000cm)--(1.832cm,0.000cm)--(1.832cm,1.150cm)--(1.667cm,1.150cm)--cycle withcolor \MPcolor{redline};
+fill (1.958cm,0.000cm)--(2.122cm,0.000cm)--(2.122cm,2.131cm)--(1.958cm,2.131cm)--cycle withcolor \MPcolor{darkblue};
+fill (2.128cm,0.000cm)--(2.293cm,0.000cm)--(2.293cm,0.905cm)--(2.128cm,0.905cm)--cycle withcolor \MPcolor{greenline};
+fill (2.299cm,0.000cm)--(2.463cm,0.000cm)--(2.463cm,0.964cm)--(2.299cm,0.964cm)--cycle withcolor \MPcolor{redline};
+fill (2.589cm,0.000cm)--(2.754cm,0.000cm)--(2.754cm,2.198cm)--(2.589cm,2.198cm)--cycle withcolor \MPcolor{darkblue};
+fill (2.760cm,0.000cm)--(2.924cm,0.000cm)--(2.924cm,1.036cm)--(2.760cm,1.036cm)--cycle withcolor \MPcolor{greenline};
+fill (2.931cm,0.000cm)--(3.095cm,0.000cm)--(3.095cm,1.076cm)--(2.931cm,1.076cm)--cycle withcolor \MPcolor{redline};
+fill (3.221cm,0.000cm)--(3.385cm,0.000cm)--(3.385cm,2.149cm)--(3.221cm,2.149cm)--cycle withcolor \MPcolor{darkblue};
+fill (3.392cm,0.000cm)--(3.556cm,0.000cm)--(3.556cm,1.059cm)--(3.392cm,1.059cm)--cycle withcolor \MPcolor{greenline};
+fill (3.562cm,0.000cm)--(3.726cm,0.000cm)--(3.726cm,4.753cm)--(3.562cm,4.753cm)--cycle withcolor \MPcolor{redline};
+fill (3.853cm,0.000cm)--(4.017cm,0.000cm)--(4.017cm,2.143cm)--(3.853cm,2.143cm)--cycle withcolor \MPcolor{darkblue};
+fill (4.023cm,0.000cm)--(4.187cm,0.000cm)--(4.187cm,1.077cm)--(4.023cm,1.077cm)--cycle withcolor \MPcolor{greenline};
+fill (4.194cm,0.000cm)--(4.358cm,0.000cm)--(4.358cm,1.121cm)--(4.194cm,1.121cm)--cycle withcolor \MPcolor{redline};
+fill (4.655cm,0.000cm)--(4.819cm,0.000cm)--(4.819cm,1.081cm)--(4.655cm,1.081cm)--cycle withcolor \MPcolor{greenline};
+fill (4.825cm,0.000cm)--(4.989cm,0.000cm)--(4.989cm,1.148cm)--(4.825cm,1.148cm)--cycle withcolor \MPcolor{redline};
+fill (5.116cm,0.000cm)--(5.280cm,0.000cm)--(5.280cm,2.166cm)--(5.116cm,2.166cm)--cycle withcolor \MPcolor{darkblue};
+fill (5.286cm,0.000cm)--(5.451cm,0.000cm)--(5.451cm,1.026cm)--(5.286cm,1.026cm)--cycle withcolor \MPcolor{greenline};
+fill (5.457cm,0.000cm)--(5.621cm,0.000cm)--(5.621cm,5.376cm)--(5.457cm,5.376cm)--cycle withcolor \MPcolor{redline};
+fill (5.747cm,0.000cm)--(5.912cm,0.000cm)--(5.912cm,3.532cm)--(5.747cm,3.532cm)--cycle withcolor \MPcolor{darkblue};
+fill (5.918cm,0.000cm)--(6.082cm,0.000cm)--(6.082cm,0.910cm)--(5.918cm,0.910cm)--cycle withcolor \MPcolor{greenline};
+fill (6.088cm,0.000cm)--(6.253cm,0.000cm)--(6.253cm,0.968cm)--(6.088cm,0.968cm)--cycle withcolor \MPcolor{redline};
+fill (6.379cm,0.000cm)--(6.543cm,0.000cm)--(6.543cm,2.160cm)--(6.379cm,2.160cm)--cycle withcolor \MPcolor{darkblue};
+fill (6.549cm,0.000cm)--(6.714cm,0.000cm)--(6.714cm,1.028cm)--(6.549cm,1.028cm)--cycle withcolor \MPcolor{greenline};
+fill (6.720cm,0.000cm)--(6.884cm,0.000cm)--(6.884cm,1.096cm)--(6.720cm,1.096cm)--cycle withcolor \MPcolor{redline};
+fill (7.181cm,0.000cm)--(7.345cm,0.000cm)--(7.345cm,0.919cm)--(7.181cm,0.919cm)--cycle withcolor \MPcolor{greenline};
+fill (7.352cm,0.000cm)--(7.516cm,0.000cm)--(7.516cm,5.347cm)--(7.352cm,5.347cm)--cycle withcolor \MPcolor{redline};
+fill (7.813cm,0.000cm)--(7.977cm,0.000cm)--(7.977cm,0.950cm)--(7.813cm,0.950cm)--cycle withcolor \MPcolor{greenline};
+fill (7.983cm,0.000cm)--(8.147cm,0.000cm)--(8.147cm,0.962cm)--(7.983cm,0.962cm)--cycle withcolor \MPcolor{redline};
+fill (8.444cm,0.000cm)--(8.608cm,0.000cm)--(8.608cm,0.968cm)--(8.444cm,0.968cm)--cycle withcolor \MPcolor{greenline};
+fill (8.615cm,0.000cm)--(8.779cm,0.000cm)--(8.779cm,0.978cm)--(8.615cm,0.978cm)--cycle withcolor \MPcolor{redline};
+fill (8.905cm,0.000cm)--(9.069cm,0.000cm)--(9.069cm,2.900cm)--(8.905cm,2.900cm)--cycle withcolor \MPcolor{darkblue};
+fill (9.076cm,0.000cm)--(9.240cm,0.000cm)--(9.240cm,0.965cm)--(9.076cm,0.965cm)--cycle withcolor \MPcolor{greenline};
+fill (9.246cm,0.000cm)--(9.411cm,0.000cm)--(9.411cm,1.027cm)--(9.246cm,1.027cm)--cycle withcolor \MPcolor{redline};
+fill (9.707cm,0.000cm)--(9.872cm,0.000cm)--(9.872cm,1.040cm)--(9.707cm,1.040cm)--cycle withcolor \MPcolor{greenline};
+fill (9.878cm,0.000cm)--(10.042cm,0.000cm)--(10.042cm,1.060cm)--(9.878cm,1.060cm)--cycle withcolor \MPcolor{redline};
+fill (10.339cm,0.000cm)--(10.503cm,0.000cm)--(10.503cm,1.068cm)--(10.339cm,1.068cm)--cycle withcolor \MPcolor{greenline};
+fill (10.509cm,0.000cm)--(10.674cm,0.000cm)--(10.674cm,1.098cm)--(10.509cm,1.098cm)--cycle withcolor \MPcolor{redline};
+fill (10.971cm,0.000cm)--(11.135cm,0.000cm)--(11.135cm,1.145cm)--(10.971cm,1.145cm)--cycle withcolor \MPcolor{greenline};
+fill (11.141cm,0.000cm)--(11.305cm,0.000cm)--(11.305cm,1.173cm)--(11.141cm,1.173cm)--cycle withcolor \MPcolor{redline};
+fill (11.602cm,0.000cm)--(11.766cm,0.000cm)--(11.766cm,1.202cm)--(11.602cm,1.202cm)--cycle withcolor \MPcolor{greenline};
+fill (11.773cm,0.000cm)--(11.937cm,0.000cm)--(11.937cm,1.240cm)--(11.773cm,1.240cm)--cycle withcolor \MPcolor{redline};
+fill (12.400cm,3.380cm)--(12.800cm,3.380cm)--(12.800cm,3.620cm)--(12.400cm,3.620cm)--cycle withcolor \MPcolor{darkblue};
+label.rt(textext("\tfx Split"), (13.000cm,3.500cm));
+fill (12.400cm,2.960cm)--(12.800cm,2.960cm)--(12.800cm,3.200cm)--(12.400cm,3.200cm)--cycle withcolor \MPcolor{greenline};
+label.rt(textext("\tfx HC"), (13.000cm,3.080cm));
+fill (12.400cm,2.540cm)--(12.800cm,2.540cm)--(12.800cm,2.780cm)--(12.400cm,2.780cm)--cycle withcolor \MPcolor{redline};
+label.rt(textext("\tfx ACO"), (13.000cm,2.660cm));
+\stopMPcode}
+
+\stopsection
 \stopchapter
