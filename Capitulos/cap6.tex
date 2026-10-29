@@ -40,6 +40,16 @@ asignaciones distintas, por su parte, son empates del objetivo que cada
 resolución rompe de forma distinta. El Anexo~\in[Anexo_Resultados] detalla
 cada par.
 
+El caso 30a, excluido de los pares, no termina
+dentro del tope en ninguno de los dos modelos, a pesar de tener solo 4
+pedidos. De sus 12 lotes, 10 están vacíos y son intercambiables entre sí, lo
+que multiplica las soluciones equivalentes que el resolvedor debe descartar
+(Sección~\in[sec:caracteristicas_formulacion]). La verificación de una
+solución de esta instancia (Sección~\in[sec:validez_resultados]) lo
+confirma. En este caso, SCIP no terminó en 600 segundos con los lotes vacíos y terminó en
+0,13 segundos sin ellos. El caso muestra por qué conviene eliminar los lotes
+vacíos antes de resolver.
+
 \stopsubsection
 
 \startsubsection[title={Tiempos en las pruebas funcionales}]
@@ -339,6 +349,14 @@ heredados (01 y 03). Son dos límites distintos: la Etapa~2 se encarece con
 la cantidad de lotes y la Etapa~1, con el tamaño del almacén, como ya
 mostraba el relevamiento (Sección~\in[sec:relevamiento]).
 
+En estas pruebas, la Etapa~1 del Split se ejecutó repartida en seis
+procesos, y el monolítico en uno solo (Sección~\in[sec:ejecucion]). Esa
+diferencia no explica el resultado. El paralelismo reduce el tiempo de la
+Etapa~1 como mucho a la mitad (2,2 veces en una grilla de 13×13 y 1,9 en una
+de 14×14), y el Split no tardó más de 15,1 minutos en ningún escenario. Aun
+si todo su tiempo fuera el doble, terminaría esos 9 escenarios por debajo del
+tope de 40 minutos, en el que el monolítico no termina ninguno.
+
 En síntesis, las dos formulaciones alcanzan el mismo óptimo, pero solo el
 Split lo prueba a escala realista. Por eso, el Split es la referencia contra
 la que se comparan las metaheurísticas, y el monolítico queda como juez de la
@@ -395,7 +413,9 @@ sobre el subgrafo de las rutas, de unos 1.500 de sus 10.000 ubicaciones.
 Esta sección compara HC y ACO con el modelo Split sobre las instancias
 comparables de la Sección~\in[sec:comparacion]: en estado, 67 instancias
 funcionales y los 9 escenarios de estrés que el Split resuelve; en objetivo,
-45 de esas instancias funcionales y los mismos 9 escenarios. Los 10
+45 de esas instancias funcionales y los mismos 9 escenarios. Las 22
+instancias funcionales que se comparan solo en estado son las 12 infactibles
+y 10 en las que el Split usa espera voluntaria. Los 10
 escenarios de estrés que el Split no termina sirven para observar la escala y
 para comparar las heurísticas entre sí.
 

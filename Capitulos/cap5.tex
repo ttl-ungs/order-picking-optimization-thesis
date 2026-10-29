@@ -1,5 +1,28 @@
 \startchapter[title={Metodología}, reference=Capitulo_5]
 
+Este capítulo describe cómo se evaluaron los modelos lineales y las
+heurísticas. El trabajo siguió un orden en el que cada paso se apoyó en los
+resultados del anterior:
+\startitemize[n]
+	\item {\bf Pruebas funcionales.} Se verificó, sobre instancias chicas, que
+	los modelos lineales respetan las reglas del problema
+	(Sección~\in[sec:pruebas_funcionales]).
+	\item {\bf Relevamiento.} Se exploró hasta qué tamaño de instancia resuelve
+	cada modelo lineal: primero el Split y después el monolítico, resolviendo
+	las mismas instancias con los dos (Sección~\in[sec:relevamiento]).
+	\item {\bf Pruebas de estrés.} Con esos resultados se diseñaron los
+	escenarios de estrés (Sección~\in[sec:escenarios_estres]), que se
+	ejecutaron con los dos modelos lineales.
+	\item {\bf Elección de la referencia.} En esas pruebas, el monolítico no
+	terminó ningún escenario dentro del tope y el Split terminó 9 de 19
+	(Sección~\in[sec:comparacion_lineales]). A partir de ese resultado, el
+	Split se tomó como referencia para evaluar las heurísticas.
+	\item {\bf Heurísticas.} HC y ACO resolvieron las mismas instancias. Sus
+	soluciones se verificaron contra el modelo monolítico
+	(Sección~\in[sec:validacion]) y se compararon con las del Split
+	(Sección~\in[sec:comparacion]).
+\stopitemize
+
 %----------------------------------------------------------------------------------------
 \startsection[title={Software utilizado}, reference=sec:software]
 
@@ -100,17 +123,6 @@ En estas pruebas solo se exige que el estado, con o sin solución, coincida con
 el del Split; los objetivos se comparan después, en el análisis
 (Sección~\in[sec:comparacion]).
 
-{\bf Un caso sin resolver.} El caso 30a no termina dentro del tope de tiempo
-(Sección~\in[sec:ejecucion]) en ninguno de los dos modelos lineales, a pesar
-de tener solo 4 pedidos. De sus 12 lotes, 10 están vacíos y son
-intercambiables entre sí, lo que multiplica las soluciones equivalentes que
-el resolvedor debe descartar (Sección~\in[sec:caracteristicas_formulacion]). Al
-verificar una solución de esta instancia (Sección~\in[sec:validacion]), SCIP
-no terminó en 600 segundos con los lotes vacíos y terminó en 0,13 segundos
-sin ellos. Este caso ilustra el efecto de los lotes vacíos descripto en la
-Sección~\in[sec:caracteristicas_formulacion], y muestra por qué es conveniente
-eliminarlos antes de resolver.
-
 El Anexo~\in[Anexo_Pruebas] lista los casos y qué verifica cada uno.
 
 \stopsection
@@ -125,12 +137,11 @@ realizó primero un relevamiento de los modelos lineales
 (Sección~\in[sec:relevamiento]), cuyos resultados definieron los
 escenarios descriptos en la Sección~\in[sec:escenarios_estres].
 
-El relevamiento se centró en el modelo Split por su menor costo de
-ejecución: en tiempo, se esperaba que se ubicara entre las heurísticas, más
-rápidas, y el modelo monolítico, más lento. El monolítico se evaluó solo
-sobre instancias chicas, comparándolo con el Split en las mismas
-instancias (Sección~\in[sec:relevamiento]), ya que en las dimensiones
-consideradas para las pruebas de estrés no se esperaba que terminara.
+El relevamiento empezó por el modelo Split, que al descomponerse en
+problemas más chicos permite recorrer más instancias en el mismo tiempo.
+Después se exploró el monolítico, resolviendo cada instancia también con el
+Split para comparar los dos sobre los mismos datos
+(Sección~\in[sec:relevamiento]).
 
 \startsubsection[title={Relevamiento inicial}, reference=sec:relevamiento]
 
@@ -167,8 +178,9 @@ fueron los siguientes:
 	la calibración: hasta 3 lotes en una grilla de 6×6, 4 lotes en 5×5 y 6
 	lotes en 3×3. Donde fue cortado, ya tenía soluciones a menos del 0,3\%
 	del óptimo, así que su dificultad está en demostrar la optimalidad y no en
-	encontrar buenas soluciones. Por eso, en las pruebas de estrés la
-	referencia contra la que se comparan las heurísticas es el modelo Split.
+	encontrar buenas soluciones. Por eso no se esperaba que terminara los
+	escenarios de estrés, lo que se confirmó al ejecutarlos
+	(Sección~\in[sec:comparacion_lineales]).
 \stopitemize
 
 % TODO: Estos detalles quizás merezcan una(s) sección(es) a parte:
@@ -286,14 +298,11 @@ cada lote tenga un {\em picker} asignado y que los lotes de un mismo
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Suite de testing y análisis}, reference=sec:suite_testing]
+\startsection[title={Ejecución de las pruebas}, reference=sec:ejecucion]
 
-Esta sección describe cómo se ejecutan las pruebas y cómo se comparan sus
-resultados. Los casos de prueba quedan descriptos en las secciones en que se
-definen (Secciones~\in[sec:pruebas_funcionales] y~\in[sec:pruebas_estres]),
-y los resultados se presentan en el Capítulo~\in[Capitulo_6].
-
-\startsubsection[title={Ejecución}, reference=sec:ejecucion]
+Esta sección describe cómo se ejecutan las pruebas definidas en las
+Secciones~\in[sec:pruebas_funcionales] y~\in[sec:pruebas_estres]. Los
+resultados se presentan en el Capítulo~\in[Capitulo_6].
 
 % TODO: creo que esto hay que reescribirlo. Parece que solo comparamos modelos
 % lineales.
@@ -337,9 +346,9 @@ ocurre dentro de una misma prueba, que sigue ejecutándose sola en la
 máquina. La suite de estrés del modelo Split se ejecutó con la Etapa~1
 repartida en seis procesos, mientras que el monolítico, que no puede
 descomponerse, y las heurísticas usan un único proceso. Por lo tanto, en
-estrés el Split no se compara con los demás métodos en igualdad de recursos.
-Para controlar este efecto, el Split se comparó con y sin paralelismo, y en
-ambos casos resultó más rápido que el monolítico. En la suite funcional, la
+estrés el Split no se compara con los demás métodos en igualdad de recursos,
+algo que se tiene en cuenta al comparar los tiempos
+(Sección~\in[sec:comparacion_lineales]). En la suite funcional, la
 Etapa~1 se ejecutó en un solo proceso.
 
 {\bf Qué se registra.} Cada corrida de una suite produce un archivo CSV por
@@ -365,115 +374,6 @@ instancia, con semilla 1. En las instancias funcionales capturadas del
 Split (Sección~\in[sec:pruebas_funcionales]) usan sus valores por defecto.
 En estrés, HC usa los valores de estrés del Cuadro~\in[tab:hc_parametros]
 y ACO, sus valores por defecto (Cuadro~\in[tab:aco_parametros]).
-
-\stopsubsection
-
-\startsubsection[title={Comparación}, reference=sec:comparacion]
-
-La comparación tiene dos partes: el modelo monolítico contra el Split, para
-validar que la descomposición alcanza el mismo óptimo y medir cuánto tiempo
-ahorra dividir el modelo, y el Split contra las heurísticas, para medir cuánto se pierde 
-en calidad y cuánto se gana en tiempo, una vez determinado que el modelo Split
-es el mejor de los modelos exactos en relación con el tiempo de resolución.
-
-{\bf Mismos datos.} Solo se comparan instancias en las que los métodos
-resuelven exactamente los mismos datos. En la suite funcional, las
-heurísticas resuelven las instancias capturadas del Split
-(Sección~\in[sec:pruebas_funcionales]). En la de estrés, los cuatro métodos
-construyen cada escenario con la misma llamada al mismo generador y con los
-mismos argumentos, y se verificó que los datos resultantes son idénticos en
-los 19 escenarios.
-
-{\bf Monolítico contra Split.} Los dos modelos lineales corren las mismas
-pruebas funcionales, así que se comparan prueba a prueba. Quedan afuera
-cuatro: la 24b, que solo existe en el Split; la 30a, que no termina en
-ninguno de los dos; la 36c, que rechaza los datos antes de resolver, y la
-37a, que verifica la espera voluntaria y se excluye para mantener la misma
-base que la comparación con las heurísticas. Quedan así 60 pares, 49 con
-solución y 11 infactibles. En cada par se comparan el estado, el valor
-objetivo, con una tolerancia relativa de $10^{-6}$, y la solución: las
-rutas, la asignación y el orden de los lotes de cada {\em picker}. Comparar
-la solución permite distinguir los pares que llegan a la misma solución de
-los que alcanzan el mismo objetivo con soluciones distintas, es decir, con
-óptimos alternativos. En estrés, la referencia termina siendo el modelo Split,
-por su velocidad y su capacidad de resolver instancias más grandes
-(Sección~\in[sec:relevamiento]).
-
-% TODO: acá creo que la "linea temporal" es importante, porque no es que definimos
-% que el modelo split es referencia porque sí, si no que primero ejecutamos los
-% tests de stress de monolítico y split, y vimos que el split resolvía más rápido.
-% Ahí decidimos que el split es la referencia para comparar con heurísticas.
-% No quiero que parezca que estas cosas fueron suposiciones.
-
-{\bf Split contra heurísticas.} Qué se compara en cada instancia depende
-del resultado del Split, como resume el Cuadro~\in[tab:comparabilidad].
-
-\startplacetable[reference=tab:comparabilidad, location=here, title={Qué se compara entre el modelo Split y las heurísticas, según el resultado del Split.}]
-	\bTABLE[split=yes, align=middle, frame=on, width=fit]
-	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
-	\setupTABLE[column][1][width=3.8cm, align=flushleft]
-	\setupTABLE[column][4][width=6.4cm, align=flushleft]
-	\bTR \bTH Resultado del Split \eTH \bTH Estado \eTH \bTH Objetivo \eTH \bTH Motivo \eTH \eTR
-	\bTR \bTD Óptimo, sin espera \eTD \bTD Sí \eTD \bTD Sí \eTD \bTD Mismos datos y mismo objetivo. \eTD \eTR
-	\bTR \bTD Óptimo, con espera voluntaria \eTD \bTD Sí \eTD \bTD No \eTD \bTD El Split obtiene un objetivo menor por una propiedad de la formulación, no por un plan mejor. \eTD \eTR
-	\bTR \bTD Infactible \eTD \bTD Sí \eTD \bTD No \eTD \bTD Solo se verifica que la heurística tampoco encuentre solución. \eTD \eTR
-	\bTR \bTD Sin terminar \eTD \bTD No \eTD \bTD No \eTD \bTD No hay referencia; la instancia sirve para medir la escala y para el experimento a igual tiempo. \eTD \eTR
-	\eTABLE
-\stopplacetable
-
-Para detectar la espera voluntaria se reconstruye la agenda de cada
-{\em picker} en la solución del Split: un lote espera si figura como
-terminado después del instante en que podría haber terminado, es decir, la
-finalización del lote anterior del mismo {\em picker} (o cero, si es el
-primero) más su tiempo de ejecución. La espera solo se tiene en cuenta si el
-adelanto pesa en el objetivo ($W^{\text{pen}} W^{e} > 0$). Con esta regla,
-de las 70 instancias funcionales, 45 se comparan en estado y objetivo, 22
-solo en estado (12 infactibles y 10 con espera voluntaria) y 3 no se
-comparan (30a, 36c y 37a). En estrés no hay espera que descartar
-(Sección~\in[sec:escenarios_estres]), así que los escenarios que el Split
-resuelve dentro del tope se comparan en estado y objetivo, y el resto no
-tiene referencia.
-
-{\bf Métricas.} Sobre esa base se calculan las siguientes medidas:
-\startitemize
-	\item {\bf Coincidencia de estado}: que el método encuentre solución
-	donde el Split la encuentra y no la encuentre donde el Split prueba que
-	no existe.
-	\item {\bf Brecha}: $100 \cdot (z_{\text{heur}} - z_{\text{Split}}) / z_{\text{Split}}$,
-	solo en las instancias comparables en objetivo. Como la referencia es un
-	óptimo probado, una brecha negativa indicaría un error.
-	\item {\bf Cociente de tiempos}: el tiempo total del Split dividido por el
-	de la heurística. Si el Split no terminó, el cociente calculado con el
-	tope es una cota inferior.
-	\item {\bf Nivel de servicio}: la proporción de pedidos que llegan a tiempo.
-	\item {\bf Memoria pico}: la del Split no incluye la de los procesos de la
-	Etapa~1 ni la de ZIMPL.
-	\item {\bf Iteración de la mejor solución}, en las heurísticas.
-\stopitemize
-Para resumir los tiempos y las brechas se usan medianas además de medias,
-porque sus distribuciones son muy asimétricas: unas pocas instancias
-concentran los valores extremos, y en la suite funcional los tiempos dependen
-sobre todo de la compilación de los modelos.
-
-{\bf A igual tiempo.} En las comparaciones anteriores, cada método corre
-hasta su propio criterio de parada: el Split, hasta probar el óptimo o
-alcanzar el tope, y las heurísticas, hasta detenerse. Como complemento, se
-realizó el experimento habitual para comparar una metaheurística con un
-resolvedor exacto, que consiste en darles el mismo tiempo. En cada escenario
-de estrés, cada modelo lineal recibe como límite de tiempo de SCIP el tiempo
-total que tardó la heurística en ese escenario, y se registra la mejor
-solución que tiene al vencer el límite. En el Split, la Etapa~1 reparte el
-tiempo en partes iguales entre los lotes que faltan rutear y la Etapa~2 usa
-lo que queda; solo hay una solución completa si todos los lotes tienen ruta y
-la Etapa~2 encuentra una solución a tiempo. El monolítico hace una única
-resolución con todo el tiempo. Como SCIP controla su límite entre
-operaciones, y el límite no cubre la escritura de los datos ni la
-compilación, el tiempo transcurrido puede superar el presupuesto. En el caso
-de ACO, además, los presupuestos se tomaron de una corrida anterior a la
-consolidada, por lo que no coinciden exactamente con los tiempos que se
-informan en el Capítulo~\in[Capitulo_6].
-
-\stopsubsection
 
 \stopsection
 
@@ -591,6 +491,105 @@ por etapas cumplen todas las restricciones del modelo completo.
 % el codigo no está en el repo porque no sirvió mucho, solo sirvió el paralelismo
 % (que ahora que lo menciono, no se si lo justifique bien y si dije a partir de 
 % qué tamaño es conveniente)
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Comparación}, reference=sec:comparacion]
+
+La comparación tiene dos partes. La primera enfrenta al modelo monolítico
+con el Split, para validar que la descomposición alcanza el mismo óptimo y
+medir cuánto tiempo ahorra dividir el modelo. La segunda compara el Split con
+las heurísticas, para medir cuánto se pierde en calidad y cuánto se gana en
+tiempo. Esto porque el modelo Split fue el único de los dos modelos lineales que
+terminó escenarios de estrés dentro del tope (Sección~\in[sec:comparacion_lineales]).
+
+{\bf Mismos datos.} Solo se comparan instancias en las que los métodos
+resuelven exactamente los mismos datos. En la suite funcional, las
+heurísticas resuelven las instancias capturadas del Split
+(Sección~\in[sec:pruebas_funcionales]). En la de estrés, los cuatro métodos
+construyen cada escenario con la misma llamada al mismo generador y con los
+mismos argumentos, y se verificó que los datos resultantes son idénticos en
+los 19 escenarios.
+
+{\bf Monolítico contra Split.} Los dos modelos lineales corren las mismas
+pruebas funcionales, así que se comparan prueba a prueba. Quedan afuera
+cuatro: la 24b, que solo existe en el Split; la 30a, que no termina en
+ninguno de los dos (Sección~\in[sec:comparacion_lineales]); la 36c, que
+rechaza los datos antes de resolver, y la 37a, que verifica la espera
+voluntaria y se excluye para mantener la misma base que la comparación con
+las heurísticas. Quedan así 60 pares. En cada par se comparan el estado, el valor
+objetivo, con una tolerancia relativa de $10^{-6}$, y la solución (las
+rutas, la asignación y el orden de los lotes de cada {\em picker}). Comparar
+la solución permite distinguir los pares que llegan a la misma solución de
+los que alcanzan el mismo objetivo con soluciones distintas, es decir, con
+óptimos alternativos. En estrés, los dos modelos resuelven los mismos 19
+escenarios, y se compara cuáles terminan dentro del tope y en cuánto tiempo.
+
+{\bf Split contra heurísticas.} Qué se compara en cada instancia depende
+del resultado del Split, como resume el Cuadro~\in[tab:comparabilidad].
+
+\startplacetable[reference=tab:comparabilidad, location=here, title={Qué se compara entre el modelo Split y las heurísticas, según el resultado del Split.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][1][width=3.8cm, align=flushleft]
+	\setupTABLE[column][4][width=6.4cm, align=flushleft]
+	\bTR \bTH Resultado del Split \eTH \bTH Estado \eTH \bTH Objetivo \eTH \bTH Motivo \eTH \eTR
+	\bTR \bTD Óptimo, sin espera \eTD \bTD Sí \eTD \bTD Sí \eTD \bTD Mismos datos y mismo objetivo. \eTD \eTR
+	\bTR \bTD Óptimo, con espera voluntaria \eTD \bTD Sí \eTD \bTD No \eTD \bTD El Split obtiene un objetivo menor por una propiedad de la formulación, no por un plan mejor. \eTD \eTR
+	\bTR \bTD Infactible \eTD \bTD Sí \eTD \bTD No \eTD \bTD Solo se verifica que la heurística tampoco encuentre solución. \eTD \eTR
+	\bTR \bTD Sin terminar \eTD \bTD No \eTD \bTD No \eTD \bTD No hay referencia; la instancia sirve para medir la escala y para el experimento a igual tiempo. \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+Para detectar la espera voluntaria se reconstruye la agenda de cada
+{\em picker} en la solución del Split: un lote espera si figura como
+terminado después del instante en que podría haber terminado, es decir, la
+finalización del lote anterior del mismo {\em picker} (o cero, si es el
+primero) más su tiempo de ejecución. La espera solo se tiene en cuenta si el
+adelanto pesa en el objetivo ($W^{\text{pen}} W^{e} > 0$). De las 70
+instancias funcionales, 3 no se comparan (30a, 36c y 37a); cómo se reparten
+las demás según el cuadro depende del resultado del Split
+(Sección~\in[sec:comparacion_split_metaheuristicas]). En estrés no hay espera que descartar
+(Sección~\in[sec:escenarios_estres]), así que los escenarios que el Split
+resuelve dentro del tope se comparan en estado y objetivo, y el resto no
+tiene referencia.
+
+{\bf Métricas.} Sobre esa base se calculan las siguientes medidas:
+\startitemize
+	\item {\bf Coincidencia de estado}: que el método encuentre solución
+	donde el Split la encuentra y no la encuentre donde el Split prueba que
+	no existe.
+	\item {\bf Brecha}: $100 \cdot (z_{\text{heur}} - z_{\text{Split}}) / z_{\text{Split}}$,
+	solo en las instancias comparables en objetivo. Como la referencia es un
+	óptimo probado, una brecha negativa indicaría un error.
+	\item {\bf Cociente de tiempos}: el tiempo total del Split dividido por el
+	de la heurística. Si el Split no terminó, el cociente calculado con el
+	tope es una cota inferior.
+	\item {\bf Nivel de servicio}: la proporción de pedidos que llegan a tiempo.
+	\item {\bf Memoria pico}: la del Split no incluye la de los procesos de la
+	Etapa~1 ni la de ZIMPL.
+	\item {\bf Iteración de la mejor solución}, en las heurísticas.
+\stopitemize
+Para resumir los tiempos y las brechas se usan medianas además de medias,
+porque sus distribuciones son muy asimétricas. Unas pocas instancias
+concentran los valores extremos, y en la suite funcional los tiempos dependen
+sobre todo de la compilación de los modelos.
+
+{\bf A igual tiempo.} En las comparaciones anteriores, cada método corre
+hasta su propio criterio de parada: el Split, hasta probar el óptimo o
+alcanzar el tope, y las heurísticas, hasta detenerse. Como complemento, se
+realizó el experimento habitual para comparar una metaheurística con un
+resolvedor exacto, que consiste en darles el mismo tiempo. En cada escenario
+de estrés, cada modelo lineal recibe como límite de tiempo de SCIP el tiempo
+total que tardó la heurística en ese escenario, y se registra la mejor
+solución que tiene al vencer el límite. En el Split, la Etapa~1 reparte el
+tiempo en partes iguales entre los lotes que faltan rutear y la Etapa~2 usa
+lo que queda; solo hay una solución completa si todos los lotes tienen ruta y
+la Etapa~2 encuentra una solución a tiempo. El monolítico hace una única
+resolución con todo el tiempo. Como SCIP controla su límite entre
+operaciones, y el límite no cubre la escritura de los datos ni la
+compilación, el tiempo transcurrido puede superar el presupuesto.
 
 \stopsection
 \stopchapter
