@@ -107,8 +107,9 @@ intercambiables entre sí, lo que multiplica las soluciones equivalentes que
 el resolvedor debe descartar (Sección~\in[sec:caracteristicas_formulacion]). Al
 verificar una solución de esta instancia (Sección~\in[sec:validacion]), SCIP
 no terminó en 600 segundos con los lotes vacíos y terminó en 0,13 segundos
-sin ellos. Este caso es una prueba de una de las características del modelo, mencionadas
-en el capítulo~\in[sec:caracteristicas_formulacion].
+sin ellos. Este caso ilustra el efecto de los lotes vacíos descripto en la
+Sección~\in[sec:caracteristicas_formulacion], y muestra por qué es conveniente
+eliminarlos antes de resolver.
 
 El Anexo~\in[Anexo_Pruebas] lista los casos y qué verifica cada uno.
 
@@ -204,7 +205,7 @@ aspecto que ponen a prueba. Los escenarios 04 a 19 usan el perfil realista
 surgido del relevamiento, cuyos parámetros resume el
 Cuadro~\in[tab:perfil_realista], y cada grupo modifica un único aspecto: el
 tamaño del almacén (04 a 08), su forma (09), la agenda de los {\em pickers}
-(10, 11 y 15) y el tamaño del almacén (12 a 14 y 16 a 19). La cadena de
+(10, 11 y 15) y el tamaño de la grilla (12 a 14 y 16 a 19). La cadena de
 frío solo está activa en el escenario 11, con un límite de 280: con las rutas
 de esa instancia, ningún {\em picker} lento puede ejecutar un lote dentro de
 ese tiempo.
@@ -260,9 +261,9 @@ cada lote tenga un {\em picker} asignado y que los lotes de un mismo
 	\bTR \bTD[nc=6, style=bold, align=flushleft] Tamaño del almacén \eTD \eTR
 	\bTR \bTD 04 \eTD \bTD Perfil realista en un almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
 	\bTR \bTD 05 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
-	\bTR \bTD 06 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \eTR
-	\bTR \bTD 07 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \eTR
-	\bTR \bTD 08 \eTD \bTD Igual que 04 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD Igual que 04, en un almacén de 14×14 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD Igual que 04, en un almacén de 15×15 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD Igual que 04, en un almacén de 16×16 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \eTR
 	\bTR \bTD[nc=6, style=bold, align=flushleft] Forma del almacén \eTD \eTR
 	\bTR \bTD 09 \eTD \bTD Almacén alargado: efecto de la forma del almacén \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \eTR
 	\bTR \bTD[nc=6, style=bold, align=flushleft] Agenda de los {\em pickers} \eTD \eTR
@@ -370,8 +371,8 @@ y ACO, sus valores por defecto (Cuadro~\in[tab:aco_parametros]).
 \startsubsection[title={Comparación}, reference=sec:comparacion]
 
 La comparación tiene dos partes: el modelo monolítico contra el Split, para
-validar que la descomposición alcanza el mismo óptimo y probar que divir el modelo
-generó resultados, y el Split contra las heurísticas, para medir cuánto se pierde 
+validar que la descomposición alcanza el mismo óptimo y medir cuánto tiempo
+ahorra dividir el modelo, y el Split contra las heurísticas, para medir cuánto se pierde 
 en calidad y cuánto se gana en tiempo, una vez determinado que el modelo Split
 es el mejor de los modelos exactos en relación con el tiempo de resolución.
 
