@@ -12,7 +12,7 @@ mismo espacio de soluciones, aunque sin garantía de optimalidad.
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:hc]
 
-La primera heurística evaluada fue \ac{hc}. Para presentar su desarrollo de forma completa, primero
+La primera heurística que se presenta es \ac{hc}. Para presentar su desarrollo de forma completa, primero
 se describe cómo se representa una solución (Sección~\in[sec:hc_representacion]) y cómo se la evalúa
 (Sección~\in[sec:hc_evaluacion]). Luego se explica el algoritmo en tres pasos: la verificación previa
 de factibilidad (Sección~\in[sec:hc_verificacion]), la construcción de la solución inicial
@@ -356,9 +356,7 @@ después por la distancia a la locación requerida más cercana, con un tope de
 2.000.000 de expansiones. Si se alcanza el tope sin encontrar una ruta, el
 lote queda sin ruta y la instancia se informa como infactible.
 
-% TODO: pensar si dejar este párrafo o no
-Esta combinación de construcciones surgió de medir versiones más simples.
-Con solo el vecino más cercano mejorado con 2-opt, en el escenario de estrés
+Una única construcción no alcanza. Con solo el vecino más cercano mejorado con 2-opt, en el escenario de estrés
 con grilla de 7×7 del perfil realista las rutas sumaban 490 unidades de
 tiempo, contra 425 de las rutas óptimas de la Etapa~1 del modelo Split. En
 el escenario con grilla de 14×14, un lote no conseguía ruta y la instancia
@@ -775,14 +773,14 @@ Este conjunto limita el depósito de feromona de asignación, ya que una hormiga
 refuerza la asignación de los lotes que cumplen la restricción de la cadena de frío.
 
 La cadena de frío se trata como restricción blanda por un motivo propio de
-\ac{aco}, además de los motivos ya expuestos para \ac{hc}. En una versión anterior de este trabajo,
-se la había tratado como restricción dura, y una solución que la violaba se descartaba
-completa. Sin embargo, se observó que, cuando un lote tenía un límite ajustado,
-si ninguna hormiga de la iteración superaba la validación de cadena de frío para ese lote, entonces la feromona no se actualizaba para
-{\em ningún} lote (aunque haya sólo un lote con cadena de frío ajustada). En consecuencia, la búsqueda quedaba congelada en su estado inicial, y la
-instancia podía informarse como infactible aunque tuviera solución. Es por este motivo que se decidión transformarla
-en una penalización (en lugar de la restricción dura). De esta forma, las hormigas que violan la cadena de frío siguen aportando
-información sobre los demás lotes.
+\ac{aco}, además de los motivos ya expuestos para \ac{hc}. Si se tratara como
+restricción dura, una solución que la violara se descartaría completa.
+Entonces, cuando un lote tiene un límite ajustado y ninguna hormiga de la
+iteración lo cumple, la feromona no se actualizaría para {\em ningún} lote,
+aunque los demás cumplan. La búsqueda quedaría congelada en su estado
+inicial, y la instancia podría informarse como infactible aunque tuviera
+solución. Con la penalización, las hormigas que violan la cadena de frío
+siguen aportando información sobre los demás lotes.
 
 Sin embargo, depositar feromona para toda la solución de una hormiga que
 viola la cadena de frío refuerza justamente la ruta y la asignación que
@@ -824,14 +822,12 @@ cantidad de intentos. Sin este chequeo, todas las hormigas de todas las
 iteraciones agotarían sus intentos de construcción sobre un lote que nunca
 tuvo solución. Al igual que los demás, es un chequeo exacto.
 
-En una versión anterior del trabajo, la cota de la cadena de frío se verificaba con una
-{\em estimación} del tiempo de ruta de cada lote, obtenida con el vecino más
-cercano. Como esa estimación podía ser peor que la ruta que construye una
-hormiga, una instancia factible podía declararse infactible antes de empezar
-la búsqueda. Por eso se reemplazó por la cota exacta con tiempo de ruta nulo,
-y la existencia de una combinación de rutas y {\em pickers} que cumpla la
-cadena de frío en todos los lotes queda a cargo de la búsqueda, como en
-\ac{hc}.
+La cota de la cadena de frío usa un tiempo de ruta nulo, y no una
+estimación de la ruta, porque una estimación más larga que la ruta que
+construye una hormiga podría declarar infactible una instancia factible antes
+de empezar la búsqueda. La existencia de una combinación de rutas y
+{\em pickers} que cumpla la cadena de frío en todos los lotes queda a cargo de
+la búsqueda, como en \ac{hc}.
 
 \stopsubsection
 
@@ -902,24 +898,13 @@ no se puede realizar, sobre el invertido; si ninguna funciona, la búsqueda
 vez por lote y no una vez por hormiga. Si tampoco se encuentra una ruta de
 respaldo, la hormiga se descarta.
 
-Este esquema reemplazó a una primera versión en la que la hormiga avanzaba
-arco por arco por el grafo del almacén. En los escenarios de estrés del
-perfil realista, con lotes de entre 23 y 26 locaciones requeridas, ese
-recorrido aleatorio se trababa casi siempre (193 de 200 construcciones en un
-lote de la grilla de 14×14), y aun con 1000 intentos por lote una sola
-ejecución tardaba 1822~s. Con la construcción por locaciones requeridas, un
-intento tarda entre 2 y 15~ms y tiene éxito entre el 50~\% y el 97~\% de las
-veces en la mayoría de los lotes.
-
 {\bf Búsqueda local sobre cada ruta.} Cada ruta construida por una hormiga se
 mejora alternando 2-opt sobre las locaciones de la ruta
 (Ecuación~\in[eq:2opt]) y el re-ruteo de tramos, hasta que deja de
 acortarse, igual que las construcciones aleatorias de \ac{hc}. Chen et al. no
 aplican búsqueda local, pero combinar las soluciones de las hormigas con una
-búsqueda local es una práctica habitual en \ac{aco} \cite[dorigo2004aco]. En
-el escenario de estrés con grilla de 7×7 del perfil realista, sin esta
-mejora las rutas de \ac{aco} sumaban 451 unidades de tiempo, contra 425 de
-las rutas óptimas de la Etapa~1 del modelo Split.
+búsqueda local es una práctica habitual en \ac{aco} \cite[dorigo2004aco]. Su
+aporte al resultado se mide en la Sección~\in[sec:aco_parametros].
 
 \stopsubsection
 
@@ -1087,12 +1072,11 @@ objetivo completo \cite[chen2013antcolony]. No hace falta filtrar por
 cadena de frío, porque una ruta más corta solo puede reducir el tiempo de
 ejecución del lote.
 
-Este esquema reemplazó a uno de tipo {\em Ant System}, en el que cada hormiga
-depositaba $Q / f'(s^k)$ sobre su ruta, con $Q = 100$, un mínimo de 0,01 y
-un valor inicial de 1. Con valores de $f'$ del orden de $1{,}5 \cdot 10^5$,
-cada depósito era de alrededor de $7 \cdot 10^{-4}$, por debajo del mínimo,
-así que la feromona de ruta caía al mínimo en todos los pares y no
-transmitía información.
+Un depósito de tipo {\em Ant System}, proporcional a $Q / f'(s^k)$, no
+serviría para la feromona de ruta. Con $Q = 100$ y valores de $f'$ del orden
+de $1{,}5 \cdot 10^5$, cada depósito sería de alrededor de
+$7 \cdot 10^{-4}$, menor que un mínimo de 0,01, así que la feromona de ruta
+caería al mínimo en todos los pares y no transmitiría información.
 
 {\bf Feromona de asignación: Ant System elitista.} La feromona de
 asignación se evapora con
