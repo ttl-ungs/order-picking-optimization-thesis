@@ -5,7 +5,8 @@ tesina. Ambos parten del modelo de referencia de Coruzzolo et al.
 \cite[coruzzolo2023orderpicking] y lo extienden con velocidad heterogénea
 entre operarios y requisitos de cadena de frío. Si todos los operarios tienen
 la misma velocidad y el límite de la cadena de frío es suficientemente
-grande, los dos modelos se reducen al problema original. Primero se define la notación
+grande, los dos modelos se reducen al modelo de referencia con los lotes
+fijos. Primero se define la notación
 común a ambos (Sección~\in[sec:notacion]). El modelo monolítico
 (Sección~\in[sec:modelo_monolitico]) resuelve ruta, asignación y
 secuenciación en un único modelo. El modelo Split
@@ -15,6 +16,18 @@ Sección~\in[sec:espera_voluntaria] describe una propiedad común a ambas
 formulaciones, la Sección~\in[sec:diferencias_modelos] resume las diferencias
 entre ellas y, por último, la Sección~\in[sec:caracteristicas_formulacion] reúne
 las características particulares que comparten.
+
+Además de la velocidad y la cadena de frío, la formulación difiere del modelo
+de referencia en tres aspectos. Mientras que en esta tesina los lotes son un
+dato de entrada, Coruzzolo et al. también forman los lotes. La secuencia de cada
+operario se modela con variables de precedencia entre pares de lotes, en
+lugar de asignar cada lote a una posición numerada de la agenda del
+operario. Y el flujo que elimina los subtours es una variante de la
+formulación de Gavish y Graves que cuenta las ubicaciones requeridas del
+lote, en lugar de acotarse por la capacidad del carro
+(Sección~\in[sec:modelo_monolitico]). La función objetivo, en cambio,
+conserva la misma forma: los tiempos de finalización más una suma ponderada
+del adelanto y la demora.
 
 Los dos modelos resuelven el mismo problema: dado un conjunto de lotes de
 pedidos, un grafo de ubicaciones del almacén y un conjunto de {\em pickers}

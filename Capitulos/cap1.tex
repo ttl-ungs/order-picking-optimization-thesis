@@ -110,8 +110,9 @@ anterior:
 	\item {\bf Modelo monolítico.} Un modelo de \ac{mip} que, tomando como
 	guía el de Coruzzolo et al. \cite[coruzzolo2023orderpicking], decide
 	ruta, asignación y secuencia en un único modelo, e incorpora la
-	velocidad de los operarios y la cadena de frío.
-	% TODO: completar qué cambia respecto del modelo de referencia (leer el paper).
+	velocidad de los operarios y la cadena de frío. A diferencia del modelo
+	de referencia, que también forma los lotes, en este trabajo los lotes son un dato de
+	entrada.
 	\item {\bf Modelo Split.} Como el monolítico crece rápidamente con la
 	instancia, se lo descompone en dos modelos que se resuelven en secuencia:
 	el primero calcula la ruta más corta de cada lote y el segundo decide la
