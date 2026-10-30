@@ -1,6 +1,4 @@
-\startchapter[title={Conclusión y Discusión}, reference=Capitulo_7]
-
-% TODO: completar
+\startchapter[title={Discusión y conclusiones}, reference=Capitulo_7]
 
 Este capítulo discute los resultados frente a la literatura y a las
 decisiones de modelado (Sección~\in[sec:discusion]), presenta las
@@ -42,16 +40,15 @@ lado, es la propiedad que hace exacta la descomposición
 los modelos lineales del de las metaheurísticas, que solo generan
 programaciones sin tiempo ocioso. Como anticipa la literatura
 \cite[kanet2000inserted], restringirse a ese subconjunto puede excluir el
-óptimo, y es lo que ocurre en las 10 instancias funcionales que solo pueden
+óptimo, y es lo que ocurre en las instancias funcionales que solo pueden
 compararse en estado. En las pruebas de estrés, la elección del peso de la
 finalización evitó que este efecto distorsionara la comparación.
 
 Por último, las metaheurísticas construyen las rutas sobre las ubicaciones
 requeridas, como proponen Chen et al. \cite[chen2013antcolony], con la
-adaptación necesaria para producir caminos simples. A diferencia de ese
-trabajo, esta tesina no modela la congestión entre operarios, de modo que
-sus resultados no permiten evaluar el efecto de la interferencia entre
-{\em pickers}.
+adaptación necesaria para producir caminos simples. Chen et al. modelan
+además la congestión entre operarios, que en esta tesina queda fuera del alcance
+(Sección~\in[sec:limitaciones]).
 
 \stopsection
 
@@ -95,9 +92,16 @@ cumplieron de la siguiente manera:
 	trabajo futuro de la Sección~\in[sec:trabajo_futuro].
 \stopitemize
 
-En cuanto al objetivo general, los resultados caracterizan el compromiso
-entre calidad de la solución y tiempo de cómputo de cada enfoque, y las
-condiciones en las que conviene cada uno (Sección~\in[sec:sintesis_resultados]).
+En cuanto al objetivo general, ninguno de los tres métodos domina a los
+otros en calidad y en tiempo a la vez (Sección~\in[sec:sintesis_resultados]),
+de modo que la elección depende del tamaño de la instancia y de lo que
+importe en cada caso. Hasta 6 lotes en grillas de hasta 15×15, el Split
+prueba el óptimo en minutos y sirve como referencia. Por encima de ese
+tamaño, o cuando el tiempo de respuesta es determinante, las heurísticas son
+la alternativa: ACO cuando importa la calidad de la solución, y HC cuando
+importa responder en segundos, por ejemplo para volver a planificar durante
+la operación.
+
 La robustez, en cambio, se evaluó solo en parte. En HC, la diferencia entre
 la mejor y la peor de cinco semillas fue menor al 0,5~\% en todos los
 escenarios de estrés, aunque con una de ellas dos escenarios terminaron sin
@@ -137,28 +141,21 @@ instancia (Sección~\in[sec:aco_limitaciones]).
 %----------------------------------------------------------------------------------------
 \startsection[title={Trabajo futuro}, reference=sec:trabajo_futuro]
 
-A partir de estos resultados y limitaciones, se proponen las siguientes
-líneas de trabajo:
+A partir de estos resultados y de las limitaciones anteriores, se proponen
+las siguientes líneas de trabajo:
 \startitemize
-	\item Medir la variabilidad entre semillas de las dos heurísticas con su
-	versión final, para completar la evaluación de su robustez.
-	\item Corregir la cota de $M^{\text{seq}}$ para que sea válida también con
-	espera voluntaria (Anexo~\in[Anexo_Modelos]), y preprocesar los lotes para
-	descartar los vacíos antes de resolver.
-	\item Identificar qué encarece la Etapa~1 en los almacenes grandes, y
-	acelerar la Etapa~2, por ejemplo con restricciones que rompan la simetría
-	entre {\em pickers} de una misma banda de velocidad, que son
-	intercambiables entre sí.
+	\item Medir la variabilidad entre semillas de las dos heurísticas.
+	\item Corregir la cota de $M^{\text{seq}}$ (Anexo~\in[Anexo_Modelos]) y
+	descartar los lotes vacíos antes de resolver.
+	\item Acelerar el Split: identificar qué encarece la Etapa~1 en los
+	almacenes grandes y, en la Etapa~2, romper la simetría entre los
+	{\em pickers} de una misma banda de velocidad, que son intercambiables.
 	\item Incorporar en HC mecanismos para escapar de los óptimos locales,
-	como los reinicios, el recocido simulado o la búsqueda tabú
+	como reinicios, recocido simulado o búsqueda tabú
 	(Sección~\in[sec:marco_hc]).
-	\item Extender las heurísticas para que inserten tiempo ocioso, de modo que
-	puedan compararse en objetivo también en las instancias en las que el
-	modelo lineal lo aprovecha.
-	\item Permitir rutas que repitan ubicaciones, para representar almacenes
-	con pasillos sin salida.
-	\item Incorporar el loteo como decisión, como en el modelo de referencia, y
-	la congestión entre operarios.
+	\item Permitir que las heurísticas inserten tiempo ocioso.
+	\item Permitir rutas que repitan ubicaciones.
+	\item Incorporar el loteo como decisión y la congestión entre operarios.
 	\item Evaluar los métodos con datos de una operación real.
 \stopitemize
 
