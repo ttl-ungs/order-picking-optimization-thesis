@@ -14,7 +14,7 @@ varias pruebas, cada una se distingue con una letra.
 	\bTABLEbody
 	\bTR \bTD 01 \eTD \bTD Caso básico: 2 pedidos en 2 lotes con 2 {\em pickers}. Cada {\em picker} ejecuta un lote y cada ruta es la esperada. \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD Dos pasillos, un pedido en cada uno: cada lote sigue la ruta de su pasillo y cada {\em picker} ejecuta un lote. \eTD \eTR
-	\bTR \bTD 03 \eTD \bTD //TODO. \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD La instancia del caso 02, con controles adicionales: cada {\em picker} ejecuta exactamente un lote, la carga está equilibrada y no hay superposición en el tiempo. \eTD \eTR
 	\bTR \bTD 04 \eTD \bTD Dos pasillos con pocas ubicaciones requeridas por pedido: las rutas cubren las ubicaciones requeridas. \eTD \eTR
 	\bTR \bTD 05 \eTD \bTD Dos pasillos en los que los pedidos comparten una ubicación: rutas esperadas, carga equilibrada entre {\em pickers} y sin superposición en el tiempo. \eTD \eTR
 	\bTR \bTD 06a \eTD \bTD Dos rutas posibles que llegan a tiempo: cada lote tiene una ruta y termina en su fecha de entrega. \eTD \eTR
@@ -26,7 +26,7 @@ varias pruebas, cada una se distingue con una letra.
 	\bTR \bTD 11 \eTD \bTD Cuatro pedidos en dos lotes que comparten ubicaciones: rutas esperadas. \eTD \eTR
 	\bTR \bTD 12 \eTD \bTD Sin pruebas activas: verificaba la capacidad del carro dentro del modelo, que ya no la contempla. \eTD \eTR
 	\bTR \bTD 13 \eTD \bTD 12 pedidos en 6 lotes con 3 {\em pickers}, sobre una grilla de 4×4: carga equilibrada y sin superposición en el tiempo. \eTD \eTR
-	\bTR \bTD 14 \eTD \bTD // TODO. \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD La misma instancia y los mismos controles que el caso 13. \eTD \eTR
 	\bTR \bTD 15 \eTD \bTD 3 pedidos con varias ubicaciones cada uno, en un lote con un {\em picker}, sobre una grilla de 4×4: tiene solución. \eTD \eTR
 	\bTR \bTD 16 \eTD \bTD 6 pedidos en 3 lotes con 2 {\em pickers}, sobre una grilla de 4×4 con pasillos transversales; cada pedido visita más de una ubicación: tiene solución. \eTD \eTR
 	\bTR \bTD 17 \eTD \bTD Un lote en un grafo ramificado: la ruta es la esperada, con carga equilibrada y sin superposición. \eTD \eTR
