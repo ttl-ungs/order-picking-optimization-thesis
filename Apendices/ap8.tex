@@ -1,0 +1,176 @@
+\startchapter[title={Calibración de las metaheurísticas}, reference=Anexo_Calibracion]
+
+Este anexo reúne las constantes de implementación de las dos metaheurísticas
+del Capítulo~\in[Capitulo_4] y los estudios con los que se evaluaron sus
+parámetros. El capítulo resume sus conclusiones en las
+Secciones~\in[sec:hc_parametros] y~\in[sec:aco_parametros].
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Hill Climbing}, reference=sec:calib_hc]
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Constantes de la implementación}, reference=sec:calib_hc_constantes]
+
+El Cuadro~\in[tab:hc_constantes] reúne las constantes de \ac{hc}, que no se
+configuran en cada ejecución. Se fijaron a partir de las mediciones
+descritas en el Capítulo~\in[Capitulo_4], y son las mismas en los escenarios
+funcionales y en los de estrés.
+
+\startplacetable[reference=tab:hc_constantes, location=here, title={Constantes de implementación de \ac{hc}.}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][3][width=8cm, align=flushleft]
+\bTR \bTH Constante \eTH \bTH Valor \eTH \bTH Función \eTH \eTR
+\bTR \bTD $\lambda$ \eTD \bTD 1000 \eTD \bTD Peso de la penalización por cadena de frío (Ecuación~\in[eq:hc_costo]). \eTD \eTR
+\bTR \bTD Construcciones aleatorias \eTD \bTD 20 \eTD \bTD Rutas aleatorias generadas por lote en la solución inicial. \eTD \eTR
+\bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD Exponente de la distancia en la regla de elección de las construcciones aleatorias. \eTD \eTR
+\bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción aleatoria antes de abandonarse. \eTD \eTR
+\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el 2-opt del pulido. \eTD \eTR
+\bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de la ruta inicial. \eTD \eTR
+\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
+\bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
+\eTABLE
+\stopplacetable
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Presupuesto de búsqueda}, reference=sec:calib_hc_presupuesto]
+
+Para evaluar si los valores de estrés de $\text{Max}_{\text{it}}$ y
+$\text{Max}_{\text{imp}}$ (Cuadro~\in[tab:hc_parametros]) limitan la
+búsqueda, se repitieron los escenarios de estrés 02 a 19 con 200 y 120, 500
+y 60, y 500 y 120 iteraciones máximas e iteraciones sin mejora,
+respectivamente, con cinco semillas por escenario. El 01 queda afuera porque
+la búsqueda no llega a iterar (Sección~\in[sec:hc_limitaciones]). Con 200 y
+60, la búsqueda se detiene por estancamiento en 82 de las 88 ejecuciones que
+encuentran una solución factible, y solo alcanza el tope de 200 iteraciones
+en el 03, con todas las semillas, y en el 18, con una. Los presupuestos
+mayores nunca empeoran la solución y la mejoran solo en cuatro escenarios:
+el 03, con un único {\em picker} y 40 lotes para secuenciar, mejora hasta un
+0,59~\%; el 15, el 17 y el 18, como máximo un 0,11~\%. Las diferencias de
+tiempo de ejecución son del orden del ruido de la medición, de hasta 2~s en
+uno u otro sentido, porque el tiempo lo domina la construcción de la
+solución inicial y cada iteración es barata. Por lo tanto, con 200 y 60 la
+búsqueda termina, en casi todos los escenarios, porque deja de encontrar
+mejoras y no por el tope de iteraciones.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Variación entre semillas}, reference=sec:calib_hc_semillas]
+
+Al cambiar los sorteos en cinco ejecuciones de cada escenario de estrés, con
+200 iteraciones máximas y 60 sin mejora, la diferencia entre el mejor y el
+peor valor objetivo fue menor que un 0,1~\% en todos los escenarios salvo el
+17 (0,12~\%) y el 03 (0,44~\%), con una mediana de 0,02~\%. Además, con una
+de las cinco semillas, dos escenarios terminaron sin solución factible: en
+el 11, que tiene un límite de cadena de frío efectivo, la búsqueda no
+alcanzó una solución que lo cumpla, y en el 09 no se consiguió construir la
+ruta inicial de un lote. En ambos casos el resultado fue el mismo con los
+cuatro presupuestos de búsqueda (Sección~\in[sec:hc_limitaciones]).
+
+\stopsubsection
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Ant Colony Optimization}, reference=sec:calib_aco]
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Constantes de la implementación}, reference=sec:calib_aco_constantes]
+
+El Cuadro~\in[tab:aco_constantes] reúne las constantes de \ac{aco}, que no
+se configuran en cada ejecución y son las mismas en los escenarios
+funcionales y en los de estrés.
+
+\startplacetable[reference=tab:aco_constantes, location=here, title={Constantes de implementación de \ac{aco}.}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][3][width=8cm, align=flushleft]
+\bTR \bTH Constante \eTH \bTH Valor \eTH \bTH Función \eTH \eTR
+\bTR \bTD $\lambda$ \eTD \bTD 1000 \eTD \bTD Peso de la penalización por cadena de frío (Ecuación~\in[eq:hc_costo]). \eTD \eTR
+\bTR \bTD $\tau_{\max} / \tau_{\min}$ \eTD \bTD 50 \eTD \bTD Relación entre las cotas de la feromona de ruta (Ecuación~\in[eq:aco_cotas]). \eTD \eTR
+\bTR \bTD $\tau^{P}$ inicial / mínima \eTD \bTD 1 / 0,01 \eTD \bTD Valor inicial y mínimo de la feromona de asignación. \eTD \eTR
+\bTR \bTD Peso elitista \eTD \bTD 2 \eTD \bTD Multiplicador del depósito de $s^*$ en la feromona de asignación. \eTD \eTR
+\bTR \bTD Intentos por lote \eTD \bTD 10 \eTD \bTD Construcciones por lote y por hormiga antes de usar la ruta de respaldo. \eTD \eTR
+\bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción antes de abandonarse. \eTD \eTR
+\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el pulido. \eTD \eTR
+\bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de cada récord. \eTD \eTR
+\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
+\bTR \bTD Fracción para hormigas \eTD \bTD 0,5 \eTD \bTD Parte de $\text{Max}_{\text{time}}$ que pueden usar las hormigas; el resto queda para el pulido y la búsqueda local. \eTD \eTR
+\bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
+\eTABLE
+\stopplacetable
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Reparto del tiempo máximo}, reference=sec:calib_aco_tiempo]
+
+En la grilla de 100×100 con $\text{Max}_{\text{time}} = 600$~s, dejar que
+las hormigas usaran todo el tiempo dejaba 11~s de pulido y nada para la
+búsqueda local sobre la asignación, con un objetivo de 1.403.120, contra
+917.328 cuando el posprocesamiento se completaba. Por eso las hormigas
+dejan de construirse al consumir la mitad de $\text{Max}_{\text{time}}$
+(Sección~\in[sec:aco_parametros]).
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Contribución de la búsqueda local}, reference=sec:calib_aco_ablacion]
+
+Para medir cuánto del resultado aporta la colonia y cuánto las búsquedas
+locales, se ejecutaron tres variantes en los escenarios de estrés 04 (grilla
+de 7×7), 06 (grilla de 14×14) y 15 (6 lotes y 9 {\em pickers}), con tres
+semillas cada uno: solo la colonia, sin ninguna búsqueda local; la colonia
+con la búsqueda local sobre cada ruta, el pulido y la recombinación; y la
+versión completa, que agrega la búsqueda local sobre la asignación. El
+Cuadro~\in[tab:aco_ablacion] muestra la brecha respecto del objetivo del
+modelo Split.
+
+\startplacetable[reference=tab:aco_ablacion, location=here, title={Brecha de \ac{aco} respecto del modelo Split, en porcentaje, por variante (mínimo y máximo sobre tres semillas).}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\bTR \bTH Escenario \eTH \bTH Solo colonia \eTH \bTH + rutas \eTH \bTH Completa \eTH \eTR
+\bTR \bTD 04 (7×7) \eTD \bTD 0,008 -- 0,013 \eTD \bTD 0,007 -- 0,012 \eTD \bTD 0,000 -- 0,002 \eTD \eTR
+\bTR \bTD 06 (14×14) \eTD \bTD 0,025 -- 0,040 \eTD \bTD 0,025 -- 0,047 \eTD \bTD 0,010 -- 0,030 \eTD \eTR
+\bTR \bTD 15 \eTD \bTD 0,026 -- 0,046 \eTD \bTD 0,008 -- 0,019 \eTD \bTD 0,005 -- 0,008 \eTD \eTR
+\eTABLE
+\stopplacetable
+
+La colonia sola ya queda a menos de un 0,05~\% del modelo Split. Las
+búsquedas locales sobre las rutas reducen la brecha sobre todo en el
+escenario 15, donde la suma de los tiempos de ruta baja de entre 685 y 712 a
+entre 672 y 676; en el 04 y el 06 su efecto queda dentro de la variación
+entre semillas. La búsqueda local sobre la asignación reduce la brecha en
+los tres escenarios, y es la que más la reduce en el 04 y el 06. Con la
+versión completa, en el escenario 04 una de las semillas alcanza el objetivo
+del modelo Split. Los tiempos de ejecución de las tres variantes son
+similares, porque los domina la construcción de las hormigas: unos 15~s en
+el 04, entre 109 y 116~s en el 06 y entre 44 y 51~s en el 15.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Sensibilidad a $\alpha$, $\beta$ y $\rho$}, reference=sec:calib_aco_sensibilidad]
+
+Para evaluar los valores de la colonia, se ejecutó el escenario 04 sin
+búsquedas locales, con todas las combinaciones de
+$\alpha \in \{0{,}5;\ 1;\ 2\}$, $\beta \in \{1;\ 2{,}5;\ 4\}$ y
+$\rho \in \{0{,}05;\ 0{,}15;\ 0{,}30\}$, y tres semillas por combinación.
+Los rangos abarcan los valores por defecto y los que reportan Alaya y Solnon
+\cite[alaya2007antcolony] y Lesch et al. \cite[lesch2023optimizing]. La
+brecha media fue de 0,011~\% con los valores por defecto, de 0,009~\% con la
+mejor combinación ($\alpha = 2$, $\beta = 4$, $\rho = 0{,}05$) y de
+0,082~\% con la peor ($\alpha = 0{,}5$, $\beta = 1$, $\rho = 0{,}05$). El
+parámetro con más efecto es $\beta$: con $\beta = 1$, la brecha media fue de
+al menos 0,018~\% en todas las combinaciones, mientras que con $\beta = 4$
+no superó el 0,028~\%. Los valores por defecto quedan, por lo tanto, cerca
+de los mejores, y las diferencias entre ellos son menores que las que aporta
+la búsqueda local.
+
+\stopsubsection
+
+\stopsection
+\stopchapter
