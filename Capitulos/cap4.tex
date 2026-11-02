@@ -507,32 +507,8 @@ encontrada. Si la búsqueda termina sin haber pasado por ninguna solución
 con $v(s) = 0$, la instancia se informa como infactible.
 
 El procedimiento completo se resume en la
-Figura~\in[fig:hc_pseudocodigo].
+Figura~\in[fig:hc_pseudocodigo] del Anexo~\in[Anexo_Pseudocodigos].
 
-\startplacefigure[title={Pseudocódigo de la búsqueda estocástica de primera mejora.}, reference=fig:hc_pseudocodigo]
-\startframedtext[width=broad, frame=on, align=flushleft]
-\startlines
-{\bf Entrada:} instancia, $\text{Max}_{\text{it}}$, $\text{Max}_{\text{imp}}$, $\text{Max}_{\text{time}}$, semilla
-{\bf Salida:} mejor solución factible $s^*$, o infactible
-\blank[small]
-1.\quad {\bf si} la verificación previa falla {\bf entonces devolver} infactible
-2.\quad $s \leftarrow$ solución inicial; {\bf si} no existe {\bf entonces devolver} infactible
-3.\quad $s^* \leftarrow s$ si $v(s) = 0$; si no, $s^* \leftarrow$ ninguna
-4.\quad $k \leftarrow 0$;\; $u \leftarrow 0$
-5.\quad {\bf mientras} $k < \text{Max}_{\text{it}}$ {\bf y} $u < \text{Max}_{\text{imp}}$ {\bf y} tiempo $\leq \text{Max}_{\text{time}}$ {\bf hacer}
-6.\quad\qquad $k \leftarrow k + 1$
-7.\quad\qquad elegir al azar un movimiento $m$ entre los aplicables a $s$
-8.\quad\qquad $s' \leftarrow m(s)$
-9.\quad\qquad {\bf si} $s'$ existe {\bf y} $f'(s') < f'(s)$ {\bf entonces}
-10.\quad\qquad\qquad $s \leftarrow s'$;\; $u \leftarrow 0$
-11.\quad\qquad\qquad {\bf si} $v(s) = 0$ {\bf y} $f(s) < f(s^*)$ {\bf entonces} $s^* \leftarrow s$
-12.\quad\qquad {\bf si no}
-13.\quad\qquad\qquad $u \leftarrow u + 1$
-14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
-15.\quad {\bf devolver} $s^*$, $f(s^*)$
-\stoplines
-\stopframedtext
-\stopplacefigure
 
 \stopsubsection
 
@@ -540,10 +516,10 @@ Figura~\in[fig:hc_pseudocodigo].
 \startsubsection[title={Parámetros}, reference=sec:hc_parametros]
 
 % TODO: Decidir si esta tabla queda acá o pasa al Capítulo~\in[Capitulo_5].
-La Tabla~\in[tab:hc_parametros] resume los parámetros de \ac{hc}. Los cuatro
-primeros se configuran en cada ejecución. El resto son constantes de la
-implementación, fijadas a partir de las mediciones descritas en las secciones
-anteriores.
+El Cuadro~\in[tab:hc_parametros] resume los parámetros de \ac{hc} que se
+configuran en cada ejecución. Las constantes de la implementación, fijadas a
+partir de las mediciones descritas en las secciones anteriores, se detallan
+en la Sección~\in[sec:calib_hc_constantes] del Anexo~\in[Anexo_Calibracion].
 
 \startplacetable[reference=tab:hc_parametros, location=here, title={Parámetros de \ac{hc}. Los valores de estrés son los usados en los escenarios de estrés; la mayoría de los escenarios funcionales usa los valores por defecto.}]
 \bTABLE[split=yes, align=middle, frame=on, width=fit]
@@ -554,14 +530,6 @@ anteriores.
 \bTR \bTD $\text{Max}_{\text{imp}}$ \eTD \bTD 30 \eTD \bTD 60 \eTD \bTD Iteraciones consecutivas sin aceptar un vecino antes de detenerse. \eTD \eTR
 \bTR \bTD $\text{Max}_{\text{time}}$ \eTD \bTD 30~s \eTD \bTD 30~s \eTD \bTD Tiempo de reloj máximo, controlado entre iteraciones. \eTD \eTR
 \bTR \bTD Semilla \eTD \bTD -- \eTD \bTD 1 \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
-\bTR \bTD $\lambda$ \eTD \bTD 1000 \eTD \bTD 1000 \eTD \bTD Peso de la penalización por cadena de frío (Ecuación~\in[eq:hc_costo]). \eTD \eTR
-\bTR \bTD Construcciones aleatorias \eTD \bTD 20 \eTD \bTD 20 \eTD \bTD Rutas aleatorias generadas por lote en la solución inicial. \eTD \eTR
-\bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD 2,5 \eTD \bTD Exponente de la distancia en la regla de elección de las construcciones aleatorias. \eTD \eTR
-\bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción aleatoria antes de abandonarse. \eTD \eTR
-\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el 2-opt del pulido. \eTD \eTR
-\bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de la ruta inicial. \eTD \eTR
-\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
-\bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
 \eTABLE
 \stopplacetable
 
@@ -569,38 +537,20 @@ Los escenarios funcionales usan en su mayoría los valores por defecto. Los
 que ejercitan específicamente la velocidad y la cadena de frío fijan entre
 100 y 200 iteraciones, entre 30 y 60 sin mejora y 10~s de tiempo máximo.
 En los escenarios de estrés el tope de iteraciones es menor que el valor por
-defecto, pero el de iteraciones sin mejora es el doble.
-Para evaluar si estos valores limitan la búsqueda, se repitieron los
-escenarios de estrés 02 a 19 con 200 y 120, 500 y 60, y 500 y 120
-iteraciones máximas e iteraciones sin mejora, respectivamente, con cinco
-semillas por escenario. El 01 queda afuera porque la búsqueda no llega a
-iterar (Sección~\in[sec:hc_limitaciones]). Con 200 y 60, la búsqueda se
-detiene por estancamiento en 82 de las 88 ejecuciones que encuentran una
-solución factible, y solo alcanza el tope de 200 iteraciones en el 03, con
-todas las semillas, y en el 18, con una. Los presupuestos mayores nunca
-empeoran la solución y la mejoran solo en cuatro escenarios: el 03, con un
-único {\em picker} y 40 lotes para secuenciar, mejora hasta un 0,59~\%; el
-15, el 17 y el 18, como máximo un 0,11~\%. Las diferencias de tiempo de
-ejecución son del orden del ruido de la medición, de hasta 2~s en uno u
-otro sentido, porque el tiempo lo domina la construcción de la solución
-inicial y cada iteración es barata. Por lo
-tanto, con 200 y 60 la búsqueda termina, en casi todos los escenarios,
-porque deja de encontrar mejoras y no por el tope de iteraciones.
+defecto, pero el de iteraciones sin mejora es el doble. Al repetir los
+escenarios de estrés con presupuestos mayores, la búsqueda terminó casi
+siempre porque dejaba de encontrar mejoras y no por el tope de iteraciones,
+y la solución mejoró solo en cuatro escenarios, como máximo un 0,59~\%
+(Sección~\in[sec:calib_hc_presupuesto]).
 
 La semilla determina todos los sorteos de la construcción y de la búsqueda,
 así que una ejecución es reproducible. Esto significa que la misma instancia, los
 mismos parámetros y la misma semilla producen siempre la misma solución, salvo que
 la búsqueda se detenga por tiempo, ya que en ese caso la cantidad de
-iteraciones depende de la velocidad de la máquina. Al cambiar los
-sorteos en cinco ejecuciones de cada escenario de estrés, con 200
-iteraciones máximas y 60 sin mejora, la diferencia entre el mejor y el peor
-valor objetivo fue menor que un 0,1~\% en todos los escenarios salvo el 17
-(0,12~\%) y el 03 (0,44~\%), con una mediana de 0,02~\%. Además, con una de
-las cinco semillas, dos escenarios terminaron sin solución factible: en el
-11, que tiene un límite de cadena de frío efectivo, la búsqueda no alcanzó
-una solución que lo cumpla, y en el 09 no se consiguió construir la ruta
-inicial de un lote. En ambos casos el resultado fue el mismo con los cuatro
-presupuestos de búsqueda (Sección~\in[sec:hc_limitaciones]).
+iteraciones depende de la velocidad de la máquina. Con cinco semillas
+distintas, la diferencia entre el mejor y el peor valor objetivo tuvo una
+mediana de 0,02~\% y un máximo de 0,44~\%, y con una de ellas dos escenarios
+terminaron sin solución factible (Sección~\in[sec:calib_hc_semillas]).
 
 \stopsubsection
 
@@ -647,7 +597,7 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 	{\em best-first} de respaldo alcanza su tope sin encontrar la ruta de un
 	lote. En los escenarios de estrés ocurrieron los dos casos, cada uno con
 	una de cinco semillas: el primero en el 11 y el segundo en el 09
-	(Sección~\in[sec:hc_parametros]).
+	(Sección~\in[sec:calib_hc_semillas]).
 	\item {\bf El tiempo máximo no es estricto.} Se controla entre
 	iteraciones e incluye la construcción inicial, que no se interrumpe. En
 	el escenario de estrés más grande, con una grilla de 100×100, la
@@ -904,7 +854,7 @@ mejora alternando 2-opt sobre las locaciones de la ruta
 acortarse, igual que las construcciones aleatorias de \ac{hc}. Chen et al. no
 aplican búsqueda local, pero combinar las soluciones de las hormigas con una
 búsqueda local es una práctica habitual en \ac{aco} \cite[dorigo2004aco]. Su
-aporte al resultado se mide en la Sección~\in[sec:aco_parametros].
+aporte al resultado se mide en la Sección~\in[sec:calib_aco_ablacion].
 
 \stopsubsection
 
@@ -1097,32 +1047,9 @@ Corresponde al {\em Elitist Ant System} de la Sección~\in[sec:marco_aco],
 con $e = 2$. Los valores iniciales son $\tau^{P}_{bp} = 1$ y no hay cota
 superior.
 
-El procedimiento completo se resume en la Figura~\in[fig:aco_pseudocodigo].
+El procedimiento completo se resume en la Figura~\in[fig:aco_pseudocodigo] del
+Anexo~\in[Anexo_Pseudocodigos].
 
-\startplacefigure[title={Pseudocódigo de \ac{aco}.}, reference=fig:aco_pseudocodigo]
-\startframedtext[width=broad, frame=on, align=flushleft]
-\startlines
-{\bf Entrada:} instancia, $m$, $\text{Max}_{\text{it}}$, $\text{Max}_{\text{time}}$, $\alpha$, $\beta$, $\rho$, $Q$, semilla
-{\bf Salida:} mejor solución factible $s^*$, o infactible
-\blank[small]
-1.\quad {\bf si} la verificación previa falla {\bf entonces devolver} infactible
-2.\quad inicializar $\tau_{ij} \leftarrow \tau_{\max}$, $\tau^{P}_{bp} \leftarrow 1$;\; $s^* \leftarrow$ ninguna
-3.\quad {\bf para} $t = 1, \dots, \text{Max}_{\text{it}}$ {\bf hacer}
-4.\quad\qquad {\bf para} $k = 1, \dots, m$ {\bf hacer}
-5.\quad\qquad\qquad {\bf si} se agotó el tiempo de las hormigas {\bf y} hay solución factible {\bf entonces} terminar
-6.\quad\qquad\qquad {\bf para cada} lote $b$: construir $\pi^k_b$, mejorarla y elegir $a^k(b) \in \mathcal{P}^k_b$
-7.\quad\qquad\qquad ordenar cada $\sigma^k_p$ por fecha de entrega
-8.\quad\qquad\qquad {\bf si} $s^k$ no cumple las restricciones duras {\bf entonces} descartar $s^k$
-9.\quad\qquad {\bf para cada} lote $b$: {\bf si} $\pi^{ib}_b$ es más corta que $\pi^{bs}_b$ {\bf entonces} $\pi^{bs}_b \leftarrow$ pulir$(\pi^{ib}_b)$
-10.\quad\qquad $s^* \leftarrow$ la mejor $s^k$ con $v(s^k) = 0$, si mejora $f(s^*)$
-11.\quad\qquad $s^* \leftarrow$ recombinar$(s^*, \pi^{bs})$, si mejora $f(s^*)$
-12.\quad\qquad {\bf si} $s^*$ mejoró {\bf entonces} $s^* \leftarrow$ búsqueda local sobre la asignación$(s^*)$
-13.\quad\qquad actualizar $\tau$ con $\pi^{ib}$ y $\pi^{bs}$;\; actualizar $\tau^{P}$ con las $s^k$ y $s^*$
-14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
-15.\quad {\bf devolver} $s^*$, $f(s^*)$
-\stoplines
-\stopframedtext
-\stopplacefigure
 
 \stopsubsection
 
@@ -1130,10 +1057,11 @@ El procedimiento completo se resume en la Figura~\in[fig:aco_pseudocodigo].
 \startsubsection[title={Parámetros}, reference=sec:aco_parametros]
 
 % TODO: Decidir si esta tabla queda acá o pasa al Capítulo~\in[Capitulo_5].
-La Tabla~\in[tab:aco_parametros] resume los parámetros de \ac{aco}. Los
-ocho primeros se configuran en cada ejecución. El resto son constantes de la
-implementación. Tanto los escenarios funcionales como los de estrés usan los
-valores por defecto; los de estrés, con semilla 1.
+El Cuadro~\in[tab:aco_parametros] resume los parámetros de \ac{aco} que se
+configuran en cada ejecución. Las constantes de la implementación se
+detallan en la Sección~\in[sec:calib_aco_constantes] del
+Anexo~\in[Anexo_Calibracion]. Tanto los escenarios funcionales como los de
+estrés usan los valores por defecto; los de estrés, con semilla 1.
 
 \startplacetable[reference=tab:aco_parametros, location=here, title={Parámetros de \ac{aco}.}]
 \bTABLE[split=yes, align=middle, frame=on, width=fit]
@@ -1148,17 +1076,6 @@ valores por defecto; los de estrés, con semilla 1.
 \bTR \bTD $\rho$ \eTD \bTD 0,15 \eTD \bTD Tasa de evaporación de ambas feromonas. Define también $\tau_{\max}$ (Ecuación~\in[eq:aco_cotas]). \eTD \eTR
 \bTR \bTD $Q$ \eTD \bTD 100 \eTD \bTD Factor de depósito de la feromona de asignación. \eTD \eTR
 \bTR \bTD Semilla \eTD \bTD -- \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
-\bTR \bTD $\lambda$ \eTD \bTD 1000 \eTD \bTD Peso de la penalización por cadena de frío (Ecuación~\in[eq:hc_costo]). \eTD \eTR
-\bTR \bTD $\tau_{\max} / \tau_{\min}$ \eTD \bTD 50 \eTD \bTD Relación entre las cotas de la feromona de ruta. \eTD \eTR
-\bTR \bTD $\tau^{P}$ inicial / mínima \eTD \bTD 1 / 0,01 \eTD \bTD Valor inicial y mínimo de la feromona de asignación. \eTD \eTR
-\bTR \bTD Peso elitista \eTD \bTD 2 \eTD \bTD Multiplicador del depósito de $s^*$ en la feromona de asignación. \eTD \eTR
-\bTR \bTD Intentos por lote \eTD \bTD 10 \eTD \bTD Construcciones por lote y por hormiga antes de usar la ruta de respaldo. \eTD \eTR
-\bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción antes de abandonarse. \eTD \eTR
-\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el pulido. \eTD \eTR
-\bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de cada récord. \eTD \eTR
-\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
-\bTR \bTD Fracción para hormigas \eTD \bTD 0,5 \eTD \bTD Parte de $\text{Max}_{\text{time}}$ que pueden usar las hormigas; el resto queda para el pulido y la búsqueda local. \eTD \eTR
-\bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
 \eTABLE
 \stopplacetable
 
@@ -1168,58 +1085,20 @@ construirse al consumir la mitad de $\text{Max}_{\text{time}}$, pero solo si
 ya existe una solución factible, de esa iteración o de una anterior, para
 que el corte nunca produzca un falso infactible. La otra mitad queda para el
 pulido y la búsqueda local sobre la asignación, que respetan el plazo
-completo. En la grilla de 100×100 con $\text{Max}_{\text{time}} = 600$~s,
-dejar que las hormigas usaran todo el tiempo dejaba 11~s de pulido y nada
-para la búsqueda local, con un objetivo de 1.403.120, contra 917.328 cuando
-el posprocesamiento se completaba. El valor por defecto de 1800~s supera la
+completo. Sin esta reserva, en la grilla de 100×100 el posprocesamiento
+casi no llegaba a ejecutarse y el objetivo empeoraba un 53~\%
+(Sección~\in[sec:calib_aco_tiempo]). El valor por defecto de 1800~s supera la
 duración de todas las ejecuciones de estrés del perfil realista, de hasta
 unos 410~s, así que solo limita a las instancias más grandes.
 
-{\bf Contribución de la búsqueda local.} Para medir cuánto del resultado
-aporta la colonia y cuánto las búsquedas locales, se ejecutaron tres
-variantes en los escenarios de estrés 04 (grilla de 7×7), 06 (grilla de
-14×14) y 15 (6 lotes y 9 {\em pickers}), con tres semillas cada uno: solo la
-colonia, sin ninguna búsqueda local; la colonia con la búsqueda local sobre
-cada ruta, el pulido y la recombinación; y la versión completa, que agrega la
-búsqueda local sobre la asignación. La Tabla~\in[tab:aco_ablacion] muestra la
-brecha respecto del objetivo del modelo Split.
-
-\startplacetable[reference=tab:aco_ablacion, location=here, title={Brecha de \ac{aco} respecto del modelo Split, en porcentaje, por variante (mínimo y máximo sobre tres semillas).}]
-\bTABLE[split=yes, align=middle, frame=on, width=fit]
-\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
-\bTR \bTH Escenario \eTH \bTH Solo colonia \eTH \bTH + rutas \eTH \bTH Completa \eTH \eTR
-\bTR \bTD 04 (7×7) \eTD \bTD 0,008 -- 0,013 \eTD \bTD 0,007 -- 0,012 \eTD \bTD 0,000 -- 0,002 \eTD \eTR
-\bTR \bTD 06 (14×14) \eTD \bTD 0,025 -- 0,040 \eTD \bTD 0,025 -- 0,047 \eTD \bTD 0,010 -- 0,030 \eTD \eTR
-\bTR \bTD 15 \eTD \bTD 0,026 -- 0,046 \eTD \bTD 0,008 -- 0,019 \eTD \bTD 0,005 -- 0,008 \eTD \eTR
-\eTABLE
-\stopplacetable
-
-La colonia sola ya queda a menos de un 0,05~\% del modelo Split. Las
-búsquedas locales sobre las rutas reducen la brecha sobre todo en el
-escenario 15, donde la suma de los tiempos de ruta baja de entre 685 y 712 a
-entre 672 y 676; en el 04 y el 06 su efecto queda dentro de la variación
-entre semillas. La búsqueda local sobre la asignación reduce la brecha en
-los tres escenarios, y es la que más la reduce en el 04 y el 06. Con la
-versión completa, en el escenario 04 una de las semillas alcanza el objetivo
-del modelo Split. Los tiempos de ejecución de
-las tres variantes son similares, porque los domina la construcción de las
-hormigas: unos 15~s en el 04, entre 109 y 116~s en el 06 y entre 44 y 51~s
-en el 15.
-
-{\bf Sensibilidad a $\alpha$, $\beta$ y $\rho$.} Para evaluar los valores
-de la colonia, se ejecutó el escenario 04 sin búsquedas locales, con todas
-las combinaciones de $\alpha \in \{0{,}5;\ 1;\ 2\}$,
-$\beta \in \{1;\ 2{,}5;\ 4\}$ y $\rho \in \{0{,}05;\ 0{,}15;\ 0{,}30\}$, y tres
-semillas por combinación. Los rangos abarcan los valores por defecto y los
-que reportan Alaya y Solnon \cite[alaya2007antcolony] y Lesch et al.
-\cite[lesch2023optimizing]. La brecha media fue de 0,011~\% con los valores
-por defecto, de 0,009~\% con la mejor combinación ($\alpha = 2$,
-$\beta = 4$, $\rho = 0{,}05$) y de 0,082~\% con la peor ($\alpha = 0{,}5$,
-$\beta = 1$, $\rho = 0{,}05$). El parámetro con más efecto es $\beta$: con
-$\beta = 1$, la brecha media fue de al menos 0,018~\% en todas las
-combinaciones, mientras que con $\beta = 4$ no superó el 0,028~\%. Los
-valores por defecto quedan, por lo tanto, cerca de los mejores, y las
-diferencias entre ellos son menores que las que aporta la búsqueda local.
+{\bf Estudios de calibración.} En el Anexo~\in[Anexo_Calibracion] se mide
+cuánto aporta cada componente híbrido y qué tan sensible es el resultado a
+$\alpha$, $\beta$ y $\rho$. La colonia sola ya queda a menos de un 0,05~\%
+del modelo Split, y la búsqueda local sobre la asignación es la que más
+reduce la brecha (Sección~\in[sec:calib_aco_ablacion]). Los valores por
+defecto de $\alpha$, $\beta$ y $\rho$ quedan cerca de los mejores, con una
+brecha media de 0,011~\% contra 0,009~\% de la mejor combinación, y $\beta$
+es el parámetro con más efecto (Sección~\in[sec:calib_aco_sensibilidad]).
 
 {\bf Reproducibilidad.} La semilla determina todos los sorteos de la
 construcción, de modo que la misma instancia, los mismos parámetros y la
