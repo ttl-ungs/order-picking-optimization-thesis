@@ -17,14 +17,67 @@
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:pseudo_hc]
 
-% TODO: completar
+La Figura~\in[fig:hc_pseudocodigo] resume la búsqueda estocástica de primera
+mejora de \ac{hc} (Sección~\in[sec:hc_busqueda]).
+
+\startplacefigure[title={Pseudocódigo de la búsqueda estocástica de primera mejora.}, reference=fig:hc_pseudocodigo]
+\startframedtext[width=broad, frame=on, align=flushleft]
+\startlines
+{\bf Entrada:} instancia, $\text{Max}_{\text{it}}$, $\text{Max}_{\text{imp}}$, $\text{Max}_{\text{time}}$, semilla
+{\bf Salida:} mejor solución factible $s^*$, o infactible
+\blank[small]
+1.\quad {\bf si} la verificación previa falla {\bf entonces devolver} infactible
+2.\quad $s \leftarrow$ solución inicial; {\bf si} no existe {\bf entonces devolver} infactible
+3.\quad $s^* \leftarrow s$ si $v(s) = 0$; si no, $s^* \leftarrow$ ninguna
+4.\quad $k \leftarrow 0$;\; $u \leftarrow 0$
+5.\quad {\bf mientras} $k < \text{Max}_{\text{it}}$ {\bf y} $u < \text{Max}_{\text{imp}}$ {\bf y} tiempo $\leq \text{Max}_{\text{time}}$ {\bf hacer}
+6.\quad\qquad $k \leftarrow k + 1$
+7.\quad\qquad elegir al azar un movimiento $m$ entre los aplicables a $s$
+8.\quad\qquad $s' \leftarrow m(s)$
+9.\quad\qquad {\bf si} $s'$ existe {\bf y} $f'(s') < f'(s)$ {\bf entonces}
+10.\quad\qquad\qquad $s \leftarrow s'$;\; $u \leftarrow 0$
+11.\quad\qquad\qquad {\bf si} $v(s) = 0$ {\bf y} $f(s) < f(s^*)$ {\bf entonces} $s^* \leftarrow s$
+12.\quad\qquad {\bf si no}
+13.\quad\qquad\qquad $u \leftarrow u + 1$
+14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
+15.\quad {\bf devolver} $s^*$, $f(s^*)$
+\stoplines
+\stopframedtext
+\stopplacefigure
 
 \stopsection
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Ant Colony Optimization}, reference=sec:pseudo_aco]
 
-% TODO: completar
+La Figura~\in[fig:aco_pseudocodigo] resume una ejecución de \ac{aco}, desde la
+verificación previa (Sección~\in[sec:aco_verificacion]) hasta la
+actualización de las feromonas (Sección~\in[sec:aco_feromonas]).
+
+\startplacefigure[title={Pseudocódigo de \ac{aco}.}, reference=fig:aco_pseudocodigo]
+\startframedtext[width=broad, frame=on, align=flushleft]
+\startlines
+{\bf Entrada:} instancia, $m$, $\text{Max}_{\text{it}}$, $\text{Max}_{\text{time}}$, $\alpha$, $\beta$, $\rho$, $Q$, semilla
+{\bf Salida:} mejor solución factible $s^*$, o infactible
+\blank[small]
+1.\quad {\bf si} la verificación previa falla {\bf entonces devolver} infactible
+2.\quad inicializar $\tau_{ij} \leftarrow \tau_{\max}$, $\tau^{P}_{bp} \leftarrow 1$;\; $s^* \leftarrow$ ninguna
+3.\quad {\bf para} $t = 1, \dots, \text{Max}_{\text{it}}$ {\bf hacer}
+4.\quad\qquad {\bf para} $k = 1, \dots, m$ {\bf hacer}
+5.\quad\qquad\qquad {\bf si} se agotó el tiempo de las hormigas {\bf y} hay solución factible {\bf entonces} terminar
+6.\quad\qquad\qquad {\bf para cada} lote $b$: construir $\pi^k_b$, mejorarla y elegir $a^k(b) \in \mathcal{P}^k_b$
+7.\quad\qquad\qquad ordenar cada $\sigma^k_p$ por fecha de entrega
+8.\quad\qquad\qquad {\bf si} $s^k$ no cumple las restricciones duras {\bf entonces} descartar $s^k$
+9.\quad\qquad {\bf para cada} lote $b$: {\bf si} $\pi^{ib}_b$ es más corta que $\pi^{bs}_b$ {\bf entonces} $\pi^{bs}_b \leftarrow$ pulir$(\pi^{ib}_b)$
+10.\quad\qquad $s^* \leftarrow$ la mejor $s^k$ con $v(s^k) = 0$, si mejora $f(s^*)$
+11.\quad\qquad $s^* \leftarrow$ recombinar$(s^*, \pi^{bs})$, si mejora $f(s^*)$
+12.\quad\qquad {\bf si} $s^*$ mejoró {\bf entonces} $s^* \leftarrow$ búsqueda local sobre la asignación$(s^*)$
+13.\quad\qquad actualizar $\tau$ con $\pi^{ib}$ y $\pi^{bs}$;\; actualizar $\tau^{P}$ con las $s^k$ y $s^*$
+14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
+15.\quad {\bf devolver} $s^*$, $f(s^*)$
+\stoplines
+\stopframedtext
+\stopplacefigure
 
 \stopsection
 \stopchapter
