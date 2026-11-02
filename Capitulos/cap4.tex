@@ -279,82 +279,33 @@ de una única construcción, se generan varias rutas candidatas y se conserva
 la de menor distancia:
 \startitemize[n]
 	\item {\bf Vecino más cercano.} Desde el depósito, se va repetidamente a
-	la locación pendiente más cercana por el camino más corto (algoritmo de
-	Dijkstra) que no pasa por locaciones ya visitadas ni por
-	$v_{\text{end}}$. Las locaciones requeridas por las que se pasa en el
-	camino cuentan como visitadas. Cuando no quedan pendientes, se llega a
-	$v_{\text{end}}$ por el camino más corto que evita lo ya recorrido. Es la
-	heurística de ruteo que usan Coruzzolo et al.
+	la locación pendiente más cercana por el camino más corto que no repite
+	locaciones. Es la heurística de ruteo que usan Coruzzolo et al.
 	\cite[coruzzolo2023orderpicking], adaptada para no repetir locaciones.
-	Es determinística, y falla si en algún paso ninguna locación pendiente es
-	alcanzable.
-	\item {\bf Inserción del más lejano.} Primero se decide el orden en que
-	se visitan las locaciones requeridas con la inserción del más lejano
-	({\em farthest insertion}) \cite[rosenkrantz1977analysis]. Se parte de la
-	secuencia $(v_{\text{start}}, v_{\text{end}})$ y, repetidamente, se toma
-	la locación pendiente más alejada de las que ya están en la secuencia y
-	se la inserta en la posición que menos alarga el recorrido. En este paso
-	las distancias son las de los caminos más cortos en el grafo, sin
-	considerar la restricción de no repetir locaciones. Después, ese orden se
-	realiza uniendo cada par de locaciones consecutivas con el camino más
-	corto que evita todo lo ya recorrido. Esta construcción se aplica dos
-	veces: sobre el grafo original y sobre el grafo invertido, en el que se
-	invierte el sentido de todos los arcos y se intercambian
-	$v_{\text{start}}$ y $v_{\text{end}}$. Una ruta del grafo invertido,
-	leída al revés, es una ruta del grafo original con la misma distancia,
-	así que esto equivale a construir la ruta desde el final hacia el
+	\item {\bf Inserción del más lejano.} El orden de visita de las
+	locaciones requeridas se decide con la inserción del más lejano
+	({\em farthest insertion}) \cite[rosenkrantz1977analysis], y después se
+	une cada par de locaciones consecutivas con el camino más corto que evita
+	lo ya recorrido. Se aplica sobre el grafo original y sobre el grafo
+	invertido, lo que equivale a construir la ruta desde el final hacia el
 	principio.
-	\item {\bf Construcciones aleatorias.} Se generan 20 rutas con una regla
-	aleatoria. Desde la locación actual, cada locación pendiente $r$ que se
-	puede alcanzar sin repetir locaciones recibe un peso $(1/d_r)^{\beta}$,
-	donde $d_r$ es la distancia de ese camino y $\beta = 2{,}5$, y se elige
-	una con probabilidad proporcional a su peso. Es la regla de transición
-	de \ac{aco} (Ecuación~\in[eq:aco_transicion]) sin el término de
-	feromona, y el valor de $\beta$ es el mismo que usa \ac{aco}
-	\cite[chen2013antcolony]. Antes de aceptar la locación elegida, se
-	verifica que la ruta todavía pueda completarse: cada locación pendiente
-	debe estar en algún camino simple entre la locación elegida y
-	$v_{\text{end}}$ que no pase por lo ya recorrido. Esto se comprueba de
-	forma exacta con las componentes biconexas del grafo. La condición es
-	necesaria pero no suficiente, así que la construcción todavía puede
-	trabarse. Cuando ninguna candidata la cumple, se deshace el último paso y
-	se prueba otra locación en su lugar, con un máximo de 30 retrocesos. Las
-	construcciones alternan entre el grafo original y el invertido, porque la
-	regla favorece a las locaciones cercanas y deja para el final a las más
-	alejadas del punto de partida. Cada ruta completa se mejora
-	alternando dos búsquedas locales hasta que deja de acortarse: 2-opt sobre
-	las locaciones de la ruta (Ecuación~\in[eq:2opt]) y el re-ruteo de
-	tramos, que reemplaza el tramo entre dos locaciones requeridas
-	consecutivas por el camino más corto que evita el resto de la ruta,
-	cuando este es más corto.
+	\item {\bf Construcciones aleatorias.} Se generan 20 rutas con la regla
+	de transición de \ac{aco} (Ecuación~\in[eq:aco_transicion]) sin el
+	término de feromona, con el mismo $\beta = 2{,}5$ que usa \ac{aco}
+	\cite[chen2013antcolony]. Un chequeo de completitud y un número acotado
+	de retrocesos evitan que la construcción se trabe. Cada ruta se mejora
+	alternando 2-opt sobre las locaciones de la ruta (Ecuación~\in[eq:2opt])
+	y el re-ruteo de tramos, que reemplaza el tramo entre dos locaciones
+	requeridas consecutivas por un camino más corto que evita el resto de la
+	ruta.
 \stopitemize
-
-Una vez obtenidas las soluciones candidatas, se selecciona aquella de menor distancia
-y se aplica un pulido. El pulido repite los siguientes pasos hasta que la ruta deja
-de acortarse, con un máximo de cinco rondas:
-\startitemize
-	\item {\bf 2-opt sobre las locaciones requeridas.} Se invierte el orden
-	de un bloque de hasta 8 locaciones requeridas consecutivas y se vuelven a
-	trazar los caminos entre ellas, evitando el resto de la ruta. A
-	diferencia del 2-opt sobre todas las locaciones de la ruta, que en una
-	grilla casi nunca es aplicable porque los dos nuevos arcos deben unir
-	locaciones adyacentes, este movimiento redibuja los caminos completos.
-	\item {\bf Reubicación de locaciones.} Es una versión simplificada del
-	operador {\em or-opt}, propuesto por Or en su tesis doctoral de 1976
-	\cite[babin2007oropt]. El operador original reubica cadenas de tres, dos
-	y un vértice consecutivos; aquí se reubica una sola locación requerida
-	por vez en otra posición de la secuencia, y se vuelven a trazar los
-	caminos afectados.
-	\item {\bf 2-opt y re-ruteo de tramos}, como en las construcciones
-	aleatorias.
-\stopitemize
-Si ninguna de las construcciones encuentra una ruta, se recurre a una
-búsqueda exhaustiva de tipo {\em best-first}, sobre estados formados por la
-locación actual, el conjunto de locaciones pendientes y el camino recorrido.
-Los estados se exploran primero por cantidad de locaciones pendientes y
-después por la distancia a la locación requerida más cercana, con un tope de
-2.000.000 de expansiones. Si se alcanza el tope sin encontrar una ruta, el
-lote queda sin ruta y la instancia se informa como infactible.
+La candidata de menor distancia se pule con 2-opt sobre bloques de
+locaciones requeridas, reubicación de locaciones y re-ruteo de tramos. Si
+ninguna construcción encuentra una ruta, se recurre a una búsqueda
+exhaustiva de tipo {\em best-first} con un tope de expansiones, y si esta
+tampoco la encuentra, la instancia se informa como infactible. Las
+construcciones, el pulido y la búsqueda de respaldo se detallan en la
+Sección~\in[sec:anexo_rutas] del Anexo~\in[Anexo_Metaheuristicas].
 
 Una única construcción no alcanza. Con solo el vecino más cercano mejorado con 2-opt, en el escenario de estrés
 con grilla de 7×7 del perfil realista las rutas sumaban 490 unidades de
@@ -364,12 +315,6 @@ resultaba infactible, aunque el modelo Split la resolvía. Generar varias
 soluciones de partida y mejorarlas con búsqueda local es una forma habitual
 de diversificar el inicio de una búsqueda local; Coruzzolo et al. la usan
 para el loteo \cite[coruzzolo2023orderpicking].
-Las rutas se comparan por distancia y no por tiempo de ruta $r_b$, que
-también suma el tiempo de servicio de las locaciones de paso. Ambos
-criterios coinciden cuando las locaciones no requeridas tienen
-$S_i = 0$, como en todos los escenarios de estrés, y en las instancias
-funcionales en que no es así la ruta más corta es también la de menor
-$r_b$.
 
 {\bf Asignación inicial y secuencia.} Con las rutas armadas, cada lote con
 órdenes se asigna a un {\em picker} de forma golosa, recorriendo los lotes en
@@ -519,7 +464,7 @@ Figura~\in[fig:hc_pseudocodigo] del Anexo~\in[Anexo_Pseudocodigos].
 El Cuadro~\in[tab:hc_parametros] resume los parámetros de \ac{hc} que se
 configuran en cada ejecución. Las constantes de la implementación, fijadas a
 partir de las mediciones descritas en las secciones anteriores, se detallan
-en la Sección~\in[sec:calib_hc_constantes] del Anexo~\in[Anexo_Calibracion].
+en la Sección~\in[sec:calib_hc_constantes] del Anexo~\in[Anexo_Metaheuristicas].
 
 \startplacetable[reference=tab:hc_parametros, location=here, title={Parámetros de \ac{hc}. Los valores de estrés son los usados en los escenarios de estrés; la mayoría de los escenarios funcionales usa los valores por defecto.}]
 \bTABLE[split=yes, align=middle, frame=on, width=fit]
@@ -843,7 +788,7 @@ por una elegida al azar. Si los 10 fallan, se usa una ruta de respaldo
 determinística: la inserción del más lejano, sobre el grafo original y, si
 no se puede realizar, sobre el invertido; si ninguna funciona, la búsqueda
 {\em best-first} con el tope de 2.000.000 de expansiones, como en
-\ac{hc} (Sección~\in[sec:hc_solucion_inicial]). La ruta de respaldo se pule
+\ac{hc} (Sección~\in[sec:anexo_rutas_respaldo]). La ruta de respaldo se pule
 (Sección~\in[sec:aco_pulido]) y se guarda, de modo que se calcula una sola
 vez por lote y no una vez por hormiga. Si tampoco se encuentra una ruta de
 respaldo, la hormiga se descarta.
@@ -867,7 +812,7 @@ cualquier hormiga en cualquier iteración, $\pi^{bs}_b$ (del inglés
 del lote entre las hormigas de esa iteración, $\pi^{ib}_b$ (del inglés
 {\em iteration-best}). Si es más corta que $\pi^{bs}_b$, se la somete al
 mismo pulido que la ruta inicial de \ac{hc}
-(Sección~\in[sec:hc_solucion_inicial]): 2-opt sobre bloques de hasta 8
+(Sección~\in[sec:anexo_rutas_pulido]): 2-opt sobre bloques de hasta 8
 locaciones requeridas, reubicación de locaciones requeridas ({\em or-opt}
 simplificado), y 2-opt y re-ruteo de tramos, repetidos hasta que la ruta deja
 de acortarse, con un máximo de cinco rondas. La ruta pulida pasa a ser
@@ -1060,7 +1005,7 @@ Anexo~\in[Anexo_Pseudocodigos].
 El Cuadro~\in[tab:aco_parametros] resume los parámetros de \ac{aco} que se
 configuran en cada ejecución. Las constantes de la implementación se
 detallan en la Sección~\in[sec:calib_aco_constantes] del
-Anexo~\in[Anexo_Calibracion]. Tanto los escenarios funcionales como los de
+Anexo~\in[Anexo_Metaheuristicas]. Tanto los escenarios funcionales como los de
 estrés usan los valores por defecto; los de estrés, con semilla 1.
 
 \startplacetable[reference=tab:aco_parametros, location=here, title={Parámetros de \ac{aco}.}]
@@ -1091,7 +1036,7 @@ casi no llegaba a ejecutarse y el objetivo empeoraba un 53~\%
 duración de todas las ejecuciones de estrés del perfil realista, de hasta
 unos 410~s, así que solo limita a las instancias más grandes.
 
-{\bf Estudios de calibración.} En el Anexo~\in[Anexo_Calibracion] se mide
+{\bf Estudios de calibración.} En el Anexo~\in[Anexo_Metaheuristicas] se mide
 cuánto aporta cada componente híbrido y qué tan sensible es el resultado a
 $\alpha$, $\beta$ y $\rho$. La colonia sola ya queda a menos de un 0,05~\%
 del modelo Split, y la búsqueda local sobre la asignación es la que más
