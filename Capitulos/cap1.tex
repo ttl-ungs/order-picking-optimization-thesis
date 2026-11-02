@@ -92,8 +92,7 @@ formas distintas.
 %----------------------------------------------------------------------------------------
 \startsection[title={Enfoque propuesto}, reference=sec:enfoque]
 
-Por ese tamaño, el tiempo necesario para encontrar la mejor solución crece
-rápidamente con la instancia. Existen dos grandes familias de métodos para
+Existen dos grandes familias de métodos para
 resolver problemas de optimización combinatoria como el OPP: los métodos
 {\bf exactos}, que garantizan encontrar la solución óptima pero cuyo tiempo
 de cómputo crece rápidamente con el tamaño de la instancia, y los métodos
@@ -103,25 +102,21 @@ ubicaciones y de pedidos con distintos niveles de urgencia, las decisiones
 deben tomarse en poco tiempo, por lo que esta disyuntiva entre la calidad de
 la solución y el tiempo de cómputo es central.
 
-Este trabajo la recorre con cuatro métodos, cada uno construido sobre el
-anterior:
+Este trabajo la recorre con cuatro métodos, desarrollados en tres pasos,
+cada uno construido sobre el anterior:
 
 \startitemize[n]
-	\item {\bf Modelo monolítico.} Un modelo de \ac{mip} que, tomando como
-	guía el de Coruzzolo et al. \cite[coruzzolo2023orderpicking], decide
-	ruta, asignación y secuencia en un único modelo, e incorpora la
-	velocidad de los operarios y la cadena de frío. A diferencia del modelo
-	de referencia, que también forma los lotes, en este trabajo los lotes son un dato de
-	entrada.
-	\item {\bf Modelo Split.} Como el monolítico crece rápidamente con la
-	instancia, se lo descompone en dos modelos que se resuelven en secuencia:
-	el primero calcula la ruta más corta de cada lote y el segundo decide la
-	asignación y la secuencia.
+	\item {\bf Modelo monolítico.} Un modelo de \ac{mip}, basado en el de
+	Coruzzolo et al. \cite[coruzzolo2023orderpicking], que decide a la
+	vez las ruta, asignación y secuencias, y sirve de punto de partida exacto,
+    pero crece rápidamente con la instancia.
+	\item {\bf Modelo Split.} Para resolver instancias más grandes, el
+	monolítico se descompone en dos modelos que resuelven
+	primero las rutas y después la asignación y la secuencia.
 	\item {\bf Metaheurísticas.} Como el modelo Split sigue siendo inviable
-	para instancias moderadamente grandes, se desarrollan dos metaheurísticas,
-	basadas en \ac{hc} y en \ac{aco}, que resuelven el mismo problema que los
-	modelos lineales. Esto permite comparar sus resultados directamente
-	contra el óptimo.
+	para instancias moderadamente grandes, se desarrollan dos, basadas en
+	\ac{hc} y en \ac{aco}, cuyos resultados pueden compararse con el
+	óptimo.
 \stopitemize
 
 \stopsection
@@ -157,8 +152,7 @@ enfoque resulta más apropiado.
 	\item Medir y comparar, sobre esos escenarios, la proporción de instancias
 	resueltas, el tiempo de ejecución y la calidad de la solución respecto
 	del óptimo.
-	\item Identificar limitaciones estructurales de los enfoques heurísticos
-	evaluados y proponer líneas de trabajo futuro para superarlas.
+	\item Identificar limitaciones estructurales de los enfoques evaluados.
 \stopitemize
 
 \stopsubsection
@@ -177,8 +171,9 @@ las soluciones de las metaheurísticas cumplen todas las restricciones del
 problema y cómo se comparan los métodos. El Capítulo~\in[Capitulo_6] presenta
 los resultados, y el Capítulo~\in[Capitulo_7], la discusión, las
 conclusiones, las limitaciones y las líneas de trabajo futuro. Los anexos
-reúnen el detalle de los modelos, de las pruebas, del relevamiento, de la
-verificación y de los resultados.
+reúnen los diagramas y los pseudocódigos de los métodos, el detalle de los
+modelos lineales y de las metaheurísticas, y el de las pruebas, del
+relevamiento, de la verificación y de los resultados.
 
 \stopsection
 \stopchapter
