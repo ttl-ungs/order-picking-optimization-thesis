@@ -105,8 +105,9 @@ la operación.
 La robustez, en cambio, se evaluó solo en parte. En HC, la diferencia entre
 la mejor y la peor de cinco semillas fue menor al 0,5~\% en todos los
 escenarios de estrés, aunque con una de ellas dos escenarios terminaron sin
-solución factible (Sección~\in[sec:hc_parametros]). En ACO, la variación entre
-semillas no se midió con la versión final.
+solución factible (Sección~\in[sec:hc_parametros]). En ACO, la variación se midió con tres
+semillas en los escenarios 04, 06 y 15, y la diferencia entre la mejor y la
+peor fue como máximo de un 0,02~\% (Sección~\in[sec:aco_parametros]).
 
 \stopsection
 
@@ -124,8 +125,10 @@ vacíos se rutean y se cobran en el objetivo
 {\bf De la experimentación.} Las instancias son generadas y no provienen de
 una operación real. Los tiempos son de reloj, medidos en una computadora
 portátil, y pueden variar hasta el doble entre corridas; en las pruebas de
-estrés, además, la Etapa~1 del Split se ejecutó en paralelo. Cada heurística
-se ejecutó una sola vez por instancia, con semilla 1. La referencia de
+estrés, además, la Etapa~1 del Split se ejecutó en paralelo. En las corridas
+principales, cada heurística se ejecutó una sola vez por instancia, con
+semilla 1, y en ACO la variación entre semillas se midió solo en tres
+escenarios. La referencia de
 objetivo existe solo donde el Split termina, y 10 instancias funcionales
 pueden compararse solo en estado.
 
@@ -144,7 +147,6 @@ instancia (Sección~\in[sec:aco_limitaciones]).
 A partir de estos resultados y de las limitaciones anteriores, se proponen
 las siguientes líneas de trabajo:
 \startitemize
-	\item Medir la variabilidad entre semillas de las dos heurísticas.
 	\item Corregir la cota de $M^{\text{seq}}$ (Anexo~\in[Anexo_Modelos]) y
 	descartar los lotes vacíos antes de resolver.
 	\item Acelerar el Split: identificar qué encarece la Etapa~1 en los

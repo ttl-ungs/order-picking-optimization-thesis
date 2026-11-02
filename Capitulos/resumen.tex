@@ -9,8 +9,8 @@ Este trabajo toma como punto de partida un modelo de programación lineal entera
 se formula un modelo lineal propio, al que llamamos {\em monolítico}, que incorpora velocidades heterogéneas entre operarios y restricciones
 de cadena de frío. Luego, con el fin de reducir sus tiempos de ejecución y abordar instancias de mayor escala, este modelo se optimiza mediante
 su descomposición en dos etapas, las cuales se resuelven de forma sucesiva: primero el ruteo de cada lote y luego la asignación y secuenciación de los
-lotes. A este segundo modelo lo llamamos {\em Split}. Aun así, el modelo Split sigue resultando demasiado costoso, y no se logra resolver en tiempos
-prácticos para instancias moderadamente grandes. Por lo tanto, se desarrollan dos metaheurísticas, basadas en {\em Hill Climbing} y {\em Ant Colony Optimization},
+lotes. A este segundo modelo lo llamamos {\em Split}. Debido a que el modelo Split sigue resultando demasiado costoso y no se logra resolver en tiempos
+prácticos para instancias moderadamente grandes, se desarrollan dos metaheurísticas basadas en {\em Hill Climbing} y {\em Ant Colony Optimization},
 equivalentes a los modelos lineales en las características que contemplan.
 
 Los modelos se evalúan sobre un conjunto de escenarios de prueba funcionales y de estrés. Analizando la tasa de convergencia, el tiempo
