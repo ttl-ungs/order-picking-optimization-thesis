@@ -31,8 +31,8 @@ beneficios directos para la empresa y para los clientes, tales como:
 
 En este trabajo se considera un almacén con pasillos que guarda productos
 congelados, sujetos a la cadena de frío. Para recolectar varios pedidos en
-un mismo recorrido, los pedidos de los clientes (también llamados {\em órdenes})
-se agrupan en {\em lotes}. Cada lote lo ejecuta un único operario de picking
+un mismo recorrido, los pedidos (también llamados {\em órdenes}) de los clientes
+se agrupan en {\em lotes}. Cada lote es ejecutado por un único operario de picking
 ({\em picker}), que parte del depósito, recorre los pasillos visitando cada
 ubicación donde hay productos de alguno de sus pedidos, recoge las unidades
 correspondientes y termina en el punto de entrega, donde el lote queda listo
@@ -115,7 +115,8 @@ Este trabajo desarrolla dos modelos lineales y dos metaheurísticas:
 	primero las rutas y después la asignación y la secuencia.
 	\item {\bf Metaheurísticas.} Como el modelo Split sigue siendo inviable
 	para instancias moderadamente grandes, se desarrollan dos metaheurísticas,
-	basadas en \ac{hc} y en \ac{aco}, que resuelven el mismo problema en
+	basadas en Hill Climbing y en Ant Colony Optimization (de ahora en más,
+	\ac{hc} y \ac{aco}), que resuelven el mismo problema en
 	menos tiempo, aunque sin garantizar el óptimo.
 \stopitemize
 
@@ -182,7 +183,7 @@ describe cómo se verifica que las soluciones de las metaheurísticas cumplen
 todas las restricciones del problema y define cómo se comparan los métodos.
 El Capítulo~\in[Capitulo_6] presenta los resultados, y el
 Capítulo~\in[Capitulo_7], la discusión, las conclusiones, las limitaciones y
-las líneas de trabajo futuro. Por último, los anexos reúnen los pseudocódigos de las metaheurísticas y el detalle de los modelos lineales, de las
+las líneas de trabajo futuro. Por último, los anexos reúnen pseudocódigos, y el detalle de los modelos lineales, de las
 metaheurísticas, de las pruebas funcionales, del relevamiento de los modelos
 lineales, de la verificación de las soluciones y de los resultados.
 
