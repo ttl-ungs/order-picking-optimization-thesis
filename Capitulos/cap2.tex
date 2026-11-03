@@ -63,6 +63,11 @@ $g(x)$. Para que el modelo sea matemáticamente válido, el parámetro $M$
 debe ser lo bastante grande como para no excluir ninguna solución factible
 \cite[hillier2010investigacion].
 
+La misma técnica permite activar una restricción solo cuando varias variables
+binarias valen 1 a la vez. Si en lugar de $1 - y$ se usa $k - \sum_{i=1}^{k}
+y_i$, el término vale 0 solo cuando las $k$ variables valen 1, y en cualquier
+otro caso es al menos 1, de modo que la restricción queda desactivada.
+
 En los problemas de ruteo, una variable binaria $x_{ij}$ indica si el
 recorrido utiliza el arco $(i, j)$. Las restricciones de asignación, que
 exigen que a cada nodo entre y salga exactamente un arco, no alcanzan para
@@ -414,10 +419,24 @@ o modificarse a medida que avanza (penalización {\em dinámica})
 \startsection[title={Trabajos relacionados}, reference=sec:trabajos_relacionados]
 
 El modelo de referencia de esta tesina es el propuesto por Coruzzolo et al.
-\cite[coruzzolo2023orderpicking], que formula la optimización conjunta de
-{\em batching}, asignación de lotes, secuenciación y ruteo de picking como
-un modelo de \ac{mip}. Sobre un caso real, su propuesta reduce el tiempo
-de picking en un 57\% respecto de preparar los pedidos de a uno.
+\cite[coruzzolo2023orderpicking], que formula como un modelo de \ac{mip} la
+optimización conjunta de cuatro decisiones: qué órdenes forman cada lote
+({\em batching}), a qué operario se asigna cada lote, en qué orden los ejecuta
+y qué ruta sigue en cada uno. Los lotes se forman respetando la capacidad del
+carro, y la ruta de cada lote parte de un depósito inicial, termina en un
+depósito final y pasa a lo sumo una vez por cada ubicación. Los subtours se
+eliminan con un flujo de tipo Gavish y Graves (Sección~\in[sec:marco_mip])
+acotado por la capacidad del carro, y la secuencia de cada operario se modela
+asignando cada lote a una posición numerada de su agenda. El objetivo combina
+la suma de los tiempos de finalización con una suma ponderada de la demora y
+el adelanto de las órdenes, ya que preparar un pedido demasiado pronto ocupa
+espacio en el almacén sin necesidad.
+
+Para reducir la complejidad, los autores proponen también un modelo
+simplificado sin las restricciones de ruteo, que recibe como datos todos los
+lotes factibles, cada uno con la distancia de una ruta construida con la
+heurística del vecino más cercano. Sobre un caso real, su propuesta reduce el
+tiempo de picking en un 57\% respecto de preparar los pedidos de a uno.
 
 En cuanto a los métodos de resolución, Chen et al.
 \cite[chen2013antcolony] proponen un algoritmo de ruteo basado en \ac{aco}
@@ -436,11 +455,12 @@ Esta tesina se posiciona a partir de dos limitaciones del modelo de
 referencia. En primer lugar, el modelo de Coruzzolo et al. no contempla la
 velocidad heterogénea entre operarios ni los requisitos de cadena de frío,
 dos características presentes en la operación real, por lo que aquí se
-extiende su formulación para incorporarlas. En segundo lugar, los propios
-autores señalan que sus modelos lineales resultaron demasiado complejos para
-resolverse sobre el caso de estudio, y recurren a una heurística
-constructiva mejorada con búsqueda local iterada, sin poder contrastar sus
-resultados con el óptimo. En este trabajo, en cambio, los modelos lineales
+extiende su formulación para incorporarlas. La formación de los lotes, en
+cambio, que ese modelo también decide, aquí se toma como dato. En segundo lugar, los propios
+autores señalan que sus dos modelos lineales resultaron demasiado complejos
+para resolverse sobre el caso de estudio, por lo que recurren a una
+heurística constructiva por fecha de entrega más temprana, mejorada con
+búsqueda local iterada, sin poder contrastar sus resultados con el óptimo. En este trabajo, en cambio, los modelos lineales
 resuelven hasta el óptimo las instancias de menor tamaño, y eso permite
 medir directamente cuánto se alejan del óptimo las soluciones de las
 heurísticas.
@@ -461,6 +481,10 @@ heurísticas.
 % alcance de los modelos; y la descomposición del Split.
 % Para no alargar el capítulo, se descartaron simetría, los problemas numéricos de la M
 % grande y la evaluación experimental de metaheurísticas. La cota dual débil quedó en 2.1.
+% Además, 2.6 describe ahora el modelo de referencia (decisiones, capacidad, ruta, flujo,
+% secuencia por posiciones, objetivo y modelo simplificado), que antes estaba en la
+% introducción del cap. 3, y 2.1 explica la M grande con varias binarias, que usan las
+% restricciones de secuencia del cap. 3.
 % [ ] = tarea; (D) = decisión de ustedes.
 %========================================================================================
 %
