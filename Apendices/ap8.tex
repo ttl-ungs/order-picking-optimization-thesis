@@ -280,5 +280,29 @@ la búsqueda local.
 
 \stopsubsection
 
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Variación entre semillas}, reference=sec:calib_aco_semillas]
+
+Se ejecutaron los escenarios de estrés 02 a 19 con cinco semillas cada uno y
+los valores por defecto (Cuadro~\in[tab:aco_parametros]). El 01 queda afuera
+por su duración, de unos 35 minutos por ejecución, y para usar los mismos
+escenarios que en \ac{hc} (Sección~\in[sec:calib_hc_semillas]). Las
+ejecuciones se repartieron en tres procesos en paralelo, así que sus tiempos
+no son comparables con los de la suite de estrés y no se informan.
+
+Las 90 ejecuciones encontraron una solución factible. La diferencia entre el
+mejor y el peor valor objetivo de cada escenario tuvo una mediana de
+0,005~\%. En los escenarios 02, 04 y 10, las cinco semillas llegaron al mismo
+objetivo, y el máximo fue de 0,053~\% en el 11, el único con la cadena de
+frío activa; en el resto no superó el 0,016~\%. En los escenarios que el
+modelo Split resuelve, la brecha respecto de su óptimo quedó entre 0 y
+0,072~\%, también con el máximo en el 11.
+
+La variación es, por lo tanto, un orden de magnitud menor que la de \ac{hc},
+cuya mediana fue de 0,02~\% y su máximo de 0,44~\%, y a diferencia de
+\ac{hc}, ninguna semilla dejó un escenario sin solución.
+
+\stopsubsection
+
 \stopsection
 \stopchapter

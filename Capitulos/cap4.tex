@@ -1050,7 +1050,10 @@ construcción, de modo que la misma instancia, los mismos parámetros y la
 misma semilla producen la misma solución, salvo que la ejecución se detenga
 por tiempo. Para que esto valga también entre procesos distintos, los
 candidatos de cada sorteo se recorren en un orden fijo, independiente del
-orden interno de los conjuntos de Python.
+orden interno de los conjuntos de Python. Con cinco semillas en los
+escenarios de estrés 02 a 19, la diferencia entre el mejor y el peor valor
+objetivo tuvo una mediana de 0,005~\% y un máximo de 0,05~\%, y todas las
+ejecuciones encontraron solución (Sección~\in[sec:calib_aco_semillas]).
 
 \stopsubsection
 
