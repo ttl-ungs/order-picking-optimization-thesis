@@ -82,7 +82,10 @@ cumplieron de la siguiente manera:
 	todas las instancias factibles y en ninguna de las infactibles. ACO queda
 	prácticamente en el óptimo y HC, a menos de un 0,21~\% en estrés, con
 	tiempos que en la mediana son entre 1,7 y 53 veces menores que los del
-	Split.
+	Split. A igual tiempo, los modelos lineales no obtienen ninguna solución
+	en el tiempo de HC, y con el de ACO el Split queda entre un 26 y un 56~\%
+	por encima en los escenarios de cuadrilla grande
+	(Sección~\in[sec:res_igual_tiempo]).
 	\item Se identificaron limitaciones estructurales de los enfoques
 	evaluados, tanto de la formulación lineal como de las heurísticas, que
 	se resumen en la Sección~\in[sec:limitaciones] y dan lugar a las líneas de
@@ -133,7 +136,7 @@ pueden compararse solo en estado.
 {\bf De las heurísticas.} HC no escapa de los óptimos locales y, en la
 práctica, casi no modifica las rutas que obtiene en la construcción inicial
 (Sección~\in[sec:hc_limitaciones]). En las dos heurísticas, el tope de tiempo
-no es estricto: en el escenario de 100×100, HC tardó 17 minutos y ACO, 35.
+no es estricto: en el escenario de 100×100, HC tardó 17 minutos y ACO, 32.
 ACO, por su parte, tiene picos de memoria que no siguen al tamaño de la
 instancia (Sección~\in[sec:aco_limitaciones]).
 

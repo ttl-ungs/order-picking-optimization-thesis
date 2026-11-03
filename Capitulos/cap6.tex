@@ -582,7 +582,7 @@ seis procesos (Sección~\in[sec:ejecucion]).
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 	\bTR \bTH Caso \eTH \bTH Lotes \eTH \bTH Grilla \eTH \bTH Split (s) \eTH \bTH HC (s) \eTH \bTH Brecha \eTH \bTH ACO (s) \eTH \bTH Brecha \eTH \eTR
-	\bTR \bTD 01 \eTD \bTD 30 \eTD \bTD 100×100 \eTD \bTD sin terminar \eTD \bTD 1.029,2 \eTD \bTD -- \eTD \bTD 2.094,8 \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 01 \eTD \bTD 30 \eTD \bTD 100×100 \eTD \bTD sin terminar \eTD \bTD 1.029,2 \eTD \bTD -- \eTD \bTD 1.892,3 \eTD \bTD -- \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD 10 \eTD \bTD 10×10 \eTD \bTD 33 \eTD \bTD 0,9 \eTD \bTD 0,00~\% \eTD \bTD 93,5 \eTD \bTD 0,00~\% \eTD \eTR
 	\bTR \bTD 03 \eTD \bTD 40 \eTD \bTD 7×7 \eTD \bTD sin terminar \eTD \bTD 1,7 \eTD \bTD -- \eTD \bTD 307,0 \eTD \bTD -- \eTD \eTR
 	\bTR \bTD 04 \eTD \bTD 6 \eTD \bTD 7×7 \eTD \bTD 12 \eTD \bTD 0,5 \eTD \bTD 0,01~\% \eTD \bTD 12,9 \eTD \bTD 0,00~\% \eTD \eTR
@@ -641,7 +641,7 @@ draw (0.000cm,6.009cm)--(12.000cm,6.009cm) withpen pencircle scaled .5pt dashed 
 label.rt(textext("\tfxx tope de 40 min"), (0.100cm,6.209cm));
 draw (0.063cm,0.000cm)--(0.227cm,0.000cm)--(0.227cm,6.009cm)--(0.063cm,6.009cm)--cycle withpen pencircle scaled 1pt withcolor \MPcolor{darkblue};
 fill (0.234cm,0.000cm)--(0.398cm,0.000cm)--(0.398cm,5.443cm)--(0.234cm,5.443cm)--cycle withcolor \MPcolor{greenline};
-fill (0.404cm,0.000cm)--(0.568cm,0.000cm)--(0.568cm,5.918cm)--(0.404cm,5.918cm)--cycle withcolor \MPcolor{redline};
+fill (0.404cm,0.000cm)--(0.568cm,0.000cm)--(0.568cm,5.850cm)--(0.404cm,5.850cm)--cycle withcolor \MPcolor{redline};
 fill (0.695cm,0.000cm)--(0.859cm,0.000cm)--(0.859cm,3.138cm)--(0.695cm,3.138cm)--cycle withcolor \MPcolor{darkblue};
 fill (0.865cm,0.000cm)--(1.029cm,0.000cm)--(1.029cm,0.745cm)--(0.865cm,0.745cm)--cycle withcolor \MPcolor{greenline};
 fill (1.036cm,0.000cm)--(1.200cm,0.000cm)--(1.200cm,3.840cm)--(1.036cm,3.840cm)--cycle withcolor \MPcolor{redline};
@@ -712,8 +712,8 @@ resuelve todos los escenarios en menos de 5 segundos, salvo el 01, mientras
 que ACO tarda entre 13 segundos y 9 minutos: tiempos del mismo orden que los
 del Split en los escenarios pequeños y bastante menores en los grandes. El
 escenario de 100×100 (01) es el más costoso para las dos heurísticas: HC
-tarda 17 minutos, casi todos en construir la solución inicial, y ACO, 35,
-porque cada una de sus iteraciones dura más de un cuarto de hora
+tarda 17 minutos, casi todos en construir la solución inicial, y ACO, 32,
+porque en ese tiempo completa solo dos iteraciones
 (Secciones~\in[sec:hc_limitaciones] y~\in[sec:aco_limitaciones]).
 
 Las heurísticas tampoco tienen los dos límites del Split
@@ -806,7 +806,7 @@ pueden compararse entre sí (Cuadro~\in[tab:res_sin_referencia]).
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 	\bTR \bTH Caso \eTH \bTH HC \eTH \bTH ACO \eTH \bTH ACO contra HC \eTH \eTR
-	\bTR \bTD 01 \eTD \bTD 862.656,0 \eTD \bTD 988.252,0 \eTD \bTD 14,56~\% \eTD \eTR
+	\bTR \bTD 01 \eTD \bTD 862.656,0 \eTD \bTD 909.168,0 \eTD \bTD 5,39~\% \eTD \eTR
 	\bTR \bTD 03 \eTD \bTD 1.767.172,0 \eTD \bTD 1.752.212,0 \eTD \bTD -0,85~\% \eTD \eTR
 	\bTR \bTD 08 \eTD \bTD 287.315,6 \eTD \bTD 287.196,0 \eTD \bTD -0,04~\% \eTD \eTR
 	\bTR \bTD 12 \eTD \bTD 198.950,5 \eTD \bTD 198.903,4 \eTD \bTD -0,02~\% \eTD \eTR
@@ -821,9 +821,8 @@ pueden compararse entre sí (Cuadro~\in[tab:res_sin_referencia]).
 
 ACO obtiene el mejor objetivo en 9 de los 10 escenarios, con diferencias
 menores al 1~\%. La excepción es el 01, en el que ACO completó solo 2
-iteraciones antes de alcanzar su tope de 30 minutos, y en el que además la
-máquina se suspendió durante la corrida. Su objetivo en ese escenario vale
-como solución factible, pero no como medida de calidad.
+iteraciones antes de alcanzar su tope de 30 minutos y quedó un 5,39~\% por
+encima de HC.
 
 \stopsubsection
 
@@ -847,15 +846,48 @@ Cuadro~\in[tab:res_estres_tiempos], pero difieren de sus tiempos en menos de
 un segundo, muy por debajo de lo que necesita la Etapa~1, salvo en el 01, en
 el que el presupuesto fue unos 3~minutos mayor que el tiempo de esa corrida.
 
-% PENDIENTE (corridas del 02/11 en results/equal_time/: 02-19 con los tiempos del CSV consolidado
-% de ACO; 01 con el tiempo de la nueva corrida de estrés de ACO en el 01, que reemplaza a la
-% de la suspensión. Actualizar también los cuadros de tiempos y sin referencia, y el texto del 01):
-% {\bf Con el tiempo de \ac{aco}.} Cuadro por escenario (presupuesto, objetivo del Split y del
-% monolítico al vencer el límite, diferencia de ACO contra cada uno) y párrafo con:
-% en cuántos escenarios cada modelo obtiene solución, dónde empata ACO, dónde gana y por
-% cuánto (en la corrida del 27/09: entre 30 y 62 % con 12 lotes o más), por qué falla el
-% Split donde falla (Etapa 1 sin rutear todos los lotes; en el 11, lotes sin picker elegible
-% por frío) y cuánto se excedió el presupuesto donde SCIP no cortó a tiempo.
+{\bf Con el tiempo de \ac{aco}.} Los presupuestos van de 13 a 551~segundos, salvo en el 01, donde es de unos
+32~minutos (Cuadro~\in[tab:res_igual_tiempo_aco]). El Split obtiene una
+solución en 15 de los 19 escenarios. En 9 de ellos (02, 04, 05, 06, 09, 10, 12, 13 y 15) queda a
+menos de un 0,1~\% de \ac{aco}, y en 02, 04, 09 y 12 la iguala o la mejora por
+menos de un 0,01~\%. En el 03 y el 14, \ac{aco} es mejor por un 1,2 y un
+4,8~\%, y en los cuatro escenarios de cuadrilla grande (16 a 19), por entre un
+26 y un 56~\%: con el tiempo de \ac{aco}, el Split entrega soluciones de
+mucha peor calidad. En el 01, el 07 y el 08, la Etapa~1 no llega a rutear todos
+los lotes, y en el 11 rutea lotes que ningún picker habilitado para la cadena de
+frío puede tomar, así que la Etapa~2 no tiene una asignación factible. El
+monolítico solo obtiene una solución en el 04 y el 12, un 5,3 y un 10,5~\%
+peor que la de \ac{aco}. Salvo en el 01, los modelos lineales excedieron su
+presupuesto en a lo sumo 6~segundos. En el 01, el monolítico tardó
+59~minutos, casi el doble de su presupuesto, porque el límite se aplica solo
+a la resolución de SCIP y no a la escritura de los datos ni a la compilación
+del modelo.
+
+\startplacetable[reference=tab:res_igual_tiempo_aco, location=here, title={Objetivo de cada modelo lineal al vencer el tiempo de ACO en el mismo escenario. La columna {\em ACO contra Split} es $100 \cdot (z_{\text{ACO}} - z_{\text{Split}}) / z_{\text{Split}}$: un valor negativo indica que ACO obtuvo un objetivo menor. Un guion indica que el modelo no obtuvo una solución.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\bTR \bTH Caso \eTH \bTH Presupuesto (s) \eTH \bTH ACO \eTH \bTH Split \eTH \bTH ACO contra Split \eTH \bTH Monolítico \eTH \eTR
+	\bTR \bTD 01 \eTD \bTD 1.892,3 \eTD \bTD 909.168,0 \eTD \bTD -- \eTD \bTD -- \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD 93,5 \eTD \bTD 29.034,0 \eTD \bTD 29.034,0 \eTD \bTD 0,00~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD 307,0 \eTD \bTD 1.752.212,0 \eTD \bTD 1.772.680,0 \eTD \bTD -1,15~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD 12,9 \eTD \bTD 149.221,0 \eTD \bTD 149.218,9 \eTD \bTD 0,00~\% \eTD \bTD 157.569,7 \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD 84,1 \eTD \bTD 241.288,9 \eTD \bTD 241.408,5 \eTD \bTD -0,05~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD 116,1 \eTD \bTD 256.587,7 \eTD \bTD 256.791,0 \eTD \bTD -0,08~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD 156,1 \eTD \bTD 271.946,8 \eTD \bTD -- \eTD \bTD -- \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD 119,2 \eTD \bTD 287.196,0 \eTD \bTD -- \eTD \bTD -- \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD 204,1 \eTD \bTD 275.030,6 \eTD \bTD 275.019,3 \eTD \bTD 0,00~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD 15,3 \eTD \bTD 112.079,5 \eTD \bTD 112.083,2 \eTD \bTD 0,00~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD 83,6 \eTD \bTD 182.361,1 \eTD \bTD -- \eTD \bTD -- \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD 127,8 \eTD \bTD 198.903,4 \eTD \bTD 198.901,8 \eTD \bTD 0,00~\% \eTD \bTD 222.183,9 \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD 119,9 \eTD \bTD 248.695,4 \eTD \bTD 248.715,4 \eTD \bTD -0,01~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD 75,7 \eTD \bTD 298.373,2 \eTD \bTD 313.524,7 \eTD \bTD -4,83~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD 52,5 \eTD \bTD 97.919,5 \eTD \bTD 98.018,5 \eTD \bTD -0,10~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD 131,2 \eTD \bTD 195.898,2 \eTD \bTD 266.136,2 \eTD \bTD -26,39~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD 168,7 \eTD \bTD 305.804,7 \eTD \bTD 694.610,8 \eTD \bTD -55,97~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD 274,4 \eTD \bTD 439.792,2 \eTD \bTD 1.007.307,9 \eTD \bTD -56,34~\% \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 19 \eTD \bTD 551,3 \eTD \bTD 780.787,3 \eTD \bTD 1.745.701,0 \eTD \bTD -55,27~\% \eTD \bTD -- \eTD \eTR
+	\eTABLE
+\stopplacetable
 
 \stopsubsection
 
@@ -868,7 +900,7 @@ salvo en el escenario 11, donde la cadena de frío obliga a demorar algunos: el
 Split y ACO entregan a tiempo el 97,4~\% de los pedidos y HC, el 96,8~\%.
 
 {\bf Memoria.} La mediana de la memoria pico es de 27~MB para HC y de 28~MB
-para ACO. En el escenario de 100×100 sube a 867 y 871~MB, por el tamaño del
+para ACO. En el escenario de 100×100 sube a 867 y 907~MB, por el tamaño del
 grafo. ACO tiene, además, picos de hasta 1.658~MB en algunos escenarios (06,
 09 y 12) que no siguen al tamaño de la instancia. La memoria del Split, de
 entre 76 y 287~MB, no es comparable, porque no incluye la de los procesos de
@@ -897,7 +929,7 @@ tuvo una mediana de 0,02~\% en HC y de 0,005~\% en ACO
 (Secciones~\in[sec:calib_hc_semillas] y~\in[sec:calib_aco_semillas]).
 Segundo, los tiempos son de reloj,
 medidos en una computadora portátil, y si el equipo se suspende durante una
-corrida, ese tiempo queda incluido en la duración, lo que afecta sobre todo al escenario 01 de ACO. Tercero, la
+corrida, ese tiempo queda incluido en la duración. Tercero, la
 referencia de objetivo existe solo donde el Split termina, en 9 de los 19
 escenarios de estrés; en los demás, la calidad de las heurísticas solo puede
 compararse entre ellas.
@@ -934,6 +966,11 @@ capítulo pueden resumirse así:
 	\item {\bf Las heurísticas resuelven donde el Split no termina}: en los 10
 	escenarios de estrés sin referencia, las dos dan una solución válida, y ACO
 	obtiene el mejor objetivo en 9 de ellos.
+	\item {\bf A igual tiempo, las heurísticas aventajan a los modelos lineales}:
+	con el tiempo de HC, ningún modelo lineal obtiene una solución en estrés;
+	con el de ACO, el Split obtiene una en 15 de los 19 escenarios, cerca de
+	ACO en la mayoría, pero entre un 26 y un 56~\% peor en los de cuadrilla
+	grande, y el monolítico, solo en 2.
 \stopitemize
 
 El Capítulo~\in[Capitulo_7] discute estos resultados y, a partir de ellos,
