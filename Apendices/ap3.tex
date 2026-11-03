@@ -27,9 +27,8 @@ en caso contrario no hay espera).
 %----------------------------------------------------------------------------------------
 \startsection[title={Validez de $M^{\text{seq}}$ con espera voluntaria}, reference=sec:anexo_mseq]
 
-% TODO: checkear
 La cota de
-$M^{\text{seq}}$ (Sección~\in[sec:notacion]) se basa en el tiempo total de
+$M^{\text{seq}}$ (Sección~\in[sec:mono_asignacion]) se basa en el tiempo total de
 trabajo, lo que alcanza cuando cada lote termina en cuanto completa su
 ejecución. Con espera voluntaria, en cambio, un lote puede figurar como
 terminado mucho después, cerca de la fecha de entrega de sus órdenes, y la
@@ -40,8 +39,9 @@ estar inactiva pasa a restringir y puede excluir la solución óptima.
 Un ejemplo pequeño lo muestra. Sea un único {\em picker} con dos lotes de
 duración 10: el primero tiene una orden con fecha de entrega 10, el segundo
 tiene cinco órdenes con fecha 2000, y todos los pesos valen 1. El óptimo vale
-2010: el primer lote termina en 10 y el segundo se declara terminado en 2000,
-sin adelanto ni demora. Con $M^{\text{seq}} = 500$, en cambio, las dos
+2010, con el primer lote terminado en 10 y el segundo declarado terminado en
+2000, sin adelanto ni demora. En una instancia tan pequeña, la fórmula da
+$M^{\text{seq}} = 500$, por el mínimo que se le impone. Con ese valor, las dos
 finalizaciones no pueden separarse más de 490 unidades, y la mejor solución que
 admite el modelo vale 5010, con el primer lote demorado hasta 1510.
 
@@ -53,7 +53,7 @@ ejecuta sus lotes restantes sin pausas, y ningún lote termina después de
 ${\max_{n} T^{\text{due}}_n + \sum_{b} \overline{T}_b}$, donde
 $\overline{T}_b = F_b + R^{\max} / \min_{p} V_p$ es el tiempo de ejecución de
 peor caso del lote $b$, el mismo que usa la cota de la
-Sección~\in[sec:notacion]. Sumándole la duración de un lote se obtiene una
+Sección~\in[sec:mono_asignacion]. Sumándole la duración de un lote se obtiene una
 cota válida en todos los casos:
 \startformula
 	M^{\text{seq}} \geq \max_{n \in \mathcal{N}} T^{\text{due}}_n
@@ -61,6 +61,20 @@ cota válida en todos los casos:
 \stopformula
 Cuando la espera no conviene (Sección~\in[sec:espera_voluntaria]), existe una
 solución óptima sin espera y la cota original alcanza.
+
+Las soluciones informadas en esta tesina no se ven afectadas. Se revisaron las
+59 soluciones del Split guardadas en las corridas de las pruebas funcionales y
+de estrés. En 50 de ellas, la cota usada cumple la condición anterior
+calculada con los tiempos de ruta de la Etapa~1, que en la Etapa~2 son datos,
+en lugar de los de peor caso. En las 9 restantes, la espera no puede separar
+dos lotes de un mismo {\em picker} más allá de la cota usada. En las 6 de
+estrés, la espera nunca conviene, porque $W^{c} = 27$ supera la cantidad de
+órdenes de cualquier lote. De las 3 funcionales, una tiene un único lote, en
+otra el adelanto no tiene peso en el objetivo, y en la tercera todas las
+órdenes tienen la misma fecha de entrega, de modo que los lotes de un mismo
+{\em picker} terminan uno detrás del otro. Como el modelo monolítico alcanza
+el mismo valor que el Split en todos los pares que ambos resuelven, sus
+óptimos tampoco se ven afectados.
 
 \stopsection
 \stopchapter
