@@ -3,8 +3,8 @@
 %----------------------------------------------------------------------------------------
 \startsection[title={Problema de pickeo de órdenes}, reference=sec:problema]
 
-En un centro de distribución, la mercadería llega de los proveedores, se
-almacena en distintas ubicaciones dentro del almacén y se envía a los
+En un centro de distribución, los productos llegan de los proveedores, se
+almacenan en distintas ubicaciones dentro del almacén y se envían a los
 clientes a medida que estos realizan sus pedidos. El {\em picking}, es decir,
 la recolección de los productos que componen cada pedido, es la actividad que
 conecta ambos extremos y una de las que más tiempo y costo insume, llegando
@@ -21,23 +21,25 @@ beneficios directos para la empresa y para los clientes, tales como:
 	\item Reducción de costos operativos, ya que los operarios pueden preparar más
 	pedidos en el mismo tiempo.
 	\item Reducción de los tiempos de entrega, ya que los pedidos se preparan con
-	mayor rapidez y se envían antes a los clientes.
+	y se envían con mayor rapideza.
 	\item Una mejor planificación de entregas, ya que los pedidos se preparan y
 	se entregan en el momento justo, evitando cuellos de botella en la zona de
 	despacho.
 	\item Una mejor experiencia de compra para los clientes, ya que reciben sus
-	pedidos en el tiempo comprometido.
+	pedidos en el tiempo acordado.
 \stopitemize
 
-Para recolectar varios pedidos en un mismo recorrido, los pedidos de los
-clientes (también llamados {\em órdenes}) se agrupan en {\em lotes}. Cada
-lote es ejecutado por un único operario de picking ({\em picker}): parte del
-depósito, recorre los pasillos visitando cada ubicación donde hay productos
-de alguno de sus pedidos, recoge las unidades correspondientes y termina en
-el punto de entrega, donde el lote queda listo para su despacho. Varios
-operarios, cada uno con su propia velocidad, trabajan en simultáneo, y cada
-uno ejecuta los lotes que tiene asignados de a uno por vez. Planificar esta
-operación implica tomar tres decisiones:
+En este trabajo se considera un almacén con pasillos, que almacena productos
+congelados con requisitos de cadena de frío. Para recolectar varios pedidos en 
+un mismo recorrido, los pedidos de los clientes (también llamados {\em órdenes}) 
+se agrupan en {\em lotes}. Cada lote es ejecutado por un único operario de picking 
+({\em picker}): parte del depósito, recorre los pasillos visitando cada ubicación 
+donde hay productos de alguno de sus pedidos, recoge las unidades correspondientes 
+y termina en el punto de entrega, donde el lote queda listo para su despacho.
+En este proceso se debe considerar el tiempo que cada producto puede permanecer
+fuera de la cámara de frío, y la velocidad de cada operario, que puede variar.
+Los operarios trabajan en simultáneo, y cada uno ejecuta los lotes que tiene 
+asignados de a uno por vez. Planificar esta operación implica tomar tres decisiones:
 
 \startitemize
 	\item {\bf Asignación:} qué operario ejecuta cada lote.
@@ -49,15 +51,7 @@ operación implica tomar tres decisiones:
 Cada pedido tiene una fecha de entrega comprometida ({\em due date}). Un
 pedido que termina después de su fecha incumple el compromiso con el
 cliente; uno que termina mucho antes queda esperando en la zona de
-despacho, ocupando espacio. Como todos los pedidos de un lote terminan en el
-mismo instante, cuando un lote reúne pedidos con fechas distintas no todos
-pueden terminar justo en su fecha.
-
-Además, este trabajo considera la operación diaria de un centro de
-distribución de productos congelados, en el que cada producto puede
-permanecer fuera de la cámara de frío solo un tiempo limitado. A este
-requisito se lo conoce como {\em cadena de frío}: los lotes con un límite
-más ajustado deben ser recolectados por operarios más rápidos.
+despacho, ocupando espacio.
 
 Llamamos {\bf OPP} (del inglés {\em Order Picking Problem}) al problema de
 decidir, a partir de un almacén, un conjunto de lotes de pedidos y un
@@ -71,10 +65,9 @@ representan los desplazamientos posibles entre ubicaciones junto con su
 distancia asociada. Como simplificación, se considera que cada ubicación
 puede ser visitada una única vez en la ruta de un lote.
 
-El agrupamiento de pedidos en lotes ({\em batching}) no forma parte de este
-trabajo: los lotes se reciben como dato de entrada. Lo mismo ocurre con la
-ubicación de los productos en el almacén ({\em slotting}), que también se
-considera dada.
+Los lotes se consideran como dato de entrada, y creación ({\em batching}) no 
+forma parte de este. Lo mismo ocurre con la ubicación de los productos en el 
+almacén ({\em slotting}), que también se considera dada.
 
 Las decisiones del OPP no son independientes entre sí. La duración de un
 lote depende de su ruta y de la velocidad del operario que lo ejecuta, y
@@ -102,8 +95,7 @@ ubicaciones y de pedidos con distintos niveles de urgencia, las decisiones
 deben tomarse en poco tiempo, por lo que esta disyuntiva entre la calidad de
 la solución y el tiempo de cómputo es central.
 
-Este trabajo la recorre con cuatro métodos, desarrollados en tres pasos,
-cada uno construido sobre el anterior:
+Este trabajo define cuatro modelos:
 
 \startitemize[n]
 	\item {\bf Modelo monolítico.} Un modelo de \ac{mip}, basado en el de
@@ -129,7 +121,7 @@ cada uno construido sobre el anterior:
 Evaluar, sobre un conjunto de escenarios comparables, el compromiso entre
 calidad de la solución, tiempo de cómputo y robustez que ofrecen distintos
 enfoques de resolución (exacto y heurísticos) al problema de asignación,
-secuenciación y ruteo de picking, para caracterizar en qué condiciones cada
+secuenciación y ruteo mencionado, para caracterizar en qué condiciones cada
 enfoque resulta más apropiado.
 
 \stopsubsection
@@ -141,8 +133,7 @@ enfoque resulta más apropiado.
 	referencia, un modelo lineal (monolítico) que incorpore velocidad
 	heterogénea entre operarios y requisitos de cadena de frío.
 	\item Descomponer el modelo monolítico en un modelo lineal en dos etapas
-	(Split) que alcance el mismo valor óptimo y resuelva instancias más
-	grandes.
+	que alcance el mismo valor óptimo y resuelva instancias más grandes.
 	\item Diseñar e implementar dos metaheurísticas, basadas en \ac{hc} y en
 	\ac{aco}, equivalentes a los modelos lineales, con la misma función
 	objetivo y las mismas restricciones, de forma tal que sus resultados sean
