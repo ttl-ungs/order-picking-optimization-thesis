@@ -99,12 +99,12 @@ la alternativa: ACO cuando importa la calidad de la solución, y HC cuando
 importa responder en segundos, por ejemplo para volver a planificar durante
 la operación.
 
-La robustez, en cambio, se evaluó solo en parte. En HC, la diferencia entre
-la mejor y la peor de cinco semillas fue menor al 0,5~\% en todos los
-escenarios de estrés, aunque con una de ellas dos escenarios terminaron sin
-solución factible (Sección~\in[sec:hc_parametros]). En ACO, la variación se midió con tres
-semillas en los escenarios 04, 06 y 15, y la diferencia entre la mejor y la
-peor fue como máximo de un 0,02~\% (Sección~\in[sec:aco_parametros]).
+La robustez se evaluó con cinco semillas en los escenarios de estrés 02 a
+19. En HC, la diferencia entre la mejor y la peor fue menor al 0,5~\% en
+todos los escenarios, aunque con una de ellas dos escenarios terminaron sin
+solución factible (Sección~\in[sec:calib_hc_semillas]). En ACO fue como
+máximo de un 0,05~\%, con una mediana de 0,005~\%, y todas las ejecuciones
+encontraron solución (Sección~\in[sec:calib_aco_semillas]).
 
 \stopsection
 
@@ -125,8 +125,8 @@ una operación real. Los tiempos son de reloj, medidos en una computadora
 portátil, y pueden variar hasta el doble entre corridas; en las pruebas de
 estrés, además, la Etapa~1 del Split se ejecutó en paralelo. En las corridas
 principales, cada heurística se ejecutó una sola vez por instancia, con
-semilla 1, y en ACO la variación entre semillas se midió solo en tres
-escenarios. La referencia de
+semilla 1; la variación entre semillas se midió aparte, en los escenarios de
+estrés 02 a 19. La referencia de
 objetivo existe solo donde el Split termina, y 10 instancias funcionales
 pueden compararse solo en estado.
 
