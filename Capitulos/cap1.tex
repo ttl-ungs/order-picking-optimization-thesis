@@ -1,15 +1,15 @@
 \startchapter[title={Introducción}, reference=Capitulo_1]
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Problema de pickeo de órdenes}, reference=sec:problema]
+\startsection[title={Problema de preparación de pedidos}, reference=sec:problema]
 
-En un centro de distribución, la mercadería llega de los proveedores, se
-almacena en distintas ubicaciones dentro del almacén y se envía a los
+En un centro de distribución, los productos llegan de los proveedores, se
+almacenan en distintas ubicaciones dentro del almacén y se envían a los
 clientes a medida que estos realizan sus pedidos. El {\em picking}, es decir,
 la recolección de los productos que componen cada pedido, es la actividad que
-conecta ambos extremos y una de las que más tiempo y costo insume, llegando
-a representar hasta el 50-75\% del costo operativo total de un almacén
-\cite[urzua2019evaluating]. Un caso real documentado en un centro de
+conecta ambos extremos y una de las que más tiempo y costo insume, ya que
+representa entre el 50 y el 75\% del costo operativo total de un almacén
+típico \cite[urzua2019evaluating]. Un caso real documentado en un centro de
 distribución nacional muestra que el tiempo de preparación de un pedido
 podía llegar a las 8 horas, y que con una mejor asignación de las
 ubicaciones de picking es posible reducir significativamente ese tiempo
@@ -20,24 +20,32 @@ beneficios directos para la empresa y para los clientes, tales como:
 \startitemize
 	\item Reducción de costos operativos, ya que los operarios pueden preparar más
 	pedidos en el mismo tiempo.
-	\item Reducción de los tiempos de entrega, ya que los pedidos se preparan con
-	mayor rapidez y se envían antes a los clientes.
+	\item Reducción de los tiempos de entrega, ya que los pedidos se preparan y
+	se envían con mayor rapidez.
 	\item Una mejor planificación de entregas, ya que los pedidos se preparan y
 	se entregan en el momento justo, evitando cuellos de botella en la zona de
 	despacho.
 	\item Una mejor experiencia de compra para los clientes, ya que reciben sus
-	pedidos en el tiempo comprometido.
+	pedidos en el tiempo acordado.
 \stopitemize
 
-Para recolectar varios pedidos en un mismo recorrido, los pedidos de los
-clientes (también llamados {\em órdenes}) se agrupan en {\em lotes}. Cada
-lote es ejecutado por un único operario de picking ({\em picker}): parte del
-depósito, recorre los pasillos visitando cada ubicación donde hay productos
-de alguno de sus pedidos, recoge las unidades correspondientes y termina en
-el punto de entrega, donde el lote queda listo para su despacho. Varios
-operarios, cada uno con su propia velocidad, trabajan en simultáneo, y cada
-uno ejecuta los lotes que tiene asignados de a uno por vez. Planificar esta
-operación implica tomar tres decisiones:
+En este trabajo se considera un almacén con pasillos que guarda productos
+congelados, sujetos a la cadena de frío. Para recolectar varios pedidos en
+un mismo recorrido, los pedidos de los clientes (también llamados {\em órdenes})
+se agrupan en {\em lotes}. Cada lote lo ejecuta un único operario de picking
+({\em picker}), que parte del depósito, recorre los pasillos visitando cada
+ubicación donde hay productos de alguno de sus pedidos, recoge las unidades
+correspondientes y termina en el punto de entrega, donde el lote queda listo
+para su despacho. Los operarios trabajan en simultáneo, y cada uno ejecuta los
+lotes que tiene asignados de a uno por vez.
+
+La {\em cadena de frío} limita el tiempo que los productos pueden permanecer
+fuera de la cámara de frío, y en este trabajo ese límite se aplica a la
+ejecución de cada lote. Además, no todos los operarios trabajan a la misma
+velocidad, así que un mismo lote tarda más o menos según quién lo ejecute. Un
+lote con una ruta larga, por ejemplo, puede respetar el límite solo si lo
+ejecuta un operario rápido. Planificar esta operación implica tomar tres
+decisiones:
 
 \startitemize
 	\item {\bf Asignación:} qué operario ejecuta cada lote.
@@ -48,19 +56,13 @@ operación implica tomar tres decisiones:
 
 Cada pedido tiene una fecha de entrega comprometida ({\em due date}). Un
 pedido que termina después de su fecha incumple el compromiso con el
-cliente; uno que termina mucho antes queda esperando en la zona de
+cliente, y uno que termina mucho antes queda esperando en la zona de
 despacho, ocupando espacio. Como todos los pedidos de un lote terminan en el
-mismo instante, cuando un lote reúne pedidos con fechas distintas no todos
+mismo instante, cuando un lote reúne pedidos con fechas distintas, no todos
 pueden terminar justo en su fecha.
 
-Además, este trabajo considera la operación diaria de un centro de
-distribución de productos congelados, en el que cada producto puede
-permanecer fuera de la cámara de frío solo un tiempo limitado. A este
-requisito se lo conoce como {\em cadena de frío}: los lotes con un límite
-más ajustado deben ser recolectados por operarios más rápidos.
-
-Llamamos {\bf OPP} (del inglés {\em Order Picking Problem}) al problema de
-decidir, a partir de un almacén, un conjunto de lotes de pedidos y un
+El problema de preparación de pedidos ({\bf OPP}, del inglés {\em Order
+Picking Problem}) consiste en decidir, a partir de un almacén, un conjunto de lotes de pedidos y un
 conjunto de operarios con velocidades distintas, qué operario ejecuta cada
 lote, en qué orden y siguiendo qué ruta, respetando la cadena de frío, de
 forma tal de minimizar la combinación de los tiempos de finalización de los
@@ -71,10 +73,9 @@ representan los desplazamientos posibles entre ubicaciones junto con su
 distancia asociada. Como simplificación, se considera que cada ubicación
 puede ser visitada una única vez en la ruta de un lote.
 
-El agrupamiento de pedidos en lotes ({\em batching}) no forma parte de este
-trabajo: los lotes se reciben como dato de entrada. Lo mismo ocurre con la
-ubicación de los productos en el almacén ({\em slotting}), que también se
-considera dada.
+Los lotes se reciben como dato de entrada, por lo que su formación
+({\em batching}) no forma parte de este trabajo. Lo mismo ocurre con la ubicación de los productos en el
+almacén ({\em slotting}), que también se considera dada.
 
 Las decisiones del OPP no son independientes entre sí. La duración de un
 lote depende de su ruta y de la velocidad del operario que lo ejecuta, y
@@ -92,32 +93,42 @@ formas distintas.
 %----------------------------------------------------------------------------------------
 \startsection[title={Enfoque propuesto}, reference=sec:enfoque]
 
-Existen dos grandes familias de métodos para
-resolver problemas de optimización combinatoria como el OPP: los métodos
-{\bf exactos}, que garantizan encontrar la solución óptima pero cuyo tiempo
-de cómputo crece rápidamente con el tamaño de la instancia, y los métodos
-{\bf heurísticos} (y metaheurísticos), que renuncian a esa garantía a cambio
-de tiempos de resolución mucho menores. En un almacén real, con cientos de
+Los problemas de optimización combinatoria como el OPP suelen abordarse con
+dos grandes familias de métodos. Los métodos {\bf exactos} garantizan
+encontrar la solución óptima, pero su tiempo de cómputo crece rápidamente con
+el tamaño de la instancia. Los métodos {\bf heurísticos} (y metaheurísticos),
+en cambio, renuncian a esa garantía a cambio de tiempos de resolución mucho
+menores. En un almacén real, con cientos de
 ubicaciones y de pedidos con distintos niveles de urgencia, las decisiones
 deben tomarse en poco tiempo, por lo que esta disyuntiva entre la calidad de
 la solución y el tiempo de cómputo es central.
 
-Este trabajo la recorre con cuatro métodos, desarrollados en tres pasos,
-cada uno construido sobre el anterior:
+Este trabajo desarrolla dos modelos lineales y dos metaheurísticas:
 
 \startitemize[n]
 	\item {\bf Modelo monolítico.} Un modelo de \ac{mip}, basado en el de
 	Coruzzolo et al. \cite[coruzzolo2023orderpicking], que decide a la
-	vez las ruta, asignación y secuencias, y sirve de punto de partida exacto,
-    pero crece rápidamente con la instancia.
+	vez las rutas, la asignación y la secuencia. Es el punto de partida exacto,
+	pero su tamaño crece rápidamente con la instancia.
 	\item {\bf Modelo Split.} Para resolver instancias más grandes, el
 	monolítico se descompone en dos modelos que resuelven
 	primero las rutas y después la asignación y la secuencia.
 	\item {\bf Metaheurísticas.} Como el modelo Split sigue siendo inviable
-	para instancias moderadamente grandes, se desarrollan dos, basadas en
-	\ac{hc} y en \ac{aco}, cuyos resultados pueden compararse con el
-	óptimo.
+	para instancias moderadamente grandes, se desarrollan dos metaheurísticas,
+	basadas en \ac{hc} y en \ac{aco}, que resuelven el mismo problema en
+	menos tiempo, aunque sin garantizar el óptimo.
 \stopitemize
+
+Los modelos lineales dan la solución óptima de las instancias que llegan a
+resolver, y eso permite medir cuánto se alejan de ella las metaheurísticas.
+Sobre esta base, el trabajo hace tres aportes. El primero es la
+descomposición del modelo monolítico en el modelo Split, que alcanza el mismo
+valor óptimo y resuelve instancias que el monolítico no llega a resolver. El
+segundo es una verificación independiente de las soluciones de las
+metaheurísticas, que fija cada solución en el modelo monolítico y comprueba
+que cumple todas sus restricciones. El tercero es la comparación de los
+cuatro métodos sobre las mismas instancias, que permite ver en qué
+condiciones conviene cada uno.
 
 \stopsection
 
@@ -128,9 +139,8 @@ cada uno construido sobre el anterior:
 
 Evaluar, sobre un conjunto de escenarios comparables, el compromiso entre
 calidad de la solución, tiempo de cómputo y robustez que ofrecen distintos
-enfoques de resolución (exacto y heurísticos) al problema de asignación,
-secuenciación y ruteo de picking, para caracterizar en qué condiciones cada
-enfoque resulta más apropiado.
+enfoques de resolución (exacto y heurísticos) al OPP, para caracterizar en
+qué condiciones cada enfoque resulta más apropiado.
 
 \stopsubsection
 
@@ -141,12 +151,13 @@ enfoque resulta más apropiado.
 	referencia, un modelo lineal (monolítico) que incorpore velocidad
 	heterogénea entre operarios y requisitos de cadena de frío.
 	\item Descomponer el modelo monolítico en un modelo lineal en dos etapas
-	(Split) que alcance el mismo valor óptimo y resuelva instancias más
-	grandes.
+	que alcance el mismo valor óptimo y resuelva instancias más grandes.
 	\item Diseñar e implementar dos metaheurísticas, basadas en \ac{hc} y en
 	\ac{aco}, equivalentes a los modelos lineales, con la misma función
 	objetivo y las mismas restricciones, de forma tal que sus resultados sean
-	comparables.
+	comparables. A diferencia de los modelos lineales, las metaheurísticas no
+	contemplan que un operario espere voluntariamente antes de comenzar un
+	lote.
 	\item Diseñar un conjunto de escenarios de prueba (funcionales y de estrés)
 	que permitan comparar los cuatro métodos bajo condiciones equivalentes.
 	\item Medir y comparar, sobre esos escenarios, la proporción de instancias
@@ -165,15 +176,16 @@ El Capítulo~\in[Capitulo_2] presenta los fundamentos teóricos de los métodos
 utilizados y los trabajos relacionados. El Capítulo~\in[Capitulo_3] formula
 los dos modelos lineales, el monolítico y el Split, y el
 Capítulo~\in[Capitulo_4] describe las metaheurísticas basadas en \ac{hc} y
-\ac{aco}. El Capítulo~\in[Capitulo_5] presenta la metodología de evaluación:
-las pruebas funcionales y de estrés, cómo se ejecutan, cómo se verifica que
-las soluciones de las metaheurísticas cumplen todas las restricciones del
-problema y cómo se comparan los métodos. El Capítulo~\in[Capitulo_6] presenta
-los resultados, y el Capítulo~\in[Capitulo_7], la discusión, las
-conclusiones, las limitaciones y las líneas de trabajo futuro. Los anexos
-reúnen los diagramas y los pseudocódigos de los métodos, el detalle de los
-modelos lineales y de las metaheurísticas, y el de las pruebas, del
-relevamiento, de la verificación y de los resultados.
+\ac{aco}. El Capítulo~\in[Capitulo_5] explica cómo se evalúan los métodos.
+Presenta las pruebas funcionales y de estrés y la forma en que se ejecutan,
+describe cómo se verifica que las soluciones de las metaheurísticas cumplen
+todas las restricciones del problema y define cómo se comparan los métodos.
+El Capítulo~\in[Capitulo_6] presenta los resultados, y el
+Capítulo~\in[Capitulo_7], la discusión, las conclusiones, las limitaciones y
+las líneas de trabajo futuro. Por último, los anexos reúnen los pseudocódigos
+de las metaheurísticas y el detalle de los modelos lineales, de las
+metaheurísticas, de las pruebas funcionales, del relevamiento de los modelos
+lineales, de la verificación de las soluciones y de los resultados.
 
 \stopsection
 \stopchapter
@@ -181,62 +193,25 @@ relevamiento, de la verificación y de los resultados.
 %========================================================================================
 % GUÍA DE TRABAJO - CAPÍTULO 1 (Introducción)
 % Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
-% (linear-picking-routing, origin/main 75d553c del 19/10), docs/thesis/models.tex y
-% Notas/opp_v5_development.tex. Solo cubre lo que toca a modelos lineales, definición de
-% pruebas, comparación de modelos y validación de las metaheurísticas.
-% [ ] = tarea; (D) = decisión de ustedes.
+% Revisada el 02/11/2026 sobre el texto actual del capítulo. Ya se aplicaron: nombre de
+% la cadena de frío y su efecto sobre la asignación, la oración de las fechas de un lote,
+% el nombre del problema (título de 1.1, definición, resumen y glosario), la cifra de
+% Urzúa et al. (verificada en el artículo, "about 50-75% of the total operating cost"),
+% los objetivos 3 y 6, el párrafo de aportes de 1.2 y la oración de los anexos.
+% "Robustez" queda en el objetivo general, porque el Capítulo 7 aclara que se evaluó en
+% parte. [ ] = tarea; (D) = decisión de ustedes.
 %========================================================================================
 %
-% 1. QUÉ FALTA
-% [ ] Enfoque propuesto, ítem 2: termina en "A diferencia del modelo de referencia //TODO".
-%     Completar con qué cambia respecto de Coruzzolo et al.: (a) el loteo no se decide (los
-%     lotes son dato; según el propio cap. 2, Coruzzolo también optimiza el batching);
-%     (b) se agregan V_p y T_cold; (c) los cambios de formulación que correspondan
-%     (verificarlo contra el paper: eliminación de subtours por flujo de Gavish-Graves,
-%     forma del objetivo). Ojo: "//TODO" se imprime en el PDF (en ConTeXt el comentario es
-%     %); pasa lo mismo en el cap. 5 (casos 03 y 14, y la sección 5.4).
-% [ ] Enfoque propuesto, ítem 1: dice que el modelo de Coruzzolo resuelve "asignación,
-%     secuenciación y ruteo"; el cap. 2 dice que también hace batching. Unificar y aclarar
-%     acá que el batching queda fuera de este trabajo.
-% [ ] Organización del trabajo, etapa de experimentación: agregar la validación, que es un
-%     aporte metodológico propio: se verificó que cada solución de las metaheurísticas
-%     cumple todas las restricciones del modelo monolítico (método en el cap. 5, resultados
-%     en el cap. 6).
+% 1. CONTENIDO A REVISAR
+% [ ] 1.4, anexos: la última oración describe los anexos con contenido. Si se completan
+%     el Anexo A (Diagramas) o las Secciones B.1 y B.2, sumarlos a esa oración.
+% (D) 1.2, aportes: el párrafo nuevo y el último de 2.6 dicen cosas parecidas. Al revisar
+%     2.6, dejar ahí solo el posicionamiento frente a la literatura.
 %
-% 2. QUÉ CORREGIR O MEJORAR
-% [ ] Objetivo específico 2 ("que alcance el mismo valor óptimo en menor tiempo") e ítem 3
-%     del enfoque: el mismo óptimo se cumple (49 de 49 pares funcionales), pero el "menor
-%     tiempo" vale solo a escala: en las instancias funcionales el monolítico es más rápido
-%     en 38 de 49 pares (compila un MIP en vez de dos). Reformular, p. ej. "...y que escale a
-%     instancias que el monolítico no resuelve" (estrés: Split 9 de 19, monolítico 0 de 19).
-% [ ] Enfoque, ítem 4, y objetivo específico 3: "sobre el mismo espacio de soluciones" no es
-%     exacto. Las metaheurísticas no hacen espera voluntaria (cap. 3), así que exploran el
-%     subconjunto de soluciones sin espera (el cap. 4 ya lo dice). Ajustar la frase.
-% [ ] Objetivo general ("robustez") y objetivo específico 5 ("tasa de convergencia"):
-%     definirlos en el cap. 5 de forma medible (p. ej. convergencia = proporción de
-%     instancias en que el método termina con solución, o prueba el óptimo, dentro del tope;
-%     robustez = variación del resultado entre semillas). Hoy cada heurística corrió una sola
-%     vez, con semilla 1: si no se mide la variabilidad, sacar "robustez" o acotarla.
-% [ ] Objetivo específico 4 ("comparar los cuatro modelos bajo condiciones equivalentes"):
-%     en estrés la referencia termina siendo solo el Split, porque el monolítico no termina
-%     ningún escenario. Anticiparlo o suavizar "los cuatro modelos".
-% [ ] "Se considera que cada ubicación puede ser visitada por cada picker una única vez por
-%     lote": es la restricción de camino simple, (8)-(9) del cap. 3. Presentarla como
-%     simplificación de la formulación y no como regla del negocio: en una grilla chica y
-%     saturada vuelve infactible una instancia físicamente posible (test 38; estudio 08).
-% [ ] Organización del trabajo, etapas de modelado y optimización: el orden real fue el
-%     inverso. El Split (opp_v5) existió primero (en el repo desde el 30/08) y el monolítico
-%     se agregó el 21/09 para medir qué aporta la descomposición; las estrategias para bajar
-%     tiempos (Etapa 1 por lote, paralelismo, clausura métrica, branching por pseudocosto,
-%     pesos asimétricos) se probaron sobre el Split (Notas, sec. "Pruebas para mejorar el
-%     rendimiento del Split").
-%     (D) Contarlo en orden lógico sin presentarlo como cronología, o ajustar el texto.
-% [ ] Opcional, sin tocar la estructura: un párrafo final con la guía de capítulos ("el
-%     Capítulo 2 presenta..."); hoy "Organización del trabajo" describe etapas del proceso.
-%
-% 3. FUENTES
-% - Notas/opp_v5_development.tex: secs. "Origen y evolución de la familia v5" (cronología)
-%   y "Síntesis para la tesina".
-% - linear-picking-routing/docs/thesis/models.tex, sec. "Conclusiones".
+% 2. COORDINACIÓN CON OTROS CAPÍTULOS
+% [ ] Resumen (Capitulos/resumen.tex): ya usa el nombre del problema de 1.1 y "proporción
+%     de instancias resueltas", pero todavía no tiene resultados ni conclusiones.
+%     Completarlo cuando se cierren los Capítulos 6 y 7.
+% [ ] Cuando se definan los títulos de los Capítulos 6 y 7, verificar que 1.4 los describa
+%     igual (hoy el 7 se llama "Discusión y conclusiones").
 %========================================================================================
