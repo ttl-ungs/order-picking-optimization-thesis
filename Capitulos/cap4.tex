@@ -1,13 +1,16 @@
 \startchapter[title={Metaheurísticas}, reference=Capitulo_4]
 
-Aún con la optimización en dos etapas, el modelo Split resulta inviable en
-tiempos prácticos para instancias moderadamente grandes. En este capítulo se
-presentan las dos metaheurísticas desarrolladas como alternativa, basadas en
-\ac{hc} (Sección~\in[sec:hc]) y \ac{aco} (Sección~\in[sec:aco]). Ambas son
-equivalentes en características a los modelos lineales del
-Capítulo~\in[Capitulo_3]: resuelven el mismo problema, con la misma función
-objetivo, las mismas restricciones de velocidad y cadena de frío, y sobre el
-mismo espacio de soluciones, aunque sin garantía de optimalidad.
+En este capítulo se presentan las dos metaheurísticas desarrolladas como
+alternativa al modelo Split para las instancias que este no resuelve en
+tiempos prácticos, basadas en \ac{hc} (Sección~\in[sec:hc]) y \ac{aco}
+(Sección~\in[sec:aco]). Ambas resuelven el mismo problema que los modelos
+lineales del Capítulo~\in[Capitulo_3], con la misma función objetivo y las
+mismas restricciones, incluidas la velocidad de los {\em pickers} y la cadena
+de frío. Se diferencian de ellos en dos aspectos. No garantizan encontrar el
+óptimo, y solo generan programaciones sin espera voluntaria
+(Sección~\in[sec:espera_voluntaria]). Para comprobar que sus soluciones
+cumplen todas las restricciones, cada una se verificó de forma independiente
+contra el modelo monolítico (Sección~\in[sec:validacion]).
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:hc]
@@ -34,11 +37,11 @@ movimiento (Sección~\in[sec:marco_hc]). En \ac{hc}, una solución
 $s = (\pi, a, \sigma)$ tiene tres componentes:
 \startitemize[n]
 	\item {\bf Una ruta por lote.} Para cada lote $b$ con órdenes,
-	$\pi_b = (v_1, \dots, v_k)$ es una secuencia de locaciones intermedias
+	$\pi_b = (v_1, \dots, v_k)$ es una secuencia de ubicaciones intermedias
 	distintas tal que $(v_{\text{start}}, v_1)$, $(v_i, v_{i+1})$ y
 	$(v_k, v_{\text{end}})$ pertenecen a $\mathcal{E}$, y que contiene todas
-	las locaciones con $a_{bi} = 1$. La secuencia puede incluir además
-	locaciones de paso, que el {\em picker} atraviesa sin recolectar.
+	las ubicaciones con $a_{bi} = 1$. La secuencia puede incluir además
+	ubicaciones de paso, que el {\em picker} atraviesa sin recolectar.
 	\item {\bf Una asignación de lotes a pickers.} Una función
 	$a : \mathcal{B} \to \mathcal{P}$ que indica qué {\em picker} ejecuta cada
 	lote.
@@ -79,9 +82,9 @@ $k$-ésimo lote de $\sigma_p$ es
 \stopformula
 \stopplaceformula
 y a partir de los $c_b$ se calculan el adelanto y la demora de cada orden.
-Por lo tanto, \ac{hc} siempre reporta el instante real de finalización de
-cada lote y no puede realizar espera voluntaria que los modelos lineales sí realizan
-(Sección~\in[sec:espera_voluntaria]). Su espacio de soluciones es el
+Por lo tanto, \ac{hc} siempre informa el instante real de finalización de
+cada lote, y no puede hacer la espera voluntaria que sí admiten los modelos
+lineales (Sección~\in[sec:espera_voluntaria]). Su espacio de soluciones es el
 subconjunto de las soluciones de los modelos lineales en que ningún lote
 espera.
 
@@ -118,18 +121,18 @@ lote tenga un único {\em picker}, que los lotes de un mismo {\em picker} no
 se solapen y que ninguna ruta contenga subtours.
 
 {\bf Restricciones duras.} Las rutas deben usar solo arcos del grafo, no
-repetir locaciones y visitar todas las locaciones requeridas por el lote.
-Estas restricciones se tratan con la estrategia de rechazo, lo que implica que nunca se acepta
-una solución que las viole. En la práctica, no hace falta descartar
-soluciones, porque los operadores de movimiento solo generan vecinos que las
-cumplen. La solución inicial se valida al construirla
+repetir ubicaciones y visitar todas las ubicaciones requeridas por el lote.
+Estas restricciones se tratan con la estrategia de preservación
+(Sección~\in[sec:marco_restricciones]), ya que la construcción y los
+operadores de movimiento solo generan soluciones que las cumplen, de modo que
+nunca hace falta descartar una. La solución inicial se valida al construirla
 (Sección~\in[sec:hc_solucion_inicial]). El movimiento 2-opt descarta las
 inversiones que usarían un arco inexistente, y la reasignación y el
 intercambio no modifican las rutas (Sección~\in[sec:hc_busqueda]). La
 capacidad de los lotes tampoco cambia durante la búsqueda.
 
-{\bf Restricción blanda} Durante la búsqueda, la {\bf cadena de frío} se trata como una restricción
-blanda, con la estrategia de penalización de la
+{\bf Restricción blanda.} Durante la búsqueda, la cadena de frío se trata
+como una restricción blanda, con la estrategia de penalización de la
 Ecuación~\in[eq:penalizacion]. El costo de violación es el exceso total de
 los tiempos de ejecución sobre el límite de la cadena de frío:
 \startplaceformula[reference=eq:hc_violacion]
@@ -178,16 +181,15 @@ sin inversiones que las acorten, así que la corrección llega por la
 reasignación (Sección~\in[sec:hc_limitaciones]). Si la restricción fuera
 dura desde el principio, la solución inicial se descartaría completa y la
 búsqueda nunca llegaría a intentar mejorarla. Además, permitir estados infactibles
-intermedios hace posible llegar a posibles soluciones a las que no se puede llegar pasando
+intermedios hace posible llegar a soluciones a las que no se llega pasando
 únicamente por soluciones factibles \cite[talbi2009metaheuristics].
 
 A pesar de que su evaluación es blanda, la cadena de frío debe cumplirse en el resultado final.
-Para asegurarlo, durante la búsqueda se mantienen dos soluciones: la solución actual $s$, que se
-compara con sus vecinos usando $f'$, y la mejor solución factible encontrada $s^*$,
-que solo se actualiza cuando la solución aceptada cumple $v(s) = 0$ y mejora
-$f(s^*)$. Al terminar, se informa $s^*$ con su valor $f(s^*)$, que no incluye
-penalización. Si la búsqueda termina sin haber encontrado ninguna solución
-con $v(s) = 0$, la instancia se informa como infactible. Para no
+Para asegurarlo, durante la búsqueda se mantienen dos soluciones. La
+solución actual $s$ se compara con sus vecinos usando $f'$, y la mejor
+solución factible encontrada, $s^*$, solo se actualiza cuando la solución
+aceptada cumple $v(s) = 0$ y mejora $f(s^*)$. Al terminar se informa $s^*$,
+con su valor $f(s^*)$ sin penalización (Sección~\in[sec:hc_busqueda]). Para no
 recalcular $f$ y $v$ desde cero en cada iteración, se usa una evaluación
 incremental, que se describe en la Sección~\in[sec:hc_busqueda].
 
@@ -204,22 +206,13 @@ chequeos exactos, es decir, condiciones que, si no se cumplen, no las cumple
 ninguna solución. Si alguno falla, la ejecución termina y la instancia se
 informa como infactible.
 
-Los primeros chequeos validan los datos de entrada:
-\startitemize[n]
-	\item {\bf Asignación de órdenes a lotes.} Debe existir la matriz
-	$B_{nb}$, y cada orden debe pertenecer a exactamente un lote. No es válido
-	que exista una orden sin lote, o que esté en dos lotes a la vez.
-	\item {\bf Capacidad de los lotes.} Para cada lote, la suma de las
-	capacidades $C_n$ de sus órdenes no puede superar la capacidad del carro.
-	Como el loteo es un dato y la búsqueda no mueve órdenes entre lotes, esta
-	restricción se verifica una sola vez.
-	\item {\bf Velocidades positivas.} Debe cumplirse $V_p > 0$ para todo
-	{\em picker}. La velocidad divide al tiempo de ruta en la
-	Ecuación~\in[eq:texec]: una velocidad nula deja el tiempo de ejecución
-	indefinido, y una negativa produce tiempos de ejecución negativos, que
-	cumplirían cualquier límite de cadena de frío. A los {\em pickers} sin
-	velocidad informada se les asigna la velocidad de referencia $V_p = 1$.
-\stopitemize
+Los primeros chequeos validan los datos de entrada y son los mismos que en
+los modelos lineales (Sección~\in[sec:split_resolucion]). Cada orden debe
+pertenecer a exactamente un lote, ningún lote puede superar la capacidad del
+carro y todas las velocidades deben ser positivas. Como el loteo es un dato y
+la búsqueda no mueve órdenes entre lotes, la capacidad se verifica una sola
+vez. A los {\em pickers} sin velocidad informada se les asigna la velocidad
+de referencia $V_p = 1$.
 
 El último chequeo corresponde a la cadena de frío. Como el tiempo de ruta
 nunca es negativo y las velocidades son positivas, para toda ruta y todo
@@ -242,8 +235,8 @@ Con $r_b = 0$ la velocidad deja de influir, de modo que esta condición no
 depende del {\em picker}.
 
 Hay dos condiciones de factibilidad que no se pueden decidir en este paso.
-La primera es la existencia de una ruta que visite todas las locaciones
-requeridas de un lote sin repetir locaciones, que se determina al construir
+La primera es la existencia de una ruta que visite todas las ubicaciones
+requeridas de un lote sin repetir ubicaciones, que se determina al construir
 la solución inicial (Sección~\in[sec:hc_solucion_inicial]). La segunda es
 la existencia de una combinación de rutas y {\em pickers} que cumpla la
 cadena de frío en todos los lotes a la vez, cuando cada lote cumple la cota
@@ -264,28 +257,28 @@ instancia se informa como infactible.
 
 {\bf Ruta inicial de cada lote.} Sea
 $\mathcal{V}_b = \{ i \in \mathcal{V}^{\text{int}} : a_{bi} = 1 \}$ el
-conjunto de locaciones que el lote $b$ debe visitar. Armar su ruta es una
-variante del TSP: hay que ir de $v_{\text{start}}$ a $v_{\text{end}}$
-pasando por todas las locaciones de $\mathcal{V}_b$, en cualquier orden y
-con la posibilidad de atravesar otras locaciones en el camino. Chen et al.
+conjunto de ubicaciones que el lote $b$ debe visitar. Armar su ruta es una
+variante del TSP, en la que hay que ir de $v_{\text{start}}$ a $v_{\text{end}}$
+pasando por todas las ubicaciones de $\mathcal{V}_b$, en cualquier orden y
+con la posibilidad de atravesar otras ubicaciones en el camino. Chen et al.
 tratan el ruteo de picking de esta forma, como un problema del viajante
-sobre las locaciones a visitar, en el que la distancia entre dos de ellas es
+sobre las ubicaciones a visitar, en el que la distancia entre dos de ellas es
 la del camino más corto en el almacén \cite[chen2013antcolony]. La
 diferencia en este trabajo es que la ruta debe ser un camino simple
 (Sección~\in[sec:hc_representacion]). Esto hace que una construcción
-golosa pueda trabarse: al entrar en una zona del almacén, la ruta puede
-dejar sin salida a locaciones que todavía faltaba visitar. Por eso, en lugar
+golosa pueda trabarse, porque al entrar en una zona del almacén la ruta puede
+dejar sin salida a ubicaciones que todavía faltaba visitar. Por eso, en lugar
 de una única construcción, se generan varias rutas candidatas y se conserva
 la de menor distancia:
 \startitemize[n]
 	\item {\bf Vecino más cercano.} Desde el depósito, se va repetidamente a
-	la locación pendiente más cercana por el camino más corto que no repite
-	locaciones. Es la heurística de ruteo que usan Coruzzolo et al.
-	\cite[coruzzolo2023orderpicking], adaptada para no repetir locaciones.
+	la ubicación pendiente más cercana por el camino más corto que no repite
+	ubicaciones. Es la heurística de ruteo que usan Coruzzolo et al.
+	\cite[coruzzolo2023orderpicking], adaptada para no repetir ubicaciones.
 	\item {\bf Inserción del más lejano.} El orden de visita de las
-	locaciones requeridas se decide con la inserción del más lejano
+	ubicaciones requeridas se decide con la inserción del más lejano
 	({\em farthest insertion}) \cite[rosenkrantz1977analysis], y después se
-	une cada par de locaciones consecutivas con el camino más corto que evita
+	une cada par de ubicaciones consecutivas con el camino más corto que evita
 	lo ya recorrido. Se aplica sobre el grafo original y sobre el grafo
 	invertido, lo que equivale a construir la ruta desde el final hacia el
 	principio.
@@ -294,13 +287,13 @@ la de menor distancia:
 	término de feromona, con el mismo $\beta = 2{,}5$ que usa \ac{aco}
 	\cite[chen2013antcolony]. Un chequeo de completitud y un número acotado
 	de retrocesos evitan que la construcción se trabe. Cada ruta se mejora
-	alternando 2-opt sobre las locaciones de la ruta (Ecuación~\in[eq:2opt])
-	y el re-ruteo de tramos, que reemplaza el tramo entre dos locaciones
+	alternando 2-opt sobre las ubicaciones de la ruta (Ecuación~\in[eq:2opt])
+	y el re-ruteo de tramos, que reemplaza el tramo entre dos ubicaciones
 	requeridas consecutivas por un camino más corto que evita el resto de la
 	ruta.
 \stopitemize
 La candidata de menor distancia se pule con 2-opt sobre bloques de
-locaciones requeridas, reubicación de locaciones y re-ruteo de tramos. Si
+ubicaciones requeridas, reubicación de ubicaciones y re-ruteo de tramos. Si
 ninguna construcción encuentra una ruta, se recurre a una búsqueda
 exhaustiva de tipo {\em best-first} con un tope de expansiones, y si esta
 tampoco la encuentra, la instancia se informa como infactible. Las
@@ -331,7 +324,7 @@ se asigna al {\em picker} que minimiza $T^{\text{exec}}_{pb}$, que es el que
 lo deja más cerca de cumplir, y la búsqueda se encarga de intentar
 corregirlo. La secuencia $\sigma_p$ de cada {\em picker} es el orden en que
 recibió sus lotes. Esta asignación solo equilibra la cantidad de lotes por
-{\em picker}: no tiene en cuenta las fechas de entrega ni la duración de los
+{\em picker}, sin tener en cuenta las fechas de entrega ni la duración de los
 lotes, que quedan a cargo de la búsqueda.
 
 La solución resultante cumple todas las restricciones duras, pero puede
@@ -344,16 +337,14 @@ inicial pasa a ser la primera mejor solución factible $s^*$.
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Búsqueda estocástica de primera mejora}, reference=sec:hc_busqueda]
 
-A partir de la solución inicial, \ac{hc} aplica un esquema de búsqueda local estocástica de primera mejora
-\cite[hoos2015sls,talbi2009metaheuristics]. A diferencia de las estrategias de descenso más pronunciado
-que evalúan exhaustivamente toda la vecindad para encontrar la mejor opción, este enfoque selecciona al azar un único
-movimiento, genera un único vecino y lo acepta si reduce el costo penalizado $f'$ de la solución actual
-(Ecuación~\in[eq:hc_costo]). Esta decisión estructural permite mantener un
-bajo costo computacional por iteración al no requerir el escaneo de la
-vecindad completa. En consecuencia, un vecino rechazado no implica que la solución actual sea un
-óptimo local (puede haber otros vecinos que la mejoren y que todavía no se generaron), motivo por el cual la búsqueda
-requiere criterios de parada explícitos en lugar de detenerse simplemente
-al no hallar mejoras inmediatas
+A partir de la solución inicial, \ac{hc} aplica una búsqueda local
+estocástica de primera mejora \cite[hoos2015sls,talbi2009metaheuristics].
+En cada iteración elige al azar un único movimiento, genera un único vecino y
+lo acepta si reduce el costo penalizado $f'$ de la solución actual
+(Ecuación~\in[eq:hc_costo]). Así, cada iteración es barata, porque no
+recorre la vecindad completa. Por la misma razón, un vecino rechazado no
+indica que la solución actual sea un óptimo local, y la búsqueda se detiene
+con criterios explícitos (Sección~\in[sec:marco_hc]).
 
 {\bf Movimientos.} Hay tres operadores de movimiento. En cada iteración se
 elige uno con probabilidad uniforme entre los que son aplicables a la
@@ -362,8 +353,8 @@ solución actual:
 	\item {\bf 2-opt sobre la ruta de un lote.} Se elige al azar un lote
 	y se evalúan todas las inversiones de un tramo de su ruta
 	(Ecuación~\in[eq:2opt]) \cite[croes1958method]. Como el grafo del
-	almacén es dirigido, no toda inversión es posible: un tramo invertido se
-	recorre en sentido contrario, así que se descartan las inversiones que
+	almacén es dirigido, no toda inversión es posible, porque un tramo
+	invertido se recorre en sentido contrario. Por eso se descartan las inversiones que
 	usarían un arco que no existe en ese sentido, o cuyos dos nuevos arcos
 	de unión no existen. Entre las inversiones posibles se toma la mejor, de
 	acuerdo con un costo local que solo considera al lote $b$:
@@ -385,8 +376,8 @@ solución actual:
 	\item {\bf Intercambio de dos lotes.} Se elige al azar un {\em picker}
 	con al menos dos lotes y se intercambian las posiciones de dos lotes de
 	su secuencia, también elegidos al azar. No cambia rutas ni asignaciones,
-	así que no modifica $v(s)$: solo cambia los instantes de finalización de
-	los lotes ubicados entre las dos posiciones, ambas incluidas; los lotes
+	así que no modifica $v(s)$. Solo cambia los instantes de finalización de
+	los lotes ubicados entre las dos posiciones, ambas incluidas, y los lotes
 	posteriores terminan en el mismo instante que antes. Solo es aplicable si algún
 	{\em picker} tiene dos o más lotes.
 \stopitemize
@@ -400,7 +391,7 @@ Sección~\in[sec:marco_hc], ya que el bucle principal es de primera mejora, pero
 dentro de este movimiento se toma la mejor inversión de la ruta elegida. El
 costo local $g_b$ se usa para no recalcular la función objetivo de toda la
 solución en cada una de las $O(k^2)$ inversiones de una ruta de $k$
-locaciones. Una inversión no cambia el conjunto de locaciones de la ruta, así
+ubicaciones. Una inversión no cambia el conjunto de ubicaciones de la ruta, así
 que $F_b$ y el tiempo de servicio no varían, y el tiempo de ejecución es una
 función lineal de la distancia. Además, la distancia de cada inversión se
 obtiene en tiempo constante, a partir de las distancias acumuladas a lo largo
@@ -412,10 +403,9 @@ toma el criterio de aceptación.
 {\bf Aceptación.} Si el vecino $s'$ cumple $f'(s') < f'(s)$, reemplaza a la
 solución actual. La desigualdad es estricta, de modo que no se aceptan
 vecinos de igual costo. Si además $v(s') = 0$ y $f(s') < f(s^*)$, el vecino
-pasa a ser la mejor solución factible $s^*$. Las dos soluciones se
-mantienen por separado (como se explicó en la
-Sección~\in[sec:hc_evaluacion]) la solución actual puede violar la cadena
-de frío, pero $s^*$ siempre la cumple.
+pasa a ser la mejor solución factible $s^*$. Así, la solución actual
+puede violar la cadena de frío, pero $s^*$ siempre la cumple
+(Sección~\in[sec:hc_evaluacion]).
 
 {\bf Evaluación incremental.} Cada vecino difiere de la solución actual en
 pocos lotes, así que $f$ y $v$ no se recalculan desde cero, sino a partir
@@ -460,13 +450,12 @@ Figura~\in[fig:hc_pseudocodigo] del Anexo~\in[Anexo_Pseudocodigos].
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Parámetros}, reference=sec:hc_parametros]
 
-% TODO: Decidir si esta tabla queda acá o pasa al Capítulo~\in[Capitulo_5].
 El Cuadro~\in[tab:hc_parametros] resume los parámetros de \ac{hc} que se
 configuran en cada ejecución. Las constantes de la implementación, fijadas a
 partir de las mediciones descritas en las secciones anteriores, se detallan
 en la Sección~\in[sec:calib_hc_constantes] del Anexo~\in[Anexo_Metaheuristicas].
 
-\startplacetable[reference=tab:hc_parametros, location=here, title={Parámetros de \ac{hc}. Los valores de estrés son los usados en los escenarios de estrés; la mayoría de los escenarios funcionales usa los valores por defecto.}]
+\startplacetable[reference=tab:hc_parametros, location=here, title={Parámetros de \ac{hc}. Los valores de estrés son los usados en los escenarios de estrés.}]
 \bTABLE[split=yes, align=middle, frame=on, width=fit]
 \setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 \setupTABLE[column][4][width=6.5cm, align=flushleft]
@@ -478,11 +467,10 @@ en la Sección~\in[sec:calib_hc_constantes] del Anexo~\in[Anexo_Metaheuristicas]
 \eTABLE
 \stopplacetable
 
-Los escenarios funcionales usan en su mayoría los valores por defecto. Los
-que ejercitan específicamente la velocidad y la cadena de frío fijan entre
-100 y 200 iteraciones, entre 30 y 60 sin mejora y 10~s de tiempo máximo.
-En los escenarios de estrés el tope de iteraciones es menor que el valor por
-defecto, pero el de iteraciones sin mejora es el doble. Al repetir los
+Los valores que usa cada suite de pruebas se indican en la
+Sección~\in[sec:ejecucion]. En los escenarios de estrés, el tope de
+iteraciones es menor que el valor por defecto, pero el de iteraciones sin
+mejora es el doble. Al repetir los
 escenarios de estrés con presupuestos mayores, la búsqueda terminó casi
 siempre porque dejaba de encontrar mejoras y no por el tope de iteraciones,
 y la solución mejoró solo en cuatro escenarios, como máximo un 0,59~\%
@@ -531,9 +519,7 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 	\item {\bf La secuencia inicial ignora las fechas de entrega.} El orden
 	inicial de cada {\em picker} es el de los identificadores de los lotes,
 	y solo se corrige mediante intercambios que mejoren de a uno.
-	\item {\bf No hay espera voluntaria.} Cada lote empieza apenas termina el
-	anterior, así que \ac{hc} explora solo las soluciones de los modelos
-	lineales en que ningún lote espera (Sección~\in[sec:espera_voluntaria]).
+	
 	\item {\bf Puede informar infactible una instancia factible.} Si cada
 	lote cumple la cota de la Ecuación~\in[eq:hc_cota_frio], pero la
 	búsqueda agota su presupuesto sin pasar por una solución que cumpla la
@@ -541,7 +527,7 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 	infactible aunque tenga solución. Lo mismo ocurre si la búsqueda
 	{\em best-first} de respaldo alcanza su tope sin encontrar la ruta de un
 	lote. En los escenarios de estrés ocurrieron los dos casos, cada uno con
-	una de cinco semillas: el primero en el 11 y el segundo en el 09
+	una de cinco semillas, el primero en el 11 y el segundo en el 09
 	(Sección~\in[sec:calib_hc_semillas]).
 	\item {\bf El tiempo máximo no es estricto.} Se controla entre
 	iteraciones e incluye la construcción inicial, que no se interrumpe. En
@@ -557,23 +543,20 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 %----------------------------------------------------------------------------------------
 \startsection[title={Ant Colony Optimization}, reference=sec:aco]
 
-La segunda metaheurística evaluada fue \ac{aco}. A diferencia de \ac{hc}, que
-mejora una única solución mediante movimientos locales, \ac{aco} construye en
-cada iteración una población de soluciones nuevas, guiada por un rastro de feromona
-acumulado en iteraciones anteriores (Sección~\in[sec:marco_aco]). Esta implementación de \ac{aco}
-es híbrida, ya que, además de la colonia, incorpora búsquedas locales
-sobre las rutas y sobre la asignación de los lotes (acciones de demonio, Sección~\in[sec:marco_aco]).
-En esta sección, se describe cómo una solucón es
-representada (Sección~\in[sec:aco_representacion]) y evaluada
-(Sección~\in[sec:aco_evaluacion]). Luego se explica la verificación previa de
-factibilidad (Sección~\in[sec:aco_verificacion]). y cómo es desarrollada la
-construcción de las rutas por parte de las hormigas
-(Sección~\in[sec:aco_construccion]), así como el pulido de las mejores rutas
-(Sección~\in[sec:aco_pulido]), la asignación y secuenciación de los lotes
+La segunda metaheurística es \ac{aco}. A diferencia de \ac{hc}, que mejora
+una única solución mediante movimientos locales, \ac{aco} construye en cada
+iteración una población de soluciones nuevas, guiada por un rastro de
+feromona acumulado en iteraciones anteriores (Sección~\in[sec:marco_aco]).
+Esta implementación es híbrida, ya que además de la colonia incorpora
+búsquedas locales sobre las rutas y sobre la asignación de los lotes, que
+funcionan como acciones de demonio (Sección~\in[sec:marco_aco]). La sección
+sigue el mismo orden que la de \ac{hc} y, en cada parte, se concentra en lo
+que cambia respecto de ella. Después de la representación, la evaluación y
+la verificación previa, se describen la construcción de las rutas
+(Sección~\in[sec:aco_construccion]), el pulido de las mejores rutas
+(Sección~\in[sec:aco_pulido]), la asignación y la secuenciación de los lotes
 (Sección~\in[sec:aco_asignacion]) y la actualización de las feromonas
-(Sección~\in[sec:aco_feromonas]). Por último, se resumen sus parámetros
-(Sección~\in[sec:aco_parametros]) y sus limitaciones
-(Sección~\in[sec:aco_limitaciones]).
+(Sección~\in[sec:aco_feromonas]).
 
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Representación de la solución}, reference=sec:aco_representacion]
@@ -587,7 +570,7 @@ la ausencia de subtours se cumplen por construcción, los tiempos se calculan
 a partir de $s$ con la Ecuación~\in[eq:hc_finalizacion] y no hay espera
 voluntaria. El loteo sigue siendo un dato de entrada.
 
-En este caso, sin emabrgo, cambia el uso que se hace de la representación. En \ac{hc}, $s$ es
+En este caso, sin embargo, cambia el uso que se hace de la representación. En \ac{hc}, $s$ es
 el estado sobre el que se aplican los operadores de movimiento. En \ac{aco},
 cada hormiga construye una solución completa desde cero, decidiendo sus
 componentes de a uno, y lo que se transmite entre iteraciones no es una
@@ -595,52 +578,40 @@ solución sino la feromona. Hay dos matrices de feromona, una para cada tipo de
 decisión que toma la hormiga:
 \startitemize[n]
 	\item {\bf Feromona de ruta.} Siguiendo a Chen et al., la ruta de un lote
-	se construye eligiendo el orden en que se visitan las locaciones
+	se construye eligiendo el orden en que se visitan las ubicaciones
 	requeridas, y no arco por arco \cite[chen2013antcolony]. Por eso, la
 	feromona $\tau_{ij}$ no se ubica sobre los arcos del almacén, sino sobre
-	los pares ordenados de locaciones entre las que una hormiga puede ir de
+	los pares ordenados de ubicaciones entre las que una hormiga puede ir de
 	una a la otra. Para cada lote $b$, con
 	$\mathcal{V}_b = \{ i \in \mathcal{V}^{\text{int}} : a_{bi} = 1 \}$, se
 	definen los pares $(i, j)$ con
 	$i \in \{v_{\text{start}}\} \cup \mathcal{V}_b$,
 	$j \in \mathcal{V}_b \cup \{v_{\text{end}}\}$ e $i \neq j$. Los pares se
 	comparten entre lotes. Por lo tanto, si dos lotes deben visitar las mismas dos
-	locaciones, lo que aprende uno sobre ir de una a la otra lo aprovecha el
+	ubicaciones, lo que aprende uno sobre ir de una a la otra lo aprovecha el
 	otro, porque la geometría del almacén entre ellas es la misma.
 	\item {\bf Feromona de asignación.} Para cada par de lote y {\em picker}
 	se mantiene un valor $\tau^{P}_{bp}$, que indica qué tan conveniente
 	resultó asignar el lote $b$ al {\em picker} $p$ en las soluciones
 	anteriores.
 \stopitemize
-No hay feromona para la secuencia $\sigma_p$, la cual es construída con
-una regla fija por las hormigas(Sección~\in[sec:aco_asignacion]).
+No hay feromona para la secuencia $\sigma_p$, que las hormigas construyen
+con una regla fija (Sección~\in[sec:aco_asignacion]).
 
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Función de evaluación}, reference=sec:aco_evaluacion]
 
-\ac{aco} usa las mismas funciones que \ac{hc}: el objetivo $f(s)$ de la
-Ecuación~\in[eq:hc_objetivo], igual al de los modelos lineales, el costo de
-violación de la cadena de frío $v(s)$ de la Ecuación~\in[eq:hc_violacion] y
-la función penalizada $f'(s) = f(s) + \lambda \, v(s)$, con
-$\lambda = 1000$ (Ecuación~\in[eq:hc_costo]). El valor de $\lambda$ se
-justifica igual que en la Sección~\in[sec:hc_evaluacion]. Las restricciones
-también se dividen en los mismos tres grupos:
-\startitemize
-	\item {\bf Restricciones que se cumplen por construcción:} un único
-	{\em picker} por lote, sin solapamientos y sin subtours.
-	\item {\bf Restricciones duras:} cada ruta usa solo arcos del grafo, no
-	repite locaciones y visita todas las locaciones requeridas, y cada lote
-	respeta la capacidad del carro. Se tratan con la estrategia de rechazo, es decir,
-	cada solución construida se valida contra ellas y, si no las cumple, la
-	hormiga se descarta y no participa de la actualización de la feromona.
-	En la práctica, la construcción solo genera rutas que las cumplen
-	(Sección~\in[sec:aco_construccion]), así que una hormiga se descarta
-	únicamente cuando no consigue armar la ruta de algún lote.
-	\item {\bf Restricción blanda:} la cadena de frío, con la penalización
-	estática $\lambda \, v(s)$.
-\stopitemize
+\ac{aco} usa las mismas funciones que \ac{hc} (Sección~\in[sec:hc_evaluacion]),
+es decir, el objetivo $f(s)$, el costo de violación de la cadena de frío
+$v(s)$ y la función penalizada $f'(s)$, con el mismo $\lambda = 1000$. También
+trata las restricciones de la misma forma. La única diferencia está en las
+restricciones duras. Cada solución construida se valida contra ellas y, si
+no las cumple, la hormiga se descarta y no participa de la actualización de
+la feromona. En la práctica, la construcción solo genera rutas que las
+cumplen (Sección~\in[sec:aco_construccion]), así que una hormiga se descarta
+únicamente cuando no consigue armar la ruta de algún lote.
 
 A diferencia de \ac{hc}, en \ac{aco} cada función se usa para una decisión
 distinta:
@@ -698,31 +669,21 @@ hormiga construye una solución completa. $f$ y $v$ se calculan desde cero para 
 \startsubsection[title={Verificación previa de factibilidad}, reference=sec:aco_verificacion]
 
 Antes de iniciar la colonia, \ac{aco} realiza los mismos chequeos exactos
-que \ac{hc} (Sección~\in[sec:hc_verificacion]): que exista la matriz
-$B_{nb}$ y cada orden pertenezca a exactamente un lote, que cada lote
-respete la capacidad del carro, que todas las velocidades sean positivas
-(con $V_p = 1$ para los {\em pickers} sin velocidad informada) y que cada
-lote cumpla la cota de la cadena de frío de la
-Ecuación~\in[eq:hc_cota_frio]. Si alguno falla, la instancia se informa como
-infactible sin construir ninguna solución.
+que \ac{hc} (Sección~\in[sec:hc_verificacion]). Si alguno falla, la
+instancia se informa como infactible sin construir ninguna solución.
 
-Se agrega un chequeo de alcanzabilidad. Toda locación requerida por algún
+Además, se agrega un chequeo de alcanzabilidad. Toda ubicación requerida por algún
 lote debe poder alcanzarse desde $v_{\text{start}}$ y debe poder llegar a
 $v_{\text{end}}$ siguiendo los arcos del grafo. Se calcula con dos búsquedas
 en anchura, una desde $v_{\text{start}}$ sobre el grafo original y otra
 desde $v_{\text{end}}$ sobre el grafo invertido, en tiempo
-$O(|\mathcal{V}| + |\mathcal{E}|)$. Si una locación requerida no cumple la
+$O(|\mathcal{V}| + |\mathcal{E}|)$. Si una ubicación requerida no cumple la
 condición, ninguna ruta puede visitarla, sin importar la feromona ni la
 cantidad de intentos. Sin este chequeo, todas las hormigas de todas las
 iteraciones agotarían sus intentos de construcción sobre un lote que nunca
 tuvo solución. Al igual que los demás, es un chequeo exacto.
 
-La cota de la cadena de frío usa un tiempo de ruta nulo, y no una
-estimación de la ruta, porque una estimación más larga que la ruta que
-construye una hormiga podría declarar infactible una instancia factible antes
-de empezar la búsqueda. La existencia de una combinación de rutas y
-{\em pickers} que cumpla la cadena de frío en todos los lotes queda a cargo de
-la búsqueda, como en \ac{hc}.
+
 
 \stopsubsection
 
@@ -736,11 +697,11 @@ para cada uno, primero arma su ruta y después le elige un {\em picker}
 construyen de forma independiente.
 
 {\bf Regla de transición.} Como en Chen et al., la hormiga viaja de una
-locación requerida a otra \cite[chen2013antcolony], es decir, el ruteo se
-trata como un TSP sobre las locaciones a visitar, igual que en la
+ubicación requerida a otra \cite[chen2013antcolony], es decir, el ruteo se
+trata como un TSP sobre las ubicaciones a visitar, igual que en la
 construcción inicial de \ac{hc} (Sección~\in[sec:hc_solucion_inicial]).
-Estando en la locación $i$, con $\mathcal{R}$ el conjunto de locaciones
-requeridas que todavía no visitó, la hormiga elige la siguiente locación
+Estando en la ubicación $i$, con $\mathcal{R}$ el conjunto de ubicaciones
+requeridas que todavía no visitó, la hormiga elige la siguiente ubicación
 $r \in \mathcal{R}$ con la regla proporcional aleatoria del {\em Ant System}
 (Ecuación~\in[eq:aco_transicion]):
 \startplaceformula[reference=eq:aco_regla_ruta]
@@ -750,51 +711,40 @@ $r \in \mathcal{R}$ con la regla proporcional aleatoria del {\em Ant System}
 \stopformula
 \stopplaceformula
 donde $d_{ir}$ es la distancia del camino más corto de $i$ a $r$ y
-$\mathcal{R}' \subseteq \mathcal{R}$ son las locaciones a las que existe ese
-camino. Una vez elegida $r$, la hormiga recorre ese camino, y las locaciones
+$\mathcal{R}' \subseteq \mathcal{R}$ son las ubicaciones a las que existe ese
+camino. Una vez elegida $r$, la hormiga recorre ese camino, y las ubicaciones
 requeridas por las que pasa en el trayecto cuentan como visitadas. Cuando
 $\mathcal{R}$ queda vacío, llega a $v_{\text{end}}$ por el camino más corto.
 
 {\bf Adaptación a rutas simples.} Chen et al. toman las distancias entre
-locaciones de una tabla calculada de antemano y permiten volver a recorrer
+ubicaciones de una tabla calculada de antemano y permiten volver a recorrer
 pasillos ya transitados. En este trabajo, en cambio, la ruta debe ser un
 camino simple (Sección~\in[sec:hc_representacion]). Por eso, $d_{ir}$ y el
 camino que se recorre se recalculan en cada paso con el algoritmo de
-Dijkstra, evitando todas las locaciones ya recorridas y $v_{\text{end}}$, que
+Dijkstra, evitando todas las ubicaciones ya recorridas y $v_{\text{end}}$, que
 solo puede cerrar la ruta. Esta adaptación tiene el mismo problema que en
-\ac{hc}, es decir, la construcción puede trabarse al dejar sin salida a locaciones que
-faltaba visitar. Para reducirlo se usan los mismos tres mecanismos que en las
-construcciones aleatorias de \ac{hc}:
-\startitemize
-	\item {\bf Chequeo de completitud.} Antes de aceptar la locación elegida,
-	se verifica con las componentes biconexas del grafo que cada locación
-	pendiente esté en algún camino simple entre la locación elegida y
-	$v_{\text{end}}$ que no pase por lo ya recorrido. Si no lo está, se
-	descarta y se sortea otra con la misma regla entre las restantes.
-	\item {\bf Retrocesos.} Si ninguna candidata pasa el chequeo, se deshace
-	el último paso y se prueba otra locación en su lugar, con un máximo de 30
-	retrocesos por construcción.
-	\item {\bf Dirección de construcción.} La regla favorece a las locaciones
-	cercanas y deja para el final a las más alejadas del punto de partida.
-	Por eso la ruta puede construirse también desde $v_{\text{end}}$ hacia
-	$v_{\text{start}}$, sobre el grafo invertido. En ese caso, la feromona se
-	sigue leyendo en el sentido de la ruta final: el paso de $i$ a $r$ en el
-	grafo invertido usa $\tau_{ri}$.
-\stopitemize
+\ac{hc}, porque la construcción puede trabarse al dejar sin salida a
+ubicaciones que faltaba visitar. Para reducirlo se usan los mismos mecanismos
+que en las construcciones aleatorias de \ac{hc}, que son el chequeo de
+completitud, un máximo de 30 retrocesos y la construcción en los dos
+sentidos, sobre el grafo original y sobre el invertido
+(Sección~\in[sec:anexo_rutas_construcciones]). Cuando la ruta se construye
+sobre el grafo invertido, la feromona se sigue leyendo en el sentido de la
+ruta final, de modo que el paso de $i$ a $r$ usa $\tau_{ri}$.
 
 {\bf Intentos y respaldo.} Cada hormiga hace hasta 10 intentos de
 construcción por lote, alternando la dirección entre intentos y empezando
 por una elegida al azar. Si los 10 fallan, se usa una ruta de respaldo
-determinística: la inserción del más lejano, sobre el grafo original y, si
-no se puede realizar, sobre el invertido; si ninguna funciona, la búsqueda
-{\em best-first} con el tope de 2.000.000 de expansiones, como en
-\ac{hc} (Sección~\in[sec:anexo_rutas_respaldo]). La ruta de respaldo se pule
+determinística. Primero se prueba la inserción del más lejano, sobre el
+grafo original y, si no se puede realizar, sobre el invertido. Si ninguna
+funciona, se usa la búsqueda {\em best-first} con el tope de 2.000.000 de
+expansiones, como en \ac{hc} (Sección~\in[sec:anexo_rutas_respaldo]). La ruta de respaldo se pule
 (Sección~\in[sec:aco_pulido]) y se guarda, de modo que se calcula una sola
 vez por lote y no una vez por hormiga. Si tampoco se encuentra una ruta de
 respaldo, la hormiga se descarta.
 
 {\bf Búsqueda local sobre cada ruta.} Cada ruta construida por una hormiga se
-mejora alternando 2-opt sobre las locaciones de la ruta
+mejora alternando 2-opt sobre las ubicaciones de la ruta
 (Ecuación~\in[eq:2opt]) y el re-ruteo de tramos, hasta que deja de
 acortarse, igual que las construcciones aleatorias de \ac{hc}. Chen et al. no
 aplican búsqueda local, pero combinar las soluciones de las hormigas con una
@@ -812,10 +762,7 @@ cualquier hormiga en cualquier iteración, $\pi^{bs}_b$ (del inglés
 del lote entre las hormigas de esa iteración, $\pi^{ib}_b$ (del inglés
 {\em iteration-best}). Si es más corta que $\pi^{bs}_b$, se la somete al
 mismo pulido que la ruta inicial de \ac{hc}
-(Sección~\in[sec:anexo_rutas_pulido]): 2-opt sobre bloques de hasta 8
-locaciones requeridas, reubicación de locaciones requeridas ({\em or-opt}
-simplificado), y 2-opt y re-ruteo de tramos, repetidos hasta que la ruta deja
-de acortarse, con un máximo de cinco rondas. La ruta pulida pasa a ser
+(Sección~\in[sec:anexo_rutas_pulido]). La ruta pulida pasa a ser
 $\pi^{bs}_b$ y también reemplaza a $\pi^{ib}_b$ para la actualización de la
 feromona.
 
@@ -823,9 +770,10 @@ El pulido es mucho más costoso que la búsqueda local que se aplica a cada
 hormiga. Por ejemplo, en la grilla de 14×14 una ejecución tarda entre 120 y 260~ms. Por
 eso no se aplica a todas las rutas, ni siquiera a la mejor de cada
 iteración, sino solo cuando aparece un nuevo récord para el lote, lo que
-ocurre con relativamente poca frecuencia. Es una forma de las acciones de
-demonio de la Sección~\in[sec:marco_aco] (una mejora centralizada que se
-aplica a las soluciones más prometedoras antes de actualizar la feromona).
+ocurre con relativamente poca frecuencia. Es una de las acciones de demonio de
+la Sección~\in[sec:marco_aco], ya que se trata de una mejora centralizada
+que se aplica a las soluciones más prometedoras antes de actualizar la
+feromona.
 
 Cuando la ejecución tiene un tiempo máximo, el pulido también lo respeta. Si
 en una iteración hay varios récords para pulir, cada uno recibe una parte
@@ -838,7 +786,7 @@ que nunca es más larga que la original. Sin este reparto, en la grilla de
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
-\startsubsection[title={Asignación, Recombinación y Secuenciación}, reference=sec:aco_asignacion]
+\startsubsection[title={Asignación, recombinación y secuenciación}, reference=sec:aco_asignacion]
 
 {\bf Asignación de cada lote.} Una vez armada la ruta de un lote $b$, la
 hormiga le elige un {\em picker}. Como la ruta ya está construida, el
@@ -934,14 +882,14 @@ según MMAS \cite[stutzle2000mmas]. Primero se evaporan todos los pares,
 \stopformula
 y después, para cada lote $b$, depositan feromona su mejor ruta de la
 iteración $\pi^{ib}_b$ y su mejor ruta histórica $\pi^{bs}_b$. Si
-$(v_{\text{start}}, u_1, \dots, u_q, v_{\text{end}})$ son las locaciones
+$(v_{\text{start}}, u_1, \dots, u_q, v_{\text{end}})$ son las ubicaciones
 requeridas de la ruta en el orden en que la ruta las alcanza por primera
-vez, cada par de locaciones consecutivas de esa secuencia recibe
+vez, cada par de ubicaciones consecutivas de esa secuencia recibe
 \startformula
 	\tau_{u_l u_{l+1}} \leftarrow \min\left(\tau_{\max},\; \tau_{u_l u_{l+1}} + 1\right).
 \stopformula
-Los pares se toman sobre las locaciones requeridas, y no sobre todas las
-locaciones de la ruta, porque esas son las decisiones que toma la hormiga
+Los pares se toman sobre las ubicaciones requeridas, y no sobre todas las
+ubicaciones de la ruta, porque esas son las decisiones que toma la hormiga
 (Ecuación~\in[eq:aco_regla_ruta]). Como cada par recibe a lo sumo dos
 depósitos de una unidad por lote e iteración, el valor estacionario de
 $\tau \leftarrow (1-\rho)\,\tau + 2$ es $2 / \rho$, y se fijan
@@ -955,7 +903,7 @@ exploración al comienzo de la búsqueda (Sección~\in[sec:marco_aco]), y
 $\tau_{\min}$ garantiza que ningún par deje de poder elegirse. La relación
 entre $\tau_{\max}$ y $\tau_{\min}$ es una elección propia. Stützle y Hoos la
 derivan de la cantidad de componentes de la solución y de una probabilidad
-objetivo, y para rutas de entre 20 y 26 locaciones requeridas resulta del
+objetivo, y para rutas de entre 20 y 26 ubicaciones requeridas resulta del
 mismo orden. Lesch et al. también usan MMAS en un \ac{aco} de ruteo de
 {\em picking}, con la misma información heurística $1/d$
 \cite[lesch2023optimizing].
@@ -1001,12 +949,11 @@ Anexo~\in[Anexo_Pseudocodigos].
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Parámetros}, reference=sec:aco_parametros]
 
-% TODO: Decidir si esta tabla queda acá o pasa al Capítulo~\in[Capitulo_5].
 El Cuadro~\in[tab:aco_parametros] resume los parámetros de \ac{aco} que se
 configuran en cada ejecución. Las constantes de la implementación se
 detallan en la Sección~\in[sec:calib_aco_constantes] del
-Anexo~\in[Anexo_Metaheuristicas]. Tanto los escenarios funcionales como los de
-estrés usan los valores por defecto; los de estrés, con semilla 1.
+Anexo~\in[Anexo_Metaheuristicas]. Los valores que usa cada suite de pruebas se indican
+en la Sección~\in[sec:ejecucion].
 
 \startplacetable[reference=tab:aco_parametros, location=here, title={Parámetros de \ac{aco}.}]
 \bTABLE[split=yes, align=middle, frame=on, width=fit]
@@ -1045,10 +992,9 @@ defecto de $\alpha$, $\beta$ y $\rho$ quedan cerca de los mejores, con una
 brecha media de 0,011~\% contra 0,009~\% de la mejor combinación, y $\beta$
 es el parámetro con más efecto (Sección~\in[sec:calib_aco_sensibilidad]).
 
-{\bf Reproducibilidad.} La semilla determina todos los sorteos de la
-construcción, de modo que la misma instancia, los mismos parámetros y la
-misma semilla producen la misma solución, salvo que la ejecución se detenga
-por tiempo. Para que esto valga también entre procesos distintos, los
+{\bf Reproducibilidad.} Como en \ac{hc} (Sección~\in[sec:hc_parametros]),
+la semilla hace reproducible cada ejecución, salvo que se detenga por
+tiempo. Para que esto valga también entre procesos distintos, los
 candidatos de cada sorteo se recorren en un orden fijo, independiente del
 orden interno de los conjuntos de Python. Con cinco semillas en los
 escenarios de estrés 02 a 19, la diferencia entre el mejor y el peor valor
@@ -1078,8 +1024,8 @@ La implementación de \ac{aco} tiene las siguientes limitaciones:
 	en la que ninguna hormiga cumple la cadena de frío corre las
 	$\text{Max}_{\text{it}}$ iteraciones completas.
 	\item {\bf La información heurística de la asignación es limitada.}
-	$\eta_p$ solo equilibra la cantidad de lotes por {\em picker}: no
-	considera su velocidad, la duración de los lotes ni las fechas de
+	$\eta_p$ solo equilibra la cantidad de lotes por {\em picker}, sin
+	considerar su velocidad, la duración de los lotes ni las fechas de
 	entrega. La secuencia por fecha de entrega tampoco considera la duración
 	de los lotes. Ambas se corrigen solo en $s^*$, con la búsqueda local
 	sobre la asignación.
@@ -1088,8 +1034,7 @@ La implementación de \ac{aco} tiene las siguientes limitaciones:
 	objetivo, una ruta más corta no siempre es mejor, porque puede aumentar
 	el adelanto; la recombinación lo tiene en cuenta al decidir si la
 	acepta, pero la colonia no aprende rutas más largas aunque convengan.
-	\item {\bf No hay espera voluntaria.} Como en \ac{hc}, cada lote empieza
-	apenas termina el anterior (Sección~\in[sec:espera_voluntaria]).
+	
 	\item {\bf Puede informar infactible una instancia factible.} Si ninguna
 	hormiga construye una solución que cumpla la cadena de frío en todos los
 	lotes, o si la búsqueda {\em best-first} de respaldo alcanza su tope sin
@@ -1105,134 +1050,36 @@ La implementación de \ac{aco} tiene las siguientes limitaciones:
 %========================================================================================
 % GUÍA DE TRABAJO - CAPÍTULO 4 (Metaheurísticas)
 % Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
-% (linear-picking-routing, origin/main 75d553c del 19/10: models/opp_hc_4, models/opp_aco_4,
-% models/utils/route_construction.py), docs/thesis/models.tex y Notas/opp_v5_development.tex.
-% Foco: equivalencia con los modelos lineales, cómo se garantizan y verifican las
-% restricciones, datos que usa la comparación y la sección de ACO que falta.
+% Armada el 21/10/2026 y revisada el 03/11/2026 sobre el texto actual. Se quitaron los
+% ítems resueltos: el contenido de ACO (ya escrito), la remisión a la verificación contra
+% el monolítico (ahora en la introducción), "mismo espacio de soluciones" (corregido),
+% rechazo contra preservación (2.5 y 4.1.2), las tablas de parámetros (quedan acá; los
+% valores de cada suite están en 5.4) y los parámetros de HC en las funcionales. El 03/11
+% también se sacaron repeticiones con los cap. 2, 3 y 5 y entre ACO y HC (verificación
+% previa, evaluación, mecanismos de construcción, pulido, reproducibilidad y espera
+% voluntaria) y se cambió "locación" por "ubicación" (también en el Anexo D).
 % [ ] = tarea; (D) = decisión de ustedes.
 %========================================================================================
 %
-% 1. ORGANIZACIÓN PROPUESTA
-% - La sección de HC está bien estructurada; repetir la misma estructura en ACO (los
-%   títulos ya están; contenido en 2.1).
-% [ ] Sección final nueva (4.3), "Equivalencia con los modelos lineales": una tabla
-%     restricción -> cómo la garantiza cada heurística -> cómo se verificó. Filas: inicio y
-%     fin de la ruta (1)-(4); visitas y camino simple (5)-(9); subtours (10)-(12); tiempo de
-%     ruta (13); un picker por lote (14); tiempo de ejecución (15)-(17); no solapamiento
-%     (19)-(20); adelanto y demora (21)-(22); cadena de frío (cota de u_pb / PB^elig);
-%     validación de entrada (capacidad, orden en un solo lote, V_p > 0). Columnas: HC y ACO
-%     (por construcción / prechequeo exacto / penalizada durante la búsqueda y exigida al
-%     reportar) y verificación externa (cap. 5: chequeos en Python y niveles 1 y 2 sobre el
-%     monolítico). Es el puente con la validación de los cap. 5 y 6.
-% [ ] En la misma sección, las diferencias que quedan, porque todas condicionan la
-%     comparación: (1) sin espera voluntaria: exploran el subconjunto sin espera, y donde el
-%     modelo exacto espera se compara solo el estado; (2) los lotes vacíos no se rutean ni se
-%     cobran (los modelos exactos sí; solo 30a/30b); (3) no prueban infactibilidad: la
-%     declaran por prechequeo exacto, por ruta imposible (búsqueda best-first con tope) o
-%     por agotar el presupuesto; (4) si el escenario no define pickers usan uno solo (por eso
-%     sus tests funcionales propios, heredados de hc_2/aco_2, no son comparables con v5;
-%     cap. 5); (5) con v_start = v_end contarían el primer y el último tramo (ningún
-%     escenario lo usa).
-% [ ] Tabla de parámetros (TODO del texto): dejar acá la definición y los valores por
-%     defecto, y en el cap. 5 qué valores usó cada suite y por qué. Los experimentos de
-%     sensibilidad (200/60 contra 500/120; cinco sorteos por escenario) conviene pasarlos al
-%     cap. 6, o a una subsección de calibración del cap. 5, junto con los de ACO (ablación y
-%     feromonas): el capítulo queda descriptivo y las dos heurísticas se tratan igual.
-% [ ] "% TODO: pensar si dejar este párrafo o no" (construcciones múltiples: 490 contra 425
-%     y el 14×14 infactible con solo vecino más cercano): dejarlo, porque justifica el diseño
-%     con datos; verificar que los números salgan del código final (estrés 04 = 7×7,
-%     06 = 14×14).
-%
-% 2. QUÉ FALTA
-% 2.1 ACO (todas las subsecciones están vacías). Contenido por subsección; fuentes:
-%     docs/thesis/models.tex, sec. "ACO: Ant Colony Optimization", y las constantes y
-%     docstrings de models/opp_aco_4/opp_aco_4.py.
-% [ ] Representación: la misma que HC (una ruta por lote, asignación y secuencia por
-%     picker), sin espera. La secuencia de cada picker se ordena por la fecha de entrega más
-%     temprana de las órdenes de cada lote.
-% [ ] Función de evaluación: la misma f; costo de búsqueda f + 1000 · exceso de frío (mismo
-%     lambda y misma tolerancia que HC). La mejor solución global se elige solo entre las
-%     hormigas que cumplen el frío, y la feromona de asignación solo la depositan los lotes
-%     que lo cumplen (filtro por lote, no por solución).
-% [ ] Verificación previa: los mismos chequeos exactos que HC (B_nb, capacidad, orden en un
-%     solo lote, V_p > 0, F_b <= T_cold + epsilon), con las mismas funciones que usa el
-%     Split (cold_chain_validation.py, input_validation.py).
-% [ ] Construcción de rutas: pick-to-pick (Chen et al. 2013): desde la última ubicación i se
-%     elige la próxima requerida r con probabilidad proporcional a tau_ir^alpha ·
-%     eta_ir^beta, con eta_ir = 1/d(i,r), y se camina por el camino más corto; d y el camino
-%     se recalculan con Dijkstra evitando lo ya visitado (camino simple), con el mismo
-%     chequeo de completabilidad que las construcciones aleatorias de HC. Hasta 10 intentos
-%     por lote alternando el sentido (desde v_start o desde v_end, en el grafo invertido); si
-%     fallan, ruta de respaldo best-first (tope de 2.000.000 de expansiones, cacheada). Cada
-%     ruta se mejora con 2-opt y re-ruteo de tramos.
-% [ ] Pulido de la mejor ruta: cuando la mejor ruta de la iteración de un lote bate su
-%     récord, se pule (2-opt sobre las requeridas, reubicación tipo or-opt y re-ruteo), con
-%     el tiempo restante repartido entre los récords.
-% [ ] Asignación, recombinación y secuenciación (corregir "Secuenciacion" en el título):
-%     ruleta sobre los pickers elegibles para la ruta recién construida, con peso
-%     (tau^P_bp)^alpha · (1 / (1 + carga_p))^beta (si ninguno es elegible, sobre todos);
-%     recombinación: en la mejor solución, cada lote toma la ruta más corta conocida y se
-%     acepta si baja f; búsqueda local de agenda sobre la mejor solución (mover un lote a
-%     otro picker en cualquier posición e intercambiar dos lotes de un mismo picker o de
-%     pickers distintos, hasta que nada mejore): son las vecindades de HC recorridas en
-%     forma exhaustiva.
-% [ ] Actualización de feromonas: ruta, esquema MAX-MIN (Stützle y Hoos 2000): empieza en
-%     tau_max = 2/rho, tau_min = tau_max/50, y depositan Delta tau = 1 la mejor ruta de la
-%     iteración y la mejor histórica de cada lote; aprende de la longitud de la ruta (como
-%     Chen et al.), no del objetivo. Asignación: evaporación más Q/g(S) de cada hormiga (solo
-%     en los lotes que cumplen el frío) y un depósito doble de la mejor solución.
-% [ ] Parámetros: 15 hormigas, 60 iteraciones, alpha = 1,0, beta = 2,5, rho = 0,15, Q = 100,
-%     tope de 1.800 s (las hormigas usan hasta la mitad; el resto queda para el pulido y la
-%     búsqueda local), 10 intentos por lote, 2.000.000 de expansiones, lambda = 1000,
-%     epsilon = 10^-9. Son los mismos en funcional y en estrés (los tests usan los valores
-%     por defecto), con semilla 1.
-% [ ] Limitaciones: el tope de tiempo se mira entre hormigas e iteraciones (en el 100×100,
-%     dos iteraciones y unos 35 min); la feromona de ruta aprende longitud y no el objetivo;
-%     picos de memoria de hasta 1,7 GB en los escenarios 06, 09 y 12, sin explicar (una sola
-%     corrida). Del estudio de ablación (27/09; escenarios 04, 06 y 15; tres semillas): la
-%     búsqueda local de agenda da la mayor parte de la mejora sobre la colonia sola (brecha
-%     media de 0,011 a 0,001 % en el 04, de 0,034 a 0,018 % en el 06 y de 0,035 a 0,007 % en
-%     el 15). Del de feromonas (81 corridas en el 04): los valores por defecto quedan cerca
-%     de los mejores (0,011 % contra 0,009 %). Datos en results/opp_aco_4/{ablation,pheromone}.
-% 2.2 Validación (las dos heurísticas)
-% [ ] Una oración con referencia hacia adelante: cada solución reportada se verificó contra
-%     el modelo monolítico, fijando sus valores en las variables del MIP (cap. 5), y todas
-%     cumplen (cap. 6). Hoy el capítulo afirma que las heurísticas cumplen las mismas
-%     restricciones, pero no dice cómo se comprobó.
-%
-% 3. QUÉ CORREGIR O MEJORAR
-% [ ] Introducción del capítulo: "sobre el mismo espacio de soluciones" contradice la
-%     sección de HC (subconjunto sin espera). Corregir.
-% [ ] HC, "Restricciones duras... estrategia de rechazo": estrictamente es preservación (los
-%     operadores solo generan vecinos válidos) más rechazo dentro del 2-opt. Alinear con el
-%     cap. 2 si se agrega preservación.
-% [ ] HC, reproducibilidad ("La semilla determina todos los sorteos..."): es cierto desde el
-%     commit 75d553c (19/10, "Add sorted()"). Antes, la ruleta de route_construction.
-%     stitch_route (construcciones aleatorias de HC y todas las hormigas de ACO) recorría un
-%     conjunto de strings cuyo orden depende de PYTHONHASHSEED, así que la misma semilla
-%     daba resultados distintos en procesos distintos (según el commit, medido el 14/10:
-%     hasta 0,5 % de dispersión en el estrés 03 y el 11 infactible en 2 de 7 procesos).
-%     Aclararlo y confirmar que el estudio de cinco sorteos y el de 200/60 contra 500/120 se
-%     corrieron con el código corregido; si no, su dispersión mezcla semilla y orden de hash.
-% [ ] Números que tienen que coincidir con el cap. 6: el texto dice que con 200/60 el tope de
-%     200 iteraciones se alcanza solo en el 03 y el 18; la tabla de convergencia de las
-%     corridas consolidadas (28/09) dice 03 y 17 (17: 200 iteraciones; 18: 108). Vienen de
-%     corridas, y versiones del código, distintas: unificar con la corrida final.
+% 1. PENDIENTE
+% (D) Sección final "Equivalencia con los modelos lineales": un cuadro que diga, para cada
+%     restricción, cómo la garantiza cada heurística (por construcción, chequeo previo
+%     exacto o penalizada y exigida al informar) y cómo se verificó (cap. 5). Hoy esa
+%     información está repartida entre 4.1.1, 4.1.2, 4.2.2 y 5.5.
+% (D) Versión del código de las heurísticas para los resultados. Las corridas consolidadas
+%     son del 28 y 29/09, anteriores a 75d553c (19/10, "Add sorted()"), que hizo que la
+%     semilla sea reproducible entre procesos. Los párrafos de reproducibilidad de 4.1.6 y
+%     4.2.8 describen el código actual. Decidir si se vuelve a correr o se aclara (ver la
+%     guía del cap. 6).
+% [ ] Convergencia de HC con 200/60: el Anexo D (estudio de presupuesto, cinco semillas)
+%     dice que el tope de 200 iteraciones se alcanza en el 03 y el 18; el cap. 6 (corrida
+%     consolidada) dice 03 y 17. Vienen de corridas distintas: aclararlo o unificar.
 % [ ] "En todas las instancias evaluadas con un límite de cadena de frío efectivo, K vale
-%     como máximo 318": decir sobre qué instancias se calculó y recalcularlo si cambian las
-%     suites.
-% [ ] Parámetros de HC en funcional: las 68 instancias comparables con v5 (test_v5eq__*)
-%     corren con los valores por defecto (500/30/30 s); los 100-200/30-60/10 s son de los
-%     tests propios de velocidad y frío. Precisarlo acá o en el cap. 5.
+%     como máximo 318" (4.1.2): decir sobre qué instancias se calculó.
 % [ ] El código marca el estado de una solución heurística como "optimal": en el texto usar
-%     "encontró solución" (una heurística no prueba optimalidad).
+%     "encontró solución", porque una heurística no prueba optimalidad.
 %
-% 4. DECISIONES PENDIENTES
-% (D) Versión del código de las heurísticas para los resultados: las corridas consolidadas
-%     son del 28 y 29/09, anteriores a 75d553c (ver la guía del cap. 6).
-%
-% 5. FUENTES
+% 2. FUENTES
 % - linear-picking-routing: docs/thesis/models.tex (sec. "Heurísticas: HC y ACO", con los
 %   pseudocódigos y la tabla "Los cuatro métodos lado a lado"), models/opp_hc_4/,
 %   models/opp_aco_4/, models/utils/route_construction.py,

@@ -21,22 +21,22 @@ sección. El pulido y la búsqueda de respaldo se usan también en \ac{aco}
 
 \startitemize[n]
 	\item {\bf Vecino más cercano.} Desde el depósito, se va repetidamente a
-	la locación pendiente más cercana por el camino más corto (algoritmo de
-	Dijkstra) que no pasa por locaciones ya visitadas ni por
-	$v_{\text{end}}$. Las locaciones requeridas por las que se pasa en el
+	la ubicación pendiente más cercana por el camino más corto (algoritmo de
+	Dijkstra) que no pasa por ubicaciones ya visitadas ni por
+	$v_{\text{end}}$. Las ubicaciones requeridas por las que se pasa en el
 	camino cuentan como visitadas. Cuando no quedan pendientes, se llega a
 	$v_{\text{end}}$ por el camino más corto que evita lo ya recorrido. Es
-	determinística, y falla si en algún paso ninguna locación pendiente es
+	determinística, y falla si en algún paso ninguna ubicación pendiente es
 	alcanzable.
 	\item {\bf Inserción del más lejano.} Primero se decide el orden en que
-	se visitan las locaciones requeridas con la inserción del más lejano
+	se visitan las ubicaciones requeridas con la inserción del más lejano
 	\cite[rosenkrantz1977analysis]. Se parte de la secuencia
 	$(v_{\text{start}}, v_{\text{end}})$ y, repetidamente, se toma la
-	locación pendiente más alejada de las que ya están en la secuencia y se
+	ubicación pendiente más alejada de las que ya están en la secuencia y se
 	la inserta en la posición que menos alarga el recorrido. En este paso las
 	distancias son las de los caminos más cortos en el grafo, sin considerar
-	la restricción de no repetir locaciones. Después, ese orden se realiza
-	uniendo cada par de locaciones consecutivas con el camino más corto que
+	la restricción de no repetir ubicaciones. Después, ese orden se realiza
+	uniendo cada par de ubicaciones consecutivas con el camino más corto que
 	evita todo lo ya recorrido. Esta construcción se aplica dos veces: sobre
 	el grafo original y sobre el grafo invertido, en el que se invierte el
 	sentido de todos los arcos y se intercambian $v_{\text{start}}$ y
@@ -44,30 +44,30 @@ sección. El pulido y la búsqueda de respaldo se usan también en \ac{aco}
 	ruta del grafo original con la misma distancia, así que esto equivale a
 	construir la ruta desde el final hacia el principio.
 	\item {\bf Construcciones aleatorias.} Se generan 20 rutas con una regla
-	aleatoria. Desde la locación actual, cada locación pendiente $r$ que se
-	puede alcanzar sin repetir locaciones recibe un peso $(1/d_r)^{\beta}$,
+	aleatoria. Desde la ubicación actual, cada ubicación pendiente $r$ que se
+	puede alcanzar sin repetir ubicaciones recibe un peso $(1/d_r)^{\beta}$,
 	donde $d_r$ es la distancia de ese camino y $\beta = 2{,}5$, y se elige
 	una con probabilidad proporcional a su peso. Antes de aceptar la
-	locación elegida, se verifica que la ruta todavía pueda completarse: cada
-	locación pendiente debe estar en algún camino simple entre la locación
+	ubicación elegida, se verifica que la ruta todavía pueda completarse: cada
+	ubicación pendiente debe estar en algún camino simple entre la ubicación
 	elegida y $v_{\text{end}}$ que no pase por lo ya recorrido. Esto se
 	comprueba de forma exacta con las componentes biconexas del grafo. La
 	condición es necesaria pero no suficiente, así que la construcción
 	todavía puede trabarse. Cuando ninguna candidata la cumple, se deshace el
-	último paso y se prueba otra locación en su lugar, con un máximo de 30
+	último paso y se prueba otra ubicación en su lugar, con un máximo de 30
 	retrocesos. Las construcciones alternan entre el grafo original y el
-	invertido, porque la regla favorece a las locaciones cercanas y deja para
+	invertido, porque la regla favorece a las ubicaciones cercanas y deja para
 	el final a las más alejadas del punto de partida. Cada ruta completa se
 	mejora alternando dos búsquedas locales hasta que deja de acortarse:
-	2-opt sobre las locaciones de la ruta (Ecuación~\in[eq:2opt]) y el
-	re-ruteo de tramos, que reemplaza el tramo entre dos locaciones
+	2-opt sobre las ubicaciones de la ruta (Ecuación~\in[eq:2opt]) y el
+	re-ruteo de tramos, que reemplaza el tramo entre dos ubicaciones
 	requeridas consecutivas por el camino más corto que evita el resto de la
 	ruta, cuando este es más corto.
 \stopitemize
 
 Las rutas se comparan por distancia y no por tiempo de ruta $r_b$, que
-también suma el tiempo de servicio de las locaciones de paso. Ambos
-criterios coinciden cuando las locaciones no requeridas tienen $S_i = 0$,
+también suma el tiempo de servicio de las ubicaciones de paso. Ambos
+criterios coinciden cuando las ubicaciones no requeridas tienen $S_i = 0$,
 como en todos los escenarios de estrés, y en las instancias funcionales en
 que no es así la ruta más corta es también la de menor $r_b$.
 
@@ -80,16 +80,16 @@ Una vez obtenidas las rutas candidatas, se selecciona la de menor distancia
 y se aplica un pulido. El pulido repite los siguientes pasos hasta que la
 ruta deja de acortarse, con un máximo de cinco rondas:
 \startitemize
-	\item {\bf 2-opt sobre las locaciones requeridas.} Se invierte el orden
-	de un bloque de hasta 8 locaciones requeridas consecutivas y se vuelven a
+	\item {\bf 2-opt sobre las ubicaciones requeridas.} Se invierte el orden
+	de un bloque de hasta 8 ubicaciones requeridas consecutivas y se vuelven a
 	trazar los caminos entre ellas, evitando el resto de la ruta. A
-	diferencia del 2-opt sobre todas las locaciones de la ruta, que en una
+	diferencia del 2-opt sobre todas las ubicaciones de la ruta, que en una
 	grilla casi nunca es aplicable porque los dos nuevos arcos deben unir
-	locaciones adyacentes, este movimiento redibuja los caminos completos.
-	\item {\bf Reubicación de locaciones.} Es una versión simplificada del
+	ubicaciones adyacentes, este movimiento redibuja los caminos completos.
+	\item {\bf Reubicación de ubicaciones.} Es una versión simplificada del
 	operador {\em or-opt}, propuesto por Or en su tesis doctoral de 1976
 	\cite[babin2007oropt]. El operador original reubica cadenas de tres, dos
-	y un vértice consecutivos; aquí se reubica una sola locación requerida
+	y un vértice consecutivos; aquí se reubica una sola ubicación requerida
 	por vez en otra posición de la secuencia, y se vuelven a trazar los
 	caminos afectados.
 	\item {\bf 2-opt y re-ruteo de tramos}, como en las construcciones
@@ -103,9 +103,9 @@ ruta deja de acortarse, con un máximo de cinco rondas:
 
 Si ninguna de las construcciones encuentra una ruta, se recurre a una
 búsqueda exhaustiva de tipo {\em best-first}, sobre estados formados por la
-locación actual, el conjunto de locaciones pendientes y el camino recorrido.
-Los estados se exploran primero por cantidad de locaciones pendientes y
-después por la distancia a la locación requerida más cercana, con un tope de
+ubicación actual, el conjunto de ubicaciones pendientes y el camino recorrido.
+Los estados se exploran primero por cantidad de ubicaciones pendientes y
+después por la distancia a la ubicación requerida más cercana, con un tope de
 2.000.000 de expansiones. Si se alcanza el tope sin encontrar una ruta, el
 lote queda sin ruta y la instancia se informa como infactible.
 
@@ -133,7 +133,7 @@ funcionales y en los de estrés.
 \bTR \bTD Construcciones aleatorias \eTD \bTD 20 \eTD \bTD Rutas aleatorias generadas por lote en la solución inicial. \eTD \eTR
 \bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD Exponente de la distancia en la regla de elección de las construcciones aleatorias. \eTD \eTR
 \bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción aleatoria antes de abandonarse. \eTD \eTR
-\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el 2-opt del pulido. \eTD \eTR
+\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Ubicaciones requeridas por bloque invertido en el 2-opt del pulido. \eTD \eTR
 \bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de la ruta inicial. \eTD \eTR
 \bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
 \bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
@@ -203,7 +203,7 @@ funcionales y en los de estrés.
 \bTR \bTD Peso elitista \eTD \bTD 2 \eTD \bTD Multiplicador del depósito de $s^*$ en la feromona de asignación. \eTD \eTR
 \bTR \bTD Intentos por lote \eTD \bTD 10 \eTD \bTD Construcciones por lote y por hormiga antes de usar la ruta de respaldo. \eTD \eTR
 \bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción antes de abandonarse. \eTD \eTR
-\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Locaciones requeridas por bloque invertido en el pulido. \eTD \eTR
+\bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Ubicaciones requeridas por bloque invertido en el pulido. \eTD \eTR
 \bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de cada récord. \eTD \eTR
 \bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
 \bTR \bTD Fracción para hormigas \eTD \bTD 0,5 \eTD \bTD Parte de $\text{Max}_{\text{time}}$ que pueden usar las hormigas; el resto queda para el pulido y la búsqueda local. \eTD \eTR

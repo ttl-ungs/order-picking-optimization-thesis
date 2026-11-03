@@ -413,6 +413,14 @@ mantenerse constante durante toda la búsqueda (penalización {\em estática})
 o modificarse a medida que avanza (penalización {\em dinámica})
 \cite[talbi2009metaheuristics].
 
+Una tercera alternativa es la estrategia de {\em preservación}, que diseña la
+representación y los operadores de forma tal que solo generen soluciones
+factibles respecto de algunas restricciones. Así, la búsqueda nunca pasa por
+soluciones que las violen, y no hace falta descartarlas ni penalizarlas. A
+cambio, requiere representaciones y operadores específicos del problema, que
+no siempre pueden construirse para todas las restricciones
+\cite[talbi2009metaheuristics].
+
 \stopsection
 
 %----------------------------------------------------------------------------------------
@@ -489,11 +497,8 @@ heurísticas.
 %========================================================================================
 %
 % 1. QUÉ FALTA (conceptos que usan los cap. 3 a 6 y que hoy no están acá)
-% [ ] Manejo de restricciones en metaheurísticas: solo están rechazo y penalización. Talbi
-%     (2009) describe también reparación, decodificación y preservación. HC y ACO usan
-%     preservación (la representación y los operadores cumplen por construcción un picker
-%     por lote, no solapamiento, sin subtours y camino simple), que hoy el cap. 4 llama
-%     "rechazo". Agregar al menos preservación para poder citarla en el cap. 4.
+% (resuelto el 03/11/2026: 2.5 explica la preservación, que usa el cap. 4)
+
 %
 % 2. QUÉ CORREGIR O MEJORAR
 % [ ] Unificar términos con los cap. 3 a 6: "resolvedor"/"solver", "locación"/"ubicación",
