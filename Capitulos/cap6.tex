@@ -796,7 +796,7 @@ label.rt(textext("\tfx ACO"), (7.500cm,4.860cm));
 
 \stopsubsection
 
-\startsubsection[title={Escenarios sin referencia}]
+\startsubsection[title={Escenarios sin referencia}, reference=sec:res_sin_referencia]
 
 En los 10 escenarios de estrés que el Split no termina, las dos heurísticas
 encuentran una solución válida. No hay un óptimo con el cual medirlas, pero sí
@@ -824,6 +824,38 @@ menores al 1~\%. La excepción es el 01, en el que ACO completó solo 2
 iteraciones antes de alcanzar su tope de 30 minutos, y en el que además la
 máquina se suspendió durante la corrida. Su objetivo en ese escenario vale
 como solución factible, pero no como medida de calidad.
+
+\stopsubsection
+
+\startsubsection[title={A igual tiempo}, reference=sec:res_igual_tiempo]
+
+En las comparaciones anteriores, cada método corre hasta su propio criterio
+de parada. En este experimento, cada modelo lineal recibe como
+límite el tiempo total que tardó una heurística en el mismo escenario de
+estrés, y se registra la mejor solución que tiene al vencer ese límite
+(Sección~\in[sec:comparacion]). Se usaron los 19 escenarios de estrés.
+
+{\bf Con el tiempo de \ac{hc}.} Con presupuestos de entre 0,5 y 6~segundos,
+salvo en el 01, donde son unos 20~minutos, ningún modelo lineal obtiene una
+solución en ningún escenario. En el Split,
+la Etapa~1 no llega a rutear todos los lotes dentro del presupuesto, así que
+la Etapa~2 no llega a ejecutarse, y el monolítico tampoco encuentra una
+solución factible. En el tiempo en que \ac{hc} entrega una solución a lo
+sumo a un 0,21~\% del óptimo, los modelos lineales no entregan ninguna.
+Estos presupuestos provienen de una corrida de \ac{hc} anterior a la del
+Cuadro~\in[tab:res_estres_tiempos], pero difieren de sus tiempos en menos de
+un segundo, muy por debajo de lo que necesita la Etapa~1, salvo en el 01, en
+el que el presupuesto fue unos 3~minutos mayor que el tiempo de esa corrida.
+
+% PENDIENTE (corridas del 02/11 en results/equal_time/: 02-19 con los tiempos del CSV consolidado
+% de ACO; 01 con el tiempo de la nueva corrida de estrés de ACO en el 01, que reemplaza a la
+% de la suspensión. Actualizar también los cuadros de tiempos y sin referencia, y el texto del 01):
+% {\bf Con el tiempo de \ac{aco}.} Cuadro por escenario (presupuesto, objetivo del Split y del
+% monolítico al vencer el límite, diferencia de ACO contra cada uno) y párrafo con:
+% en cuántos escenarios cada modelo obtiene solución, dónde empata ACO, dónde gana y por
+% cuánto (en la corrida del 27/09: entre 30 y 62 % con 12 lotes o más), por qué falla el
+% Split donde falla (Etapa 1 sin rutear todos los lotes; en el 11, lotes sin picker elegible
+% por frío) y cuánto se excedió el presupuesto donde SCIP no cortó a tiempo.
 
 \stopsubsection
 
@@ -858,8 +890,12 @@ Anexo~\in[Anexo_Resultados].
 \startsubsection[title={Alcance de estos resultados}]
 
 Tres condiciones limitan la lectura de estos resultados. Primero, cada
-heurística se ejecutó una sola vez por instancia, con semilla 1, de modo que
-no se mide su variabilidad entre semillas. Segundo, los tiempos son de reloj,
+heurística se ejecutó una sola vez por instancia, con semilla 1. La
+variación entre semillas se midió aparte, en los escenarios de estrés 02 a
+19, y es pequeña: la diferencia entre la mejor y la peor de cinco semillas
+tuvo una mediana de 0,02~\% en HC y de 0,005~\% en ACO
+(Secciones~\in[sec:calib_hc_semillas] y~\in[sec:calib_aco_semillas]).
+Segundo, los tiempos son de reloj,
 medidos en una computadora portátil, y si el equipo se suspende durante una
 corrida, ese tiempo queda incluido en la duración, lo que afecta sobre todo al escenario 01 de ACO. Tercero, la
 referencia de objetivo existe solo donde el Split termina, en 9 de los 19
