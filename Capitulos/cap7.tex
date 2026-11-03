@@ -10,18 +10,14 @@ trabajo futuro (Sección~\in[sec:trabajo_futuro]).
 %----------------------------------------------------------------------------------------
 \startsection[title={Discusión}, reference=sec:discusion]
 
-Coruzzolo et al. formularon la optimización conjunta del loteo, la
-asignación, la secuenciación y el ruteo como un modelo lineal entero mixto,
-pero no pudieron resolverlo sobre su caso de estudio y recurrieron a una
-heurística constructiva con búsqueda local iterada, sin poder contrastar sus
-resultados con el óptimo \cite[coruzzolo2023orderpicking]. Los resultados de
-esta tesina son consistentes con esa experiencia: aun sin decidir el loteo, el
-modelo monolítico solo prueba el óptimo en instancias pequeñas
+Los resultados de esta tesina son consistentes con la experiencia de
+Coruzzolo et al., que no pudieron resolver su modelo lineal sobre el caso de
+estudio (Sección~\in[sec:trabajos_relacionados]). Aun sin decidir el loteo,
+el modelo monolítico solo prueba el óptimo en instancias pequeñas
 (Sección~\in[sec:comparacion_lineales]). La descomposición en dos etapas
 amplía ese alcance sin perder optimalidad, y es lo que permite medir la
 calidad de las heurísticas contra un óptimo probado en instancias de tamaño
-realista, una de las limitaciones de los trabajos revisados en la
-Sección~\in[sec:trabajos_relacionados].
+realista.
 
 La dificultad del monolítico no está en encontrar buenas soluciones, sino en
 probar que lo son: su cota dual casi no avanza. Es un comportamiento
@@ -122,7 +118,8 @@ encontraron solución (Sección~\in[sec:calib_aco_semillas]).
 que deja afuera los almacenes con pasillos sin salida; no se modela la
 congestión entre operarios, y los lotes y la ubicación de los productos son
 datos del problema. Además, la cota de $M^{\text{seq}}$ puede no ser válida
-cuando conviene la espera voluntaria (Anexo~\in[Anexo_Modelos]), y los lotes
+cuando conviene la espera voluntaria, aunque eso no afecta a las soluciones
+de esta tesina (Anexo~\in[Anexo_Modelos]), y los lotes
 vacíos se rutean y se cobran en el objetivo
 (Sección~\in[sec:caracteristicas_formulacion]).
 

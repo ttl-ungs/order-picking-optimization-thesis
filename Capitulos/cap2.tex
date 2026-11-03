@@ -3,7 +3,7 @@
 En este capítulo se presentan los fundamentos teóricos de los métodos de
 resolución utilizados en esta tesina y de los objetivos que penalizan el
 adelanto y la demora, y se revisan los trabajos relacionados con el problema
-de ruteo de picking.
+de preparación de pedidos.
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Modelo de Programación Lineal Entera Mixta}, reference=sec:marco_mip]
@@ -38,14 +38,10 @@ La exigencia de integralidad incrementa drásticamente la dificultad
 computacional del problema. Mientras que la programación lineal continua se
 resuelve de manera eficiente, la programación entera general es NP-hard
 \cite[matousek2007understanding]. Aunque el espacio de soluciones de un
-problema entero acotado es finito, su tamaño crece de forma exponencial:
-con $n$ variables binarias existen $2^n$ combinaciones posibles, haciendo
-que la enumeración exhaustiva sea inviable incluso para instancias
-pequeñas. El problema del viajante de comercio ilustra perfectamente esta
-explosión en el ámbito del ruteo: para $n$ ciudades existen $(n-1)!/2$
-recorridos posibles, lo que se traduce en aproximadamente $10^{16}$ rutas
-para solo 20 ciudades y $10^{62}$ para 50 \cite[hillier2010investigacion].
-
+problema entero acotado es finito, su tamaño crece de forma exponencial.
+Con $n$ variables binarias existen $2^n$ combinaciones posibles, por lo que
+la enumeración exhaustiva es inviable incluso para instancias pequeñas
+\cite[hillier2010investigacion].
 
 Las variables binarias también permiten modelar condiciones lógicas entre
 restricciones. Una técnica ampliamente utilizada es la de la {\em M grande}
@@ -67,6 +63,11 @@ $g(x)$. Para que el modelo sea matemáticamente válido, el parámetro $M$
 debe ser lo bastante grande como para no excluir ninguna solución factible
 \cite[hillier2010investigacion].
 
+La misma técnica permite activar una restricción solo cuando varias variables
+binarias valen 1 a la vez. Si en lugar de $1 - y$ se usa $k - \sum_{i=1}^{k}
+y_i$, el término vale 0 solo cuando las $k$ variables valen 1, y en cualquier
+otro caso es al menos 1, de modo que la restricción queda desactivada.
+
 En los problemas de ruteo, una variable binaria $x_{ij}$ indica si el
 recorrido utiliza el arco $(i, j)$. Las restricciones de asignación, que
 exigen que a cada nodo entre y salga exactamente un arco, no alcanzan para
@@ -75,8 +76,8 @@ varios ciclos disjuntos, llamados {\em subtours}, que no pasan por el nodo
 de origen. Para eliminarlos existen distintas formulaciones. La más antigua
 es la de Miller, Tucker y Zemlin (MTZ), que asigna a cada nodo una variable
 continua que representa su posición en el recorrido. Gavish y Graves (GG)
-propusieron una alternativa basada en un {\em flujo de un único producto}:
-sobre un grafo de $n$ nodos, donde el nodo 1 es el origen, se introducen
+propusieron una alternativa basada en un {\em flujo de un único producto}.
+Sobre un grafo de $n$ nodos, donde el nodo 1 es el origen, se introducen
 variables continuas no negativas $g_{ij}$ asociadas a cada arco y se
 agregan las restricciones
 \startplaceformula[reference=eq:gg]
@@ -104,70 +105,45 @@ TSP asimétrico directamente con un resolvedor comercial, GG fue la única
 que llegó al óptimo en todas las instancias consideradas dentro del límite
 de tiempo \cite[roberti2012atsp].
 
-Para resolver estos problemas matemáticamente, un concepto central es la
-{\em relajación lineal}, que resulta de eliminar temporalmente la exigencia
-de valores enteros. Dado que la región factible del problema relajado
-engloba todas las soluciones enteras factibles, su valor óptimo proporciona
-una cota válida (inferior en el caso de minimización) para el problema
-original. Si la solución óptima de la relajación resulta ser completamente
-entera, entonces también es el óptimo del problema original. No obstante,
-esto rara vez ocurre de forma natural. Además, el simple redondeo de una
-solución fraccionaria suele ser ineficaz, ya que puede generar soluciones
-infactibles o muy alejadas del verdadero óptimo
-\cite[hillier2010investigacion].
+Un concepto central para resolver estos problemas es la {\em relajación
+lineal}, que se obtiene al eliminar la exigencia de valores enteros. Como la
+región factible del problema relajado contiene todas las soluciones enteras,
+su valor óptimo es una cota válida para el problema original (inferior, en
+el caso de minimización). Si esa solución resulta entera, también es el
+óptimo del problema original, pero esto rara vez ocurre, y redondear una
+solución fraccionaria puede dar soluciones infactibles o muy alejadas del
+óptimo \cite[hillier2010investigacion].
 
 El método exacto más difundido para resolver problemas de programación
 entera mixta es el algoritmo de {\em ramificación y acotamiento} ({\em
-branch and bound}), que evita la enumeración exhaustiva dividiendo
-sistemáticamente el problema en subproblemas más pequeños. En cada
-iteración se aplican tres pasos principales
-\cite[hillier2010investigacion]:
+branch and bound}). En lugar de enumerar todas las soluciones, divide el
+problema en subproblemas, agregando restricciones sobre una variable que
+tomó un valor fraccionario en la relajación, y resuelve la relajación de
+cada uno para acotar el mejor valor posible en esa rama. Un subproblema se
+descarta cuando su cota no mejora a la {\em solución incumbente}, que es la
+mejor solución entera encontrada hasta el momento, cuando su relajación es
+infactible o cuando su solución relajada ya es entera. Los resolvedores
+modernos complementan este esquema con técnicas de {\em ramificación y
+corte} ({\em branch and cut}), que ajustan la relajación mediante
+preprocesamiento y planos cortantes sin descartar soluciones enteras
+\cite[hillier2010investigacion].
 
-\startitemize[n]
-\item {\bf Ramificación:} Se selecciona una variable entera $x_j$ que ha
-tomado un valor fraccionario $x_j^*$ en la relajación lineal de un
-subproblema. A partir de ella, se crean dos nuevos subproblemas añadiendo
-las restricciones $x_j \leq \lfloor x_j^* \rfloor$ y $x_j \geq \lfloor
-x_j^* \rfloor + 1$.
-\item {\bf Acotamiento:} Se resuelve la relajación lineal de cada nuevo
-subproblema para obtener una cota que delimite el mejor valor posible en
-esa rama de búsqueda.
-\item {\bf Sondeo (o poda):} Un subproblema se descarta bajo tres
-condiciones: si su cota no mejora a la {\em solución incumbente} (la mejor
-solución entera encontrada hasta el momento), si su relajación lineal es
-infactible, o si su solución relajada ya es entera (pudiendo convertirse en
-la nueva incumbente). El algoritmo concluye cuando no quedan subproblemas
-abiertos por explorar, momento en el cual la solución incumbente se declara
-como óptima.
-\stopitemize
+Durante la búsqueda, el algoritmo mantiene dos valores. La {\em cota
+primal} es el valor de la solución incumbente, y la {\em cota dual}, la
+mejor cota entre los subproblemas aún abiertos. El óptimo siempre se
+encuentra entre ambos, y la diferencia relativa entre ellos se conoce como
+{\em gap de optimalidad}. Cuando la búsqueda se detiene por un límite de
+tiempo, el gap indica cuánto podría mejorar todavía la solución, y un gap
+nulo garantiza que la solución está {\em probada} como óptima
+\cite[hillier2010investigacion]. Un gap grande, sin embargo, no significa
+necesariamente que la solución sea mala, ya que puede deberse a una cota
+dual débil, que casi no avanza aunque la incumbente esté cerca del óptimo.
 
-Durante el proceso de búsqueda, el algoritmo mantiene dos valores críticos:
-la {\em cota primal} (el valor de la solución incumbente) y la {\em cota
-dual} (la mejor cota entre los subproblemas aún abiertos). El óptimo global
-siempre se encuentra entre ambos valores, y la diferencia relativa entre
-ellos se conoce como {\em gap de optimalidad}. Este gap permite detener el
-algoritmo anticipadamente para obtener soluciones de alta calidad con mucho
-menos esfuerzo computacional. Por ejemplo, al aceptar una solución a no más
-del 5\% del óptimo, la búsqueda termina en cuanto la distancia entre las
-cotas alcanza ese límite \cite[hillier2010investigacion]. Asimismo, si el
-proceso se interrumpe por un límite de tiempo, el gap certifica cuánto
-podría mejorar aún la solución. Un gap nulo garantiza matemáticamente que
-la solución obtenida está {\em probada} como óptima.
-
-Para maximizar la eficiencia, los resolvedores modernos combinan este
-algoritmo con técnicas de {\em ramificación y corte} ({\em branch and
-cut}), las cuales buscan estrechar la región factible de la relajación
-lineal sin descartar ninguna solución entera válida. Esto se logra mediante
-el preprocesamiento automático del modelo (fijando variables, eliminando
-restricciones redundantes y ajustando coeficientes) y la adición dinámica
-de {\em planos cortantes}. Mientras más ajustada sea la relajación, mejores
-serán las cotas y más subproblemas podrán podarse rápidamente; en algunos
-casos, los cortes reducen hasta en un 98\% la brecha entre la relajación y
-el óptimo entero \cite[hillier2010investigacion]. Por esta misma razón, en
-las restricciones de tipo M grande resulta vital escoger el menor valor de
-$M$ que preserve la validez de la formulación: un valor innecesariamente
-grande afloja la relajación y debilita severamente el rendimiento
-computacional del algoritmo.
+Mientras más ajustada sea la relajación, mejores serán las cotas y más
+subproblemas podrán podarse. Por eso, en las restricciones de tipo M grande
+conviene elegir el menor valor de $M$ que mantenga válida la formulación,
+porque un valor innecesariamente grande afloja la relajación y empeora el
+rendimiento del algoritmo.
 
 \stopsection
 
@@ -179,15 +155,16 @@ una fecha de entrega $d_j$ y, una vez programado, un instante de finalización
 $C_j$. Su demora es $T_j = \max(0,\, C_j - d_j)$ y su adelanto,
 $E_j = \max(0,\, d_j - C_j)$. Los objetivos clásicos, como el tiempo total
 de finalización o la demora total, solo penalizan que los trabajos terminen
-tarde. Son objetivos {\em regulares}: no disminuyen cuando aumenta algún
-instante de finalización, de modo que demorar un trabajo nunca los mejora. En
+tarde. Se dice que estos objetivos son {\em regulares} porque no disminuyen
+cuando aumenta algún instante de finalización, es decir, demorar un trabajo
+nunca los mejora. En
 los entornos de producción {\em just-in-time}, en cambio, terminar antes de
 tiempo también tiene un costo, por ejemplo de almacenamiento o de espera
 hasta el despacho, y el objetivo penaliza tanto el adelanto como la demora
 \cite[baker1990sequencing].
 
-Un objetivo de este tipo no es regular: si un trabajo termina antes de su
-fecha de entrega, demorarlo reduce su adelanto. Por eso, la mejor
+Un objetivo de este tipo no es regular, porque si un trabajo termina antes
+de su fecha de entrega, demorarlo reduce su adelanto. Por eso, la mejor
 programación puede incluir {\em tiempo ocioso insertado} ({\em inserted idle
 time}), es decir, períodos en los que un recurso permanece inactivo aunque
 haya trabajos esperando para ser procesados \cite[kanet2000inserted]. Por
@@ -196,9 +173,9 @@ y el recurso está libre desde el instante 0, comenzarlo de inmediato lo hace
 terminar en 10, con un adelanto de 10. Si, en cambio, se lo comienza en el
 instante 10, termina justo en su fecha de entrega y no paga penalización.
 
-Esta propiedad tiene dos consecuencias. La primera es que elegir el orden de
-los trabajos no alcanza: dada una secuencia, también hay que decidir cuánto
-tiempo ocioso insertar antes de cada trabajo \cite[baker1990sequencing]. La
+Esta propiedad tiene dos consecuencias. La primera es que no alcanza con elegir
+el orden de los trabajos, ya que, dada una secuencia, también hay que decidir
+cuánto tiempo ocioso insertar antes de cada uno \cite[baker1990sequencing]. La
 segunda es que un método que solo genera programaciones sin tiempo ocioso
 insertado, en las que cada trabajo comienza apenas termina el anterior,
 explora un subconjunto de las soluciones posibles y puede no alcanzar el
@@ -209,9 +186,9 @@ regular, la suma de los instantes de finalización de los lotes, con
 penalizaciones por el adelanto y la demora de los pedidos, de modo que,
 cuando el adelanto pesa lo suficiente, insertar tiempo ocioso puede convenir.
 En los modelos lineales del Capítulo~\in[Capitulo_3], el tiempo ocioso
-insertado aparece como espera voluntaria (Sección~\in[sec:espera_voluntaria]),
-y se da en casos con características particulares. Las metaheurísticas del 
-Capítulo~\in[Capitulo_4] solo generan programaciones sin tiempo ocioso insertado.
+insertado aparece como espera voluntaria (Sección~\in[sec:espera_voluntaria]).
+Las metaheurísticas del Capítulo~\in[Capitulo_4], en cambio, solo generan
+programaciones sin tiempo ocioso insertado.
 
 \stopsection
 
@@ -266,40 +243,31 @@ El proceso de optimización comienza siempre evaluando una solución inicial
 dada. A partir de ese punto, y durante cada iteración, el algoritmo
 reemplaza la solución actual por un vecino que logre mejorar el valor de la
 función objetivo. Para decidir qué camino tomar en el espacio de búsqueda,
-el método requiere definir una estrategia de selección del próximo vecino,
-existiendo opciones estándar como elegir la mejor mejora disponible, tomar
-la primera mejora que el algoritmo encuentre, o seleccionar una mejora de
-forma aleatoria \cite[talbi2009metaheuristics]. La estrategia de primera
+el método necesita una estrategia de selección del próximo vecino. Las
+opciones habituales son elegir la mejor mejora disponible, tomar la primera
+mejora que se encuentre o seleccionar una mejora al azar
+\cite[talbi2009metaheuristics]. La estrategia de primera
 mejora aplica pasos de mejora antes que la de mejor mejora, aunque cada
 paso suele mejorar menos y se necesitan más pasos para alcanzar un óptimo
 local. Además, el óptimo local que encuentra depende del orden en que se
-recorre la vecindad: recorrerla en orden aleatorio permite que distintas
+recorre la vecindad, y recorrerla en orden aleatorio permite que distintas
 ejecuciones, incluso partiendo de la misma solución inicial, alcancen
 óptimos locales muy diferentes \cite[hoos2015sls].
 
-Una característica particular del Hill Climbing es que no requiere
-configurar condiciones de finalización complejas, ya que sus criterios de
-parada son implícitos. La búsqueda se detiene de forma natural cuando todos
-los vecinos candidatos evaluados resultan ser peores que la solución
-actual. Cuando esto sucede, significa que el algoritmo ha encontrado un
-óptimo local y concluye su ejecución \cite[talbi2009metaheuristics]. Sin
-embargo, para confirmar que una solución es un óptimo local es necesario
-inspeccionar su vecindad completa \cite[hoos2015sls]. Cuando en cada
-iteración se genera solo una parte de la vecindad, como ocurre al muestrear
-vecinos al azar, la búsqueda se detiene mediante criterios explícitos, como
-un número máximo de iteraciones o un límite de tiempo
+La búsqueda termina cuando ningún vecino mejora la solución actual, lo que
+indica que se alcanzó un óptimo local \cite[talbi2009metaheuristics].
+Confirmarlo exige inspeccionar la vecindad completa \cite[hoos2015sls], de
+modo que, cuando en cada iteración se genera solo una parte de ella, por
+ejemplo al muestrear vecinos al azar, la búsqueda se detiene con criterios
+explícitos, como un número máximo de iteraciones o un límite de tiempo
 \cite[talbi2009metaheuristics].
 
-El principal inconveniente de esta metaheurística es precisamente su
-tendencia a quedar atrapada en dichos óptimos locales, limitando su
-capacidad para encontrar el óptimo global del problema. Para contrarrestar
-esta debilidad, se han desarrollado cuatro grandes familias de enfoques:
-reiniciar el algoritmo iterando desde diferentes soluciones iniciales,
-cambiar la estructura de la vecindad de búsqueda, alterar la función
-objetivo o los datos de entrada para modificar el panorama del problema, o
-finalmente, flexibilizar el criterio de aceptación para permitir
-movimientos hacia vecinos que no mejoren la solución actual, dando origen a
-técnicas más avanzadas como el recocido simulado y la búsqueda tabú
+El principal inconveniente de Hill Climbing es su tendencia a quedar
+atrapado en óptimos locales. Para contrarrestarlo existen cuatro grandes
+familias de enfoques, que consisten en reiniciar la búsqueda desde distintas
+soluciones iniciales, cambiar la vecindad, modificar la función objetivo o
+los datos de entrada, o aceptar movimientos que no mejoran la solución
+actual, como hacen el recocido simulado y la búsqueda tabú
 \cite[talbi2009metaheuristics,hoos2015sls].
 
 \stopsection
@@ -307,19 +275,14 @@ técnicas más avanzadas como el recocido simulado y la búsqueda tabú
 %----------------------------------------------------------------------------------------
 \startsection[title={Ant Colony Optimization}, reference=sec:marco_aco]
 
-La Optimización por Colonia de Hormigas, conocida por sus siglas en inglés
-como ACO (Ant Colony Optimization), es una metaheurística poblacional
-introducida por M. Dorigo que se inspira en el comportamiento de búsqueda
-de alimento de las hormigas reales y su capacidad para encontrar los
-caminos más cortos entre su nido y una fuente de comida. Este fenómeno
-biológico se basa en la {\em estigmergia}, una forma de comunicación
-indirecta en la que las hormigas modifican su entorno al depositar una
-sustancia química olorosa llamada {\em feromona} a lo largo de su
-trayectoria. En el ámbito computacional, este comportamiento coordinado se
-modela mediante el uso de \quotation{hormigas artificiales}, que actúan
-como agentes estocásticos que cooperan para construir de manera incremental
-soluciones a problemas de optimización combinatoria complejos moviéndose a
-través de un grafo de construcción \cite[dorigo2004aco].
+La Optimización por Colonia de Hormigas (ACO, del inglés {\em Ant Colony
+Optimization}) es una metaheurística poblacional introducida por M. Dorigo,
+inspirada en la forma en que las hormigas reales encuentran caminos cortos
+entre su nido y una fuente de alimento. Las hormigas se comunican de forma
+indirecta depositando {\em feromona} a lo largo de su trayectoria. ACO imita
+este comportamiento con hormigas artificiales, agentes estocásticos que
+construyen soluciones de forma incremental moviéndose por un grafo de
+construcción \cite[dorigo2004aco].
 
 El proceso de búsqueda en ACO se basa en la construcción probabilística de
 soluciones \cite[hoos2015sls]. A medida que una hormiga avanza por el
@@ -336,8 +299,8 @@ previo sobre el problema específico, como por ejemplo priorizar las
 distancias más cortas entre dos puntos \cite[talbi2009metaheuristics].
 
 En el {\em Ant System} (AS), el primer algoritmo ACO, esta interacción se
-formaliza mediante la {\em regla proporcional aleatoria}: la probabilidad
-de que la hormiga $k$, ubicada en el nodo $i$, elija moverse al nodo $j$ es
+formaliza mediante la {\em regla proporcional aleatoria}, según la cual la
+probabilidad de que la hormiga $k$, ubicada en el nodo $i$, elija moverse al nodo $j$ es
 \startplaceformula[reference=eq:aco_transicion]
 \startformula
 	p_{ij}^{k} = \frac{[\tau_{ij}]^{\alpha} \, [\eta_{ij}]^{\beta}}{\sum_{l \in \mathcal{N}_i^k} [\tau_{il}]^{\alpha} \, [\eta_{il}]^{\beta}},
@@ -356,24 +319,15 @@ la feromona, lo que en general produce malos resultados y, para $\alpha >
 1$, lleva rápidamente a una situación de {\em estancamiento}, en la que
 todas las hormigas construyen el mismo recorrido \cite[dorigo2004aco].
 
-Una vez que las hormigas han construido sus soluciones completas, el
-algoritmo procede a actualizar los niveles de feromona mediante dos
-mecanismos opuestos y complementarios: la evaporación y el depósito o
-refuerzo, que incrementa la cantidad de feromona en aquellos componentes
-que pertenecen a las soluciones generadas en la iteración actual
-\cite[hoos2015sls]. La evaporación reduce todos los niveles de feromona por
-un factor constante a lo largo del tiempo. Este proceso de “olvido” resulta
-crucial para evitar una convergencia prematura hacia soluciones subóptimas
-y fomentar la exploración de nuevas áreas del espacio de búsqueda. En
-cuanto al depósito, en la mayoría de las variantes de alto rendimiento la
-cantidad de feromona depositada es proporcional a la calidad de la
-solución, y a menudo solo se permite que las hormigas con las mejores rutas
-refuercen sus caminos, atrayendo así a las futuras hormigas hacia las
-regiones más óptimas \cite[dorigo2004aco].
+Cuando todas las hormigas completaron sus soluciones, el algoritmo actualiza
+la feromona mediante dos mecanismos complementarios \cite[hoos2015sls]. La
+{\em evaporación} reduce la feromona de todos los componentes y funciona como
+un mecanismo de olvido, que evita la convergencia prematura hacia soluciones
+subóptimas y favorece la exploración de nuevas zonas del espacio de búsqueda.
+El {\em depósito}, en cambio, refuerza los componentes que forman parte de
+las soluciones construidas \cite[dorigo2004aco].
 
-En AS, ambos mecanismos se aplican una vez que las $m$ hormigas completaron
-sus recorridos. Primero, la evaporación reduce la feromona de todos los
-arcos:
+En AS, con $m$ hormigas, primero se evapora la feromona de todos los arcos:
 \startplaceformula[reference=eq:aco_evaporacion]
 \startformula
 	\tau_{ij} \leftarrow (1 - \rho) \, \tau_{ij},
@@ -395,8 +349,8 @@ recorrió:
 \stopformula
 \stopplaceformula
 donde $C^{k}$ es la longitud del recorrido $T^{k}$ construido por la
-hormiga $k$. De esta forma, cuanto mejor es el recorrido de una hormiga,
-más feromona reciben sus arcos \cite[dorigo2004aco].
+hormiga $k$. Así, cuanto más corto es el recorrido de una hormiga, más
+feromona reciben sus arcos \cite[dorigo2004aco].
 
 Sobre este esquema se desarrollaron variantes que explotan con más fuerza
 las mejores soluciones encontradas. En el {\em Elitist Ant System} (EAS),
@@ -452,8 +406,8 @@ infactible para llegar a una factible mejor que la anterior. La
 penalización resulta más informativa cuando $c(s)$ mide {\em cuánto} se
 viola cada restricción, y no solo {\em cuántas} restricciones se violan, ya
 que así refleja qué tan cerca está la solución de la región factible. La
-elección del peso es delicada: si es demasiado bajo, la solución final
-puede resultar infactible; si es demasiado alto, la búsqueda puede
+elección del peso es delicada. Si es demasiado bajo, la solución final
+puede resultar infactible, y si es demasiado alto, la búsqueda puede
 converger hacia soluciones factibles pero no óptimas. El peso puede
 mantenerse constante durante toda la búsqueda (penalización {\em estática})
 o modificarse a medida que avanza (penalización {\em dinámica})
@@ -465,11 +419,24 @@ o modificarse a medida que avanza (penalización {\em dinámica})
 \startsection[title={Trabajos relacionados}, reference=sec:trabajos_relacionados]
 
 El modelo de referencia de esta tesina es el propuesto por Coruzzolo et al.
-\cite[coruzzolo2023orderpicking], que formula la optimización conjunta de
-{\em batching}, asignación de lotes, secuenciación y ruteo de picking como
-un modelo de \ac{mip}, y lo valida sobre un caso real
-reduciendo el tiempo de picking en un 57\% respecto de una estrategia de
-pedido por pedido.
+\cite[coruzzolo2023orderpicking], que formula como un modelo de \ac{mip} la
+optimización conjunta de cuatro decisiones: qué órdenes forman cada lote
+({\em batching}), a qué operario se asigna cada lote, en qué orden los ejecuta
+y qué ruta sigue en cada uno. Los lotes se forman respetando la capacidad del
+carro, y la ruta de cada lote parte de un depósito inicial, termina en un
+depósito final y pasa a lo sumo una vez por cada ubicación. Los subtours se
+eliminan con un flujo de tipo Gavish y Graves (Sección~\in[sec:marco_mip])
+acotado por la capacidad del carro, y la secuencia de cada operario se modela
+asignando cada lote a una posición numerada de su agenda. El objetivo combina
+la suma de los tiempos de finalización con una suma ponderada de la demora y
+el adelanto de las órdenes, ya que preparar un pedido demasiado pronto ocupa
+espacio en el almacén sin necesidad.
+
+Para reducir la complejidad, los autores proponen también un modelo
+simplificado sin las restricciones de ruteo, que recibe como datos todos los
+lotes factibles, cada uno con la distancia de una ruta construida con la
+heurística del vecino más cercano. Sobre un caso real, su propuesta reduce el
+tiempo de picking en un 57\% respecto de preparar los pedidos de a uno.
 
 En cuanto a los métodos de resolución, Chen et al.
 \cite[chen2013antcolony] proponen un algoritmo de ruteo basado en \ac{aco}
@@ -484,22 +451,19 @@ optimizarlos de forma conjunta mejora el resultado global. Alaya et al.
 multiobjetivo; de su trabajo se toman valores de referencia para los
 parámetros de la colonia (Sección~\in[sec:calib_aco_sensibilidad]).
 
-Esta tesina se posiciona a partir de dos limitaciones de los trabajos
-revisados. En primer lugar, el modelo de Coruzzolo et al. no contempla
-la velocidad heterogénea entre operarios ni los requisitos de cadena de frío,
-dos características presentes en la operación real; por lo tanto, se
-extiende su formulación para incorporarlas. En segundo lugar, los propios
-autores señalan que sus modelos lineales resultaron demasiado complejos para
-resolverse sobre el caso de estudio, por lo que recurren a una heurística
-constructiva mejorada con búsqueda local iterada sin poder contrastar sus
-resultados con el óptimo. A diferencia de ello, en este trabajo se
-desarrollan dos modelos lineales (uno monolítico y otro descompuesto en dos
-etapas) capaces de resolver hasta la optimalidad instancias de tamaño
-reducido, y dos metaheurísticas basadas en \ac{hc} y \ac{aco} que
-resuelven exactamente el mismo problema. De este modo, la calidad de las
-soluciones heurísticas puede medirse directamente respecto del óptimo, y el
-compromiso entre calidad de la solución y tiempo de cómputo puede evaluarse
-sobre escenarios equivalentes para los cuatro enfoques.
+Esta tesina se posiciona a partir de dos limitaciones del modelo de
+referencia. En primer lugar, el modelo de Coruzzolo et al. no contempla la
+velocidad heterogénea entre operarios ni los requisitos de cadena de frío,
+dos características presentes en la operación real, por lo que aquí se
+extiende su formulación para incorporarlas. La formación de los lotes, en
+cambio, que ese modelo también decide, aquí se toma como dato. En segundo lugar, los propios
+autores señalan que sus dos modelos lineales resultaron demasiado complejos
+para resolverse sobre el caso de estudio, por lo que recurren a una
+heurística constructiva por fecha de entrega más temprana, mejorada con
+búsqueda local iterada, sin poder contrastar sus resultados con el óptimo. En este trabajo, en cambio, los modelos lineales
+resuelven hasta el óptimo las instancias de menor tamaño, y eso permite
+medir directamente cuánto se alejan del óptimo las soluciones de las
+heurísticas.
 
 \stopsection
 \stopchapter
@@ -511,52 +475,29 @@ sobre escenarios equivalentes para los cuatro enfoques.
 % (linear-picking-routing, origin/main 75d553c del 19/10), docs/thesis/models.tex y
 % Notas/opp_v5_development.tex. Solo cubre la base teórica que necesitan los modelos
 % lineales, la comparación de modelos y la validación de las metaheurísticas.
+%
+% 02/11/2026: eliminado adelanto y demora, que ahora es la Sección 2.2; los 
+% números del último párrafo de 2.6, que ya no describe el
+% alcance de los modelos; y la descomposición del Split.
+% Para no alargar el capítulo, se descartaron simetría, los problemas numéricos de la M
+% grande y la evaluación experimental de metaheurísticas. La cota dual débil quedó en 2.1.
+% Además, 2.6 describe ahora el modelo de referencia (decisiones, capacidad, ruta, flujo,
+% secuencia por posiciones, objetivo y modelo simplificado), que antes estaba en la
+% introducción del cap. 3, y 2.1 explica la M grande con varias binarias, que usan las
+% restricciones de secuencia del cap. 3.
 % [ ] = tarea; (D) = decisión de ustedes.
 %========================================================================================
 %
 % 1. QUÉ FALTA (conceptos que usan los cap. 3 a 6 y que hoy no están acá)
-% [ ] MIP, simetría: con pickers idénticos o lotes vacíos hay muchas soluciones
-%     equivalentes que el branch and bound no puede podar. Sirve para explicar en el cap. 6
-%     el timeout del funcional 30a (10 de sus 12 lotes están vacíos: la misma solución se
-%     verifica en 0,13 s sin ellos y no cierra en 600 s con ellos) y la hipótesis sobre el
-%     costo de la Etapa 2 con velocidades uniformes contra velocidades en bandas.
-%     Ref. posible: Margot (2010), "Symmetry in integer linear programming", en
-%     50 Years of Integer Programming 1958-2008.
-% [ ] MIP, el otro lado de la M grande: hoy dice que una M grande afloja la relajación.
-%     Agregar que también trae problemas numéricos (tolerancias) y que una M chica corta
-%     soluciones factibles. El proyecto tiene los dos casos (Notas, "Historia de M_seq"):
-%     con M_seq = 100.000 SCIP aceptó como óptimas soluciones con solapamientos de ~0,1;
-%     con 500 fijo, el estrés de 40 lotes en un picker dio un infactible falso.
-% [ ] Objetivos de adelanto y demora: no son regulares (puede convenir insertar tiempo
-%     ocioso) y forman una clase difícil. Es la base teórica de la espera voluntaria
-%     (cap. 3) y de la elección W^c = 27 en estrés (cap. 5). Ref. clásica: Baker y Scudder
-%     (1990), "Sequencing with earliness and tardiness penalties: a review", Operations
-%     Research 38(1).
-% [ ] Gap: agregar que un gap grande puede venir de una cota dual débil aunque la solución
-%     sea casi óptima. El cap. 6 lo necesita (el monolítico reporta 143,5 % de gap con una
-%     solución a 0,66 % del óptimo) para justificar que la referencia sea el óptimo del
-%     Split y no el gap del monolítico.
 % [ ] Manejo de restricciones en metaheurísticas: solo están rechazo y penalización. Talbi
 %     (2009) describe también reparación, decodificación y preservación. HC y ACO usan
 %     preservación (la representación y los operadores cumplen por construcción un picker
 %     por lote, no solapamiento, sin subtours y camino simple), que hoy el cap. 4 llama
 %     "rechazo". Agregar al menos preservación para poder citarla en el cap. 4.
-% [ ] Evaluación experimental de metaheurísticas (subsección nueva, o al final de la parte
-%     de metaheurísticas): brecha contra el óptimo, comparación a igual tiempo, varias
-%     corridas con distintas semillas y reporte de medianas y dispersión, y la diferencia
-%     entre encontrar una buena solución y probar que es óptima. Es la base de la
-%     metodología del cap. 5 y de las tablas del cap. 6. Refs: Talbi (2009), cap. 1
-%     (análisis de desempeño); Barr et al. (1995), "Designing and reporting on
-%     computational experiments with heuristic methods", Journal of Heuristics 1(1).
 %
 % 2. QUÉ CORREGIR O MEJORAR
-% [ ] Trabajos relacionados, último párrafo: cuando estén los resultados, cuantificar
-%     "resolver hasta la optimalidad instancias de tamaño reducido" (Split: hasta 6 lotes en
-%     grillas de hasta 15×15 dentro de 40 min; monolítico: con 10 min, hasta 3 lotes en 6×6).
 % [ ] Unificar términos con los cap. 3 a 6: "resolvedor"/"solver", "locación"/"ubicación",
 %     "completitud"/"finalización".
-% [ ] (Opcional) La descomposición del Split puede quedar solo en el cap. 3, con su
-%     argumento de exactitud; acá alcanza con nombrar la idea de resolver en etapas.
 %
 % 3. FUENTES
 % - Notas/opp_v5_development.tex: secs. "Notación común" (historia de M_seq), "Espera
