@@ -72,7 +72,7 @@ sola vez en esta sección.
 		\NC \mathcal{B} \NC \quad \text{lotes; cada orden pertenece a un único lote} \NR
 		\NC \mathcal{P} \NC \quad \text{{\em pickers}} \NR
 		\NC \mathcal{V} \NC \quad \text{ubicaciones del almacén, incluidos el depósito $v_{\text{start}}$ y el nodo final $v_{\text{end}}$} \NR
-		\NC \mathcal{E} \NC \quad \text{arcos del grafo de ubicaciones: pares $(i,j)$ tales que se puede ir de $i$ a $j$} \NR
+		\NC \mathcal{E} \NC \quad \text{arcos del grafo de ubicaciones, es decir, los pares $(i,j)$ tales que se puede ir de $i$ a $j$} \NR
 	\stopalign
 \stopformula
 
@@ -80,10 +80,10 @@ Para escribir las restricciones de forma compacta se usan además los
 siguientes subconjuntos:
 \startformula
 	\startalign[n=3, align={right,left,left}]
-		\NC \mathcal{V}^{\text{int}} \EQ \mathcal{V} \setminus \{v_{\text{start}}, v_{\text{end}}\} \NC \qquad \text{(ubicaciones intermedias)} \NR
-		\NC \delta^{+}(i) \EQ \{(i,j) \in \mathcal{E}\} \NC \qquad \text{(arcos que salen de } i\text{)} \NR
-		\NC \delta^{-}(i) \EQ \{(j,i) \in \mathcal{E}\} \NC \qquad \text{(arcos que entran a } i\text{)} \NR
-		\NC \mathcal{N}_b \EQ \{ n \in \mathcal{N} : B_{nb} = 1 \} \NC \qquad \text{(órdenes del lote } b\text{)} \NR
+		\NC \mathcal{V}^{\text{int}} \EQ \mathcal{V} \setminus \{v_{\text{start}}, v_{\text{end}}\} \NC \qquad \text{ubicaciones intermedias} \NR
+		\NC \delta^{+}(i) \EQ \{(i,j) \in \mathcal{E}\} \NC \qquad \text{arcos que salen de $i$} \NR
+		\NC \delta^{-}(i) \EQ \{(j,i) \in \mathcal{E}\} \NC \qquad \text{arcos que entran a $i$} \NR
+		\NC \mathcal{N}_b \EQ \{ n \in \mathcal{N} : B_{nb} = 1 \} \NC \qquad \text{órdenes del lote $b$} \NR
 	\stopalign
 \stopformula
 
@@ -96,8 +96,8 @@ siguientes subconjuntos:
 	\startalign[n=2, align={right,left}]
 		\NC A_{ni} \in \{0,1\} \NC \quad \text{1 si la orden $n$ tiene productos en la ubicación $i$} \NR
 		\NC B_{nb} \in \{0,1\} \NC \quad \text{1 si la orden $n$ pertenece al lote $b$} \NR
-		\NC C_n \NC \quad \text{capacidad (cantidad de unidades a recoger) de la orden $n$} \NR
-		\NC T^{\text{due}}_n \NC \quad \text{fecha de entrega ({\em due date}) de la orden $n$} \NR
+		\NC C_n \NC \quad \text{cantidad de unidades a recoger de la orden $n$} \NR
+		\NC T^{\text{due}}_n \NC \quad \text{fecha de entrega de la orden $n$} \NR
 		\NC D_{ij} \NC \quad \text{distancia del arco $(i,j) \in \mathcal{E}$} \NR
 		\NC S_i \NC \quad \text{tiempo de servicio en la ubicación $i$} \NR
 	\stopalign
@@ -108,10 +108,10 @@ siguientes subconjuntos:
 	\startalign[n=2, align={right,left}]
 		\NC T^{\text{travel}} \NC \quad \text{tiempo por unidad de distancia, a velocidad de referencia} \NR
 		\NC T^{\text{setup}} \NC \quad \text{tiempo de preparación de cada lote} \NR
-		\NC T^{\text{pick}} \NC \quad \text{tiempo de recolección por unidad de capacidad} \NR
+		\NC T^{\text{pick}} \NC \quad \text{tiempo de recolección por unidad} \NR
 		\NC V_p \NC \quad \text{factor de velocidad del {\em picker} $p$ (1,0 = referencia; 2,0 = camina el doble de rápido)} \NR
 		\NC T^{\text{cold}} \NC \quad \text{tiempo máximo que un lote puede permanecer fuera de la cámara de frío} \NR
-		\NC \varepsilon \NC \quad \text{tolerancia numérica de la restricción de cadena de frío ($10^{-9}$)} \NR
+		\NC \varepsilon \NC \quad \text{tolerancia numérica de la restricción de cadena de frío, igual a $10^{-9}$} \NR
 	\stopalign
 \stopformula
 
@@ -136,12 +136,8 @@ siguientes subconjuntos:
 
 \startsubsection[title={Parámetros derivados}]
 
-Antes de resolver, a partir de los datos se calculan algunos parámetros
-auxiliares. Para cada lote $b$, $a_{bi}$ indica qué ubicaciones debe
-visitar: vale 1 si alguna de sus órdenes tiene productos en la ubicación $i$.
-A partir de él, $L_b$ cuenta esas ubicaciones. Por último, $F_b$ es el tiempo
-fijo del lote, es decir, la preparación más la recolección de todas sus
-unidades:
+Antes de resolver, se calculan a partir de los datos tres parámetros
+auxiliares para cada lote $b$:
 \startformula
 	\startalign[n=3, align={right,left,left}]
 		\NC a_{bi} \EQ
@@ -149,9 +145,9 @@ unidades:
 				\NC 1 \NC \text{si } \sum_{n \in \mathcal{N}_b} A_{ni} \geq 1, \NR
 				\NC 0 \NC \text{en caso contrario,} \NR
 			\stopcases
-		\NC \qquad \text{(1 si alguna orden del lote } b \text{ tiene productos en } i\text{)} \NR
-		\NC L_b \EQ \sum_{i \in \mathcal{V}^{\text{int}}} a_{bi} \NC \qquad \text{(cantidad de ubicaciones que el lote } b \text{ debe visitar)} \NR
-		\NC F_b \EQ T^{\text{setup}} + T^{\text{pick}} \sum_{n \in \mathcal{N}_b} C_n \NC \qquad \text{(tiempo fijo del lote)} \NR
+		\NC \qquad \text{indica si el lote $b$ debe visitar la ubicación $i$} \NR
+		\NC L_b \EQ \sum_{i \in \mathcal{V}^{\text{int}}} a_{bi} \NC \qquad \text{cantidad de ubicaciones que el lote $b$ debe visitar} \NR
+		\NC F_b \EQ T^{\text{setup}} + T^{\text{pick}} \sum_{n \in \mathcal{N}_b} C_n \NC \qquad \text{tiempo fijo del lote $b$, que suma la preparación y la recolección} \NR
 	\stopalign
 \stopformula
 
@@ -164,34 +160,12 @@ es ese tiempo fijo más el tiempo de ruta ajustado por la velocidad del
 	T^{\text{exec}}_{pb} = F_b + \frac{r_b}{V_p},
 \stopformula
 \stopplaceformula
-donde $r_b$ es el tiempo de ruta del lote (traslado más servicio, a
-velocidad de referencia). En el modelo monolítico $r_b$ es una variable de
+donde $r_b$ es el tiempo de ruta del lote, que suma traslado y servicio a
+velocidad de referencia. En el modelo monolítico $r_b$ es una variable de
 decisión, así que $T^{\text{exec}}_{pb}$ no es un dato sino una expresión que
 depende de la ruta elegida. En el modelo Split, en cambio, $r_b$ proviene de
 la primera etapa, y $T^{\text{exec}}_{pb}$ se conoce antes de resolver la
 segunda.
-
-{\bf Constante de las restricciones de secuencia.} Las restricciones de
-secuencia (Sección~\in[sec:mono_asignacion]) usan una constante M grande
-propia, $M^{\text{seq}}$, que se calcula para cada instancia como una cota
-del tiempo total de trabajo, es decir, de lo que tardaría el {\em picker} más
-lento en ejecutar todos los lotes seguidos, cada uno con una ruta de peor caso
-$R^{\max}$. Como una ruta simple recorre a lo sumo $|\mathcal{V}|$ arcos y
-pasa por a lo sumo $|\mathcal{V}|$ ubicaciones, $R^{\max}$ acota el tiempo de
-cualquier ruta. El resultado se redondea a un entero y se le impone un mínimo
-de 500, que solo actúa en instancias muy pequeñas y no compromete la validez
-de la cota, porque una constante mayor sigue siendo válida:
-\startformula
-	\startalign[n=2, align={right,left}]
-		\NC M^{\text{seq}} \EQ \max\left(500,\; \sum_{b \in \mathcal{B}} \left( F_b + \frac{R^{\max}}{\min_{p \in \mathcal{P}} V_p} \right) + 1 \right), \NR
-		\NC R^{\max} \EQ T^{\text{travel}} \, |\mathcal{V}| \max_{(i,j) \in \mathcal{E}} D_{ij} \;+\; |\mathcal{V}| \max_{i \in \mathcal{V}} S_i. \NR
-	\stopalign
-\stopformula
-Como se vio en la Sección~\in[sec:marco_mip], cuanto menor es una constante
-M grande, más ajustada resulta la relajación lineal. Por eso $M^{\text{seq}}$
-se calcula a partir de los datos de cada instancia, en lugar de fijarse en un
-valor arbitrario. La constante general $M$, en cambio, es un dato de la
-instancia.
 
 \stopsubsection
 \stopsection
@@ -209,7 +183,7 @@ lote, a qué {\em picker} se asigna y en qué orden se ejecuta.
 	\startalign[n=2, align={right,left}]
 		\NC z_{ijb} \in \{0,1\} \NC \quad \text{1 si la ruta del lote $b$ usa el arco $(i,j)$} \NR
 		\NC q_{ijb} \geq 0 \NC \quad \text{ubicaciones requeridas del lote $b$ que quedan por visitar al recorrer el arco $(i,j)$} \NR
-		\NC r_b \geq 0 \NC \quad \text{tiempo de ruta del lote $b$ (traslado más servicio)} \NR
+		\NC r_b \geq 0 \NC \quad \text{tiempo de ruta del lote $b$, con traslado y servicio} \NR
 	\stopalign
 \stopformula
 
@@ -217,7 +191,7 @@ lote, a qué {\em picker} se asigna y en qué orden se ejecuta.
 \startformula
 	\startalign[n=2, align={right,left}]
 		\NC x_{pb} \in \{0,1\} \NC \quad \text{1 si el lote $b$ se asigna al {\em picker} $p$} \NR
-		\NC y_{bk} \in \{0,1\} \NC \quad \text{para $b < k$: 1 si $b$ se ejecuta antes que $k$ (cuando comparten {\em picker})} \NR
+		\NC y_{bk} \in \{0,1\} \NC \quad \text{para $b < k$, 1 si $b$ se ejecuta antes que $k$ cuando comparten {\em picker}} \NR
 	\stopalign
 \stopformula
 
@@ -254,9 +228,17 @@ a través de los tiempos de finalización y de la cadena de frío.
 \startsubsection[title={Restricciones de ruteo}]
 
 La ruta de cada lote $b$ es un camino simple desde $v_{\text{start}}$ hasta
-$v_{\text{end}}$ que pasa por todas sus ubicaciones requeridas
-($a_{bi} = 1$). Puede atravesar otras ubicaciones, pero ninguna más de una
-vez.
+$v_{\text{end}}$ que pasa por todas sus ubicaciones requeridas, es decir, las
+que tienen $a_{bi} = 1$. Puede atravesar otras ubicaciones, pero ninguna más
+de una vez.
+
+Para escribir estas restricciones de forma compacta, la suma de una variable
+de ruteo sobre un conjunto de arcos $S \subseteq \mathcal{E}$ se abrevia como
+\startformula
+	z_b(S) = \sum_{(i,j) \in S} z_{ijb}, \qquad q_b(S) = \sum_{(i,j) \in S} q_{ijb}.
+\stopformula
+Por ejemplo, $z_b(\delta^{+}(i))$ vale 1 si la ruta del lote $b$ sale de la
+ubicación $i$, y 0 si no pasa por ella.
 
 {\bf Inicio y fin de la ruta.}
 La ruta sale una vez del depósito (\in[eq:mono_salida]) y llega una vez al
@@ -265,10 +247,10 @@ nodo final (\in[eq:mono_llegada]). Además, no vuelve al depósito
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
-		\NC \NC \sum_{(i,j) \in \delta^{+}(v_{\text{start}})} z_{ijb} = 1 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_salida]
-		\NC \NC \sum_{(i,j) \in \delta^{-}(v_{\text{end}})} z_{ijb} = 1 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_llegada]
-		\NC \NC \sum_{(i,j) \in \delta^{-}(v_{\text{start}})} z_{ijb} = 0 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_no_vuelve]
-		\NC \NC \sum_{(i,j) \in \delta^{+}(v_{\text{end}})} z_{ijb} = 0 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_no_sale]
+		\NC \NC z_b(\delta^{+}(v_{\text{start}})) = 1 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_salida]
+		\NC \NC z_b(\delta^{-}(v_{\text{end}})) = 1 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_llegada]
+		\NC \NC z_b(\delta^{-}(v_{\text{start}})) = 0 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_no_vuelve]
+		\NC \NC z_b(\delta^{+}(v_{\text{end}})) = 0 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_no_sale]
 	\stopalign
 \stopformula
 \stopplaceformula
@@ -279,15 +261,14 @@ A cada ubicación requerida se entra (\in[eq:mono_entra]) y se sale
 (\in[eq:mono_flujo]). A cada ubicación se entra (\in[eq:mono_entra_max]) y
 se sale (\in[eq:mono_sale_max]) como máximo una vez, de modo que ninguna se
 repite.
-% TODO: Acá estaría bueno explicar cada una de estas restricciones, si no es redundante
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
-		\NC \NC \sum_{(i,j) \in \delta^{-}(j)} z_{ijb} \geq a_{bj} \NC \qquad \forall b \in \mathcal{B},\; j \in \mathcal{V}^{\text{int}} \NR[eq:mono_entra]
-		\NC \NC \sum_{(j,i) \in \delta^{+}(j)} z_{jib} \geq a_{bj} \NC \qquad \forall b \in \mathcal{B},\; j \in \mathcal{V}^{\text{int}} \NR[eq:mono_sale]
-		\NC \NC \sum_{(g,i) \in \delta^{-}(i)} z_{gib} = \sum_{(i,j) \in \delta^{+}(i)} z_{ijb} \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V}^{\text{int}} \NR[eq:mono_flujo]
-		\NC \NC \sum_{(j,i) \in \delta^{-}(i)} z_{jib} \leq 1 \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V} \setminus \{v_{\text{start}}\} \NR[eq:mono_entra_max]
-		\NC \NC \sum_{(i,j) \in \delta^{+}(i)} z_{ijb} \leq 1 \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V} \setminus \{v_{\text{end}}\} \NR[eq:mono_sale_max]
+		\NC \NC z_b(\delta^{-}(i)) \geq a_{bi} \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V}^{\text{int}} \NR[eq:mono_entra]
+		\NC \NC z_b(\delta^{+}(i)) \geq a_{bi} \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V}^{\text{int}} \NR[eq:mono_sale]
+		\NC \NC z_b(\delta^{-}(i)) = z_b(\delta^{+}(i)) \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V}^{\text{int}} \NR[eq:mono_flujo]
+		\NC \NC z_b(\delta^{-}(i)) \leq 1 \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V} \setminus \{v_{\text{start}}\} \NR[eq:mono_entra_max]
+		\NC \NC z_b(\delta^{+}(i)) \leq 1 \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V} \setminus \{v_{\text{end}}\} \NR[eq:mono_sale_max]
 	\stopalign
 \stopformula
 \stopplaceformula
@@ -307,8 +288,8 @@ unidad (\in[eq:mono_gg_balance]) si está conectada al depósito por la ruta.
 \startformula
 	\startalign[n=3, align={right,left,left}]
 		\NC \NC q_{ijb} \leq L_b \, z_{ijb} \NC \qquad \forall b \in \mathcal{B},\; (i,j) \in \mathcal{E} \NR[eq:mono_gg_cota]
-		\NC \NC \sum_{(i,j) \in \delta^{+}(v_{\text{start}})} q_{ijb} = L_b \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_gg_origen]
-		\NC \NC \sum_{(g,i) \in \delta^{-}(i)} q_{gib} - \sum_{(i,j) \in \delta^{+}(i)} q_{ijb} = a_{bi} \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V}^{\text{int}} \NR[eq:mono_gg_balance]
+		\NC \NC q_b(\delta^{+}(v_{\text{start}})) = L_b \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_gg_origen]
+		\NC \NC q_b(\delta^{-}(i)) - q_b(\delta^{+}(i)) = a_{bi} \NC \qquad \forall b \in \mathcal{B},\; i \in \mathcal{V}^{\text{int}} \NR[eq:mono_gg_balance]
 	\stopalign
 \stopformula
 \stopplaceformula
@@ -323,11 +304,11 @@ del modelo Split, que minimiza el tiempo de ruta, no lo produce.
 {\bf Tiempo de ruta.}
 El tiempo de ruta es la distancia recorrida multiplicada por
 $T^{\text{travel}}$, más el tiempo de servicio de cada ubicación intermedia
-por la que pasa la ruta (una ubicación se cuenta cuando la ruta sale de ella):
+por la que pasa la ruta, que se cuenta cuando la ruta sale de ella:
 \startplaceformula[reference=eq:mono_ruta]
 \startformula
 	r_b = T^{\text{travel}} \sum_{(i,j) \in \mathcal{E}} D_{ij} \, z_{ijb}
-	\;+\; \sum_{i \in \mathcal{V}^{\text{int}}} S_i \sum_{(i,j) \in \delta^{+}(i)} z_{ijb}
+	\;+\; \sum_{i \in \mathcal{V}^{\text{int}}} S_i \, z_b(\delta^{+}(i))
 	\qquad \forall b \in \mathcal{B}
 \stopformula
 \stopplaceformula
@@ -341,12 +322,11 @@ no se usan, así que las dos expresiones coinciden.}
 
 \startsubsection[title={Asignación, secuencia y fechas de entrega}, reference=sec:mono_asignacion]
 
-% TODO: Acá se ve claro lo de M, quizás no hace falta tanta explicación previa
 {\bf Asignación y tiempo de ejecución.} Cada lote se asigna a exactamente un
 {\em picker} (\in[eq:mono_asignacion]). Si el {\em picker} $p$ ejecuta el
 lote $b$, las restricciones (\in[eq:mono_u_inf]) y (\in[eq:mono_u_sup]), de
 tipo M grande (Ecuación~\in[eq:bigm]), fijan $u_{pb}$ exactamente en su
-tiempo de ejecución $F_b + r_b / V_p$ (Ecuación~\in[eq:texec]); si no lo
+tiempo de ejecución $T^{\text{exec}}_{pb}$ (Ecuación~\in[eq:texec]); si no lo
 ejecuta, quedan desactivadas, para lo cual $M$ debe ser al menos el mayor
 tiempo de ejecución posible de un lote. El lote
 no puede terminar antes de lo que tarda en ejecutarse (\in[eq:mono_piso]), y
@@ -356,8 +336,8 @@ ejecuta (\in[eq:mono_cb]).
 \startformula
 	\startalign[n=3, align={right,left,left}]
 		\NC \NC \sum_{p \in \mathcal{P}} x_{pb} = 1 \NC \qquad \forall b \in \mathcal{B} \NR[eq:mono_asignacion]
-		\NC \NC u_{pb} \geq F_b + \frac{r_b}{V_p} - M (1 - x_{pb}) \NC \qquad \forall p \in \mathcal{P},\; b \in \mathcal{B} \NR[eq:mono_u_inf]
-		\NC \NC u_{pb} \leq F_b + \frac{r_b}{V_p} + M (1 - x_{pb}) \NC \qquad \forall p \in \mathcal{P},\; b \in \mathcal{B} \NR[eq:mono_u_sup]
+		\NC \NC u_{pb} \geq T^{\text{exec}}_{pb} - M (1 - x_{pb}) \NC \qquad \forall p \in \mathcal{P},\; b \in \mathcal{B} \NR[eq:mono_u_inf]
+		\NC \NC u_{pb} \leq T^{\text{exec}}_{pb} + M (1 - x_{pb}) \NC \qquad \forall p \in \mathcal{P},\; b \in \mathcal{B} \NR[eq:mono_u_sup]
 		\NC \NC c_{pb} \geq u_{pb} \NC \qquad \forall p \in \mathcal{P},\; b \in \mathcal{B} \NR[eq:mono_piso]
 		\NC \NC c_b \geq c_{pb} - M (1 - x_{pb}) \NC \qquad \forall p \in \mathcal{P},\; b \in \mathcal{B} \NR[eq:mono_cb]
 	\stopalign
@@ -367,43 +347,67 @@ ejecuta (\in[eq:mono_cb]).
 {\bf Cadena de frío.} No necesita una restricción aparte, ya que está contenida
 en la cota superior de la variable, $u_{pb} \leq T^{\text{cold}} + \varepsilon$.
 Si $x_{pb} = 1$, la restricción (\in[eq:mono_u_inf]) obliga a que
-$u_{pb} \geq F_b + r_b / V_p$, por lo que el {\em picker} $p$ solo puede
-ejecutar el lote $b$ si $F_b + r_b / V_p \leq T^{\text{cold}} + \varepsilon$.
+$u_{pb} \geq T^{\text{exec}}_{pb}$, por lo que el {\em picker} $p$ solo
+puede ejecutar el lote $b$ si
+$T^{\text{exec}}_{pb} \leq T^{\text{cold}} + \varepsilon$.
 Si $x_{pb} = 0$, $u_{pb}$ puede valer 0 y la cota no restringe nada. Como el
 límite se aplica a cada lote y no a la jornada del {\em picker}, un mismo
 {\em picker} puede ejecutar varios lotes seguidos aunque el último termine
 después de $T^{\text{cold}}$.
 
 {\bf Secuencia sin solapamiento.} Un {\em picker} ejecuta un lote por vez.
-Para cada {\em picker} $p$ y cada par de lotes $b < k$:
+Para cada par de lotes $b < k$, la variable $y_{bk}$ indica cuál va primero
+cuando los ejecuta el mismo {\em picker}. Si $b$ va primero, el lote $k$ no
+puede comenzar antes de que termine $b$. Como $k$ comienza en
+$c_{pk} - T^{\text{exec}}_{pk}$, esto equivale a pedir que
+$c_{pk} \geq c_{pb} + T^{\text{exec}}_{pk}$. Si $k$ va primero, vale lo mismo
+con los roles invertidos. Las dos condiciones se escriben así:
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
-		\NC \NC c_{pk} \geq c_{pb} + F_k + \frac{r_k}{V_p} - M^{\text{seq}} (3 - x_{pb} - x_{pk} - y_{bk}) \NC \quad \forall p \in \mathcal{P},\; b, k \in \mathcal{B},\; b < k \NR[eq:mono_seq1]
-		\NC \NC c_{pb} \geq c_{pk} + F_b + \frac{r_b}{V_p} - M^{\text{seq}} (2 - x_{pb} - x_{pk} + y_{bk}) \NC \quad \forall p \in \mathcal{P},\; b, k \in \mathcal{B},\; b < k \NR[eq:mono_seq2]
+		\NC \NC c_{pk} \geq c_{pb} + T^{\text{exec}}_{pk} - M^{\text{seq}} (3 - x_{pb} - x_{pk} - y_{bk}) \NC \quad \forall p \in \mathcal{P},\; b, k \in \mathcal{B},\; b < k \NR[eq:mono_seq1]
+		\NC \NC c_{pb} \geq c_{pk} + T^{\text{exec}}_{pb} - M^{\text{seq}} (2 - x_{pb} - x_{pk} + y_{bk}) \NC \quad \forall p \in \mathcal{P},\; b, k \in \mathcal{B},\; b < k \NR[eq:mono_seq2]
 	\stopalign
 \stopformula
 \stopplaceformula
-Cada una de estas restricciones se activa solo cuando tres variables
-binarias toman un valor dado, con la técnica de la
-Sección~\in[sec:marco_mip]. La primera se activa cuando
-$x_{pb} = x_{pk} = y_{bk} = 1$, ya que solo entonces el factor
-$3 - x_{pb} - x_{pk} - y_{bk}$ vale 0. La segunda usa $1 - y_{bk}$ en lugar de $y_{bk}$, porque su
-condición es $y_{bk} = 0$. Así, si $p$ ejecuta ambos lotes, solo está activa
-la restricción que corresponde al orden elegido, y el segundo lote termina al
-menos su tiempo de ejecución después del primero. Si $p$ no ejecuta alguno de
-los dos, ambas quedan desactivadas.
-% TODO: Ver si esto va acá o va en el marco teórico
-Para que la restricción inactiva no limite la solución, $M^{\text{seq}}$ debe
-superar la mayor separación posible entre las finalizaciones de dos lotes de
-un mismo {\em picker}, sumada a la duración de un lote. La cota de la
-Sección~\in[sec:notacion] cumple esta condición cuando cada lote termina en
-cuanto completa su ejecución; la Sección~\in[sec:caracteristicas_formulacion]
-analiza el caso en que esto no ocurre.
+El último término desactiva cada restricción cuando no corresponde, con la
+técnica de la Sección~\in[sec:marco_mip]. En la primera, el factor
+$3 - x_{pb} - x_{pk} - y_{bk}$ vale 0 solo si $p$ ejecuta los dos lotes y $b$
+va primero. En la segunda, el factor $2 - x_{pb} - x_{pk} + y_{bk}$ vale 0
+solo si $p$ ejecuta los dos lotes y $k$ va primero. En cualquier otro caso el
+factor es al menos 1 y la restricción queda desactivada.
 
-{\bf Adelanto y demora.} Cada orden termina cuando termina su lote. Su demora es el tiempo en que se
-excede de la fecha de entrega, y su adelanto, el tiempo que le falta para
-alcanzarla:
+{\bf Constante de las restricciones de secuencia.} Para que una restricción
+desactivada no limite la solución, $M^{\text{seq}}$ debe superar la mayor
+separación posible entre las finalizaciones de dos lotes de un mismo
+{\em picker}, sumada a la duración de un lote. Por eso se calcula para cada
+instancia como una cota del tiempo total de trabajo, es decir, de lo que
+tardaría el {\em picker} más lento en ejecutar todos los lotes seguidos, cada
+uno con una ruta de peor caso $R^{\max}$. Como una ruta simple recorre a lo
+sumo $|\mathcal{V}|$ arcos y pasa por a lo sumo $|\mathcal{V}|$ ubicaciones,
+$R^{\max}$ acota el tiempo de cualquier ruta. El resultado se redondea a un
+entero y se le impone un mínimo de 500, que solo actúa en instancias muy
+pequeñas y no compromete la validez de la cota, porque una constante mayor
+sigue siendo válida:
+\startformula
+	\startalign[n=2, align={right,left}]
+		\NC M^{\text{seq}} \EQ \max\left(500,\; \sum_{b \in \mathcal{B}} \left( F_b + \frac{R^{\max}}{\min_{p \in \mathcal{P}} V_p} \right) + 1 \right), \NR
+		\NC R^{\max} \EQ T^{\text{travel}} \, |\mathcal{V}| \max_{(i,j) \in \mathcal{E}} D_{ij} \;+\; |\mathcal{V}| \max_{i \in \mathcal{V}} S_i. \NR
+	\stopalign
+\stopformula
+La constante se calcula a partir de los datos, en lugar de fijarse en un
+valor arbitrario, porque cuanto menor es una constante M grande, más ajustada
+resulta la relajación lineal (Sección~\in[sec:marco_mip]). Esta cota alcanza
+cuando cada lote termina en cuanto completa su ejecución, y la
+Sección~\in[sec:caracteristicas_formulacion] analiza el caso en que esto no
+ocurre.
+
+{\bf Adelanto y demora.} Cada orden termina cuando termina su lote. Si el
+{\em picker} $p$ ejecuta el lote $b$, la demora de cada orden $n$ del lote es
+lo que $c_{pb}$ supera a su fecha de entrega, y su adelanto, lo que le falta
+para alcanzarla. Las dos restricciones siguientes acotan esos valores, y el
+término $M (1 - x_{pb})$ las desactiva para los {\em pickers} que no ejecutan
+el lote:
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
@@ -412,13 +416,12 @@ alcanzarla:
 	\stopalign
 \stopformula
 \stopplaceformula
-Si $x_{pb} = 0$, las dos restricciones quedan desactivadas, siempre que $M$
-supere la fecha de entrega más lejana y el horizonte de
-planificación.\footnote{En la implementación, estas restricciones se escriben
+Para que la desactivación funcione, $M$ debe superar la fecha de entrega más
+lejana y el horizonte de planificación.\footnote{En la implementación, estas restricciones se escriben
 con el término $M (2 - x_{pb} - B_{nb})$ y se generan solo para los pares con
-$B_{nb} = 1$, lo que es equivalente.} Como $ta_n, ea_n \geq 0$ y el objetivo
-los minimiza, en el óptimo se cumple que
-$ta_n = \max(0,\, c_b - T^{\text{due}}_n)$ y
+$B_{nb} = 1$, lo que es equivalente.} Como $ta_n$ y $ea_n$ son no negativas y el
+objetivo las minimiza, en el óptimo toman exactamente el valor de la demora y
+del adelanto, $ta_n = \max(0,\, c_b - T^{\text{due}}_n)$ y
 $ea_n = \max(0,\, T^{\text{due}}_n - c_b)$.
 
 \stopsubsection
@@ -464,29 +467,11 @@ determinadas por igualdades, acortar una ruta adelantaría la finalización del
 lote y podría aumentar su adelanto, y la descomposición dejaría de ser exacta
 en general.
 
-% TODO: Esto necesita más explicación - tenemos que dejar claro por qué esto
-% es así. Notar que pasa porque el modelo monolítico permite rutas no mínimas,
-% pero el modelo Split siempre busca la ruta mínima en la Etapa 1. La pregunta es,
-% hay una ruta no mínima que genere un mejor valor objetivo que la ruta mínima? 
-% La respuesta es no, porque si reemplazamos la ruta no mínima por la mínima, 
-% el tiempo de ejecución del lote no aumenta, y por lo tanto el valor objetivo 
-% no empeora. Por lo tanto, siempre podemos encontrar una solución óptima con rutas mínimas.
-% Otro tema es: por qué el modelo monolítico puede devolver rutas no mínimas? 
-% Porque no tiene un objetivo que minimice la ruta, solo minimiza el tiempo de 
-% finalización y las penalizaciones. Por lo tanto, puede haber múltiples rutas 
-% que den el mismo tiempo de finalización y penalizaciones, y algunas de esas 
-% rutas pueden no ser mínimas. En ese caso, el valor objetivo sería el mismo, 
-% pero la ruta no sería mínima. Esto no es un problema del modelo en sí, es una 
-% diferencia de enfoque de los modelos. Esto se puede charlar acá o ampliar en otra
-% sección, porque es una consecuencia interesante. También se pueden tomar 
-% resultados de los experimentos para respaldar estas afirmaciones (ambas, la que
-% dice que el modelo monolítico puede devolver rutas no mínimas y la que dice que
-% por más que la ruta no sea mínima, el valor objetivo no empeora). 
-% Esto se puede poner en la sección de experimentos, donde se comparan 
-% los resultados de ambos modelos.
-El conjunto de soluciones óptimas, en cambio, no es el mismo. El modelo
-monolítico puede devolver rutas no mínimas que alcanzan el mismo valor
-objetivo, mientras que el modelo Split siempre devuelve rutas mínimas.
+El conjunto de soluciones óptimas, en cambio, no es el mismo. Como el
+objetivo no penaliza la longitud de la ruta, el modelo monolítico puede
+devolver rutas no mínimas que alcanzan el mismo valor objetivo, mientras que
+el modelo Split siempre devuelve rutas mínimas. La
+Sección~\in[sec:mismo_optimo] muestra que esto ocurre en la práctica.
 
 \startsubsection[title={Etapa 1: ruteo de cada lote}, reference=sec:split_etapa1]
 
@@ -499,10 +484,6 @@ significado que en el modelo monolítico.
 	\min \quad \sum_{b \in \mathcal{B}} r_b
 \stopformula
 \stopplaceformula
-% TODO: acá hablamos de "resolver en paralelo". Esto no está mal, porque es uno
-% de los motivos justamente por los que dividimos el modelo en dos etapas. No es
-% la única optimización que se puede hacer (y se probaron más). El tema es que no
-% sé si este capítulo sea el lugar para hablarlo.
 Como los lotes no comparten ninguna restricción, minimizar la suma equivale a
 minimizar cada $r_b$ por separado, por lo que en la práctica cada lote se
 resuelve como un \ac{mip} independiente. Al no compartir variables ni
@@ -544,7 +525,7 @@ instancia es infactible.
 		\NC x_{pb} \in \{0,1\} \NC \quad \text{1 si el lote $b$ se asigna al {\em picker} $p$, para $(p,b) \in \mathcal{PB}^{\text{elig}}$} \NR
 		\NC c_{pb} \geq 0 \NC \quad \text{instante en que termina el lote $b$ en la agenda de $p$, para $(p,b) \in \mathcal{PB}^{\text{elig}}$} \NR
 		\NC c_b \geq 0 \NC \quad \text{instante en que termina el lote $b$} \NR
-		\NC y_{bk} \in \{0,1\} \NC \quad \text{para $b < k$: 1 si $b$ se ejecuta antes que $k$} \NR
+		\NC y_{bk} \in \{0,1\} \NC \quad \text{para $b < k$, 1 si $b$ se ejecuta antes que $k$} \NR
 		\NC ta_n \geq 0,\; ea_n \geq 0 \NC \quad \text{demora y adelanto de la orden $n$} \NR
 	\stopalign
 \stopformula
@@ -613,13 +594,17 @@ del modelo monolítico, restringidas a los pares elegibles:
 
 La Figura~\in[fig:split_flujo] muestra cómo se resuelve una instancia con el
 modelo Split.
-% TODO: revisar la validación de los datos (antes, el ítem 1 de una lista).
 Primero se validan los datos. Se verifica que cada orden pertenezca a un
 único lote, que ningún lote supere la capacidad del carro y que todas las
 velocidades sean positivas, ya que una velocidad nula dejaría indefinido el
 tiempo de ejecución y una negativa lo haría negativo. Si alguna de estas
-condiciones no se cumple, la instancia se informa como infactible sin
-construir ningún modelo.
+condiciones no se cumple, la instancia se informa como
+infactible.\footnote{En la implementación del Split, las velocidades se
+verifican antes de todo, pero la capacidad del carro y la asignación de las
+órdenes a los lotes se verifican recién antes de la Etapa~2, una vez resuelta
+la Etapa~1. El resultado es el mismo, ya que la instancia se informa como
+infactible sin resolver la Etapa~2. En el modelo monolítico, todos los
+chequeos se hacen antes de construir el modelo.}
 
 Después se resuelve la Etapa~1, que consiste en un \ac{mip} de ruteo por
 lote, independientes entre sí (Sección~\in[sec:split_etapa1]). Cada uno
@@ -699,9 +684,6 @@ comparar sus resultados con los de los modelos lineales.
 
 \startsubsection[title={Por qué ocurre}]
 
-% TODO: acá es importante aclarar por qué usamos desigualdades. Puede verse como
-% que las desigualdades son incorrectas, pero son necesarias para modelar lo que
-% queremos modelar.
 Las restricciones que vinculan la ejecución de un lote con su instante de
 finalización son desigualdades, no igualdades. En el modelo monolítico,
 (\in[eq:mono_u_inf])--(\in[eq:mono_u_sup]) fijan $u_{pb}$ en la duración
@@ -723,9 +705,19 @@ sus órdenes, al resolvedor puede convenirle declarar un $c_b$ mayor. Esta misma
 holgura es la que garantiza que el modelo Split alcance el óptimo del
 monolítico (Sección~\in[sec:modelo_split]).
 
-% TODO: creo que nos hace falta un ejemplo de literatura. No es un concepto que
-% nos inventamos. También estaría bueno mencionar que el modelo original de 
-% \cite{baker1981sequencing} tiene espera voluntaria, y justificar por qué.
+Las desigualdades no son un error de la formulación, sino una necesidad. Solo
+el primer lote de la agenda de un {\em picker} puede terminar en cuanto
+completa su ejecución, contada desde el instante 0. Los siguientes terminan
+más tarde, porque las restricciones de secuencia los ubican después de los
+anteriores. Si (\in[eq:mono_piso]) fuera una igualdad, cada lote debería
+terminar exactamente en su tiempo de ejecución, como si todos comenzaran en
+el instante 0, y cada {\em picker} podría ejecutar un único lote. Impedir la
+espera, además, exigiría identificar qué lote precede inmediatamente a cada
+uno, con más variables binarias. Por último, la espera representa una
+decisión real, la de demorar el inicio de un lote, que puede formar parte del
+óptimo cuando se penaliza el adelanto
+(Sección~\in[sec:marco_adelanto_demora]).
+
 
 \stopsubsection
 
@@ -773,7 +765,6 @@ empieza a aportar demora. Por eso, cuando conviene esperar, el instante de
 finalización óptimo coincide con la fecha de entrega de alguna orden, de
 forma análoga a una mediana ponderada.
 
-% TODO: gráfico, o algo que ayude a visualizar el ejemplo
 {\bf Ejemplo.} Sea un lote con tres órdenes cuya fecha de entrega es
 20, que termina realmente en $t = 10$, con todos los pesos iguales a 1. Si se
 reporta su instante real de finalización, su aporte al objetivo es
@@ -781,11 +772,43 @@ $1 \cdot 10 + 3 \cdot 10 = 40$ (finalización más adelanto de las tres
 órdenes). Si se lo declara terminado en $t = 20$, el aporte es
 $1 \cdot 20 + 0 = 20$. Más allá de $t = 20$, cada unidad adicional cuesta
 $1 + 3 = 4$ (finalización más demora de las tres órdenes), por lo que el
-resolvedor se detiene exactamente en la fecha de entrega.
+resolvedor se detiene exactamente en la fecha de entrega. La
+Figura~\in[fig:espera_ejemplo] muestra ese aporte en función del instante en
+que se declara terminado el lote.
 
-% TODO: Podemos mencionar que lo vamos a ver en los experimentos... y poner el caso
-% que tenemos en los experimentos. Quizás podemos armar uno que otro test case
-% funcional y ejecutarlo en ambos modelos, así vemos claramente esto.
+\startplacefigure[title={Aporte al objetivo del lote del ejemplo según el instante $t$ en que se declara terminado. El lote termina realmente en $t = 10$, y el mínimo está en la fecha de entrega, $t = 20$.}, reference=fig:espera_ejemplo]
+\startMPcode
+numeric ux, uy; ux := 0.28cm; uy := 0.085cm;
+color borde, guia; borde := \MPcolor{darkblue}; guia := .55white;
+drawarrow (0, 0) -- (30ux, 0) withpen pencircle scaled .6pt;
+drawarrow (0, 0) -- (0, 50uy) withpen pencircle scaled .6pt;
+label.rt(textext("$t$"), (30ux, 0));
+label.top(textext("\tfx aporte al objetivo"), (0, 50uy));
+for v = 10, 20, 25:
+  draw (v*ux, 0) -- (v*ux, -1mm) withpen pencircle scaled .4pt;
+  label.bot(textext("\tfx " & decimal v), (v*ux, -1mm));
+endfor;
+for v = 20, 40:
+  draw (0, v*uy) -- (-1mm, v*uy) withpen pencircle scaled .4pt;
+  label.lft(textext("\tfx " & decimal v), (-1mm, v*uy));
+endfor;
+draw (10ux, 0) -- (10ux, 40uy) dashed evenly withpen pencircle scaled .4pt withcolor guia;
+draw (0, 40uy) -- (10ux, 40uy) dashed evenly withpen pencircle scaled .4pt withcolor guia;
+draw (20ux, 0) -- (20ux, 20uy) dashed evenly withpen pencircle scaled .4pt withcolor guia;
+draw (0, 20uy) -- (20ux, 20uy) dashed evenly withpen pencircle scaled .4pt withcolor guia;
+draw (10ux, 40uy) -- (20ux, 20uy) -- (25ux, 40uy) withpen pencircle scaled 1.2pt withcolor borde;
+fill fullcircle scaled 1.8mm shifted (10ux, 40uy) withcolor borde;
+fill fullcircle scaled 1.8mm shifted (20ux, 20uy) withcolor borde;
+label.top(textext("\tfx finalización real"), (10ux, 40uy + 1mm));
+label.llft(textext("\tfx pendiente $-2$"), (15ux, 30uy));
+label.lrt(textext("\tfx pendiente $4$"), (22.5ux, 30uy));
+\stopMPcode
+\stopplacefigure
+
+Las pruebas funcionales incluyen un caso que verifica este comportamiento
+(Sección~\in[sec:pruebas_funcionales]), y la Sección~\in[sec:res_espera]
+analiza las instancias en que aparece.
+
 
 \stopsubsection
 \stopsection
@@ -796,7 +819,6 @@ resolvedor se detiene exactamente en la fecha de entrega.
 El Cuadro~\in[tab:diferencias_modelos] resume las diferencias entre el
 modelo monolítico y el modelo Split.
 
-% TODO: No se si me convence esto. Quizás en formato lista es mejor.
 \startplacetable[reference=tab:diferencias_modelos, location=here, title={Diferencias entre el modelo monolítico y el modelo Split.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
@@ -816,7 +838,7 @@ modelo monolítico y el modelo Split.
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Características de la formulación}, reference=sec:caracteristicas_formulacion]
+\startsection[title={Características comunes de las formulaciones}, reference=sec:caracteristicas_formulacion]
 
 Las dos formulaciones comparten algunas características que conviene tener
 presentes al interpretar sus soluciones.
@@ -837,7 +859,7 @@ posible, pero complica la formulación y la resolución, y no forma parte del
 problema que se estudia.
 
 {\bf Validez de $M^{\text{seq}}$ con espera voluntaria.} La cota de
-$M^{\text{seq}}$ (Sección~\in[sec:notacion]) se basa en el tiempo total de
+$M^{\text{seq}}$ (Sección~\in[sec:mono_asignacion]) se basa en el tiempo total de
 trabajo, lo que alcanza cuando cada lote termina en cuanto completa su
 ejecución. Con espera voluntaria, en cambio, la separación entre las
 finalizaciones de dos lotes de un mismo {\em picker} puede superar la cota, y
@@ -870,7 +892,9 @@ los lotes.
 % requeridas, la reducción al modelo de referencia, el cuadro de diferencias, el nivel de
 % servicio (Anexo C), la nota de las restricciones de demora y las dos decisiones
 % (M_seq con espera quedó como característica de la formulación, con el Anexo C, y
-% v_start distinto de v_end quedó como supuesto). Los TODO del texto siguen abiertos.
+% v_start distinto de v_end quedó como supuesto). Los TODO del texto se resolvieron y se
+% borraron el 02/11/2026 (el de explicar una por una las restricciones de visitas se
+% descartó).
 % Además: la descripción del modelo de referencia pasó a 2.6 (acá queda solo qué se agrega
 % y qué se simplifica) y la M grande con varias binarias pasó a 2.1. Se decidió no
 % incluir pseudocódigos de los modelos lineales: la Figura 3.1 cumple ese papel.
@@ -878,11 +902,9 @@ los lotes.
 %========================================================================================
 %
 % 1. PENDIENTE
-
-% (D) TODOs.
 % [ ] Validación de los datos: se describe en 3.3.3 y la vuelven a listar 4.1.3, 4.2.3,
 %     5.2 y 5.5. Al revisar esos capítulos, que remitan a 3.3.3.
-% [ ] Paralelismo de la Etapa 1: queda en 3.3.1 (con su TODO) y en el cuadro de 3.5. El
+% [ ] Paralelismo de la Etapa 1: queda en 3.3.1 y en el cuadro de 3.5. El
 %     detalle de cómo se ejecutó va en 5.4.
 %
 % 2. FUENTES
