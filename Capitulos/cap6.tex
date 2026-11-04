@@ -341,8 +341,7 @@ después del otro.
 \startsubsection[title={Pruebas de estrés}]
 
 En las pruebas de estrés, el monolítico no termina ninguno de los 19
-escenarios dentro del tope de 40 minutos; en el 01, el proceso terminó sin
-devolver un estado. El Split termina 9, ninguno en más de 15,1 minutos. Los
+escenarios dentro del tope de 40 minutos. El Split termina 9, ninguno en más de 15,1 minutos. Los
 escenarios que el Split tampoco termina son los del perfil realista con 8
 lotes o más (12 a 14 y 16 a 19), la grilla de 16×16 (08) y dos de los
 heredados (01 y 03). Son dos límites distintos: la Etapa~2 se encarece con
@@ -584,7 +583,7 @@ Figura~\in[fig:res_estres_tiempos] muestran el tiempo de cada método en cada
 escenario. Cabe recordar que la Etapa~1 del Split se ejecutó repartida en
 seis procesos (Sección~\in[sec:ejecucion]).
 
-\startplacetable[reference=tab:res_estres_tiempos, location={here,split}, title={Tiempo total de cada método en los escenarios de estrés y brecha de las heurísticas respecto del Split, donde el Split termina. El tiempo del Split en el escenario 10 corresponde a una corrida anterior, con el mismo objetivo: en la corrida más reciente, la máquina se suspendió durante la prueba.}]
+\startplacetable[reference=tab:res_estres_tiempos, location={here,split}, title={Tiempo total de cada método en los escenarios de estrés y brecha de las heurísticas respecto del Split, donde el Split termina. El tiempo del Split en el escenario 10 corresponde a una corrida anterior, con el mismo objetivo.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 	\bTR \bTH Caso \eTH \bTH Lotes \eTH \bTH Grilla \eTH \bTH Split (s) \eTH \bTH HC (s) \eTH \bTH Brecha \eTH \bTH ACO (s) \eTH \bTH Brecha \eTH \eTR

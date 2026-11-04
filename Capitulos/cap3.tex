@@ -600,12 +600,7 @@ Primero se validan los datos. Se verifica que cada orden pertenezca a un
 velocidades sean positivas, ya que una velocidad nula dejaría indefinido el
 tiempo de ejecución y una negativa lo haría negativo. Si alguna de estas
 condiciones no se cumple, la instancia se informa como
-infactible.\footnote{En la implementación del Split, las velocidades se
-verifican antes de todo, pero la capacidad del carro y la asignación de las
-órdenes a los lotes se verifican recién antes de la Etapa~2, una vez resuelta
-la Etapa~1. El resultado es el mismo, ya que la instancia se informa como
-infactible sin resolver la Etapa~2. En el modelo monolítico, todos los
-chequeos se hacen antes de construir el modelo.}
+infactible.
 
 Después se resuelve la Etapa~1, que consiste en un \ac{mip} de ruteo por
 lote, independientes entre sí (Sección~\in[sec:split_etapa1]). Cada uno
