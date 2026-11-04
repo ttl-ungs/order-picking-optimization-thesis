@@ -109,12 +109,10 @@ una velocidad nula o negativa deja indefinido el tiempo de ejecución.
 % Conviene separarlas de todas formas (en el codigo)
 {\bf Aplicación a las heurísticas.} Las heurísticas no garantizan encontrar
 el óptimo, por lo que sus pruebas no pueden exigir los mismos valores que las
-de los modelos lineales. Además, la mayoría de las pruebas funcionales propias
-de HC y ACO resuelven sus instancias con un único {\em picker}, de modo que no
-son comparables con las de los modelos lineales aunque compartan el nombre.
-Para evaluarlas sobre las mismas instancias, se capturan las que resuelve el
-modelo Split en sus pruebas funcionales, en el momento en que escribe sus
-archivos de datos, junto con el estado y el objetivo que obtiene. Las pruebas
+de los modelos lineales. Para evaluarlas sobre las mismas instancias que los
+modelos lineales, se capturan las que resuelve el modelo Split en sus pruebas
+funcionales, en el momento en que escribe sus archivos de datos, junto con el
+estado y el objetivo que obtiene. Las pruebas
 del Split definen 70 instancias, porque algunas resuelven más de una variante,
 y HC y ACO resuelven 68 de ellas: la 36c queda afuera porque sus datos se
 rechazan antes de resolver, y la 37a porque verifica precisamente la espera
