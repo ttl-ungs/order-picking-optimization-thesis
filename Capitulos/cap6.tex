@@ -433,7 +433,7 @@ tiene solución.
 
 \stopsubsection
 
-\startsubsection[title={Calidad de las soluciones}]
+\startsubsection[title={Calidad de las soluciones}, reference=sec:res_calidad]
 
 El Cuadro~\in[tab:res_brecha] resume la brecha de cada heurística respecto
 del óptimo del Split, con la definición de la Sección~\in[sec:comparacion].
@@ -455,7 +455,13 @@ funcionales. Las 5 en las que no lo alcanza son todas de grilla
 (Cuadro~\in[tab:res_fallos_hc]): en ellas hay muchas rutas y asignaciones de
 costo parecido, y una búsqueda que solo acepta mejoras se detiene en un
 óptimo local (Sección~\in[sec:hc_limitaciones]). En estrés, HC queda a lo
-sumo a un 0,21~\%, en el escenario con cadena de frío (11). Como muestra la
+sumo a un 0,21~\%, en el escenario con cadena de frío (11). Además, HC casi
+no modifica las rutas que obtiene en la construcción inicial. En tres
+escenarios de estrés del perfil realista (grilla de 7×7 con 6 lotes y 3
+{\em pickers}, 7×7 con 10 lotes y 5 {\em pickers}, y 10×10 con 12 lotes y
+12 {\em pickers}), el movimiento 2-opt se eligió 86 veces y no generó ningún
+vecino. Esas iteraciones fueron entre el 26~\% y el 48~\% del total, según
+el escenario. Como muestra la
 Figura~\in[fig:res_brecha], ACO obtiene una brecha menor que HC en 8 de los 9
 escenarios. Ninguna heurística queda por debajo de un óptimo probado del
 Split, como corresponde a soluciones válidas de un problema de minimización.
@@ -561,7 +567,7 @@ Split: toda la diferencia se explica por el tiempo ocioso insertado.
 
 \stopsubsection
 
-\startsubsection[title={Tiempos}]
+\startsubsection[title={Tiempos}, reference=sec:res_tiempos]
 
 En las pruebas funcionales, los tiempos se comparan sobre 33 de las 45
 instancias comparables en objetivo: el registro del Split guarda una fila por
@@ -713,7 +719,9 @@ que ACO tarda entre 13 segundos y 9 minutos: tiempos del mismo orden que los
 del Split en los escenarios pequeños y bastante menores en los grandes. El
 escenario de 100×100 (01) es el más costoso para las dos heurísticas: HC
 tarda 17 minutos, casi todos en construir la solución inicial, y ACO, 32,
-porque en ese tiempo completa solo dos iteraciones
+porque en ese tiempo completa solo dos iteraciones; las 60 completas
+llevarían unas 5 horas. En la grilla de 14×14, en cambio, una ejecución de
+ACO tarda unos 110 segundos
 (Secciones~\in[sec:hc_limitaciones] y~\in[sec:aco_limitaciones]).
 
 Las heurísticas tampoco tienen los dos límites del Split
@@ -891,7 +899,7 @@ del modelo.
 
 \stopsubsection
 
-\startsubsection[title={Nivel de servicio, memoria y convergencia}]
+\startsubsection[title={Nivel de servicio, memoria y convergencia}, reference=sec:res_memoria]
 
 {\bf Nivel de servicio.} En los escenarios heredados (01 a 03), ningún pedido
 llega a tiempo con ningún método, por la forma en que están construidos. En

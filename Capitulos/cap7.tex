@@ -133,12 +133,27 @@ estrés 02 a 19. La referencia de
 objetivo existe solo donde el Split termina, y 10 instancias funcionales
 pueden compararse solo en estado.
 
+{\bf De los modelos lineales.} El monolítico solo prueba el óptimo en
+instancias pequeñas: con un tope de 40 minutos no lo prueba con 3 lotes en
+una grilla de 7×7 ni con 4 lotes en 6×6, y no termina ninguno de los 19
+escenarios de estrés. Encuentra soluciones a menos del 1~\% del óptimo, pero
+su cota dual casi no avanza, y en el escenario 04 informa un {\em gap} de
+143,5~\% después de 40 minutos. El Split amplía ese alcance, pero termina
+solo 9 de los 19 escenarios de estrés. Entre los que no termina están los
+del perfil realista con 8 lotes o más, porque la Etapa~2 se encarece con
+la cantidad de lotes, y la grilla de 16×16, porque la Etapa~1 se encarece
+con el tamaño del almacén
+(Secciones~\in[sec:lineales_limitaciones] y~\in[sec:comparacion_lineales]).
+Además, el caso 30a, con 10 lotes vacíos de 12, no termina en ninguno de los
+dos modelos, y un Split que no termina no deja ninguna solución.
+
 {\bf De las heurísticas.} HC no escapa de los óptimos locales y, en la
 práctica, casi no modifica las rutas que obtiene en la construcción inicial
-(Sección~\in[sec:hc_limitaciones]). En las dos heurísticas, el tope de tiempo
-no es estricto: en el escenario de 100×100, HC tardó 17 minutos y ACO, 32.
-ACO, por su parte, tiene picos de memoria que no siguen al tamaño de la
-instancia (Sección~\in[sec:aco_limitaciones]).
+(Secciones~\in[sec:hc_limitaciones] y~\in[sec:res_calidad]). En las dos
+heurísticas, el tope de tiempo no es estricto: en el escenario de 100×100,
+HC tardó 17 minutos y ACO, 32 (Sección~\in[sec:res_tiempos]). ACO, por su
+parte, tiene picos de memoria que no siguen al tamaño de la instancia
+(Sección~\in[sec:res_memoria]).
 
 \stopsection
 
