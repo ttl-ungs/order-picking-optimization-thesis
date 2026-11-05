@@ -71,6 +71,15 @@ criterios coinciden cuando las ubicaciones no requeridas tienen $S_i = 0$,
 como en todos los escenarios de estrés, y en las instancias funcionales en
 que no es así la ruta más corta es también la de menor $r_b$.
 
+Una única construcción no alcanza. Con solo el vecino más cercano mejorado con 2-opt, en el escenario de estrés
+con grilla de 7×7 del perfil realista las rutas sumaban 490 unidades de
+tiempo, contra 425 de las rutas óptimas de la Etapa~1 del modelo Split. En
+el escenario con grilla de 14×14, un lote no conseguía ruta y la instancia
+resultaba infactible, aunque el modelo Split la resolvía. Generar varias
+soluciones de partida y mejorarlas con búsqueda local es una forma habitual
+de diversificar el inicio de una búsqueda local; Coruzzolo et al. la usan
+para el loteo \cite[coruzzolo2023orderpicking].
+
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
