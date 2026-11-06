@@ -1,15 +1,14 @@
 \startchapter[title={Metaheurísticas}, reference=Capitulo_4]
 
 En este capítulo se presentan las dos metaheurísticas desarrolladas como
-alternativa al modelo Split, basadas en \ac{hc} (Sección~\in[sec:hc]) y \ac{aco}
-(Sección~\in[sec:aco]). Ambas resuelven el mismo problema que los modelos
+alternativa a los modelos lineales, basadas en Hill Climbing (Sección~\in[sec:hc] - \ac{hc}) 
+y Colonia de Hormigas (en inglés, Ant Colony Optimization, desarrollada en la Sección~\in[sec:aco] - \ac{aco}). 
+Ambas resuelven el mismo problema que los modelos
 lineales del Capítulo~\in[Capitulo_3], con la misma función objetivo y las
-mismas restricciones, incluidas la velocidad de los {\em pickers} y la cadena
-de frío. Se diferencian de ellos en dos aspectos: No garantizan encontrar el
-óptimo, y solo generan programaciones sin espera voluntaria
-(Sección~\in[sec:espera_voluntaria]). Para comprobar que sus soluciones
-cumplen todas las restricciones, cada una se verificó de forma independiente
-contra el modelo monolítico (Sección~\in[sec:validacion]).
+mismas restricciones, con la diferencia de que no garantizan encontrar el
+óptimo y sólo generan soluciones sin espera voluntaria (Sección~\in[sec:espera_voluntaria]).
+Para comprobar que sus soluciones cumplen todas las restricciones, cada una se 
+verificó de forma independiente contra el modelo monolítico (Sección~\in[sec:validacion]).
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:hc]
@@ -25,14 +24,10 @@ de factibilidad (Sección~\in[sec:hc_verificacion]), la construcción de la solu
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Representación de la solución}, reference=sec:hc_representacion]
 
-El problema que resuelve \ac{hc} es el mismo que ya fue definido en el Capítulo~\in[Capitulo_3], es decir,
-determinar la ruta de cada lote, el {\em picker} que lo ejecuta y el orden en
-que cada {\em picker} ejecuta sus lotes. En este caso, lo que cambia es la forma de
-representar una solución. En los modelos lineales, una solución es una
-asignación de valores a las variables $z_{ijb}$, $x_{pb}$, $y_{bk}$ y a las
-variables de tiempo. Una metaheurística basada en una sola solución, en
-cambio, necesita una estructura sobre la cual definir sus operadores de
-movimiento (Sección~\in[sec:marco_hc]). En \ac{hc}, una solución
+En los modelos lineales, una solución es una asignación de valores a las variables 
+$z_{ijb}$, $x_{pb}$, $y_{bk}$ y a las variables de tiempo. Una metaheurística 
+basada en una sola solución, en cambio, necesita una estructura sobre la cual definir 
+sus operadores de movimiento (Sección~\in[sec:marco_hc]). En \ac{hc}, una solución
 $s = (\pi, a, \sigma)$ tiene tres componentes:
 \startitemize[n]
 	\item {\bf Una ruta por lote.} Para cada lote $b$ con órdenes,
@@ -48,8 +43,6 @@ $s = (\pi, a, \sigma)$ tiene tres componentes:
 	$\sigma_p = (b_1, \dots, b_m)$ es la lista ordenada de los lotes que tiene
 	asignados.
 \stopitemize
-Al igual que en el modelo Split, el loteo es un dato de entrada. Por lo tanto, \ac{hc} no mueve órdenes entre
-lotes, y los lotes sin órdenes no reciben ruta ni {\em picker}.
 
 Cada solución así representada corresponde a una asignación de las variables
 de decisión del Capítulo~\in[Capitulo_3]:
@@ -61,13 +54,15 @@ de decisión del Capítulo~\in[Capitulo_3]:
 	\stopalign
 \stopformula
 Esta representación tiene dos consecuencias. La primera es que varias
-restricciones de los modelos lineales se cumplen por construcción. Cada lote
+restricciones de los modelos lineales se cumplen por construcción, es decir, cada lote
 aparece en una sola secuencia, así que se asigna a exactamente un
 {\em picker}. Los lotes de un mismo {\em picker} se ejecutan uno detrás de
 otro, sin solaparse. Además, como cada ruta es una única secuencia, no puede
 contener subtours, y no hace falta un mecanismo equivalente a las variables
 de flujo $q_{ijb}$. Las restricciones que no se cumplen por construcción son
 descriptas en la Sección~\in[sec:hc_evaluacion].
+
+% TODO: checkear que en todo el doc decimos "subtours" y no "subrutas" o algo parecido
 
 La segunda es que los tiempos no son variables de decisión, sino que se
 calculan a partir de $s$. El tiempo de ruta $r_b$ y el tiempo de ejecución
@@ -86,6 +81,8 @@ cada lote, y no puede generar la espera voluntaria que sí admiten los modelos
 lineales (Sección~\in[sec:espera_voluntaria]). Se puede afirmar, por lo tanto, que su espacio de soluciones es el
 subconjunto de las soluciones de los modelos lineales en que ningún lote
 espera.
+
+% TODO: no se si esta afirmación va acá, porque validamos que son equivalentes en un capítulo posterior
 
 \stopsubsection
 
@@ -118,6 +115,8 @@ dividen en tres grupos.
 Sección~\in[sec:hc_representacion], la representación garantiza que cada
 lote tenga un único {\em picker}, que los lotes de un mismo {\em picker} no
 se solapen y que ninguna ruta contenga subtours.
+
+% TODO: por ahi hay que checkear el orden, se repite con lo que dice en [sec:hc_representacion]
 
 {\bf Restricciones duras.} Las rutas deben usar solo arcos del grafo, no
 repetir ubicaciones y visitar todas las ubicaciones requeridas por el lote.
@@ -271,6 +270,11 @@ la de menor distancia:
 	la ubicación pendiente más cercana por el camino más corto que no repite
 	ubicaciones. Es la heurística de ruteo que usan Coruzzolo et al.
 	\cite[coruzzolo2023orderpicking], adaptada para no repetir ubicaciones.
+	% TODO: Consulta, acá, si no tomamos literal ese trabajo para la heurística,
+	% quizás no haga falta la referencia. Ya tenemos bastantes referencias, quizás
+	% hagan más ruido que otra cosa. En general, revisar estas referencias en todos
+	% los capítulos, si no son necesarias, sacarlas.
+
 	\item {\bf Inserción del más lejano.} El orden de visita de las
 	ubicaciones requeridas se decide con la inserción del más lejano
 	({\em farthest insertion}) \cite[rosenkrantz1977analysis], y después se
@@ -296,6 +300,9 @@ tampoco la encuentra, la instancia se informa como infactible. Las
 construcciones, el pulido y la búsqueda de respaldo se detallan en la
 Sección~\in[sec:anexo_rutas] del Anexo~\in[Anexo_Metaheuristicas].
 
+% TODO: Verificar si también se menciona que es un TSP variado en otros capítulos
+% (creo que sí). si sí, centralizar la explicación en un solo capítulo y referenciarla desde los demás.
+
 {\bf Asignación inicial y secuencia.} Con las rutas armadas, cada lote con
 órdenes se asigna a un {\em picker} de forma golosa, recorriendo los lotes en
 el orden de sus identificadores. Para el lote $b$ se calcula el conjunto de
@@ -318,7 +325,12 @@ La solución resultante cumple todas las restricciones duras, pero puede
 violar la cadena de frío (Sección~\in[sec:hc_evaluacion]). Si la cumple, $v(s) = 0$ y la solución
 inicial pasa a ser la primera mejor solución factible $s^*$.
 
+% TODO: Esto no requiere más explicación?
+
 \stopsubsection
+
+% TODO: propongo reestructurar esta sección, creo que está bueno primero ver cómo funciona
+% el algoritmo y luego entender por qué cumple las restricciones.
 
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Búsqueda estocástica de primera mejora}, reference=sec:hc_busqueda]
@@ -370,6 +382,8 @@ La reasignación y el intercambio cumplen funcionalmente el papel de los movimie
 intercambio que Coruzzolo et al. validan en su búsqueda local para la optimización conjunta del loteo y la
 secuenciación de órdenes \cite[coruzzolo2023orderpicking]. Mientras el 2-opt optimiza exclusivamente la ruta ($\pi$), estos dos
 movimientos alteran las asignaciones ($a$) y el orden de ejecución ($\sigma$).
+
+% TODO: No se si este último párrafo sume mucho
 
 El movimiento 2-opt combina las dos estrategias de selección de la
 Sección~\in[sec:marco_hc], ya que el bucle principal es de primera mejora, pero
@@ -497,6 +511,7 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 	reasignado pasa al final de la secuencia de su nuevo {\em picker}. Para
 	llevarlo a otra posición hace falta encadenar intercambios, y cada paso
 	intermedio debe mejorar $f'$ por sí mismo para ser aceptado.
+
 	\item {\bf La secuencia inicial ignora las fechas de entrega.} El orden
 	inicial de cada {\em picker} es el de los identificadores de los lotes,
 	y solo se corrige mediante intercambios que mejoren de a uno.
