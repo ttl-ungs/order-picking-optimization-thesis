@@ -776,8 +776,7 @@ conjunto de {\em pickers} con los que el lote cumple la cadena de frío,
 \startformula
 	\mathcal{P}^k_b = \left\{ p \in \mathcal{P} : F_b + \frac{r_b}{V_p} \leq T^{\text{cold}} + \varepsilon \right\},
 \stopformula
-se calcula sobre la ruta de la propia hormiga $k$ y no sobre una
-aproximación. El {\em picker} se elige entre los de $\mathcal{P}^k_b$ con
+se calcula sobre la ruta de la propia hormiga $k$. El {\em picker} se elige entre los de $\mathcal{P}^k_b$ con
 la regla
 \startplaceformula[reference=eq:aco_regla_picker]
 \startformula
@@ -786,46 +785,36 @@ la regla
 \stopformula
 \stopplaceformula
 donde $\ell_p$ es la cantidad de lotes que la hormiga ya asignó a $p$. La
-información heurística favorece a los {\em pickers} con menos lotes, de
-forma similar a la asignación inicial de \ac{hc}. Si $\mathcal{P}^k_b$ es
-vacío, porque la ruta construida es demasiado larga incluso para el
+información heurística favorece a los {\em pickers} con menos lotes asignados.
+Si $\mathcal{P}^k_b$ es vacío, porque la ruta construida es demasiado larga incluso para el
 {\em picker} más rápido, la elección se hace entre todos los {\em pickers}.
-La hormiga produce igualmente una solución completa, que viola la cadena de
+En este caso, la hormiga produce una solución completa, que viola la cadena de
 frío y es penalizada (Sección~\in[sec:aco_evaluacion]).
 
 {\bf Secuencia.} Después de asignar todos los lotes, la secuencia
 $\sigma_p$ de cada {\em picker} se ordena por fecha de entrega más
 temprana. De esta forma, cada lote se ordena según la menor $T^{\text{due}}_n$ entre sus
-órdenes, con empates resueltos por el identificador del lote. A diferencia
-de la secuencia inicial de \ac{hc}, que sigue el orden de los
-identificadores, esta regla tiene en cuenta las fechas de entrega, pero no
-la duración de los lotes ni los pesos de la función objetivo.
+órdenes. A diferencia de la secuencia inicial de \ac{hc}, esta regla tiene
+en cuenta las fechas de entrega, pero no la duración de los lotes ni los pesos de la función objetivo.
 
 {\bf Recombinación de las rutas más cortas.} Una hormiga se evalúa por el
 costo de toda su solución, que acopla a todos los lotes. Por eso, una ruta
 corta para un lote, construida por una hormiga que en conjunto resultó
-peor, no se refleja en $s^*$. En el escenario de 7×7 del perfil realista, la
-construcción llega a la ruta óptima de la Etapa~1 del modelo Split para la
-mayoría de los lotes, pero rara vez y cada vez en una hormiga distinta. Para
-aprovechar esas rutas, al terminar cada iteración se arma una solución
-candidata que toma $s^*$ y reemplaza la ruta de cada lote por $\pi^{bs}_b$,
-manteniendo la asignación y la secuencia. Como las rutas de los lotes son
-independientes entre sí, la candidata cumple las restricciones duras. Si
-además cumple $v = 0$ y mejora estrictamente $f(s^*)$, la reemplaza. Una ruta
-más corta no siempre reduce $f$, porque terminar antes puede aumentar el
+peor, no se refleja en $s^*$. Para aprovechar esas rutas, al terminar cada
+iteración se arma una solución candidata que toma $s^*$ y reemplaza la ruta
+de cada lote por $\pi^{bs}_b$, manteniendo la asignación y la secuencia.
+Como las rutas de los lotes son independientes entre sí, la candidata cumple
+las restricciones duras. Si además cumple $v = 0$ y mejora estrictamente $f(s^*)$, la reemplaza.
+Una ruta más corta no siempre reduce $f$, porque terminar antes puede aumentar el
 adelanto cuando $W^{c}$ es chico, así que la decisión la toma la función de
 evaluación. Es una forma de memoria elitista, en el espíritu del depósito
 de la mejor solución del {\em Elitist Ant System} y de MMAS
 \cite[dorigo2004aco], pero aplicada a cada lote por separado.
 
 {\bf Búsqueda local sobre la asignación.} Aun con las rutas óptimas, la
-asignación por ruleta y la secuencia por fecha de entrega no son óptimas
-para la función objetivo. En el mismo escenario de 7×7, con todas las rutas
-iguales a las de la Etapa~1 del modelo Split, \ac{aco} quedaba unas 8
-unidades por encima del modelo Split solo por la asignación y la secuencia,
-que la Etapa~2 resuelve de forma exacta. Por eso, cada vez que $s^*$ mejora,
-se le aplica una búsqueda local de primera mejora con las rutas fijas, sobre
-tres vecindarios:
+asignación por ruleta y la secuencia por fecha de entrega no son óptimas.
+Por eso, cada vez que $s^*$ mejora, se le aplica una búsqueda local de
+primera mejora con las rutas fijas, sobre tres vecindarios:
 \startitemize[n]
 	\item {\bf Reasignación.} Un lote se mueve a cualquier posición de la
 	secuencia de cualquier {\em picker}, incluido el suyo. A diferencia de
@@ -881,26 +870,31 @@ $\tau \leftarrow (1-\rho)\,\tau + 2$ es $2 / \rho$, y se fijan
 \stopplaceformula
 Toda la feromona de ruta se inicializa en $\tau_{\max}$, para favorecer la
 exploración al comienzo de la búsqueda (Sección~\in[sec:marco_aco]), y
-$\tau_{\min}$ garantiza que ningún par deje de poder elegirse. La relación
-entre $\tau_{\max}$ y $\tau_{\min}$ es una elección propia. Stützle y Hoos la
-derivan de la cantidad de componentes de la solución y de una probabilidad
-objetivo, y para rutas de entre 20 y 26 ubicaciones requeridas resulta del
-mismo orden. Lesch et al. también usan MMAS en un \ac{aco} de ruteo de
-{\em picking}, con la misma información heurística $1/d$
-\cite[lesch2023optimizing].
+$\tau_{\min}$ garantiza que ningún par deje de poder elegirse.
 
-El depósito es de una unidad y no depende de la distancia de la ruta. Lo
-que la distingue es que solo depositan las rutas más cortas. Como en Chen et
-al., la feromona de ruta aprende solo de la longitud de las rutas, y no del
-objetivo completo \cite[chen2013antcolony]. No hace falta filtrar por
-cadena de frío, porque una ruta más corta solo puede reducir el tiempo de
-ejecución del lote.
+%La relación
+%entre $\tau_{\max}$ y $\tau_{\min}$ es una elección propia. Stützle y Hoos la
+%derivan de la cantidad de componentes de la solución y de una probabilidad
+%objetivo, y para rutas de entre 20 y 26 ubicaciones requeridas resulta del
+%mismo orden. Lesch et al. también usan MMAS en un \ac{aco} de ruteo de
+%{\em picking}, con la misma información heurística $1/d$
+%\cite[lesch2023optimizing].
 
-Un depósito de tipo {\em Ant System}, proporcional a $Q / f'(s^k)$, no
-serviría para la feromona de ruta. Con $Q = 100$ y valores de $f'$ del orden
-de $1{,}5 \cdot 10^5$, cada depósito sería de alrededor de
-$7 \cdot 10^{-4}$, menor que un mínimo de 0,01, así que la feromona de ruta
-caería al mínimo en todos los pares y no transmitiría información.
+
+El depósito es siempre de una unidad, es decir, su magnitud no depende de la
+longitud de la ruta. La longitud interviene al elegir qué
+rutas depositan, ya que solo lo hacen la mejor ruta (la más corta) de la iteración y la
+mejor histórica de cada lote.
+Así, la feromona de ruta aprende únicamente de la longitud de las rutas, y
+no del objetivo completo $f'$. No hace falta tener en cuenta la cadena de
+frío al elegirlas, porque una ruta más corta solo puede reducir el tiempo
+de ejecución del lote.
+
+%Un depósito de tipo {\em Ant System}, proporcional a $Q / f'(s^k)$, no
+%serviría para la feromona de ruta. Con $Q = 100$ y valores de $f'$ del orden
+%de $1{,}5 \cdot 10^5$, cada depósito sería de alrededor de
+%$7 \cdot 10^{-4}$, menor que un mínimo de 0,01, así que la feromona de ruta
+%caería al mínimo en todos los pares y no transmitiría información.
 
 {\bf Feromona de asignación: Ant System elitista.} La feromona de
 asignación se evapora con
@@ -956,11 +950,9 @@ en la Sección~\in[sec:ejecucion].
 así que una iteración puede cortarse a mitad de camino. Las hormigas dejan de
 construirse al consumir la mitad de $\text{Max}_{\text{time}}$, pero solo si
 ya existe una solución factible, de esa iteración o de una anterior, para
-que el corte nunca produzca un falso infactible. La otra mitad queda para el
+que el corte no produzca un falso infactible. La otra mitad queda para el
 pulido y la búsqueda local sobre la asignación, que respetan el plazo
-completo. Sin esta reserva, en la grilla de 100×100 el posprocesamiento
-casi no llegaba a ejecutarse y el objetivo empeoraba un 53~\%
-(Sección~\in[sec:calib_aco_tiempo]). El valor por defecto de 1800~s supera la
+completo. El valor por defecto de 1800~s supera la
 duración de todas las ejecuciones de estrés del perfil realista, de hasta
 unos 410~s, así que solo limita a las instancias más grandes.
 
@@ -1010,11 +1002,10 @@ La implementación de \ac{aco} tiene las siguientes limitaciones:
 	de los lotes. Ambas se corrigen solo en $s^*$, con la búsqueda local
 	sobre la asignación.
 	\item {\bf Las rutas se eligen por distancia.} Tanto la feromona de ruta
-	como $\pi^{bs}_b$ favorecen las rutas más cortas. Bajo esta función
+	como $\pi^{bs}_b$ favorecen las rutas más cortas. Sin emebargo, bajo esta función
 	objetivo, una ruta más corta no siempre es mejor, porque puede aumentar
 	el adelanto; la recombinación lo tiene en cuenta al decidir si la
 	acepta, pero la colonia no aprende rutas más largas aunque convengan.
-	
 	\item {\bf Puede informar infactible una instancia factible.} Si ninguna
 	hormiga construye una solución que cumpla la cadena de frío en todos los
 	lotes, o si la búsqueda {\em best-first} de respaldo alcanza su tope sin
