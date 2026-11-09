@@ -215,7 +215,9 @@ aspecto que ponen a prueba. Los escenarios 04 a 19 usan el perfil realista
 surgido del relevamiento, cuyos parámetros resume el
 Cuadro~\in[tab:perfil_realista], y cada grupo modifica un único aspecto: el
 tamaño del almacén (04 a 08), su forma (09), la agenda de los {\em pickers}
-(10, 11 y 15) y el tamaño de la grilla (12 a 14 y 16 a 19). La cadena de
+(10, 11 y 15) y el tamaño de la cuadrilla (12 a 14 y 16 a 19). En este
+último grupo, los escenarios 12 a 14 parten de la grilla de 7×7 y los 16 a
+19, de la de 10×10. La cadena de
 frío solo está activa en el escenario 11, con un límite de 280: con las rutas
 de esa instancia, ningún {\em picker} lento puede ejecutar un lote dentro de
 ese tiempo.
@@ -264,7 +266,7 @@ cada lote tenga un {\em picker} asignado y que los lotes de un mismo
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 	\setupTABLE[column][2][width=7cm, align=flushleft]
 	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH {\em Pickers} \eTH \bTH Pedidos \eTH \bTH Grilla \eTH \eTR
-	\bTR \bTD[nc=6, style=bold, align=flushleft] Sin cadena de frío \eTD \eTR
+	\bTR \bTD[nc=6, style=bold, align=flushleft] Escenarios sin implementación de cadena de frío \eTD \eTR
 	\bTR \bTD 01 \eTD \bTD Almacén muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD Un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \eTR
 	\bTR \bTD 03 \eTD \bTD Un solo {\em picker} con 40 lotes, todos los pedidos atrasados \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \eTR
@@ -302,10 +304,9 @@ Esta sección describe cómo se ejecutan las pruebas definidas en las
 Secciones~\in[sec:pruebas_funcionales] y~\in[sec:pruebas_estres]. Los
 resultados se presentan en el Capítulo~\in[Capitulo_6].
 
-% TODO: creo que esto hay que reescribirlo. Parece que solo comparamos modelos
-% lineales.
 Todas las pruebas, funcionales y de estrés, se ejecutan con un mismo
-programa, que recibe el método y la suite que se quiere correr. Cada prueba
+programa, que recibe el método (Split, monolítico, HC o ACO) y la suite que
+se quiere correr. Cada prueba
 se ejecuta en un proceso propio y las pruebas se ejecutan de a una, en serie.
 El tope de tiempo es de 25 minutos por prueba en la suite funcional y de 40
 minutos en la de estrés. Al vencer el tope, el programa termina desde afuera
@@ -314,8 +315,8 @@ y la prueba se registra como no terminada ({\em timeout}). A SCIP no se le
 fija un límite de tiempo propio: se usa con sus parámetros por defecto y el
 corte lo hace el programa.
 
-Este esquema responde a lo que se aprendió sobre la medición durante el
-relevamiento (Sección~\in[sec:relevamiento]):
+Este esquema responde a lo que se aprendió sobre la medición de los modelos
+lineales durante el relevamiento (Sección~\in[sec:relevamiento]):
 \startitemize
 	\item {\bf El límite de tiempo de SCIP no es estricto.} SCIP lo controla
 	entre operaciones, y una sola operación puede ser muy larga: una
@@ -336,7 +337,11 @@ relevamiento (Sección~\in[sec:relevamiento]):
 	\item {\bf La Etapa~1 admite paralelismo propio.} Como resuelve cada
 	lote por separado, puede repartirse entre varios procesos. Con 6
 	procesos fue 2,2 veces más rápida en una grilla de 13×13 y 1,9 veces en
-	una de 14×14, con rutas idénticas.
+	una de 14×14, con rutas idénticas. El efecto sobre la prueba completa
+	depende de cuánto pesa la Etapa~1: en 13×13 la prueba bajó de unos 6 a
+	unos 4 minutos; en 15×15, donde la Etapa~1 es casi todo el tiempo, de
+	unos 28 a unos 15, y en las instancias dominadas por la Etapa~2 no
+	cambió.
 \stopitemize
 
 El paralelismo de la Etapa~1 es distinto del que se evita entre pruebas:
@@ -391,9 +396,11 @@ modelos lineales.
 {\bf Factibilidad por diseño.} Las heurísticas cumplen buena parte de las restricciones por la forma en que
 representan y modifican una solución (Capítulo~\in[Capitulo_4]). La
 representación asigna cada lote a un único {\em picker}, la secuencia de cada
-{\em picker} impide que sus lotes se superpongan y la ruta de cada lote es un
-camino simple del depósito al punto de entrega, por lo que no puede contener
-{\em subtours} ni repetir ubicaciones. Además, antes de buscar, aplican a los datos
+{\em picker} impide que sus lotes se superpongan y cada ruta es una única
+secuencia, por lo que no puede contener {\em subtours}. Los operadores,
+por su parte, mantienen cada ruta como un camino del depósito al punto de
+entrega que usa solo arcos del grafo, no repite ubicaciones y visita todas
+las requeridas. Además, antes de buscar, aplican a los datos
 de entrada las mismas verificaciones previas que los modelos lineales. La cadena de frío es la excepción: durante
 la búsqueda se permite violarla a cambio de una penalización, pero solo se
 informa como resultado una solución que la cumple.
@@ -408,8 +415,9 @@ SCIP decide si son factibles. Así, las restricciones no se vuelven a
 programar, sino que se verifican las mismas que resuelven los modelos
 lineales. La verificación usa las soluciones guardadas durante las pruebas
 (Sección~\in[sec:ejecucion]), sin volver a ejecutar las heurísticas, y tiene
-tres pasos (Figura~\in[fig:verificacion]):
-\startitemize[n]
+tres pasos: unos chequeos directos y dos niveles de verificación con SCIP
+(Figura~\in[fig:verificacion]):
+\startitemize
 	\item {\bf Chequeos directos.} La solución se recalcula sin el
 	resolvedor: rutas, asignación, cadena de frío, tiempos y objetivo. Además
 	de detectar errores, estos chequeos indican qué restricción falla, algo
