@@ -25,17 +25,17 @@ de factibilidad (Sección~\in[sec:hc_verificacion]), la construcción de la solu
 \startsubsection[title={Representación de la solución}, reference=sec:hc_representacion]
 
 En los modelos lineales, una solución es una asignación de valores a las variables 
-$z_{ijb}$, $x_{pb}$, $y_{bk}$ y a las variables de tiempo. Una metaheurística 
+$z_{ijb}$, $x_{pb}$, $y_{bk}$ y a las variables de tiempo. \ac{hc}, al ser una metaheurística
 basada en una sola solución, en cambio, necesita una estructura sobre la cual definir 
-sus operadores de movimiento (Sección~\in[sec:marco_hc]). En \ac{hc}, una solución
+sus operadores de movimiento (Sección~\in[sec:marco_hc]). Una solución
 $s = (\pi, a, \sigma)$ tiene tres componentes:
 \startitemize[n]
 	\item {\bf Una ruta por lote.} Para cada lote $b$ con órdenes,
-	$\pi_b = (v_1, \dots, v_k)$ es una secuencia de ubicaciones intermedias
-	distintas tal que $(v_{\text{start}}, v_1)$, $(v_i, v_{i+1})$ y
-	$(v_k, v_{\text{end}})$ pertenecen a $\mathcal{E}$, y que contiene todas
-	las ubicaciones con $a_{bi} = 1$. La secuencia puede incluir además
-	ubicaciones de paso, que el {\em picker} atraviesa sin recolectar.
+	$\pi_b = (v_1, \dots, v_k)$ es una secuencia de ubicaciones intermedias,
+	que el {\em picker} recorre desde $v_{\text{start}}$ hasta
+	$v_{\text{end}}$. Además de las ubicaciones que debe recolectar, la
+	secuencia puede incluir ubicaciones de paso, que el {\em picker}
+	atraviesa sin recolectar.
 	\item {\bf Una asignación de lotes a pickers.} Una función
 	$a : \mathcal{B} \to \mathcal{P}$ que indica qué {\em picker} ejecuta cada
 	lote.
@@ -58,7 +58,7 @@ restricciones de los modelos lineales se cumplen por construcción, es decir, ca
 aparece en una sola secuencia, así que se asigna a exactamente un
 {\em picker}. Los lotes de un mismo {\em picker} se ejecutan uno detrás de
 otro, sin solaparse. Además, como cada ruta es una única secuencia, no puede
-contener subtours, y no hace falta un mecanismo equivalente a las variables
+contener subrutas, y no hace falta un mecanismo equivalente a las variables
 de flujo $q_{ijb}$. Las restricciones que no se cumplen por construcción son
 descriptas en la Sección~\in[sec:hc_evaluacion].
 
@@ -79,8 +79,6 @@ y a partir de los $c_b$ se calculan el adelanto y la demora de cada orden.
 Por lo tanto, \ac{hc} siempre informa el instante real de finalización de
 cada lote, y no puede generar la espera voluntaria que sí admiten los modelos
 lineales (Sección~\in[sec:espera_voluntaria]).
-
-% TODO: no se si esta afirmación va acá, porque validamos que son equivalentes en un capítulo posterior
 
 \stopsubsection
 
@@ -109,19 +107,19 @@ cambio, hay que decidir cómo se trata cada una durante la búsqueda
 (Sección~\in[sec:marco_restricciones]). Las restricciones del problema se
 dividen en tres grupos.
 
-{\bf Restricciones que se cumplen por construcción.} Como se explicó en la
-Sección~\in[sec:hc_representacion], la representación garantiza que cada
-lote tenga un único {\em picker}, que los lotes de un mismo {\em picker} no
-se solapen y que ninguna ruta contenga subtours.
+{\bf Restricciones que se cumplen por construcción.} La representación (Sección~\in[sec:hc_representacion])
+no permite expresar una solución que viole la unicidad del
+{\em picker}, la ausencia de solapamientos ni la ausencia de subtours.
 
-% TODO: por ahi hay que checkear el orden, se repite con lo que dice en [sec:hc_representacion]
-
-{\bf Restricciones duras.} Las rutas deben usar solo arcos del grafo, no
-repetir ubicaciones y visitar todas las ubicaciones requeridas por el lote.
+{\bf Restricciones duras.} Cada ruta $\pi_b$ debe cumplir tres condiciones:
+que $(v_{\text{start}}, v_1)$, $(v_i, v_{i+1})$ y $(v_k, v_{\text{end}})$
+pertenezcan a $\mathcal{E}$, que no repita ubicaciones y que contenga
+todas las ubicaciones con $a_{bi} = 1$. A diferencia del grupo anterior, la
+representación sí permite escribir una secuencia que viole alguna de ellas.
 Estas restricciones se tratan con la estrategia de preservación
 (Sección~\in[sec:marco_restricciones]), ya que la construcción y los
-operadores de movimiento solo generan soluciones que las cumplen, de modo que
-nunca hace falta descartar una. La solución inicial se valida al construirla
+operadores de movimiento solo generan soluciones que las cumplan, de modo que
+nunca hace falta descartar una solución. La solución inicial se valida al construirla
 (Sección~\in[sec:hc_solucion_inicial]). El movimiento 2-opt descarta las
 inversiones que usarían un arco inexistente, y la reasignación y el
 intercambio no modifican las rutas (Sección~\in[sec:hc_busqueda]). La
@@ -158,11 +156,7 @@ cambia en una unidad, de modo que el aumento de $f$ está acotado por
 \stopformula
 Con $\lambda > K$, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
 más de lo que una unidad de tiempo adicional en un lote puede sumar a $f$,
-de modo que reducir el exceso tiene prioridad sobre mejorar $f$. En todas
-las instancias evaluadas con un límite de cadena de frío efectivo, $K$ vale
-como máximo 318. Las únicas instancias con $K > 1000$ son dos escenarios de
-estrés con $T^{\text{cold}} = 10^9$, en los que $v(s) = 0$ siempre y
-$\lambda$ no interviene. A
+de modo que reducir el exceso tiene prioridad sobre mejorar $f$. A
 diferencia de las constantes M grande de los modelos lineales, un valor alto
 de $\lambda$ no trae problemas numéricos, porque se usa solo para comparar
 dos costos y no dentro de un resolvedor.
@@ -175,7 +169,7 @@ pueden cambiar ambas cosas. Si un lote no cumple el límite con su ruta y su
 dura desde el principio, la solución inicial se descartaría completa y la
 búsqueda nunca llegaría a intentar mejorarla. Además, permitir estados infactibles
 intermedios hace posible llegar a soluciones a las que no se llega pasando
-únicamente por soluciones factibles \cite[talbi2009metaheuristics].
+únicamente por soluciones factibles. % \cite[talbi2009metaheuristics].
 
 A pesar de que su evaluación es blanda, la cadena de frío debe cumplirse en el resultado final.
 Para asegurarlo, durante la búsqueda se mantienen dos soluciones: La
