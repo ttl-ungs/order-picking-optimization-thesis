@@ -78,9 +78,7 @@ $k$-ésimo lote de $\sigma_p$ es
 y a partir de los $c_b$ se calculan el adelanto y la demora de cada orden.
 Por lo tanto, \ac{hc} siempre informa el instante real de finalización de
 cada lote, y no puede generar la espera voluntaria que sí admiten los modelos
-lineales (Sección~\in[sec:espera_voluntaria]). Se puede afirmar, por lo tanto, que su espacio de soluciones es el
-subconjunto de las soluciones de los modelos lineales en que ningún lote
-espera.
+lineales (Sección~\in[sec:espera_voluntaria]).
 
 % TODO: no se si esta afirmación va acá, porque validamos que son equivalentes en un capítulo posterior
 
@@ -537,17 +535,15 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 %----------------------------------------------------------------------------------------
 \startsection[title={Ant Colony Optimization}, reference=sec:aco]
 
-La segunda metaheurística es \ac{aco}. A diferencia de \ac{hc}, que mejora
-una única solución mediante movimientos locales, \ac{aco} construye en cada
+La segunda metaheurística desarrollada en este trabajo es \ac{aco}. Esta metaheurística construye en cada
 iteración una población de soluciones nuevas, guiada por un rastro de
 feromona acumulado en iteraciones anteriores (Sección~\in[sec:marco_aco]).
 Esta implementación es híbrida, ya que además de la colonia incorpora
-búsquedas locales sobre las rutas y sobre la asignación de los lotes, que
-funcionan como acciones de demonio (Sección~\in[sec:marco_aco]). La sección
-sigue el mismo orden que la de \ac{hc} y, en cada parte, se concentra en lo
-que cambia respecto de ella. Después de la representación, la evaluación y
-la verificación previa, se describen la construcción de las rutas
-(Sección~\in[sec:aco_construccion]), el pulido de las mejores rutas
+búsquedas locales sobre las rutas y sobre la asignación de los lotes, las cuales
+funcionan como acciones de demonio (Sección~\in[sec:marco_aco]). Esta sección
+describe la representación y evaluación de cada solución, la
+la verificación previa realizada, y también los procesos de construcción de rutas
+(Sección~\in[sec:aco_construccion]), el pulido de las mejores soluciones
 (Sección~\in[sec:aco_pulido]), la asignación y la secuenciación de los lotes
 (Sección~\in[sec:aco_asignacion]) y la actualización de las feromonas
 (Sección~\in[sec:aco_feromonas]).
@@ -556,40 +552,40 @@ la verificación previa, se describen la construcción de las rutas
 \startsubsection[title={Representación de la solución}, reference=sec:aco_representacion]
 
 \ac{aco} resuelve el mismo problema que \ac{hc} y representa las soluciones de
-la misma forma. Al igual que en \ac{hc}, una solución $s = (\pi, a, \sigma)$ está formada por una ruta
+la misma forma. Una solución $s = (\pi, a, \sigma)$ está formada por una ruta
 $\pi_b$ para cada lote con órdenes, una asignación $a$ de lotes a
 {\em pickers} y una secuencia $\sigma_p$ de lotes para cada {\em picker}
-(Sección~\in[sec:hc_representacion]). Por lo tanto, vale también que la unicidad del {\em picker}, la ausencia de solapamientos y
+(Sección~\in[sec:hc_representacion]). Vale también que la unicidad del {\em picker}, la ausencia de solapamientos y
 la ausencia de subtours se cumplen por construcción, los tiempos se calculan
 a partir de $s$ con la Ecuación~\in[eq:hc_finalizacion] y no hay espera
 voluntaria. El loteo sigue siendo un dato de entrada.
 
-En este caso, sin embargo, cambia el uso que se hace de la representación. En \ac{hc}, $s$ es
-el estado sobre el que se aplican los operadores de movimiento. En \ac{aco},
+El uso que se hace de la representación de la solución difiere con respecto a \ac{hc}. En \ac{hc}, $s$ es
+el estado sobre el que se aplican los operadores de movimiento, mientras que en \ac{aco},
 cada hormiga construye una solución completa desde cero, decidiendo sus
 componentes de a uno, y lo que se transmite entre iteraciones no es una
-solución sino la feromona. Hay dos matrices de feromona, una para cada tipo de
-decisión que toma la hormiga:
+solución sino feromonas. Hay dos matrices de feromona, una para cada tipo de
+decisión que toman las hormigas:
 \startitemize[n]
 	\item {\bf Feromona de ruta.} Siguiendo a Chen et al., la ruta de un lote
 	se construye eligiendo el orden en que se visitan las ubicaciones
-	requeridas, y no arco por arco \cite[chen2013antcolony]. Por eso, la
-	feromona $\tau_{ij}$ no se ubica sobre los arcos del almacén, sino sobre
+	requeridas \cite[chen2013antcolony]. La
+	feromona $\tau_{ij}$, entonces, no se ubica sobre los arcos del almacén, sino sobre
 	los pares ordenados de ubicaciones entre las que una hormiga puede ir de
 	una a la otra. Para cada lote $b$, con
 	$\mathcal{V}_b = \{ i \in \mathcal{V}^{\text{int}} : a_{bi} = 1 \}$, se
 	definen los pares $(i, j)$ con
 	$i \in \{v_{\text{start}}\} \cup \mathcal{V}_b$,
-	$j \in \mathcal{V}_b \cup \{v_{\text{end}}\}$ e $i \neq j$. Los pares se
-	comparten entre lotes. Por lo tanto, si dos lotes deben visitar las mismas dos
-	ubicaciones, lo que aprende uno sobre ir de una a la otra lo aprovecha el
-	otro, porque la geometría del almacén entre ellas es la misma.
+	$j \in \mathcal{V}_b \cup \{v_{\text{end}}\}$ e $i \neq j$.
+	Los pares $(i, j)$ se comparten entre lotes. Por lo tanto, si dos lotes requieren visitar las mismas dos
+	ubicaciones, lo que el primer lote aprende es aprovechado por el
+	segundo lote, porque la geometría del almacén es la misma.
 	\item {\bf Feromona de asignación.} Para cada par de lote y {\em picker}
 	se mantiene un valor $\tau^{P}_{bp}$, que indica qué tan conveniente
 	resultó asignar el lote $b$ al {\em picker} $p$ en las soluciones
 	anteriores.
 \stopitemize
-No hay feromona para la secuencia $\sigma_p$, que las hormigas construyen
+No hay feromona para la secuencia $\sigma_p$, ya que la misma es construída por las hormigas
 con una regla fija (Sección~\in[sec:aco_asignacion]).
 
 \stopsubsection
@@ -599,7 +595,7 @@ con una regla fija (Sección~\in[sec:aco_asignacion]).
 
 \ac{aco} usa las mismas funciones que \ac{hc} (Sección~\in[sec:hc_evaluacion]),
 es decir, el objetivo $f(s)$, el costo de violación de la cadena de frío
-$v(s)$ y la función penalizada $f'(s)$, con el mismo $\lambda = 1000$. También
+$v(s)$ y la función penalizada $f'(s)$, con el mismo $\lambda$. También
 trata las restricciones de la misma forma. La única diferencia está en las
 restricciones duras. Cada solución construida se valida contra ellas y, si
 no las cumple, la hormiga se descarta y no participa de la actualización de
