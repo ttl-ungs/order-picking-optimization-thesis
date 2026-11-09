@@ -593,22 +593,20 @@ con una regla fija (Sección~\in[sec:aco_asignacion]).
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Función de evaluación}, reference=sec:aco_evaluacion]
 
-\ac{aco} usa las mismas funciones que \ac{hc} (Sección~\in[sec:hc_evaluacion]),
+\ac{aco} trata las restricciones de la misma forma que \ac{hc}, y también usa las
+mismas funciones (Sección~\in[sec:hc_evaluacion]),
 es decir, el objetivo $f(s)$, el costo de violación de la cadena de frío
-$v(s)$ y la función penalizada $f'(s)$, con el mismo $\lambda$. También
-trata las restricciones de la misma forma. La única diferencia está en las
-restricciones duras. Cada solución construida se valida contra ellas y, si
-no las cumple, la hormiga se descarta y no participa de la actualización de
+$v(s)$ y la función penalizada $f'(s)$. La única diferencia está en las
+restricciones duras, contra las cuales se valida cada solución y, si
+no son cumplidas, la hormiga se descarta y no participa de la actualización de
 la feromona. En la práctica, la construcción solo genera rutas que las
 cumplen (Sección~\in[sec:aco_construccion]), así que una hormiga se descarta
 únicamente cuando no consigue armar la ruta de algún lote.
 
-A diferencia de \ac{hc}, en \ac{aco} cada función se usa para una decisión
-distinta:
+Cada función se usa para una decisión distinta:
 \startitemize
 	\item El costo penalizado $f'(s^k)$ de la solución de la hormiga $k$
-	determina cuánta feromona de asignación deposita
-	(Sección~\in[sec:aco_feromonas]).
+	determina cuánta feromona de asignación deposita (Sección~\in[sec:aco_feromonas]).
 	\item El objetivo $f$ se usa para elegir la mejor solución factible
 	$s^*$, que solo puede actualizarse con soluciones que cumplen
 	$v(s) = 0$. Al terminar se informa $s^*$ con $f(s^*)$, y si ninguna
@@ -618,8 +616,8 @@ distinta:
 	distancia de cada ruta (Sección~\in[sec:aco_feromonas]).
 \stopitemize
 
-Además del valor total $v(s)$, para cada solución se calcula el conjunto de
-lotes que cumplen la cadena de frío por separado:
+Además del valor total $v(s)$, para cada solución se calcula por separado el conjunto de
+lotes que cumplen la cadena de frío:
 \startplaceformula[reference=eq:aco_cumplen]
 \startformula
 	\mathcal{B}^{\text{ok}}(s) = \left\{ b \in \mathcal{B} : T^{\text{exec}}_{a(b)\,b} \leq T^{\text{cold}} + \varepsilon \right\}.
@@ -638,17 +636,18 @@ inicial, y la instancia podría informarse como infactible aunque tuviera
 solución. Con la penalización, las hormigas que violan la cadena de frío
 siguen aportando información sobre los demás lotes.
 
-Sin embargo, depositar feromona para toda la solución de una hormiga que
-viola la cadena de frío refuerza justamente la ruta y la asignación que
-causaron la violación. Esto se comprobó en una instancia construida para
-este caso, con un lote para el que la construcción infactible tenía
-alrededor de un 94~\% de probabilidad y la factible un 6~\%: si todas las
-hormigas depositaban, en unas diez iteraciones la feromona de la
-construcción infactible crecía, la de la factible caía al mínimo y la
-solución factible no volvía a encontrarse. Por eso el depósito se restringe
-a $\mathcal{B}^{\text{ok}}(s)$. Para una instancia de un solo lote, esto
+Este depósito es restringido a $\mathcal{B}^{\text{ok}}(s)$, ya que se comprobó que depositar feromona
+para toda la solución de una hormiga que viola la cadena de frío refuerza justamente la ruta y
+la asignación que causaron la violación. Para una instancia de un solo lote, esta restricción
 equivale a la estrategia de rechazo, mientras que, en una de varios lotes,
 los lotes que cumplen siguen aprendiendo aunque otro no lo haga.
+
+%En una instancia construida para
+%este caso, con un lote para el que la construcción infactible tenía
+%alrededor de un 94~\% de probabilidad y la factible un 6~\%. Se comprobó que, si todas las
+%hormigas depositaban, en unas diez iteraciones la feromona de la
+%construcción infactible crecía, la de la factible caía al mínimo y la
+%solución factible no volvía a encontrarse.
 
 A diferencia de \ac{hc}, no se usa evaluación incremental, porque cada
 hormiga construye una solución completa. $f$ y $v$ se calculan desde cero para cada hormiga.
@@ -662,18 +661,16 @@ Antes de iniciar la colonia, \ac{aco} realiza los mismos chequeos exactos
 que \ac{hc} (Sección~\in[sec:hc_verificacion]). Si alguno falla, la
 instancia se informa como infactible sin construir ninguna solución.
 
-Además, se agrega un chequeo de alcanzabilidad. Toda ubicación requerida por algún
+Además, se agrega un chequeo exacto de alcanzabilidad. Toda ubicación requerida por algún
 lote debe poder alcanzarse desde $v_{\text{start}}$ y debe poder llegar a
-$v_{\text{end}}$ siguiendo los arcos del grafo. Se calcula con dos búsquedas
+$v_{\text{end}}$ siguiendo los arcos del grafo. Esto se calcula con dos búsquedas
 en anchura, una desde $v_{\text{start}}$ sobre el grafo original y otra
 desde $v_{\text{end}}$ sobre el grafo invertido, en tiempo
 $O(|\mathcal{V}| + |\mathcal{E}|)$. Si una ubicación requerida no cumple la
 condición, ninguna ruta puede visitarla, sin importar la feromona ni la
 cantidad de intentos. Sin este chequeo, todas las hormigas de todas las
 iteraciones agotarían sus intentos de construcción sobre un lote que nunca
-tuvo solución. Al igual que los demás, es un chequeo exacto.
-
-
+tuvo solución.
 
 \stopsubsection
 
