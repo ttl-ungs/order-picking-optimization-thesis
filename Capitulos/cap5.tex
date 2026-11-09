@@ -221,6 +221,14 @@ frío solo está activa en el escenario 11, con un límite de 280: con las rutas
 de esa instancia, ningún {\em picker} lento puede ejecutar un lote dentro de
 ese tiempo.
 
+La última columna del cuadro indica qué etapa del modelo Split pone bajo
+presión cada escenario, según lo que encarece a cada una
+(Sección~\in[sec:relevamiento]): el tamaño y la forma del almacén cargan la
+Etapa~1, y la cantidad de lotes y de {\em pickers}, la Etapa~2. El 04 es la
+base del perfil realista y no presiona ninguna en particular. En el 11, la
+grilla de 13×13 carga la Etapa~1 y la cadena de frío actúa sobre la
+Etapa~2, que decide qué {\em picker} puede ejecutar cada lote.
+
 \startplacetable[reference=tab:perfil_realista, location=here, title={Parámetros del perfil realista (escenarios 04 a 19).}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
@@ -258,37 +266,35 @@ obtenga una solución, que las rutas cubran las ubicaciones requeridas, que
 cada lote tenga un {\em picker} asignado y que los lotes de un mismo
 {\em picker} no se superpongan en el tiempo.
 
-% TODO: acá no sé si quedó bien determinado "qué se estresa" en cada escenario.
-% quizás haya que repensar el cuadro.
-\startplacetable[reference=tab:escenarios_estres, location=here, title={Escenarios de estrés y qué se prueba en cada uno.}]
+\startplacetable[reference=tab:escenarios_estres, location=here, title={Escenarios de estrés y qué se prueba en cada uno. La columna Etapa indica qué etapa del modelo Split presiona cada escenario.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
-	\setupTABLE[column][2][width=7cm, align=flushleft]
-	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH {\em Pickers} \eTH \bTH Pedidos \eTH \bTH Grilla \eTH \eTR
-	\bTR \bTD[nc=6, style=bold, align=flushleft] Escenarios sin implementación de cadena de frío \eTD \eTR
-	\bTR \bTD 01 \eTD \bTD Almacén muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \eTR
-	\bTR \bTD 02 \eTD \bTD Un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 03 \eTD \bTD Un solo {\em picker} con 40 lotes, todos los pedidos atrasados \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD[nc=6, style=bold, align=flushleft] Tamaño del almacén \eTD \eTR
-	\bTR \bTD 04 \eTD \bTD Perfil realista en un almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 05 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
-	\bTR \bTD 06 \eTD \bTD Igual que 04, en un almacén de 14×14 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \eTR
-	\bTR \bTD 07 \eTD \bTD Igual que 04, en un almacén de 15×15 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \eTR
-	\bTR \bTD 08 \eTD \bTD Igual que 04, en un almacén de 16×16 \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \eTR
-	\bTR \bTD[nc=6, style=bold, align=flushleft] Forma del almacén \eTD \eTR
-	\bTR \bTD 09 \eTD \bTD Almacén alargado: efecto de la forma del almacén \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \eTR
-	\bTR \bTD[nc=6, style=bold, align=flushleft] Agenda de los {\em pickers} \eTD \eTR
-	\bTR \bTD 10 \eTD \bTD Más peso en la agenda: ruteo barato y 4 {\em pickers} \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 11 \eTD \bTD Cadena de frío activa: solo los {\em pickers} rápidos pueden ejecutar los lotes \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \eTR
-	\bTR \bTD 15 \eTD \bTD Más {\em pickers} que lotes: quién queda libre \eTD \bTD 6 \eTD \bTD 9 \eTD \bTD 156 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD[nc=6, style=bold, align=flushleft] Tamaño de la cuadrilla \eTD \eTR
-	\bTR \bTD 12 \eTD \bTD Más personal: 8 lotes y 4 {\em pickers} \eTD \bTD 8 \eTD \bTD 4 \eTD \bTD 208 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 13 \eTD \bTD Más personal: 10 lotes y 5 {\em pickers} \eTD \bTD 10 \eTD \bTD 5 \eTD \bTD 260 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 14 \eTD \bTD Más personal: 12 lotes y 6 {\em pickers} \eTD \bTD 12 \eTD \bTD 6 \eTD \bTD 312 \eTD \bTD 7×7 \eTD \eTR
-	\bTR \bTD 16 \eTD \bTD Una ola: un lote por {\em picker} \eTD \bTD 12 \eTD \bTD 12 \eTD \bTD 312 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 17 \eTD \bTD Tres {\em pickers} toman un segundo lote \eTD \bTD 15 \eTD \bTD 12 \eTD \bTD 390 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 18 \eTD \bTD La mitad de los {\em pickers} toma un segundo lote \eTD \bTD 18 \eTD \bTD 12 \eTD \bTD 468 \eTD \bTD 10×10 \eTD \eTR
-	\bTR \bTD 19 \eTD \bTD Todos los {\em pickers} toman dos lotes \eTD \bTD 24 \eTD \bTD 12 \eTD \bTD 624 \eTD \bTD 10×10 \eTD \eTR
+	\setupTABLE[column][2][width=6cm, align=flushleft]
+	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH {\em Pickers} \eTH \bTH Pedidos \eTH \bTH Grilla \eTH \bTH Etapa \eTH \eTR
+	\bTR \bTD[nc=7, style=bold, align=flushleft] Escenarios sin cadena de frío activa \eTD \eTR
+	\bTR \bTD 01 \eTD \bTD Almacén muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \bTD 1 y 2 \eTD \eTR
+	\bTR \bTD 02 \eTD \bTD Un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 03 \eTD \bTD Un solo {\em picker} con 40 lotes, todos los pedidos atrasados \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD[nc=7, style=bold, align=flushleft] Tamaño del almacén \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD Perfil realista en un almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD[nc=7, style=bold, align=flushleft] Forma del almacén \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD Almacén alargado: efecto de la forma del almacén \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD[nc=7, style=bold, align=flushleft] Agenda de los {\em pickers} \eTD \eTR
+	\bTR \bTD 10 \eTD \bTD Más peso en la agenda: ruteo barato y 4 {\em pickers} \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 11 \eTD \bTD Cadena de frío activa: solo los {\em pickers} rápidos pueden ejecutar los lotes \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \bTD 1 y 2 \eTD \eTR
+	\bTR \bTD 15 \eTD \bTD Más {\em pickers} que lotes: quién queda libre \eTD \bTD 6 \eTD \bTD 9 \eTD \bTD 156 \eTD \bTD 10×10 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD[nc=7, style=bold, align=flushleft] Tamaño de la cuadrilla \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD Más personal: 8 lotes y 4 {\em pickers} \eTD \bTD 8 \eTD \bTD 4 \eTD \bTD 208 \eTD \bTD 7×7 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 13 \eTD \bTD Más personal: 10 lotes y 5 {\em pickers} \eTD \bTD 10 \eTD \bTD 5 \eTD \bTD 260 \eTD \bTD 7×7 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 14 \eTD \bTD Más personal: 12 lotes y 6 {\em pickers} \eTD \bTD 12 \eTD \bTD 6 \eTD \bTD 312 \eTD \bTD 7×7 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 16 \eTD \bTD Una ola: un lote por {\em picker} \eTD \bTD 12 \eTD \bTD 12 \eTD \bTD 312 \eTD \bTD 10×10 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 17 \eTD \bTD Tres {\em pickers} toman un segundo lote \eTD \bTD 15 \eTD \bTD 12 \eTD \bTD 390 \eTD \bTD 10×10 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 18 \eTD \bTD La mitad de los {\em pickers} toma un segundo lote \eTD \bTD 18 \eTD \bTD 12 \eTD \bTD 468 \eTD \bTD 10×10 \eTD \bTD 2 \eTD \eTR
+	\bTR \bTD 19 \eTD \bTD Todos los {\em pickers} toman dos lotes \eTD \bTD 24 \eTD \bTD 12 \eTD \bTD 624 \eTD \bTD 10×10 \eTD \bTD 2 \eTD \eTR
 	\eTABLE
 \stopplacetable
 
@@ -389,8 +395,6 @@ y ACO, sus valores por defecto (Cuadro~\in[tab:aco_parametros]).
 %----------------------------------------------------------------------------------------
 \startsection[title={Validación de las soluciones}, reference=sec:validacion]
 
-% TODO: esto creo que voy a tener que volverlo a ver. no me convence en general.
-
 Las heurísticas no prueban optimalidad, pero sus soluciones deben cumplir
 todas las restricciones del problema. Como no surgen de un modelo lineal,
 nada garantiza de antemano que lo hagan, y comparar el objetivo de una
@@ -399,17 +403,14 @@ factibles para el mismo modelo. Esta sección describe cómo se verifica que
 cada solución de HC y ACO es factible y qué controles se aplican a los
 modelos lineales.
 
-{\bf Factibilidad por diseño.} Las heurísticas cumplen buena parte de las restricciones por la forma en que
-representan y modifican una solución (Capítulo~\in[Capitulo_4]). La
-representación asigna cada lote a un único {\em picker}, la secuencia de cada
-{\em picker} impide que sus lotes se superpongan y cada ruta es una única
-secuencia, por lo que no puede contener {\em subtours}. Los operadores,
-por su parte, mantienen cada ruta como un camino del depósito al punto de
-entrega que usa solo arcos del grafo, no repite ubicaciones y visita todas
-las requeridas. Además, antes de buscar, aplican a los datos
-de entrada las mismas verificaciones previas que los modelos lineales. La cadena de frío es la excepción: durante
-la búsqueda se permite violarla a cambio de una penalización, pero solo se
-informa como resultado una solución que la cumple.
+{\bf Factibilidad por diseño.} Por la forma en que representan y construyen
+una solución, las heurísticas cumplen todas las restricciones salvo la
+cadena de frío, unas por construcción y otras porque los operadores las
+preservan (Secciones~\in[sec:hc_evaluacion] y~\in[sec:aco_evaluacion]). La
+cadena de frío se penaliza durante la búsqueda, pero solo se informa como
+resultado una solución que la cumple. Además, antes de buscar, las
+heurísticas aplican a los datos de entrada las mismas verificaciones previas
+que los modelos lineales.
 
 {\bf Verificación contra el modelo monolítico.} Que una solución cumpla las
 restricciones por diseño depende de que la implementación sea correcta. Para
