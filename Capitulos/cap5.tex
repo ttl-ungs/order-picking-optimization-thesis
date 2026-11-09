@@ -7,20 +7,21 @@ resultados del anterior:
 	\item {\bf Pruebas funcionales.} Se verificó, sobre instancias chicas, que
 	los modelos lineales respetan las reglas del problema
 	(Sección~\in[sec:pruebas_funcionales]).
-	\item {\bf Relevamiento.} Se exploró hasta qué tamaño de instancia resuelve
-	cada modelo lineal: primero el Split y después el monolítico, resolviendo
-	las mismas instancias con los dos (Sección~\in[sec:relevamiento]).
+	\item {\bf Relevamiento.} Se exploró hasta qué tamaño de instancia
+	resolvía cada modelo lineal (primero el Split y después el monolítico),
+	usando las mismas instancias para los dos
+	(Sección~\in[sec:relevamiento]).
 	\item {\bf Pruebas de estrés.} Con esos resultados se diseñaron los
 	escenarios de estrés (Sección~\in[sec:escenarios_estres]), que se
 	ejecutaron con los dos modelos lineales.
-	\item {\bf Elección de la referencia.} En esas pruebas, el monolítico no
-	terminó ningún escenario dentro del tope y el Split terminó 9 de 19
-	(Sección~\in[sec:comparacion_lineales]). A partir de ese resultado, el
-	Split se tomó como referencia para evaluar las heurísticas.
-	\item {\bf Heurísticas.} HC y ACO resolvieron las mismas instancias. Sus
-	soluciones se verificaron contra el modelo monolítico
-	(Sección~\in[sec:validacion]) y se compararon con las del Split
-	(Sección~\in[sec:comparacion]).
+	\item {\bf Elección de la referencia.} Como el Split fue el único de los
+	dos modelos lineales que terminó escenarios de estrés dentro del tope
+	(Sección~\in[sec:comparacion_lineales]), se lo tomó como referencia para
+	evaluar las heurísticas.
+	\item {\bf Heurísticas.} HC y ACO resolvieron las mismas instancias que
+	los modelos lineales. Sus soluciones se verificaron contra el modelo
+	monolítico (Sección~\in[sec:validacion]) y se compararon con las del
+	Split (Sección~\in[sec:comparacion]).
 \stopitemize
 
 %----------------------------------------------------------------------------------------
@@ -47,7 +48,7 @@ sean los esperados.
 
 % TODO: "manual" es raro. Me refiero a que los pensamos nosotras jajajaja. Los de
 % las pruebas de stress son sistemáticos, salen de una exploración. Estos no.
-Se definieron 38 casos de prueba de forma manual. Cada caso arma una instancia, 
+Se definieron 38 casos de prueba. Cada caso genera una instancia,
 con un almacén y un conjunto de pedidos, lotes y {\em pickers}, la resuelve y 
 compara el resultado con el esperado. Un caso puede agrupar varias pruebas sobre
 variantes de una misma instancia; cada una se distingue con una letra. En
