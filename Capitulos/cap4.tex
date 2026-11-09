@@ -678,15 +678,14 @@ tuvo solución.
 \startsubsection[title={Construcción de rutas}, reference=sec:aco_construccion]
 
 En cada iteración, $m$ hormigas construyen una solución cada una. Cada
-hormiga recorre los lotes con órdenes en el orden de sus identificadores y,
+hormiga recorre los lotes con órdenes y,
 para cada uno, primero arma su ruta y después le elige un {\em picker}
 (Sección~\in[sec:aco_asignacion]). Las rutas de los distintos lotes se
 construyen de forma independiente.
 
-{\bf Regla de transición.} Como en Chen et al., la hormiga viaja de una
-ubicación requerida a otra \cite[chen2013antcolony], es decir, el ruteo se
-trata como un TSP sobre las ubicaciones a visitar, igual que en la
-construcción inicial de \ac{hc} (Sección~\in[sec:hc_solucion_inicial]).
+{\bf Regla de transición.} La hormiga viaja de una
+ubicación requerida a otra, es decir, el ruteo se
+trata como un TSP sobre las ubicaciones a visitar.
 Estando en la ubicación $i$, con $\mathcal{R}$ el conjunto de ubicaciones
 requeridas que todavía no visitó, la hormiga elige la siguiente ubicación
 $r \in \mathcal{R}$ con la regla proporcional aleatoria del {\em Ant System}
@@ -706,15 +705,15 @@ $\mathcal{R}$ queda vacío, llega a $v_{\text{end}}$ por el camino más corto.
 {\bf Adaptación a rutas simples.} Chen et al. toman las distancias entre
 ubicaciones de una tabla calculada de antemano y permiten volver a recorrer
 pasillos ya transitados. En este trabajo, en cambio, la ruta debe ser un
-camino simple (Sección~\in[sec:hc_representacion]). Por eso, $d_{ir}$ y el
+camino simple. Por eso, $d_{ir}$ y el
 camino que se recorre se recalculan en cada paso con el algoritmo de
 Dijkstra, evitando todas las ubicaciones ya recorridas y $v_{\text{end}}$, que
-solo puede cerrar la ruta. Esta adaptación tiene el mismo problema que en
-\ac{hc}, porque la construcción puede trabarse al dejar sin salida a
+solo puede cerrar la ruta. El problema de esta adaptación tiene es que
+la construcción puede trabarse al dejar sin salida a
 ubicaciones que faltaba visitar. Para reducirlo se usan los mismos mecanismos
 que en las construcciones aleatorias de \ac{hc}, que son el chequeo de
 completitud, un máximo de 30 retrocesos y la construcción en los dos
-sentidos, sobre el grafo original y sobre el invertido
+sentidos, tanto sobre el grafo original como sobre el invertido
 (Sección~\in[sec:anexo_rutas_construcciones]). Cuando la ruta se construye
 sobre el grafo invertido, la feromona se sigue leyendo en el sentido de la
 ruta final, de modo que el paso de $i$ a $r$ usa $\tau_{ri}$.
@@ -722,9 +721,9 @@ ruta final, de modo que el paso de $i$ a $r$ usa $\tau_{ri}$.
 {\bf Intentos y respaldo.} Cada hormiga hace hasta 10 intentos de
 construcción por lote, alternando la dirección entre intentos y empezando
 por una elegida al azar. Si los 10 fallan, se usa una ruta de respaldo
-determinística. Primero se prueba la inserción del más lejano, sobre el
-grafo original y, si no se puede realizar, sobre el invertido. Si ninguna
-funciona, se usa la búsqueda {\em best-first} con el tope de 2.000.000 de
+determinística. Primero se prueba la inserción del más lejano sobre el
+grafo original y, si no se puede realizar, se prueba sobre el invertido. Si ninguna
+funciona, se usa la búsqueda {\em best-first} con el tope de 2.000.000
 expansiones, como en \ac{hc} (Sección~\in[sec:anexo_rutas_respaldo]). La ruta de respaldo se pule
 (Sección~\in[sec:aco_pulido]) y se guarda, de modo que se calcula una sola
 vez por lote y no una vez por hormiga. Si tampoco se encuentra una ruta de
@@ -733,8 +732,7 @@ respaldo, la hormiga se descarta.
 {\bf Búsqueda local sobre cada ruta.} Cada ruta construida por una hormiga se
 mejora alternando 2-opt sobre las ubicaciones de la ruta
 (Ecuación~\in[eq:2opt]) y el re-ruteo de tramos, hasta que deja de
-acortarse, igual que las construcciones aleatorias de \ac{hc}. Chen et al. no
-aplican búsqueda local, pero combinar las soluciones de las hormigas con una
+acortarse. Chen et al. no aplican búsqueda local, pero combinar las soluciones de las hormigas con una
 búsqueda local es una práctica habitual en \ac{aco} \cite[dorigo2004aco]. Su
 aporte al resultado se mide en la Sección~\in[sec:calib_aco_ablacion].
 
@@ -754,21 +752,17 @@ $\pi^{bs}_b$ y también reemplaza a $\pi^{ib}_b$ para la actualización de la
 feromona.
 
 El pulido es mucho más costoso que la búsqueda local que se aplica a cada
-hormiga. Por ejemplo, en la grilla de 14×14 una ejecución tarda entre 120 y 260~ms. Por
-eso no se aplica a todas las rutas, ni siquiera a la mejor de cada
-iteración, sino solo cuando aparece un nuevo récord para el lote, lo que
-ocurre con relativamente poca frecuencia. Es una de las acciones de demonio de
-la Sección~\in[sec:marco_aco], ya que se trata de una mejora centralizada
-que se aplica a las soluciones más prometedoras antes de actualizar la
-feromona.
+hormiga, por lo cual no se aplica a todas las rutas, ni siquiera a la mejor de cada
+iteración, sino solo cuando aparece un nuevo récord para el lote. Es una de las
+acciones de demonio de la Sección~\in[sec:marco_aco], ya que se trata de una mejora centralizada
+que se aplica a las soluciones más prometedoras antes de actualizar la feromona.
 
 Cuando la ejecución tiene un tiempo máximo, el pulido también lo respeta. Si
 en una iteración hay varios récords para pulir, cada uno recibe una parte
 igual del tiempo que queda, reservando una parte más para la búsqueda local
 sobre la asignación (Sección~\in[sec:aco_asignacion]). Al vencer su plazo,
 el pulido se detiene y devuelve la mejor ruta obtenida hasta ese momento,
-que nunca es más larga que la original. Sin este reparto, en la grilla de
-100×100 los primeros pulidos consumían todo el tiempo disponible.
+que nunca es más larga que la original.
 
 \stopsubsection
 
