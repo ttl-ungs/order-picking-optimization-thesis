@@ -46,9 +46,10 @@ respete las reglas del problema. Su objetivo es validar que las restricciones
 y la función objetivo estén correctamente implementadas y que los resultados
 sean los esperados.
 
-% TODO: "manual" es raro. Me refiero a que los pensamos nosotras jajajaja. Los de
-% las pruebas de stress son sistemáticos, salen de una exploración. Estos no.
-Se definieron 38 casos de prueba. Cada caso genera una instancia,
+Se definieron 38 casos de prueba. Los casos se diseñaron uno por uno para
+ejercitar una regla concreta del problema, a diferencia de los escenarios de
+estrés, que surgen de un relevamiento sistemático
+(Sección~\in[sec:relevamiento]). Cada caso genera una instancia,
 con un almacén y un conjunto de pedidos, lotes y {\em pickers}, la resuelve y 
 compara el resultado con el esperado. Un caso puede agrupar varias pruebas sobre
 variantes de una misma instancia; cada una se distingue con una letra. En
@@ -105,8 +106,6 @@ momento:
 La prueba 36c no es de infactibilidad: rechaza los datos de entrada, porque
 una velocidad nula o negativa deja indefinido el tiempo de ejecución.
 
-% TODO: Acá tenemos que ver si queremos mencionar esas pruebas de las heurísticas o no.
-% Conviene separarlas de todas formas (en el codigo)
 {\bf Aplicación a las heurísticas.} Las heurísticas no garantizan encontrar
 el óptimo, por lo que sus pruebas no pueden exigir los mismos valores que las
 de los modelos lineales. Para evaluarlas sobre las mismas instancias que los
@@ -184,10 +183,10 @@ fueron los siguientes:
 % TODO: Estos detalles quizás merezcan una(s) sección(es) a parte:
 % * el tema de procesos y memoria, que no se había previsto y que nos obligó a
 %   cambiar la forma de ejecutar la Etapa 1, y que explica por qué no se
-%   puede extrapolar de la calibración a la suite final.
-% * el tema de la variabilidad de los tiempos de reloj
-% * el tema de la ejecución en paralelo
-% * el tema de otras optimizaciones intentadas en la etapa 1, que no dieron resultado
+%   puede extrapolar de la calibración a la suite final. --> nuevo item en la lista de más abajo
+% * el tema de la variabilidad de los tiempos de reloj --> está en 5.4
+% * el tema de la ejecución en paralelo --> está en 5.4
+% * el tema de otras optimizaciones intentadas en la etapa 1, que no dieron resultado --> Anexo
 Los tiempos de la calibración no son los de la suite final
 (Capítulo~\in[Capitulo_6]), por tres motivos: después se cambió el peso de
 la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
@@ -342,6 +341,13 @@ lineales durante el relevamiento (Sección~\in[sec:relevamiento]):
 	unos 4 minutos; en 15×15, donde la Etapa~1 es casi todo el tiempo, de
 	unos 28 a unos 15, y en las instancias dominadas por la Etapa~2 no
 	cambió.
+	\item {\bf Repartir la Etapa~1 no siempre conviene.} Cada proceso
+	necesita su propia copia de los datos, en un directorio temporal, y
+	crearlos lleva un tiempo que no depende del tamaño de la instancia.
+	En instancias chicas ese tiempo supera lo que ahorra: en la suite
+	funcional, la corrida con 6 procesos tardó 51~segundos y la corrida en
+	secuencia, 46. Por eso la Etapa~1 solo se reparte cuando hay más de
+	4 lotes.
 \stopitemize
 
 El paralelismo de la Etapa~1 es distinto del que se evita entre pruebas:
