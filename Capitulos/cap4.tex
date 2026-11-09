@@ -189,17 +189,15 @@ Antes de construir una solución, \ac{hc} verifica que la instancia pueda
 tener solución. El objetivo es detectar las instancias
 infactibles sin gastar tiempo de búsqueda en ellas, pero sin declarar
 infactible una instancia que sí tiene solución. Por eso solo se incluyen
-chequeos exactos, es decir, condiciones que, si no se cumplen, no las cumple
+chequeos exactos, es decir, condiciones que, si no se cumplen, entonces no las cumple
 ninguna solución. Si alguno falla, la ejecución termina y la instancia se
 informa como infactible.
 
 Los primeros chequeos validan los datos de entrada y son los mismos que en
 los modelos lineales (Sección~\in[sec:split_resolucion]). Cada orden debe
 pertenecer a exactamente un lote, ningún lote puede superar la capacidad del
-carro y todas las velocidades deben ser positivas. Como el loteo es un dato y
-la búsqueda no mueve órdenes entre lotes, la capacidad se verifica una sola
-vez. A los {\em pickers} sin velocidad informada se les asigna la velocidad
-de referencia $V_p = 1$.
+carro y todas las velocidades deben ser positivas. A los {\em pickers} sin
+velocidad informada se les asigna la velocidad de referencia $V_p = 1$.
 
 El último chequeo corresponde a la cadena de frío. Como el tiempo de ruta
 nunca es negativo y las velocidades son positivas, para toda ruta y todo
@@ -248,7 +246,7 @@ conjunto de ubicaciones que el lote $b$ debe visitar. Armar su ruta es una
 variante del TSP, en la que hay que ir de $v_{\text{start}}$ a $v_{\text{end}}$
 pasando por todas las ubicaciones de $\mathcal{V}_b$, en cualquier orden y
 con la posibilidad de atravesar otras ubicaciones en el camino. Chen et al.
-tratan el ruteo de picking de esta forma, como un problema del viajante
+tratan el ruteo de picking como un problema del viajante
 sobre las ubicaciones a visitar, en el que la distancia entre dos de ellas es
 la del camino más corto en el almacén \cite[chen2013antcolony]. La
 diferencia en este trabajo es que la ruta debe ser un camino simple
@@ -260,27 +258,20 @@ la de menor distancia:
 \startitemize[n]
 	\item {\bf Vecino más cercano.} Desde el depósito, se va repetidamente a
 	la ubicación pendiente más cercana por el camino más corto que no repite
-	ubicaciones. Es la heurística de ruteo que usan Coruzzolo et al.
-	\cite[coruzzolo2023orderpicking], adaptada para no repetir ubicaciones.
-	% TODO: Consulta, acá, si no tomamos literal ese trabajo para la heurística,
-	% quizás no haga falta la referencia. Ya tenemos bastantes referencias, quizás
-	% hagan más ruido que otra cosa. En general, revisar estas referencias en todos
-	% los capítulos, si no son necesarias, sacarlas.
-
+	ubicaciones.
 	\item {\bf Inserción del más lejano.} El orden de visita de las
 	ubicaciones requeridas se decide con la inserción del más lejano
 	({\em farthest insertion}) \cite[rosenkrantz1977analysis], y después se
 	une cada par de ubicaciones consecutivas con el camino más corto que evita
 	lo ya recorrido. Se aplica sobre el grafo original y sobre el grafo
-	invertido, lo que equivale a construir la ruta desde el final hacia el
-	principio.
+	invertido.
 	\item {\bf Construcciones aleatorias.} Se generan 20 rutas con la regla
 	de transición de \ac{aco} (Ecuación~\in[eq:aco_transicion]) sin el
 	término de feromona, con el mismo $\beta = 2{,}5$ que usa \ac{aco}
 	\cite[chen2013antcolony]. Un chequeo de completitud y un número acotado
 	de retrocesos evitan que la construcción se trabe. Cada ruta se mejora
 	alternando 2-opt sobre las ubicaciones de la ruta (Ecuación~\in[eq:2opt])
-	y el re-ruteo de tramos, que reemplaza el tramo entre dos ubicaciones
+	y re-ruteo de tramos, que reemplaza el tramo entre dos ubicaciones
 	requeridas consecutivas por un camino más corto que evita el resto de la
 	ruta.
 \stopitemize
@@ -303,18 +294,17 @@ el orden de sus identificadores. Para el lote $b$ se calcula el conjunto de
 	\mathcal{P}_b = \left\{ p \in \mathcal{P} : F_b + \frac{r_b}{V_p} \leq T^{\text{cold}} + \varepsilon \right\}.
 \stopformula
 Si $\mathcal{P}_b$ no es vacío, el lote se asigna al {\em picker} de
-$\mathcal{P}_b$ que tiene menos lotes asignados hasta el momento, con empates
-resueltos por el orden de los {\em pickers}. Si es vacío, la ruta inicial es
-demasiado larga incluso para el {\em picker} más rápido. En ese caso el lote
-se asigna al {\em picker} que minimiza $T^{\text{exec}}_{pb}$, que es el que
-lo deja más cerca de cumplir, y la búsqueda se encarga de intentar
-corregirlo. La secuencia $\sigma_p$ de cada {\em picker} es el orden en que
+$\mathcal{P}_b$ que tiene menos lotes asignados hasta el momento. Si es vacío, la ruta inicial es
+demasiado larga incluso para el {\em picker} más rápido y, en ese caso el lote
+se asigna al {\em picker} que minimiza $T^{\text{exec}}_{pb}$, y la búsqueda se
+encarga de intentar corregirlo. La secuencia $\sigma_p$ de cada {\em picker} es el orden en que
 recibió sus lotes. Esta asignación solo equilibra la cantidad de lotes por
 {\em picker}, sin tener en cuenta las fechas de entrega ni la duración de los
 lotes, que quedan a cargo de la búsqueda.
 
-La solución resultante cumple todas las restricciones duras, pero puede
-violar la cadena de frío (Sección~\in[sec:hc_evaluacion]). Si la cumple, $v(s) = 0$ y la solución
+La solución resultante cumple todas las restricciones duras (ver
+Sección~\in[sec:hc_evaluacion]), pero puede violar la cadena de frío, que
+se trata como restricción blanda. Si la cumple, $v(s) = 0$ y la solución
 inicial pasa a ser la primera mejor solución factible $s^*$.
 
 % TODO: Esto no requiere más explicación?
@@ -377,19 +367,19 @@ movimientos alteran las asignaciones ($a$) y el orden de ejecución ($\sigma$).
 
 % TODO: No se si este último párrafo sume mucho
 
-El movimiento 2-opt combina las dos estrategias de selección de la
-Sección~\in[sec:marco_hc], ya que el bucle principal es de primera mejora, pero
-dentro de este movimiento se toma la mejor inversión de la ruta elegida. El
-costo local $g_b$ se usa para no recalcular la función objetivo de toda la
-solución en cada una de las $O(k^2)$ inversiones de una ruta de $k$
-ubicaciones. Una inversión no cambia el conjunto de ubicaciones de la ruta, así
-que $F_b$ y el tiempo de servicio no varían, y el tiempo de ejecución es una
-función lineal de la distancia. Además, la distancia de cada inversión se
-obtiene en tiempo constante, a partir de las distancias acumuladas a lo largo
-de la ruta en ambos sentidos. Que la inversión elegida mejore $g_b$ no
-garantiza que mejore $f'$, porque el cambio de duración del lote modifica
-los instantes de finalización de los lotes que le siguen; esa decisión la
-toma el criterio de aceptación.
+%El movimiento 2-opt combina las dos estrategias de selección de la
+%Sección~\in[sec:marco_hc], ya que el bucle principal es de primera mejora, pero
+%dentro de este movimiento se toma la mejor inversión de la ruta elegida. El
+%costo local $g_b$ se usa para no recalcular la función objetivo de toda la
+%solución en cada una de las $O(k^2)$ inversiones de una ruta de $k$
+%ubicaciones. Una inversión no cambia el conjunto de ubicaciones de la ruta, así
+%que $F_b$ y el tiempo de servicio no varían, y el tiempo de ejecución es una
+%función lineal de la distancia. Además, la distancia de cada inversión se
+%obtiene en tiempo constante, a partir de las distancias acumuladas a lo largo
+%de la ruta en ambos sentidos. Que la inversión elegida mejore $g_b$ no
+%garantiza que mejore $f'$, porque el cambio de duración del lote modifica
+%los instantes de finalización de los lotes que le siguen; esa decisión la
+%toma el criterio de aceptación.
 
 {\bf Aceptación.} Si el vecino $s'$ cumple $f'(s') < f'(s)$, reemplaza a la
 solución actual. Si además $v(s') = 0$ y $f(s') < f(s^*)$, el vecino
@@ -407,8 +397,7 @@ adelanto y la demora se recalculan solo para las órdenes de los lotes cuyo
 instante de finalización cambió, y el exceso sobre $T^{\text{cold}}$, solo
 para los lotes cuya ruta o cuyo {\em picker} cambió, porque no depende de la
 posición en la secuencia. Los valores guardados se actualizan únicamente
-cuando el vecino es aceptado. El resultado es el mismo que el de la
-evaluación completa.
+cuando el vecino es aceptado.
 
 {\bf Criterios de parada.} La búsqueda termina cuando se cumple el primero
 de tres criterios:
@@ -433,7 +422,6 @@ con $v(s) = 0$, la instancia se informa como infactible.
 
 El procedimiento completo se resume en la
 Figura~\in[fig:hc_pseudocodigo] del Anexo~\in[Anexo_Pseudocodigos].
-
 
 \stopsubsection
 
@@ -460,20 +448,15 @@ en la Sección~\in[sec:calib_hc_constantes] del Anexo~\in[Anexo_Metaheuristicas]
 Los valores que usa cada suite de pruebas se indican en la
 Sección~\in[sec:ejecucion]. En los escenarios de estrés, el tope de
 iteraciones es menor que el valor por defecto, pero el de iteraciones sin
-mejora es el doble. Al repetir los
-escenarios de estrés con presupuestos mayores, la búsqueda terminó casi
-siempre porque dejaba de encontrar mejoras y no por el tope de iteraciones,
-y la solución mejoró solo en cuatro escenarios, como máximo un 0,59~\%
-(Sección~\in[sec:calib_hc_presupuesto]).
+mejora es el doble. Si estos valores limitan la búsqueda se evalúa en la
+Sección~\in[sec:calib_hc_presupuesto] del Anexo~\in[Anexo_Metaheuristicas].
 
 La semilla determina todos los sorteos de la construcción y de la búsqueda,
 así que una ejecución es reproducible. Esto significa que la misma instancia, los
 mismos parámetros y la misma semilla producen siempre la misma solución, salvo que
 la búsqueda se detenga por tiempo, ya que en ese caso la cantidad de
-iteraciones depende de la velocidad de la máquina. Con cinco semillas
-distintas, la diferencia entre el mejor y el peor valor objetivo tuvo una
-mediana de 0,02~\% y un máximo de 0,44~\%, y con una de ellas dos escenarios
-terminaron sin solución factible (Sección~\in[sec:calib_hc_semillas]).
+iteraciones depende de la velocidad de la máquina. Cuánto varía el resultado
+al cambiar la semilla se mide en la Sección~\in[sec:calib_hc_semillas].
 
 \stopsubsection
 
