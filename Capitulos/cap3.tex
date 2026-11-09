@@ -21,7 +21,7 @@ ubicación que atraviesa la ruta. Lo que simplifica es la formación de los
 lotes, que aquí son un dato de entrada, de modo que la capacidad del carro
 deja de ser una restricción del modelo. Además, la secuencia de cada operario
 se expresa con variables de precedencia entre pares de lotes, en lugar de
-posiciones numeradas, y el flujo que elimina los subtours se acota con la
+posiciones numeradas, y el flujo que elimina los {\em subtours} se acota con la
 cantidad de ubicaciones requeridas del lote, en lugar de la capacidad del
 carro (Sección~\in[sec:modelo_monolitico]). La forma de la función objetivo se
 mantiene, de modo que, si todos los operarios tienen la misma velocidad, el
@@ -274,7 +274,7 @@ repite.
 \stopformula
 \stopplaceformula
 
-{\bf Eliminación de subtours.}
+{\bf Eliminación de {\em subtours}.}
 Las restricciones (\in[eq:mono_salida])--(\in[eq:mono_sale_max]) todavía
 admiten soluciones formadas por un camino del depósito al nodo final más un
 ciclo disjunto que visita algunas ubicaciones requeridas sin conectarse con el

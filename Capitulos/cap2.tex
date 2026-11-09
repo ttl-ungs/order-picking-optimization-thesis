@@ -91,7 +91,7 @@ agregan las restricciones
 La primera restricción establece que cada nodo distinto del origen agrega
 una unidad de flujo, de modo que $g_{ij}$ puede interpretarse como la
 cantidad de arcos recorridos desde el origen hasta llegar al arco $(i, j)$.
-Un subtour que no contenga al origen no puede satisfacer este balance, ya
+Un {\em subtour} que no contenga al origen no puede satisfacer este balance, ya
 que a lo largo de un ciclo cerrado el flujo no puede crecer en cada nodo.
 La segunda restricción es una restricción de tipo M grande con $M = n - 1$.
 Esta solo permite que circule flujo por los arcos que forman parte del
@@ -432,7 +432,7 @@ optimización conjunta de cuatro decisiones: qué órdenes forman cada lote
 ({\em batching}), a qué operario se asigna cada lote, en qué orden los ejecuta
 y qué ruta sigue en cada uno. Los lotes se forman respetando la capacidad del
 carro, y la ruta de cada lote parte de un depósito inicial, termina en un
-depósito final y pasa a lo sumo una vez por cada ubicación. Los subtours se
+depósito final y pasa a lo sumo una vez por cada ubicación. Los {\em subtours} se
 eliminan con un flujo de tipo Gavish y Graves (Sección~\in[sec:marco_mip])
 acotado por la capacidad del carro, y la secuencia de cada operario se modela
 asignando cada lote a una posición numerada de su agenda. El objetivo combina

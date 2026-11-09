@@ -58,11 +58,9 @@ restricciones de los modelos lineales se cumplen por construcción, es decir, ca
 aparece en una sola secuencia, así que se asigna a exactamente un
 {\em picker}. Los lotes de un mismo {\em picker} se ejecutan uno detrás de
 otro, sin solaparse. Además, como cada ruta es una única secuencia, no puede
-contener subrutas, y no hace falta un mecanismo equivalente a las variables
+contener {\em subtours}, y no hace falta un mecanismo equivalente a las variables
 de flujo $q_{ijb}$. Las restricciones que no se cumplen por construcción son
 descriptas en la Sección~\in[sec:hc_evaluacion].
-
-% TODO: checkear que en todo el doc decimos "subtours" y no "subrutas" o algo parecido
 
 La segunda es que los tiempos no son variables de decisión, sino que se
 calculan a partir de $s$. El tiempo de ruta $r_b$ y el tiempo de ejecución
@@ -109,7 +107,7 @@ dividen en tres grupos.
 
 {\bf Restricciones que se cumplen por construcción.} La representación (Sección~\in[sec:hc_representacion])
 no permite expresar una solución que viole la unicidad del
-{\em picker}, la ausencia de solapamientos ni la ausencia de subtours.
+{\em picker}, la ausencia de solapamientos ni la ausencia de {\em subtours}.
 
 {\bf Restricciones duras.} Cada ruta $\pi_b$ debe cumplir tres condiciones:
 que $(v_{\text{start}}, v_1)$, $(v_i, v_{i+1})$ y $(v_k, v_{\text{end}})$
@@ -486,11 +484,9 @@ La implementación de \ac{hc} tiene las siguientes limitaciones:
 	reasignado pasa al final de la secuencia de su nuevo {\em picker}. Para
 	llevarlo a otra posición hace falta encadenar intercambios, y cada paso
 	intermedio debe mejorar $f'$ por sí mismo para ser aceptado.
-
 	\item {\bf La secuencia inicial ignora las fechas de entrega.} El orden
 	inicial de cada {\em picker} es el de los identificadores de los lotes,
 	y solo se corrige mediante intercambios que mejoren de a uno.
-	
 	\item {\bf Puede informar infactible una instancia factible.} Si cada
 	lote cumple la cota de la Ecuación~\in[eq:hc_cota_frio], pero la
 	búsqueda agota su presupuesto sin pasar por una solución que cumpla la
@@ -533,7 +529,7 @@ la misma forma. Una solución $s = (\pi, a, \sigma)$ está formada por una ruta
 $\pi_b$ para cada lote con órdenes, una asignación $a$ de lotes a
 {\em pickers} y una secuencia $\sigma_p$ de lotes para cada {\em picker}
 (Sección~\in[sec:hc_representacion]). Vale también que la unicidad del {\em picker}, la ausencia de solapamientos y
-la ausencia de subtours se cumplen por construcción, los tiempos se calculan
+la ausencia de {\em subtours} se cumplen por construcción, los tiempos se calculan
 a partir de $s$ con la Ecuación~\in[eq:hc_finalizacion] y no hay espera
 voluntaria. El loteo sigue siendo un dato de entrada.
 
