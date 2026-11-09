@@ -934,21 +934,16 @@ duración de todas las ejecuciones de estrés del perfil realista, de hasta
 unos 410~s, así que solo limita a las instancias más grandes.
 
 {\bf Estudios de calibración.} En el Anexo~\in[Anexo_Metaheuristicas] se mide
-cuánto aporta cada componente híbrido y qué tan sensible es el resultado a
-$\alpha$, $\beta$ y $\rho$. La colonia sola ya queda a menos de un 0,05~\%
-del modelo Split, y la búsqueda local sobre la asignación es la que más
-reduce la brecha (Sección~\in[sec:calib_aco_ablacion]). Los valores por
-defecto de $\alpha$, $\beta$ y $\rho$ quedan cerca de los mejores, con una
-brecha media de 0,011~\% contra 0,009~\% de la mejor combinación, y $\beta$
-es el parámetro con más efecto (Sección~\in[sec:calib_aco_sensibilidad]).
+cuánto aporta cada componente híbrido (Sección~\in[sec:calib_aco_ablacion])
+y qué tan sensible es el resultado a $\alpha$, $\beta$ y $\rho$
+(Sección~\in[sec:calib_aco_sensibilidad]).
 
 {\bf Reproducibilidad.} Como en \ac{hc} (Sección~\in[sec:hc_parametros]),
 la semilla hace reproducible cada ejecución, salvo que se detenga por
 tiempo. Para que esto valga también entre procesos distintos, los
-candidatos de cada sorteo se recorren siempre en el mismo orden. Con cinco semillas en los
-escenarios de estrés 02 a 19, la diferencia entre el mejor y el peor valor
-objetivo tuvo una mediana de 0,005~\% y un máximo de 0,05~\%, y todas las
-ejecuciones encontraron solución (Sección~\in[sec:calib_aco_semillas]).
+candidatos de cada sorteo se recorren siempre en el mismo orden. Cuánto
+varía el resultado al cambiar la semilla se mide en la
+Sección~\in[sec:calib_aco_semillas].
 
 \stopsubsection
 
