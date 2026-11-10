@@ -152,8 +152,8 @@ práctica, casi no modifica las rutas que obtiene en la construcción inicial
 (Secciones~\in[sec:hc_limitaciones] y~\in[sec:res_calidad]). En las dos
 heurísticas, el tope de tiempo no es estricto: en el escenario de 100×100,
 HC tardó 17 minutos y ACO, 32 (Sección~\in[sec:res_tiempos]). ACO, por su
-parte, tiene picos de memoria que no siguen al tamaño de la instancia
-(Sección~\in[sec:res_memoria]).
+parte, tiene en un escenario un pico de memoria que no sigue al tamaño de la
+instancia (Sección~\in[sec:res_memoria]).
 
 \stopsection
 
@@ -212,8 +212,8 @@ las siguientes líneas de trabajo:
 %     0 de 19); (3) HC y ACO equivalentes salvo la espera voluntaria, con todas sus
 %     soluciones verificadas contra el monolítico (150 de 150); (4) pruebas: 64 funcionales
 %     y 19 de estrés, con un perfil realista sin las degeneraciones de las heredadas;
-%     (5) estado 67/67 y 9/9, brechas (en estrés ACO <= 0,06 % y HC <= 0,21 %), tiempos (en
-%     la mediana de estrés HC unas 53 veces y ACO 1,7 veces más rápidos que el Split) y, a
+%     (5) estado 67/67 y 9/9, brechas (en estrés ACO <= 0,04 % y HC <= 0,21 %), tiempos (en
+%     la mediana de estrés HC unas 53 veces y ACO 1,5 veces más rápidos que el Split) y, a
 %     igual tiempo, las heurísticas dominan; (6) limitaciones estructurales (ver 7.4).
 % [ ] Recomendación (models.tex, "Conclusiones"): hasta 6 lotes en grillas de hasta 15×15,
 %     el Split da el óptimo probado en minutos y sirve de referencia; por encima, o cuando
@@ -230,7 +230,7 @@ las siguientes líneas de trabajo:
 %     la espera.
 % [ ] Limitaciones de las heurísticas: HC no escapa de óptimos locales y en la práctica casi
 %     no modifica las rutas después de la construcción; los topes de tiempo no son estrictos
-%     (en el 100×100, 17 min HC y 35 min ACO); ACO tiene picos de memoria sin explicar.
+%     (en el 100×100, 17 min HC y 32 min ACO); ACO tiene un pico de memoria sin explicar (09).
 % [ ] Trabajo futuro: identificar qué limita a la Etapa 1 en grillas grandes (el mecanismo no
 %     se identificó); acelerar la Etapa 2 (p. ej. romper la simetría entre pickers de la
 %     misma banda; el branching por pseudocosto ya se probó y no generalizó); una expansión

@@ -919,7 +919,8 @@ la Etapa~1 ni la de ZIMPL.
 escenarios: ejecuta entre 60 y 157 iteraciones, salvo en el 03 y el 17, en
 los que llega al máximo de 200, y en el 01, en el que no llega a iterar. En
 tres escenarios, su solución inicial ya es la mejor que encuentra. ACO
-ejecuta siempre sus 60 iteraciones, y su mejor solución aparece entre la
+ejecuta sus 60 iteraciones en todos los escenarios salvo el 01, en el que su
+tope de tiempo lo detiene después de 2, y su mejor solución aparece entre la
 iteración 1 y la 56; en la mitad de los escenarios, después de la 30, lo que
 sugiere que más iteraciones podrían mejorarla un poco.
 
@@ -1070,7 +1071,7 @@ cuándo conviene cada método.
 %         las de frío, por el prechequeo o por agotar la búsqueda.
 %   6.3.2 Calidad: funcional, ACO 45 de 45 óptimas; HC 40 de 45 (media 0,36 %, máxima
 %         5,88 %; las 5 que falla son de grilla: 20, 25c, 25e·1, 25f·1 y 25f·2). Estrés: ACO
-%         2 de 9 óptimas, media 0,01 % y máxima 0,06 %; HC 1 de 9, media 0,06 % y máxima
+%         3 de 9 óptimas, media 0,01 % y máxima 0,04 %; HC 1 de 9, media 0,06 % y máxima
 %         0,21 % (el 11, con cadena de frío); ACO mejor que HC en 8 de 9. Gráfico de brecha
 %         por escenario.
 %   6.3.3 Instancias con espera voluntaria (10): cuadro Split / HC / ACO con los lotes que
@@ -1079,26 +1080,27 @@ cuándo conviene cada método.
 %   6.3.4 Tiempos: funcional, sobre las 33 instancias con tiempo del Split conocido (su CSV
 %         guarda una fila por método): medianas de 0,300 / 0,061 / 0,224 s, cocientes de 5,1
 %         (HC) y 1,4 (ACO); ACO es más lento que el Split en 9 de las 33. Estrés: cociente
-%         mediano de 53,1 (HC) y 1,7 (ACO); HC en menos de 5 s salvo el 100×100 (17 min); ACO
-%         de 13 s a 10 min (35 min en el 100×100). Gráficos: tiempo por escenario y tiempo
+%         mediano de 53,1 (HC) y 1,5 (ACO); HC en menos de 5 s salvo el 100×100 (17 min); ACO
+%         de 14 s a 6 min (32 min en el 100×100). Gráficos: tiempo por escenario y tiempo
 %         contra lotes × ubicaciones.
 %   6.3.5 Sin referencia (los 10 escenarios que el Split no termina): las dos heurísticas
 %         dan solución válida; ACO es mejor en 9 de 10 (por menos de 1 %); en el 01 ACO hizo
-%         2 iteraciones y la notebook se suspendió: vale como solución factible, no como
+%         2 iteraciones antes de su tope de 30 min: vale como solución factible, no como
 %         medida de calidad.
 %   6.3.6 A igual tiempo: con el tiempo de HC, ningún modelo exacto obtiene solución en los
 %         19; con el de ACO, el Split da solución en 15 de 19 y ACO empata o mejora en 14
-%         (en el 04 el Split es mejor por 0,001 %): en 8 a 0,1 % o menos, en el 02 y el 03 a
-%         menos de 1 %, y entre 30 y 62 % a favor de ACO con 12 lotes o más (14, 16-19); sin
-%         solución en el 01, 08 y 09 (la Etapa 1 no rutea todos los lotes) y en el 11 (rutas
+%         (en el 09 el Split es mejor por 0,008 %): en 7 a menos de 0,1 %, en el 02 y el 03 a
+%         menos de 1 %, 15 y 30 % a favor de ACO en el 15 y el 14, y entre 46 y 58 % en los
+%         de cuadrilla grande (16-19); sin solución en el 01, 07 y 08 (la Etapa 1 no rutea
+%         todos los lotes) y en el 11 (rutas
 %         cortadas que dejan lotes sin picker elegible por frío); el monolítico solo en el 04
 %         y el 12 (entre 5 y 10 % peor que ACO). Advertencias en el cap. 5.
 %   6.3.7 Nivel de servicio, memoria y convergencia (o a un anexo): SLA 100 % en el perfil
 %         realista salvo el 11 (Split 97,4; HC 96,8; ACO 97,4) y 0 % en 01-03; memoria
-%         mediana de 27 MB (HC) y 28 MB (ACO), 867 y 871 MB en el 100×100, y picos de ACO de
-%         hasta 1.658 MB en 06, 09 y 12 sin explicar; HC corre entre 60 y 200 iteraciones (0
+%         mediana de 27 MB (HC) y 30 MB (ACO), 867 y 907 MB en el 100×100, y un pico de ACO
+%         de 1.672 MB en el 09 sin explicar; HC corre entre 60 y 200 iteraciones (0
 %         en el 01) y su solución inicial ya es la mejor en 3 escenarios; ACO corre las 60
-%         iteraciones y su mejor solución aparece entre la 1 y la 54.
+%         iteraciones salvo en el 01 (2) y su mejor solución aparece entre la 1 y la 56.
 %   6.3.8 Variabilidad entre semillas: hoy no hay datos con el código final (una corrida
 %         con semilla 1; los CSV de results/*/stability son del 11/09, con otras versiones
 %         de los modelos y otras instancias). Ver 2.
