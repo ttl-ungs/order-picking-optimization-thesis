@@ -25,7 +25,7 @@ resultados del anterior:
 \stopitemize
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Software utilizado}, reference=sec:software]
+\startsection[title={Entorno de ejecución}, reference=sec:software]
 
 Los modelos de esta tesina están implementados en Python 3.13. Los dos
 modelos lineales están formulados en {\bf ZIMPL} 3.6.2, un lenguaje de
@@ -35,6 +35,13 @@ compila a un archivo en formato LP, que luego se resuelve con {\bf SCIP}
 para Python, {\bf PySCIPOpt} 5.6.0. Para resolver las relajaciones
 lineales, SCIP utiliza SoPlex 7.1.5. Las heurísticas están implementadas
 íntegramente en Python, sin depender de un solver externo.
+
+Todas las pruebas y los estudios se ejecutaron en una notebook, con
+un procesador Intel i7-1360P. Este procesador tiene 4 núcleos de
+rendimiento, con {\em hyperthreading}, y 8 de eficiencia, que funcionan a
+cerca de la mitad de la velocidad de los primeros. Esto explica, en parte,
+que repartir un cálculo entre varios procesos no lo acelere en proporción a
+la cantidad de procesos (Sección~\in[sec:ejecucion]).
 
 \stopsection
 
