@@ -388,7 +388,10 @@ en el Split, las dos etapas completas. El tiempo del resolvedor, en cambio,
 cubre solo la última resolución de SCIP, que en el Split es la de la
 Etapa~2. Para comparar métodos se usa el tiempo total. En las instancias
 chicas, este tiempo lo domina la compilación de los modelos, más que su
-resolución.
+resolución. Los dos son tiempos de reloj, medidos en una computadora
+portátil: si el equipo se suspende durante una corrida, ese tiempo queda
+incluido en la duración. Por eso, las corridas en las que se registró una
+suspensión se reemplazaron por otras.
 
 {\bf Parámetros de las heurísticas.} HC y ACO se ejecutan una vez por
 instancia, con semilla 1. En las instancias funcionales capturadas del
