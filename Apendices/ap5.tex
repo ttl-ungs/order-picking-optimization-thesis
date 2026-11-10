@@ -250,6 +250,25 @@ lotes se resuelven a la vez (Sección~\in[sec:ejecucion]).
 
 \stopsection
 
+\startsection[title={Medición de los tiempos}, reference=sec:anexo_medicion]
+
+Las condiciones de ejecución de las pruebas (Sección~\in[sec:ejecucion])
+responden a las siguientes mediciones, tomadas durante el relevamiento:
+\startitemize
+	\item {\bf Límite de tiempo de SCIP.} Una resolución con un límite de 300
+	segundos terminó a los 3.079, tras explorar apenas 499 nodos.
+	\item {\bf Nodos y reloj.} Dos corridas de una misma configuración
+	exploraron exactamente 14.041 nodos, con 12,9 y 17,7 segundos de reloj.
+	\item {\bf Etapa~1 en 6 procesos.} Resolviendo solo la Etapa~1 de los
+	escenarios 05 (13×13) y 06 (14×14), fue 2,2 y 1,9 veces más rápida que
+	en secuencia, con rutas idénticas. Sobre la prueba completa, en 13×13 el
+	tiempo bajó de unos 6 a unos 4 minutos; en 15×15, donde la Etapa~1 es
+	casi todo el tiempo, de unos 28 a unos 15, y en las instancias dominadas
+	por la Etapa~2 no cambió.
+\stopitemize
+
+\stopsection
+
 \startsection[title={Alcance del modelo monolítico}, reference=sec:alcance_monolitico]
 
 El modelo monolítico se evaluó sobre el mismo perfil, resolviendo cada

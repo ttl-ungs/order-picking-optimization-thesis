@@ -168,16 +168,14 @@ fueron los siguientes:
 	\item {\bf Tamaño del almacén.} Con el perfil fijo, se buscaron las
 	grillas que llevan al Split a resolver en un rango de 10 a 20 minutos. En
 	la grilla de 7×7 casi todo el tiempo corresponde a la Etapa~2; a partir
-	de 13×13 domina la Etapa~1, y en 15×15 la calibración no terminó en 25
-	minutos. Estas mediciones definieron los escenarios de tamaño creciente.
-	\item {\bf Alcance del monolítico.} Con un tope de 10 minutos, el
-	monolítico solo probó el óptimo en instancias mucho más chicas que las de
-	la calibración: hasta 3 lotes en una grilla de 6×6, 4 lotes en 5×5 y 6
-	lotes en 3×3. Donde fue cortado, ya tenía soluciones a menos del 0,3\%
-	del óptimo, así que su dificultad está en demostrar la optimalidad y no en
-	encontrar buenas soluciones. Por eso no se esperaba que terminara los
-	escenarios de estrés, lo que se confirmó al ejecutarlos
-	(Sección~\in[sec:comparacion_lineales]).
+	de 13×13 domina la Etapa~1, y en 15×15 la Etapa~1 superó el rango
+	buscado. Estas mediciones definieron los escenarios de tamaño creciente.
+	\item {\bf Alcance del monolítico.} El monolítico solo probó el óptimo en
+	instancias mucho más chicas que las de la calibración, y donde fue
+	cortado ya tenía soluciones cercanas al óptimo, por lo cual su dificultad está en
+	demostrar la optimalidad y no en encontrar buenas soluciones
+	(Sección~\in[sec:alcance_monolitico] del Anexo~\in[Anexo_Relevamiento]).
+	Por eso no se esperaba que terminara los escenarios de estrés.
 \stopitemize
 
 % TODO: Estos detalles quizás merezcan una(s) sección(es) a parte:
@@ -325,32 +323,29 @@ fija un límite de tiempo propio: se usa con sus parámetros por defecto y el
 corte lo hace el programa.
 
 Este esquema responde a lo que se aprendió sobre la medición de los modelos
-lineales durante el relevamiento (Sección~\in[sec:relevamiento]):
+lineales durante el relevamiento (Sección~\in[sec:relevamiento]). Las
+mediciones completas están en la Sección~\in[sec:anexo_medicion] del
+Anexo~\in[Anexo_Relevamiento].
 \startitemize
 	\item {\bf El límite de tiempo de SCIP no es estricto.} SCIP lo controla
 	entre operaciones, y una sola operación puede ser muy larga: una
-	resolución con un límite de 300 segundos terminó a los 3.079, tras
-	explorar apenas 499 nodos. Por eso, cada prueba se ejecuta en un proceso
+	resolución con un límite de 300 segundos terminó a los 3.079. Por eso, cada prueba se ejecuta en un proceso
 	propio, que se termina desde afuera al vencer el tope, y se verificó que
 	ese corte funciona en cualquiera de las dos etapas del modelo Split.
 	\item {\bf La cantidad de nodos es determinista; el reloj, no.} Ante la
-	misma instancia, SCIP recorre el mismo árbol de búsqueda: dos corridas
-	de una misma configuración exploraron exactamente 14.041 nodos, con
-	12,9 y 17,7 segundos de reloj. Entre corridas hechas en momentos
-	distintos, el tiempo de la misma instancia llegó a variar hasta el
-	doble con el mismo objetivo.
+	misma instancia, SCIP recorre el mismo árbol de búsqueda, pero el tiempo
+	de reloj llegó a variar hasta el doble entre corridas, con el mismo
+	objetivo.
 	\item {\bf Las resoluciones en paralelo inflan el reloj.} Ejecutar
 	varias resoluciones a la vez en la misma máquina multiplicó los tiempos
 	entre 1,6 y 2,3 veces, sin cambiar la cantidad de nodos. Por eso las
 	pruebas se ejecutan de a una y sin procesos pesados corriendo en paralelo.
 	\item {\bf La Etapa~1 admite paralelismo propio.} Como resuelve cada
 	lote por separado, puede repartirse entre varios procesos. Con 6
-	procesos fue 2,2 veces más rápida en una grilla de 13×13 y 1,9 veces en
-	una de 14×14, con rutas idénticas. El efecto sobre la prueba completa
-	depende de cuánto pesa la Etapa~1: en 13×13 la prueba bajó de unos 6 a
-	unos 4 minutos; en 15×15, donde la Etapa~1 es casi todo el tiempo, de
-	unos 28 a unos 15, y en las instancias dominadas por la Etapa~2 no
-	cambió.
+	procesos fue hasta 2,2 veces más rápida, con rutas idénticas. El efecto
+	sobre la prueba completa depende de cuánto pesa la Etapa~1: es mayor en
+	las grillas grandes, donde la Etapa~1 domina, y nulo en las instancias
+	dominadas por la Etapa~2.
 	\item {\bf Repartir la Etapa~1 no siempre conviene.} Cada proceso
 	necesita su propia copia de los datos, en un directorio temporal, y
 	crearlos lleva un tiempo que no depende del tamaño de la instancia.
