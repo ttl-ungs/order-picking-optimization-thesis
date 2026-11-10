@@ -592,6 +592,14 @@ tiene referencia.
 	\item {\bf Memoria pico}: la del Split no incluye la de los procesos de la
 	Etapa~1 ni la de ZIMPL.
 	\item {\bf Iteración de la mejor solución}, en las heurísticas.
+	\item {\bf Robustez}, en las heurísticas: cuánto depende el resultado de
+	los sorteos. Se mide aparte de la corrida con semilla 1, ejecutando cada
+	heurística con cinco semillas en los escenarios de estrés 02 a 19, con
+	la diferencia relativa entre el mejor y el peor valor objetivo de cada
+	escenario y la cantidad de ejecuciones que no encuentran una solución
+	factible (Secciones~\in[sec:calib_hc_semillas]
+	y~\in[sec:calib_aco_semillas]). Se decidió no considerar el test 01 porque en él las dos
+	heurísticas terminan por tope de tiempo, con muy pocas o ninguna iteración.
 \stopitemize
 Para resumir los tiempos y las brechas se usan medianas además de medias,
 porque sus distribuciones son muy asimétricas. Unas pocas instancias
