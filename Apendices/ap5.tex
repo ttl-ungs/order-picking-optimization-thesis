@@ -195,6 +195,61 @@ creciente de las pruebas de estrés (Sección~\in[sec:escenarios_estres]).
 
 \stopsection
 
+\startsection[title={Intentos para acelerar el modelo Split}, reference=sec:anexo_intentos_split]
+
+Además de los estudios anteriores, se probaron cuatro cambios para que el
+modelo Split resolviera más rápido o instancias más grandes. Solo se adoptó
+uno, repartir la Etapa~1 entre varios procesos. Los otros tres mejoraron
+algunas instancias y empeoraron otras, y se descartaron
+(Cuadro~\in[tab:anexo_intentos_split]).
+
+\startplacetable[reference=tab:anexo_intentos_split, location=here, title={Cambios probados para acelerar el modelo Split.}]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
+	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][1][width=3.4cm, align=flushleft]
+	\setupTABLE[column][3][width=6.4cm, align=flushleft]
+	\setupTABLE[column][4][width=2.6cm, align=flushleft]
+	\bTR \bTH Cambio \eTH \bTH Etapa \eTH \bTH Efecto medido \eTH \bTH Decisión \eTH \eTR
+	\bTR \bTD Clausura métrica \eTD \bTD 1 \eTD \bTD Ahorró entre el 19 y el 33\% en los escenarios heredados, pero en las grillas del perfil realista entre el 67 y el 100\% de los lotes debían resolverse de nuevo sobre el grafo completo, y terminó siendo más lenta. \eTD \bTD Descartada \eTD \eTR
+	\bTR \bTD Quitar el límite de un arco por ubicación \eTD \bTD 1 \eTD \bTD Mismas rutas. Fue un 33\% más rápida en 7×7 y un 24\% más lenta en 13×13; en 25×25, ninguna de las dos versiones terminó en 15 minutos. \eTD \bTD Se mantiene el límite \eTD \eTR
+	\bTR \bTD {\em Branching} por pseudocosto \eTD \bTD 2 \eTD \bTD Fue 2,2 veces más rápido con 10 lotes y 10 {\em pickers}. Con 10 lotes y 12 {\em pickers}, en cambio, la configuración por defecto resolvió en 118,5~s y el pseudocosto agotó el tope con una brecha del 3,3\%. No terminó ninguna instancia que la configuración por defecto no terminara. \eTD \bTD Descartado \eTD \eTR
+	\bTR \bTD Etapa~1 en 6 procesos \eTD \bTD 1 \eTD \bTD Fue 2,2 veces más rápida en 13×13 y 1,9 veces en 14×14, con rutas idénticas. En instancias chicas no tuvo efecto. \eTD \bTD Adoptado en la suite de estrés \eTD \eTR
+	\eTABLE
+\stopplacetable
+
+{\bf Clausura métrica.} La Etapa~1 resuelve en qué orden visitar las
+ubicaciones requeridas y cómo recorrerlas. La clausura reemplaza el
+grafo de cada lote por un grafo completo sobre el depósito, las ubicaciones
+requeridas y el punto de entrega, con las distancias de camino mínimo
+calculadas de antemano, de modo que el modelo solo decide el orden. En una
+grilla de 100×100, con unas 25 ubicaciones requeridas por lote, los arcos
+pasan de unos 40.000 a unos 700. La reducción es exacta, salvo cuando dos
+tramos de la ruta expandida pasan por la misma ubicación, algo que
+(\in[eq:mono_entra_max]) y (\in[eq:mono_sale_max]) prohíben. En ese caso, el
+lote se resuelve de nuevo sobre el grafo completo. En una grilla hay muchos
+caminos mínimos del mismo largo, y en las del perfil realista esos cruces
+fueron la regla, no la excepción.
+
+{\bf Límite de un arco por ubicación.} Se probó quitar
+(\in[eq:mono_entra_max]) y (\in[eq:mono_sale_max]) para ver si explicaban la
+lentitud de la Etapa~1. En estos tamaños las rutas no cambiaron, y el efecto
+sobre el tiempo cambió de signo según la grilla. La restricción se mantuvo,
+porque forma parte de la definición del problema
+(Sección~\in[sec:caracteristicas_formulacion]).
+
+{\bf {\em Branching} por pseudocosto.} Es una regla de SCIP que elige la
+variable sobre la que ramificar según cuánto mejoró la cota en ramificaciones
+anteriores. Se probó en la Etapa~2, y su ventaja en una instancia no se
+repitió en la instancia vecina.
+
+Los tres cambios descartados muestran que un resultado medido en una instancia no se
+transfiere a otra, ni siquiera a una vecina. Ninguno de los cambios que
+modifican el problema aceleró la Etapa~1 de forma general. Lo único que
+ayudó fue repartirla entre procesos, que no cambia el problema sino cuántos
+lotes se resuelven a la vez (Sección~\in[sec:ejecucion]).
+
+\stopsection
+
 \startsection[title={Alcance del modelo monolítico}, reference=sec:alcance_monolitico]
 
 El modelo monolítico se evaluó sobre el mismo perfil, resolviendo cada

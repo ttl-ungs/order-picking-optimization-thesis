@@ -146,7 +146,7 @@ Antes de definir los escenarios se realizó una serie de estudios
 exploratorios sobre los modelos lineales, que se detallan en el
 Anexo~\in[Anexo_Relevamiento]. Un test responde si una instancia determinada
 se resuelve o no; un estudio, en cambio, recorre una familia de instancias y
-muestra a partir de qué tamaño, y por qué, un modelo deja de resolver en
+muestra a partir de qué tamaño y porqué un modelo deja de resolver en
 tiempos razonables. En cada estudio se varió un único factor por vez,
 manteniendo fijo el resto. Los resultados que definieron los escenarios
 fueron los siguientes:
@@ -187,6 +187,10 @@ fueron los siguientes:
 % * el tema de la variabilidad de los tiempos de reloj --> está en 5.4
 % * el tema de la ejecución en paralelo --> está en 5.4
 % * el tema de otras optimizaciones intentadas en la etapa 1, que no dieron resultado --> Anexo
+También se probaron cambios para acelerar el modelo Split. De ellos, solo
+se adoptó repartir la Etapa~1 entre varios procesos
+(Sección~\in[sec:anexo_intentos_split] del Anexo~\in[Anexo_Relevamiento]).
+
 Los tiempos de la calibración no son los de la suite final
 (Capítulo~\in[Capitulo_6]), por tres motivos: después se cambió el peso de
 la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
@@ -503,6 +507,7 @@ por etapas cumplen todas las restricciones del modelo completo.
 % el codigo no está en el repo porque no sirvió mucho, solo sirvió el paralelismo
 % (que ahora que lo menciono, no se si lo justifique bien y si dije a partir de 
 % qué tamaño es conveniente)
+% --> Lo agregué en anexos
 
 \stopsection
 
