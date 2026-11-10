@@ -1,7 +1,8 @@
 \startchapter[title={Verificación de las soluciones}, reference=Anexo_Verificacion]
 
 Este anexo detalla el verificador de soluciones descripto en la
-Sección~\in[sec:validacion].
+Sección~\in[sec:validacion] y, al final, cómo se detecta la espera
+voluntaria en las soluciones del Split.
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Chequeos directos}]
@@ -149,5 +150,20 @@ fijar y no se verifican.
 
 % TODO: no estoy segura de esto en general, podemos ver si queda o no. quizas ya
 % es mucho ruido
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Detección de la espera voluntaria}, reference=sec:anexo_espera]
+
+Para decidir si una instancia se compara también en objetivo
+(Sección~\in[sec:comparacion]), se determina si la solución del Split usa
+la espera voluntaria (Sección~\in[sec:espera_voluntaria]). Para eso se
+reconstruye la agenda de cada {\em picker} en esa solución: un lote espera si
+figura como terminado después del instante en que podría haber terminado, es
+decir, la finalización del lote anterior del mismo {\em picker} (o cero, si
+es el primero) más su tiempo de ejecución. La espera solo se tiene en cuenta
+si el adelanto pesa en el objetivo ($W^{\text{pen}} W^{e} > 0$), porque solo
+entonces puede bajar el objetivo.
+
 \stopsection
 \stopchapter

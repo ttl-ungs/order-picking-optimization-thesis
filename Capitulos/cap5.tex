@@ -541,12 +541,9 @@ del resultado del Split, como resume el Cuadro~\in[tab:comparabilidad].
 	\eTABLE
 \stopplacetable
 
-Para detectar la espera voluntaria se reconstruye la agenda de cada
-{\em picker} en la solución del Split: un lote espera si figura como
-terminado después del instante en que podría haber terminado, es decir, la
-finalización del lote anterior del mismo {\em picker} (o cero, si es el
-primero) más su tiempo de ejecución. La espera solo se tiene en cuenta si el
-adelanto pesa en el objetivo ($W^{\text{pen}} W^{e} > 0$). De las 70
+Las instancias con espera voluntaria se identifican a partir de la agenda
+de cada {\em picker} en la solución del Split
+(Sección~\in[sec:anexo_espera] del Anexo~\in[Anexo_Verificacion]). De las 70
 instancias funcionales, 3 no se comparan (30a, 36c y 37a); cómo se reparten
 las demás según el cuadro depende del resultado del Split
 (Sección~\in[sec:comparacion_split_metaheuristicas]). En estrés no hay espera que descartar
