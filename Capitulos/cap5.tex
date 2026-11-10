@@ -134,8 +134,7 @@ El Anexo~\in[Anexo_Pruebas] lista los casos y qué verifica cada uno.
 %----------------------------------------------------------------------------------------
 \startsection[title={Pruebas de estrés}, reference=sec:pruebas_estres]
 
-Mientras que las pruebas funcionales verifican que cada modelo respete las reglas 
-del problema sobre instancias chicas, las de estrés buscan determinar
+Las pruebas de estrés buscan determinar
 hasta qué tamaño de instancia llega cada modelo. Para dimensionarlas se
 realizó primero un relevamiento de los modelos lineales
 (Sección~\in[sec:relevamiento]), cuyos resultados definieron los
@@ -210,7 +209,7 @@ instancias vecinas, como ya se vio con los pesos asimétricos de la grilla.
 \startsubsection[title={Escenarios de estrés}, reference=sec:escenarios_estres]
 
 A partir de los resultados del relevamiento se definieron los escenarios de
-estrés con los que se evalúan los modelos y las heurísticas. Cada escenario
+estrés. Cada escenario
 pone a prueba un aspecto particular del problema, como el tamaño o la forma
 del almacén, la cantidad de lotes o la de {\em pickers}. Los escenarios se
 ubicaron \quotation{en la frontera} de lo que los modelos lineales pueden
@@ -270,7 +269,8 @@ conservaron por lo que aportan: el 01 es el almacén más grande de la suite
 y el 03 concentra 40 lotes en un único {\em picker}, lo que pone a prueba la
 secuencia.
 
-En todos los escenarios se verifica lo mismo, con los cuatro métodos: que se
+En todos los escenarios se verifica lo mismo, con los cuatro métodos (los
+modelos monolítico y Split, HC y ACO): que se
 obtenga una solución, que las rutas cubran las ubicaciones requeridas, que
 cada lote tenga un {\em picker} asignado y que los lotes de un mismo
 {\em picker} no se superpongan en el tiempo.
@@ -335,8 +335,7 @@ mediciones completas están en la Sección~\in[sec:anexo_medicion] del
 Anexo~\in[Anexo_Relevamiento].
 \startitemize
 	\item {\bf El límite de tiempo de SCIP no es estricto.} SCIP lo controla
-	entre operaciones, y una sola operación puede ser muy larga: una
-	resolución con un límite de 300 segundos terminó a los 3.079. Por eso, cada prueba se ejecuta en un proceso
+	entre operaciones, y una sola operación puede ser muy larga. Por eso, cada prueba se ejecuta en un proceso
 	propio, que se termina desde afuera al vencer el tope, y se verificó que
 	ese corte funciona en cualquiera de las dos etapas del modelo Split.
 	\item {\bf La cantidad de nodos es determinista; el reloj, no.} Ante la
@@ -425,14 +424,12 @@ que los modelos lineales.
 restricciones por diseño depende de que la implementación sea correcta. Para
 no depender de ello, cada solución se verifica de forma independiente,
 usando el modelo monolítico como base: la solución se traduce a las
-variables del modelo con la correspondencia de la
-Sección~\in[sec:hc_representacion], esos valores se fijan en el modelo y
+variables del modelo, esos valores se fijan en el modelo y
 SCIP decide si son factibles. Así, las restricciones no se vuelven a
 programar, sino que se verifican las mismas que resuelven los modelos
 lineales. La verificación usa las soluciones guardadas durante las pruebas
 (Sección~\in[sec:ejecucion]), sin volver a ejecutar las heurísticas, y tiene
-tres pasos: unos chequeos directos y dos niveles de verificación con SCIP
-(Figura~\in[fig:verificacion]):
+tres pasos (Figura~\in[fig:verificacion]):
 \startitemize
 	\item {\bf Chequeos directos.} La solución se recalcula sin el
 	resolvedor: rutas, asignación, cadena de frío, tiempos y objetivo. Además
@@ -489,12 +486,11 @@ caja(y4, "Solución válida");
 
 {\bf Qué no cubre.} La verificación no prueba que una solución sea óptima,
 solo que es factible y que su objetivo está bien calculado. Tampoco puede
-verificar una respuesta de infactibilidad, porque no hay solución que fijar:
-en ese caso solo se contrasta el estado de la heurística con el del Split,
+verificar una respuesta de infactibilidad, porque no hay solución que fijar.
+En ese caso solo se contrasta el estado de la heurística con el del Split,
 teniendo en cuenta que una heurística que no encuentra solución no prueba
 que no exista. Como control adicional, ninguna heurística puede obtener un
-objetivo menor que un óptimo probado del Split: una brecha negativa indicaría
-un error en alguno de los dos métodos.
+objetivo menor que un óptimo probado del Split.
 
 {\bf Controles sobre los modelos lineales.} Los modelos lineales también se controlan entre sí. La comparación entre el
 monolítico y el Split (Sección~\in[sec:comparacion]) verifica, prueba a
@@ -523,7 +519,7 @@ La comparación tiene dos partes. La primera enfrenta al modelo monolítico
 con el Split, para validar que la descomposición alcanza el mismo óptimo y
 medir cuánto tiempo ahorra dividir el modelo. La segunda compara el Split con
 las heurísticas, para medir cuánto se pierde en calidad y cuánto se gana en
-tiempo. Esto porque el modelo Split fue el único de los dos modelos lineales que
+tiempo. Esto porque el modelo Split fue el único modelo lineal que
 terminó escenarios de estrés dentro del tope (Sección~\in[sec:comparacion_lineales]).
 
 {\bf Mismos datos.} Solo se comparan instancias en las que los métodos
