@@ -13,8 +13,6 @@ descriptas en la Sección~\in[sec:ejecucion].
 %----------------------------------------------------------------------------------------
 \startsection[title={Comparación entre modelos lineales}, reference=sec:comparacion_lineales]
 
-% TODO: completar
-
 Esta sección compara el modelo monolítico con el Split en tres situaciones:
 las pruebas funcionales, una misma instancia del perfil realista en almacenes
 de tamaño creciente y las pruebas de estrés. La comparación sigue las reglas
@@ -22,18 +20,22 @@ de la Sección~\in[sec:comparacion].
 
 \startsubsection[title={Mismo óptimo}, reference=sec:mismo_optimo]
 
-De los 60 pares comparables de las pruebas funcionales, los 49 que los dos
-modelos resuelven tienen el mismo valor objetivo, con una diferencia máxima
-de $3\mathord{,}83 \cdot 10^{-6}$ (casos 13 y 14), dentro de la tolerancia de
-SCIP, y los 11 que son infactibles lo son en los dos modelos. Esto confirma
-en la práctica el argumento de exactitud de la Sección~\in[sec:modelo_split],
-también en las pruebas de cadena de frío, de velocidades y de elección de la
-ruta más corta.
+En las pruebas funcionales hay 60 pares comparables, es decir, instancias
+que se resolvieron con los dos modelos. Los dos modelos coinciden en los 60.
+En 49 pares, los dos encuentran el óptimo con el mismo valor
+objetivo. La mayor diferencia es de $3\mathord{,}83 \cdot 10^{-6}$, en los
+casos 13 y 14, y está dentro de la tolerancia de SCIP. En los otros 11 pares,
+los dos modelos indican que la instancia es infactible.
 
-Los dos modelos, sin embargo, no siempre llegan a la misma solución. En 28
-pares devuelven la misma; en los otros 21, el monolítico devuelve un óptimo
+Esto confirma con datos lo que se argumentó en la
+Sección~\in[sec:modelo_split]: el Split encuentra el mismo óptimo que el
+monolítico. La coincidencia incluye las pruebas de cadena de frío, de
+velocidades y de elección de la ruta más corta.
+
+Los dos modelos, sin embargo, no siempre llegan a la misma solución. En
+21 pares, el monolítico devuelve un óptimo
 alternativo, con otras rutas (13 pares), otra asignación (16) o ambas cosas.
-Esto es esperable: como el objetivo no penaliza la longitud de la ruta, el
+Esto es esperable, ya que el objetivo no penaliza la longitud de la ruta, por lo que el
 monolítico puede elegir cualquier ruta que no empeore las penalizaciones,
 mientras que la Etapa~1 del Split siempre devuelve la ruta mínima. Las
 asignaciones distintas, por su parte, son empates del objetivo que cada
@@ -70,10 +72,10 @@ resueltos.
 \stopplacetable
 
 En la suma, el monolítico tardó 5,75 veces más que el Split, pero en la
-mediana la relación se invierte: el monolítico fue más rápido en 38 de los
+mediana la relación se invierte, ya que se ve que el monolítico fue más rápido en 38 de los
 49 pares, con tiempos de entre el 37~\% y el 98~\% de los del Split. Se trata
 de instancias pequeñas, en las que el resolvedor tarda milisegundos y el
-tiempo total depende sobre todo de la compilación: compilar un único modelo
+tiempo total depende sobre todo de la compilación. Como es esperable, compilar un único modelo
 cuesta menos que compilar los de las dos etapas. La suma, en cambio, la
 determinan las instancias de grilla, en las que el monolítico llega a tardar
 28,9 veces más (caso 29), como muestra la
@@ -165,7 +167,7 @@ label.rt(textext("\tfx igual tiempo"), (1.000cm,7.430cm));
 \startsubsection[title={Escala}]
 
 Para analizar cómo se comportan los modelos a medida que crece la instancia,
-se resolvió con los dos una misma instancia del perfil realista (Cuadro~\in[tab:perfil_realista]) en
+ambos modelos resolvieron una misma instancia del perfil realista (Cuadro~\in[tab:perfil_realista]) en
 grillas de 3×3 a 7×7, con 1 a 6 lotes y un tope de 10 minutos. En 4×4 la
 instancia es infactible y no se grafica. La Figura~\in[fig:res_lineales_escala]
 muestra el resultado, y el Anexo~\in[Anexo_Relevamiento] presenta el mismo
@@ -314,7 +316,7 @@ minutos, el monolítico sigue sin probar el óptimo en esos puntos, ni en la ins
 de estrés 04 resuelta con el peso de finalización de la exploración
 ($W^{c} = 9$), como muestra el Cuadro~\in[tab:res_40min]. Encuentra
 soluciones muy buenas, a menos del 1~\% del óptimo, pero no puede demostrar
-que lo son: su cota dual casi no avanza, y en la instancia del escenario 04
+que lo son, ya que su cota dual casi no avanza, y en la instancia del escenario 04
 informa un {\em gap} de optimalidad de 143,5~\% al cabo de 40 minutos,
 mientras que el Split prueba el óptimo en 181 segundos. Sin el óptimo del
 Split como referencia, no habría forma de saber que esa solución es casi
@@ -331,6 +333,7 @@ Split como referencia, no habría forma de saber que esa solución es casi
 	\eTABLE
 \stopplacetable
 
+% mmmm.....
 Estos estudios se ejecutaron con la máquina compartida con otras corridas,
 por lo que sus tiempos absolutos están inflados. Lo que se compara es la
 relación entre los dos modelos sobre la misma instancia, resueltos uno
@@ -392,22 +395,25 @@ siguiente, por lo tanto, comparan soluciones factibles del mismo problema,
 con el objetivo bien calculado. Con el mismo procedimiento se verificaron
 también las 9 soluciones de estrés del Split, y las 9 resultaron válidas.
 
-En las instancias en las que el Split usa espera voluntaria, el nivel~1 de
-la verificación obtiene un objetivo menor que el que informa la heurística,
-hasta un 96~\% menor en el caso 26b. No se trata de una violación: con las
-mismas rutas, la misma asignación y la misma secuencia, el modelo inserta
-tiempo ocioso y reduce el adelanto de los pedidos, que es la misma
-diferencia que se analiza más adelante para esas instancias. Los ajustes del
-verificador (Anexo~\in[Anexo_Verificacion]) intervinieron en pocos casos:
-quitó los 10 lotes vacíos del caso 30a y, en el escenario de 100×100, resolvió
-sobre el subgrafo de las rutas, de unos 1.500 de sus 10.000 ubicaciones.
+En las instancias en las que el modelo Split aplica espera voluntaria,
+el nivel~1 de la verificación da un objetivo menor que
+el que informa la heurística, hasta un 96~\% menor en el caso 26b. Esto no
+indica un error. El nivel~1 fija las rutas, la asignación y la secuencia,
+pero deja libres los instantes de finalización. Con ellos libres, el modelo
+puede demorar lotes para reducir el adelanto de los pedidos, algo que las
+heurísticas no hacen. En el nivel~2, con los
+instantes fijos, el objetivo coincide con el informado. Esta diferencia es
+la misma que se analiza más adelante para esas instancias.
+
+Los ajustes del verificador (Anexo~\in[Anexo_Verificacion]) se usaron en
+pocos casos. En el caso 30a, el verificador quitó los 10 lotes vacíos. En el
+escenario de 100×100, resolvió sobre el subgrafo de las rutas, que tiene
+unas 1.500 de las 10.000 ubicaciones.
 
 \stopsection
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Comparación entre el modelo Split y las metaheurísticas}, reference=sec:comparacion_split_metaheuristicas]
-
-% TODO: completar
 
 Esta sección compara HC y ACO con el modelo Split sobre las instancias
 comparables de la Sección~\in[sec:comparacion]: en estado, 67 instancias
@@ -424,8 +430,8 @@ Las dos heurísticas coinciden con el Split en el estado de todas las
 instancias comparables: encuentran una solución en cada instancia factible,
 tanto en las 55 funcionales como en los 9 escenarios de estrés, y no
 encuentran ninguna en las 12 infactibles. Este resultado debe leerse con
-cuidado, porque una heurística no prueba que una instancia sea infactible:
-solo informa que no encontró una solución. Lo que muestra la coincidencia es
+cuidado, porque una heurística solo informa que no encontró una solución,
+pero no prueba que una instancia sea infactible. Lo que muestra la coincidencia es
 que las heurísticas no producen soluciones donde no las hay y que, en este
 conjunto de instancias, nunca se quedan sin respuesta cuando la instancia
 tiene solución.
@@ -451,7 +457,7 @@ del óptimo del Split, con la definición de la Sección~\in[sec:comparacion].
 ACO alcanza el óptimo en las 45 instancias funcionales y, en estrés, queda a
 lo sumo a un 0,04~\% de él. HC llega al óptimo en 40 de las 45 instancias
 funcionales. Las 5 en las que no lo alcanza son todas de grilla
-(Cuadro~\in[tab:res_fallos_hc]): en ellas hay muchas rutas y asignaciones de
+(Cuadro~\in[tab:res_fallos_hc]). En ellas hay muchas rutas y asignaciones de
 costo parecido, y una búsqueda que solo acepta mejoras se detiene en un
 óptimo local (Sección~\in[sec:hc_limitaciones]). En estrés, HC queda a lo
 sumo a un 0,21~\%, en el escenario con cadena de frío (11). Además, HC casi
@@ -532,12 +538,10 @@ label.rt(textext("\tfx ACO"), (1.000cm,4.880cm));
 
 \startsubsection[title={Instancias con espera voluntaria}, reference=sec:res_espera]
 
-En 10 instancias funcionales, la solución óptima del Split inserta tiempo
-ocioso: algún lote termina más tarde de lo que permite su ejecución, para
-acercarse a la fecha de entrega de sus pedidos
-(Sección~\in[sec:espera_voluntaria]). Como las heurísticas no insertan tiempo
-ocioso, en esas instancias el objetivo del Split es menor por el tipo de
-soluciones que explora cada método, y no porque el Split encuentre un plan
+En 10 instancias funcionales, la solución óptima del Split aplica espera
+voluntaria (Sección~\in[sec:espera_voluntaria]). Como las heurísticas no la
+usan, en esas instancias la diferencia de objetivo se debe al tipo de
+soluciones que explora cada método, y no a que el Split encuentre un plan
 mejor. Por eso se comparan solo en estado (Cuadro~\in[tab:comparabilidad]).
 El Cuadro~\in[tab:res_espera] muestra el tamaño de esa diferencia.
 
@@ -562,14 +566,14 @@ La diferencia va de un 30~\% en los casos más simples, como el 01 y el 33c,
 hasta un factor de casi 29 en el 26b, donde el Split hace esperar dos de sus
 cuatro lotes. En estas instancias se comprobó, además, que tomar las rutas
 mínimas y agregarles la espera óptima reproduce exactamente el objetivo del
-Split: toda la diferencia se explica por el tiempo ocioso insertado.
+Split, lo que confirma que toda la diferencia se explica por el tiempo ocioso insertado.
 
 \stopsubsection
 
 \startsubsection[title={Tiempos}, reference=sec:res_tiempos]
 
 En las pruebas funcionales, los tiempos se comparan sobre 33 de las 45
-instancias comparables en objetivo: el registro del Split guarda una fila por
+instancias comparables en objetivo, ya que el registro del Split guarda una fila por
 prueba, y algunas pruebas resuelven más de una instancia, por lo que solo se
 conoce el tiempo de las que resuelven una sola. En la mediana, el Split tarda
 0,300 segundos, HC 0,061 y ACO 0,224, de modo que HC es 5,1 veces más rápido
@@ -714,7 +718,7 @@ label.rt(textext("\tfx ACO"), (13.000cm,2.240cm));
 En los 9 escenarios que el Split resuelve, la mediana del cociente entre su
 tiempo y el de cada heurística es de 53,1 para HC y de 1,5 para ACO. HC
 resuelve todos los escenarios en menos de 5 segundos, salvo el 01, mientras
-que ACO tarda entre 14 segundos y 6 minutos: tiempos del mismo orden que los
+que ACO tarda entre 14 segundos y 6 minutos, por lo que sus tiempos son del mismo orden que los
 del Split en los escenarios pequeños y bastante menores en los grandes. El
 escenario de 100×100 (01) es el más costoso para las dos heurísticas: HC
 tarda 17 minutos, casi todos en construir la solución inicial, y ACO, 32,
@@ -723,8 +727,8 @@ llevarían unas 5 horas. En la grilla de 14×14, en cambio, una ejecución de
 ACO tarda unos 94 segundos
 (Secciones~\in[sec:hc_limitaciones] y~\in[sec:aco_limitaciones]).
 
-Las heurísticas tampoco tienen los dos límites del Split
-(Sección~\in[sec:comparacion_lineales]): resuelven los escenarios con 8 lotes
+Las heurísticas no tienen los dos límites del Split
+(Sección~\in[sec:comparacion_lineales]), ya que resuelven los escenarios con 8 lotes
 o más y la grilla de 16×16, que el Split no termina, en tiempos similares a
 los del resto.
 
@@ -861,7 +865,7 @@ menos de un 0,1~\% de \ac{aco}, y en el 09 la mejora por menos de un
 óptimo, que en su propia corrida obtiene en 33, y \ac{aco} es mejor por un
 0,8~\%. En el 03, \ac{aco} es mejor por un 0,7~\%; en el 15 y el 14, por un 15
 y un 30~\%, y en los cuatro escenarios de cuadrilla grande (16 a 19), por entre un
-46 y un 58~\%: con el tiempo de \ac{aco}, el Split entrega soluciones de
+46 y un 58~\%. Con el tiempo de \ac{aco}, entonces, el Split entrega soluciones de
 mucha peor calidad. En el 01, el 07 y el 08, la Etapa~1 no llega a rutear todos
 los lotes, y en el 11 rutea lotes que ningún picker habilitado para la cadena de
 frío puede tomar, así que la Etapa~2 no tiene una asignación factible. El
@@ -905,7 +909,7 @@ del modelo.
 {\bf Nivel de servicio.} En los escenarios heredados (01 a 03), ningún pedido
 llega a tiempo con ningún método, por la forma en que están construidos. En
 el perfil realista, los tres métodos entregan todos los pedidos a tiempo,
-salvo en el escenario 11, donde la cadena de frío obliga a demorar algunos: el
+salvo en el escenario 11, donde la cadena de frío obliga a demorar algunos. El
 Split y ACO entregan a tiempo el 97,4~\% de los pedidos y HC, el 96,8~\%.
 
 {\bf Memoria.} La mediana de la memoria pico es de 27~MB para HC y de 30~MB
@@ -954,12 +958,12 @@ compararse entre ellas.
 %----------------------------------------------------------------------------------------
 \startsection[title={Síntesis de los resultados}, reference=sec:sintesis_resultados]
 
-Los cuatro métodos resuelven el mismo problema, con los mismos datos, las
+Los cuatro modelos resuelven el mismo problema, con los mismos datos, las
 mismas restricciones y el mismo objetivo. La única diferencia de modelado es
 el tiempo ocioso insertado, que los modelos lineales admiten como espera
 voluntaria y las heurísticas no; por eso, las instancias en las que el Split
 lo usa se comparan solo en estado. Sobre esa base, los resultados de este
-capítulo pueden resumirse así:
+capítulo pueden resumirse de la siguiente forma:
 \startitemize
 	\item {\bf Los dos modelos lineales alcanzan el mismo óptimo}, pero solo el
 	Split lo prueba a escala realista: en el perfil realista, hasta 6 lotes en
