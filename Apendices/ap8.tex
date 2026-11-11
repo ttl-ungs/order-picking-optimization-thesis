@@ -7,7 +7,7 @@ Capítulo~\in[Capitulo_4]. Estos detalles incluyen la construcción de las rutas
 estudios con los que se evaluaron sus parámetros
 (Secciones~\in[sec:calib_hc] y~\in[sec:calib_aco]). Los parámetros de
 cada metaheurística, con sus valores por defecto, se presentan en las
-Secciones~\in[sec:hc_parametros] y~\in[sec:aco_parametros].
+Sección~\in[sec:ejecucion].
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Construcción de las rutas}, reference=sec:anexo_rutas]
@@ -164,6 +164,36 @@ valores guardados se actualizan únicamente cuando el vecino es aceptado.
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
+\startsubsection[title={Movimiento 2-opt de \ac{hc}}, reference=sec:anexo_2opt]
+
+Como el grafo del almacén es dirigido, no toda inversión de un tramo de la
+ruta es posible. Se descartan las inversiones que usarían un arco que no
+existe en ese sentido, o cuyos dos nuevos arcos de unión no existen. Entre
+las inversiones posibles se toma la mejor, de acuerdo con un costo local que
+solo considera al lote $b$,
+\startplaceformula[reference=eq:hc_costo_local]
+\startformula
+	g_b(\pi_b) = T^{\text{travel}} \, d(\pi_b) + \lambda \max\left(0,\; T^{\text{exec}}_{a(b)\,b} - T^{\text{cold}}\right),
+\stopformula
+\stopplaceformula
+donde $d(\pi_b)$ es la distancia de la ruta. Si ninguna inversión reduce
+$g_b$, el movimiento no genera vecino.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Cotas de la feromona de ruta}, reference=sec:anexo_cotas]
+
+En \ac{aco}, cada par de ubicaciones recibe a lo sumo dos depósitos de una
+unidad por lote e iteración, uno de la mejor ruta de la iteración y otro de
+la mejor ruta histórica. Si los recibe en todas las iteraciones, la feromona
+evoluciona como $\tau \leftarrow (1-\rho)\,\tau + 2$, cuyo valor estacionario
+es $2 / \rho$. Por eso se fija $\tau_{\max} = 2/\rho$, y
+$\tau_{\min} = \tau_{\max}/50$ (Ecuación~\in[eq:aco_cotas]).
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
 \startsubsection[title={Control del tiempo}, reference=sec:anexo_tiempo]
 
 En \ac{hc}, el tiempo se mide desde el comienzo de la ejecución, incluyendo
@@ -314,7 +344,7 @@ las hormigas usaran todo el tiempo dejaba 11~s de pulido y nada para la
 búsqueda local sobre la asignación, con un objetivo de 1.403.120, contra
 917.328 cuando el posprocesamiento se completaba. Por eso las hormigas
 dejan de construirse al consumir la mitad de $\text{Max}_{\text{time}}$
-(Sección~\in[sec:aco_parametros]).
+(Sección~\in[sec:anexo_tiempo]).
 
 \stopsubsection
 
