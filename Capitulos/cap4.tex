@@ -199,7 +199,7 @@ cumpliera el límite de un lote, la feromona no se actualizaría para
 {\em ningún} lote, aunque los demás lo cumplieran, y la búsqueda quedaría
 congelada en su estado inicial. Además, permitir estados infactibles
 intermedios hace posible llegar a soluciones a las que no se llega pasando
-únicamente por soluciones factibles. % \cite[talbi2009metaheuristics].
+únicamente por soluciones factibles.
 
 A pesar de que su evaluación es blanda, la cadena de frío debe cumplirse en
 el resultado final. Para asegurarlo, las dos metaheurísticas guardan aparte
@@ -283,9 +283,6 @@ camino. Chen et al. tratan el ruteo de picking de esta forma, eligiendo el
 orden en que se visitan las ubicaciones requeridas y uniéndolas por el camino
 más corto en el almacén \cite[chen2013antcolony].
 
-% TODO: Verificar si también se menciona que es un TSP variado en otros capítulos
-% (creo que sí). si sí, centralizar la explicación en un solo capítulo y referenciarla desde los demás.
-
 La diferencia en este trabajo es que la ruta no puede repetir ubicaciones.
 Por eso, el camino entre dos ubicaciones se calcula con el algoritmo de
 Dijkstra evitando lo ya recorrido. Esto hace que una construcción golosa
@@ -313,9 +310,6 @@ instancia se informa como infactible.
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:hc]
-
-% TODO: propongo reestructurar esta sección, creo que está bueno primero ver cómo funciona
-% el algoritmo y luego entender por qué cumple las restricciones.
 
 \ac{hc} parte de una solución completa y la mejora de a un cambio por vez.
 Primero aplica la verificación previa (Sección~\in[sec:heur_verificacion]) y
@@ -403,8 +397,6 @@ $v(s) = 0$ y la solución inicial pasa a ser la primera mejor solución
 factible $s^*$. Si no la cumple, todavía no hay una solución factible, y
 $s^*$ se define recién cuando la búsqueda encuentra una.
 
-% TODO: Esto no requiere más explicación?
-
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
@@ -453,26 +445,8 @@ solución actual:
 	posteriores terminan en el mismo instante que antes. Solo es aplicable si algún
 	{\em picker} tiene dos o más lotes.
 \stopitemize
-La reasignación y el intercambio cumplen funcionalmente el papel de los movimientos de inserción e
-intercambio que Coruzzolo et al. validan en su búsqueda local para la optimización conjunta del loteo y la
-secuenciación de órdenes \cite[coruzzolo2023orderpicking]. Mientras el 2-opt optimiza exclusivamente la ruta ($\pi$), estos dos
-movimientos alteran las asignaciones ($a$) y el orden de ejecución ($\sigma$).
-
-% TODO: No se si este último párrafo sume mucho
-
-%El movimiento 2-opt combina las dos estrategias de selección de la
-%Sección~\in[sec:marco_hc], ya que el bucle principal es de primera mejora, pero
-%dentro de este movimiento se toma la mejor inversión de la ruta elegida. El
-%costo local $g_b$ se usa para no recalcular la función objetivo de toda la
-%solución en cada una de las $O(k^2)$ inversiones de una ruta de $k$
-%ubicaciones. Una inversión no cambia el conjunto de ubicaciones de la ruta, así
-%que $F_b$ y el tiempo de servicio no varían, y el tiempo de ejecución es una
-%función lineal de la distancia. Además, la distancia de cada inversión se
-%obtiene en tiempo constante, a partir de las distancias acumuladas a lo largo
-%de la ruta en ambos sentidos. Que la inversión elegida mejore $g_b$ no
-%garantiza que mejore $f'$, porque el cambio de duración del lote modifica
-%los instantes de finalización de los lotes que le siguen; esa decisión la
-%toma el criterio de aceptación.
+Así, el 2-opt cambia la ruta ($\pi$), y la reasignación y el intercambio
+cambian la asignación ($a$) y la secuencia ($\sigma$).
 
 {\bf Aceptación.} Si el vecino $s'$ cumple $f'(s') < f'(s)$, reemplaza a la
 solución actual. Si además $v(s') = 0$ y $f(s') < f(s^*)$, el vecino
@@ -771,15 +745,6 @@ Toda la feromona de ruta se inicializa en $\tau_{\max}$, para favorecer la
 exploración al comienzo de la búsqueda (Sección~\in[sec:marco_aco]), y
 $\tau_{\min}$ garantiza que ningún par deje de poder elegirse.
 
-%La relación
-%entre $\tau_{\max}$ y $\tau_{\min}$ es una elección propia. Stützle y Hoos la
-%derivan de la cantidad de componentes de la solución y de una probabilidad
-%objetivo, y para rutas de entre 20 y 26 ubicaciones requeridas resulta del
-%mismo orden. Lesch et al. también usan MMAS en un \ac{aco} de ruteo de
-%{\em picking}, con la misma información heurística $1/d$
-%\cite[lesch2023optimizing].
-
-
 El depósito es siempre de una unidad, es decir, su magnitud no depende de la
 longitud de la ruta. La longitud interviene al elegir qué
 rutas depositan, ya que solo lo hacen la mejor ruta (la más corta) de la iteración y la
@@ -788,12 +753,6 @@ Así, la feromona de ruta aprende únicamente de la longitud de las rutas, y
 no del objetivo completo $f'$. No hace falta tener en cuenta la cadena de
 frío al elegirlas, porque una ruta más corta solo puede reducir el tiempo
 de ejecución del lote.
-
-%Un depósito de tipo {\em Ant System}, proporcional a $Q / f'(s^k)$, no
-%serviría para la feromona de ruta. Con $Q = 100$ y valores de $f'$ del orden
-%de $1{,}5 \cdot 10^5$, cada depósito sería de alrededor de
-%$7 \cdot 10^{-4}$, menor que un mínimo de 0,01, así que la feromona de ruta
-%caería al mínimo en todos los pares y no transmitiría información.
 
 {\bf Feromona de asignación: Ant System elitista.} La feromona de
 asignación se evapora con
@@ -823,13 +782,6 @@ para toda la solución de una hormiga que viola la cadena de frío refuerza just
 la asignación que causaron la violación. Para una instancia de un solo lote, esta restricción
 equivale a la estrategia de rechazo, mientras que, en una de varios lotes,
 los lotes que cumplen siguen aprendiendo aunque otro no lo haga.
-
-%En una instancia construida para
-%este caso, con un lote para el que la construcción infactible tenía
-%alrededor de un 94~\% de probabilidad y la factible un 6~\%. Se comprobó que, si todas las
-%hormigas depositaban, en unas diez iteraciones la feromona de la
-%construcción infactible crecía, la de la factible caía al mínimo y la
-%solución factible no volvía a encontrarse.
 
 \stopsubsection
 
@@ -982,8 +934,8 @@ de cada una.
 % algoritmos, cada uno con su pseudocódigo (antes en el Anexo B, que se eliminó), y 4.4
 % limitaciones comunes y propias. La deducción de lambda, la evaluación incremental, el
 % control del tiempo y los intentos y la ruta de respaldo de ACO pasaron al Anexo D
-% (sección "Otros detalles de implementación"). Los TODO del texto se conservaron; el de
-% reestructurar y el del TSP quedan atendidos por esta reorganización.
+% (sección "Otros detalles de implementación"). El 11/11 se borraron los TODO y los
+% párrafos comentados del texto, y se acortó el párrafo final de los movimientos de HC.
 % [ ] = tarea; (D) = decisión de ustedes.
 %========================================================================================
 %
