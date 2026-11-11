@@ -2,7 +2,8 @@
 
 Este anexo reúne detalles específicos de las dos metaheurísticas del
 Capítulo~\in[Capitulo_4]. Estos detalles incluyen la construcción de las rutas, que comparten \ac{hc} y \ac{aco}
-(Sección~\in[sec:anexo_rutas]), y las constantes de implementación y los
+(Sección~\in[sec:anexo_rutas]), algunos aspectos de la implementación
+(Sección~\in[sec:anexo_impl]), y las constantes de implementación y los
 estudios con los que se evaluaron sus parámetros
 (Secciones~\in[sec:calib_hc] y~\in[sec:calib_aco]). Los parámetros de
 cada metaheurística, con sus valores por defecto, se presentan en las
@@ -12,8 +13,8 @@ Secciones~\in[sec:hc_parametros] y~\in[sec:aco_parametros].
 \startsection[title={Construcción de las rutas}, reference=sec:anexo_rutas]
 
 Esta sección detalla las construcciones de la ruta inicial de cada lote en
-\ac{hc} (Sección~\in[sec:hc_solucion_inicial]), con la notación de esa
-sección. El pulido y la búsqueda de respaldo se usan también en \ac{aco}
+\ac{hc} (Sección~\in[sec:hc_solucion_inicial]), con la notación de la
+Sección~\in[sec:heur_rutas]. El pulido y la búsqueda de respaldo se usan también en \ac{aco}
 (Secciones~\in[sec:aco_construccion] y~\in[sec:aco_pulido]).
 
 %----------------------------------------------------------------------------------------
@@ -123,6 +124,89 @@ lote queda sin ruta y la instancia se informa como infactible.
 \stopsection
 
 %----------------------------------------------------------------------------------------
+\startsection[title={Otros detalles de implementación}, reference=sec:anexo_impl]
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Peso de la penalización}, reference=sec:anexo_lambda]
+
+El valor de $\lambda$ de la Ecuación~\in[eq:hc_costo] se eligió comparándolo
+con cuánto puede aumentar $f$ cuando un lote tarda una unidad de tiempo más.
+En el peor caso, ese lote y todos los que le siguen en la secuencia de su
+{\em picker} terminan una unidad más tarde, y el adelanto o la demora de cada
+una de sus órdenes cambia en una unidad, de modo que el aumento de $f$ está
+acotado por
+\startformula
+	K = W^{c} \, |\mathcal{B}| + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) |\mathcal{N}|.
+\stopformula
+Con $\lambda > K$, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
+más de lo que una unidad de tiempo adicional en un lote puede sumar a $f$,
+de modo que reducir el exceso tiene prioridad sobre mejorar $f$. A
+diferencia de las constantes M grande de los modelos lineales, un valor alto
+de $\lambda$ no trae problemas numéricos, porque se usa solo para comparar
+dos costos y no dentro de un resolvedor.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Evaluación incremental en \ac{hc}}, reference=sec:anexo_incremental]
+
+Cada vecino difiere de la solución actual en pocos lotes, así que $f$ y $v$
+no se recalculan desde cero, sino a partir de los valores de la última
+solución aceptada. Para cada {\em picker}, los instantes de finalización se
+recalculan desde la primera posición de su secuencia en la que cambió el lote
+o su ruta, ya que las posiciones anteriores no se ven afectadas
+(Ecuación~\in[eq:hc_finalizacion]). El adelanto y la demora se recalculan
+solo para las órdenes de los lotes cuyo instante de finalización cambió, y el
+exceso sobre $T^{\text{cold}}$, solo para los lotes cuya ruta o cuyo
+{\em picker} cambió, porque no depende de la posición en la secuencia. Los
+valores guardados se actualizan únicamente cuando el vecino es aceptado.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Control del tiempo}, reference=sec:anexo_tiempo]
+
+En \ac{hc}, el tiempo se mide desde el comienzo de la ejecución, incluyendo
+la verificación previa y la construcción de la solución inicial, y se
+controla al inicio de cada iteración. Por lo tanto, no interrumpe la
+construcción ni una iteración en curso.
+
+En \ac{aco}, el tiempo se controla antes de construir cada hormiga, así que
+una iteración puede cortarse a mitad de camino. Las hormigas dejan de
+construirse al consumir la mitad de $\text{Max}_{\text{time}}$, pero solo si
+ya existe una solución factible, de esa iteración o de una anterior, para
+que el corte no produzca un falso infactible. La otra mitad queda para el
+pulido y la búsqueda local sobre la asignación, que respetan el plazo
+completo. Por qué el tiempo se reparte de esta forma se explica en la
+Sección~\in[sec:calib_aco_tiempo].
+
+El pulido también respeta el tiempo máximo. Si en una iteración hay varios
+récords para pulir, cada uno recibe una parte igual del tiempo que queda,
+reservando una parte más para la búsqueda local sobre la asignación. Al
+vencer su plazo, el pulido se detiene y devuelve la mejor ruta obtenida
+hasta ese momento, que nunca es más larga que la original.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Intentos y ruta de respaldo en \ac{aco}}, reference=sec:anexo_aco_respaldo]
+
+Cada hormiga hace hasta 10 intentos de construcción por lote, alternando la
+dirección entre intentos y empezando por una elegida al azar. Si los 10
+fallan, se usa una ruta de respaldo determinística. Primero se prueba la
+inserción del más lejano sobre el grafo original y, si no se puede realizar,
+se prueba sobre el invertido. Si ninguna funciona, se usa la búsqueda
+{\em best-first} con el tope de 2.000.000 de expansiones, como en \ac{hc}
+(Sección~\in[sec:anexo_rutas_respaldo]). La ruta de respaldo se pule y se
+guarda, de modo que se calcula una sola vez por lote y no una vez por
+hormiga. Si tampoco se encuentra una ruta de respaldo, la hormiga se
+descarta.
+
+\stopsubsection
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
 \startsection[title={Calibración de Hill Climbing}, reference=sec:calib_hc]
 
 %----------------------------------------------------------------------------------------
@@ -159,7 +243,7 @@ $\text{Max}_{\text{imp}}$ (Cuadro~\in[tab:hc_parametros]) limitan la
 búsqueda, se repitieron los escenarios de estrés 02 a 19 con 200 y 120, 500
 y 60, y 500 y 120 iteraciones máximas e iteraciones sin mejora,
 respectivamente, con cinco semillas por escenario. El 01 queda afuera porque
-la búsqueda no llega a iterar (Sección~\in[sec:hc_limitaciones]). Con 200 y
+la búsqueda no llega a iterar (Sección~\in[sec:heur_limitaciones]). Con 200 y
 60, la búsqueda se detiene por estancamiento en 82 de las 88 ejecuciones que
 encuentran una solución factible, y solo alcanza el tope de 200 iteraciones
 en el 03, con todas las semillas, y en el 18, con una. Los presupuestos
@@ -185,7 +269,7 @@ de las cinco semillas, dos escenarios terminaron sin solución factible: en
 el 11, que tiene un límite de cadena de frío efectivo, la búsqueda no
 alcanzó una solución que lo cumpla, y en el 09 no se consiguió construir la
 ruta inicial de un lote. En ambos casos el resultado fue el mismo con los
-cuatro presupuestos de búsqueda (Sección~\in[sec:hc_limitaciones]).
+cuatro presupuestos de búsqueda (Sección~\in[sec:heur_limitaciones]).
 
 \stopsubsection
 
