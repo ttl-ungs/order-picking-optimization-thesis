@@ -1,12 +1,13 @@
 \startchapter[title={Metaheurísticas}, reference=Capitulo_4]
 
 En este capítulo se presentan las dos metaheurísticas desarrolladas como
-alternativa a los modelos lineales, basadas en Hill Climbing (Sección~\in[sec:hc] - \ac{hc})
-y Colonia de Hormigas (en inglés, Ant Colony Optimization, desarrollada en la Sección~\in[sec:aco] - \ac{aco}).
+alternativa a los modelos lineales, basadas en Hill Climbing (\ac{hc},
+Sección~\in[sec:hc]) y en Ant Colony Optimization (\ac{aco},
+Sección~\in[sec:aco]).
 Ambas resuelven el mismo problema que los modelos
 lineales del Capítulo~\in[Capitulo_3], con la misma función objetivo y las
 mismas restricciones, con la diferencia de que no garantizan encontrar el
-óptimo y sólo generan soluciones sin espera voluntaria (Sección~\in[sec:espera_voluntaria]).
+óptimo y solo generan soluciones sin espera voluntaria (Sección~\in[sec:espera_voluntaria]).
 Para comprobar que sus soluciones cumplen todas las restricciones, cada una se
 verificó de forma independiente contra el modelo monolítico (Sección~\in[sec:validacion]).
 
@@ -208,8 +209,8 @@ Antes de construir una solución, las dos metaheurísticas verifican que la
 instancia pueda tener solución. El objetivo es detectar las instancias
 infactibles sin gastar tiempo de búsqueda en ellas, pero sin declarar
 infactible una instancia que sí tiene solución. Por eso solo se incluyen
-chequeos exactos, es decir, condiciones que, si no se cumplen, entonces no las cumple
-ninguna solución. Si alguno falla, la ejecución termina y la instancia se
+chequeos exactos, es decir, condiciones necesarias que, si fallan, garantizan
+que la instancia no tiene solución. Si alguno falla, la ejecución termina y la instancia se
 informa como infactible.
 
 Los primeros chequeos validan los datos de entrada y son los mismos que en
@@ -343,9 +344,7 @@ generan varias rutas candidatas con las técnicas de la
 Sección~\in[sec:heur_rutas], que son el vecino más cercano, la inserción del
 más lejano y 20 construcciones aleatorias
 (Sección~\in[sec:anexo_rutas_construcciones]). Se conserva la de menor
-distancia, que después se pule (Sección~\in[sec:anexo_rutas_pulido]). Si ninguna construcción encuentra una
-ruta, ni siquiera con la búsqueda de respaldo, la instancia se informa como
-infactible.
+distancia, que después se pule (Sección~\in[sec:anexo_rutas_pulido]).
 
 {\bf Asignación inicial y secuencia.} Con las rutas armadas, cada lote con
 órdenes se asigna a un {\em picker} de forma golosa, recorriendo los lotes en
@@ -356,7 +355,7 @@ el orden de sus identificadores. Para el lote $b$ se calcula el conjunto de
 \stopformula
 Si $\mathcal{P}_b$ no es vacío, el lote se asigna al {\em picker} de
 $\mathcal{P}_b$ que tiene menos lotes asignados hasta el momento. Si es vacío, la ruta inicial es
-demasiado larga incluso para el {\em picker} más rápido y, en ese caso el lote
+demasiado larga incluso para el {\em picker} más rápido. En ese caso, el lote
 se asigna al {\em picker} que minimiza $T^{\text{exec}}_{pb}$, y la búsqueda se
 encarga de intentar corregirlo. La secuencia $\sigma_p$ de cada {\em picker} es el orden en que
 recibió sus lotes. Esta asignación solo equilibra la cantidad de lotes por
@@ -374,14 +373,12 @@ $s^*$ se define recién cuando la búsqueda encuentra una.
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Búsqueda estocástica de primera mejora}, reference=sec:hc_busqueda]
 
-A partir de la solución inicial, \ac{hc} aplica una búsqueda local
-estocástica de primera mejora \cite[hoos2015sls,talbi2009metaheuristics].
-En cada iteración, se elige al azar un único movimiento, se genera un único vecino y
-se lo acepta si reduce el costo penalizado $f'$ de la solución actual
-(Ecuación~\in[eq:hc_costo]). Así, cada iteración es barata, porque no
-recorre la vecindad completa. Por la misma razón, un vecino rechazado no
-indica que la solución actual sea un óptimo local, y la búsqueda se detiene
-con criterios explícitos (Sección~\in[sec:marco_hc]).
+\ac{hc} aplica una búsqueda local estocástica de primera mejora
+\cite[hoos2015sls,talbi2009metaheuristics]. Como en cada iteración genera un
+único vecino, que acepta si reduce el costo penalizado $f'$
+(Ecuación~\in[eq:hc_costo]), cada iteración es barata. Por la misma razón, un
+vecino rechazado no indica que la solución actual sea un óptimo local, y la
+búsqueda se detiene con criterios explícitos (Sección~\in[sec:marco_hc]).
 
 {\bf Movimientos.} Hay tres operadores de movimiento. En cada iteración se
 elige uno con probabilidad uniforme entre los que son aplicables a la
@@ -447,7 +444,7 @@ de tres criterios:
 iteración, $m$ hormigas construyen una solución completa cada una, eligiendo
 para cada lote una ruta y un {\em picker} con reglas probabilísticas guiadas
 por la feromona (Sección~\in[sec:aco_construccion]). Al terminar la
-iteración, se mejora la mejor solución encontrada
+iteración, se mejoran las mejores rutas y la mejor solución encontrada
 (Sección~\in[sec:aco_pulido]) y se actualiza la feromona, que es la memoria
 que pasa de una iteración a la siguiente (Sección~\in[sec:aco_feromonas]).
 Esta implementación es híbrida, ya que además de la colonia incorpora
@@ -505,8 +502,8 @@ decisión que toman las hormigas:
 	resultó asignar el lote $b$ al {\em picker} $p$ en las soluciones
 	anteriores.
 \stopitemize
-No hay feromona para la secuencia $\sigma_p$, ya que la misma es construída por las hormigas
-con una regla fija.
+No hay feromona para la secuencia $\sigma_p$, porque las hormigas la
+construyen con una regla fija.
 
 {\bf Ruta de cada lote.} Cada hormiga recorre los lotes con órdenes y, para
 cada uno, primero arma su ruta y después le elige un {\em picker}. Las rutas
@@ -578,7 +575,7 @@ desde cero para cada una, sin la evaluación incremental de \ac{hc}.
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
-\startsubsection[title={Mejoras sobre la mejor solución}, reference=sec:aco_pulido]
+\startsubsection[title={Mejoras al final de cada iteración}, reference=sec:aco_pulido]
 
 Al terminar cada iteración, antes de actualizar la feromona, se aplican tres
 mejoras, en este orden. Para que haya tiempo para ellas, las hormigas pueden
@@ -702,9 +699,10 @@ Corresponde al {\em Elitist Ant System} de la Sección~\in[sec:marco_aco],
 con $e = 2$. Los valores iniciales son $\tau^{P}_{bp} = 1$ y no hay cota
 superior.
 
-El depósito de cada hormiga se restringe a $\mathcal{B}^{\text{ok}}(s^k)$, ya que se comprobó que depositar feromona
-para toda la solución de una hormiga que viola la cadena de frío refuerza justamente la ruta y
-la asignación que causaron la violación. Para una instancia de un solo lote, esta restricción
+El depósito de cada hormiga se restringe a $\mathcal{B}^{\text{ok}}(s^k)$,
+porque depositar feromona para toda la solución de una hormiga que viola la
+cadena de frío reforzaría justamente la ruta y la asignación que causaron la
+violación. Para una instancia de un solo lote, esta restricción
 equivale a la estrategia de rechazo, mientras que, en una de varios lotes,
 los lotes que cumplen siguen aprendiendo aunque otro no lo haga.
 
@@ -818,7 +816,9 @@ de cada una.
 % (sección "Otros detalles de implementación"). El 11/11 se borraron los TODO y los
 % párrafos comentados del texto, y se acortó el párrafo final de los movimientos de HC.
 % También el 11/11: los cuadros de parámetros pasaron a 5.4 (son configurables por
-% ejecución), y el detalle del 2-opt y de las cotas de la feromona, al Anexo D.
+% ejecución), y el detalle del 2-opt y de las cotas de la feromona, al Anexo D. Además,
+% se sacaron dos repeticiones en HC, 4.3.2 pasó a llamarse "Mejoras al final de cada
+% iteración" y se corrigieron erratas.
 % [ ] = tarea; (D) = decisión de ustedes.
 %========================================================================================
 %
