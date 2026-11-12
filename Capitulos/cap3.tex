@@ -11,9 +11,8 @@ secuenciación en un único modelo. El modelo Split
 sucesivas, con modelos más pequeños, y alcanza el mismo valor óptimo. La
 Sección~\in[sec:espera_voluntaria] describe una propiedad común a ambas
 formulaciones, la Sección~\in[sec:diferencias_modelos] resume las diferencias
-entre ellas, la Sección~\in[sec:caracteristicas_formulacion] reúne
-las características particulares que comparten y, por último, la
-Sección~\in[sec:lineales_limitaciones] resume sus limitaciones.
+entre ellas y, por último, la Sección~\in[sec:caracteristicas_formulacion]
+reúne sus limitaciones.
 
 Respecto de ese modelo, la formulación agrega la velocidad heterogénea entre
 operarios, la restricción de cadena de frío y un tiempo de servicio en cada
@@ -834,10 +833,16 @@ modelo monolítico y el modelo Split.
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Características comunes de las formulaciones}, reference=sec:caracteristicas_formulacion]
+\startsection[title={Limitaciones de las formulaciones}, reference=sec:caracteristicas_formulacion]
 
-Las dos formulaciones comparten algunas características que conviene tener
-presentes al interpretar sus soluciones.
+Las dos formulaciones tienen limitaciones de dos tipos. Algunas restringen qué
+instancias pueden representar, y otras hacen que resolverlas sea costoso. Las
+que son propias de cualquier modelo de este tipo, como que su tamaño crezca
+con la instancia o que las constantes M grande debiliten la relajación
+lineal, se explican en la Sección~\in[sec:marco_mip] y no se repiten acá.
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Instancias que representan}]
 
 {\bf Camino simple.} Las restricciones (\in[eq:mono_entra_max]) y
 (\in[eq:mono_sale_max]) impiden que una ruta pase dos veces por la misma
@@ -864,7 +869,7 @@ solución óptima. El Anexo~\in[Anexo_Modelos] muestra un ejemplo y una cota
 válida en todos los casos. Cuando la espera no conviene
 (Sección~\in[sec:espera_voluntaria]), la cota original alcanza.
 
-{\bf Lotes vacíos.} La formulación no distingue los lotes sin órdenes: si
+{\bf Lotes vacíos.} La formulación no distingue los lotes sin órdenes. Si
 $\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
 nodo final, un {\em picker} y un lugar en una secuencia, y su finalización
 entra en el objetivo. Además, los lotes vacíos son intercambiables entre sí,
@@ -873,50 +878,36 @@ resolvedor. Como los lotes son un dato del problema y no una decisión de la
 formulación, se considera que este caso debe resolverse antes, al conformar
 los lotes.
 
-\stopsection
+{\bf Exactitud del Split.} La descomposición alcanza el óptimo del monolítico
+porque la ruta de un lote no depende de quién lo ejecuta ni de cuándo, y
+porque la formulación admite espera voluntaria
+(Sección~\in[sec:modelo_split]). Si la velocidad no escalara todo el tiempo
+de ruta por igual o si se modelara la congestión, la ruta mínima dejaría de
+ser siempre la mejor, y la descomposición dejaría de ser exacta.
+
+\stopsubsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Limitaciones}, reference=sec:lineales_limitaciones]
+\startsubsection[title={Costo de resolución}]
 
-Además de las características de la
-Sección~\in[sec:caracteristicas_formulacion], que restringen qué instancias
-representa la formulación, los modelos lineales tienen las siguientes
-limitaciones:
-\startitemize
-	\item {\bf El tamaño del monolítico crece con el almacén y con los lotes.}
-	El modelo incluye $2 |\mathcal{E}| |\mathcal{B}|$ variables binarias de
-	ruteo en el mismo \ac{mip} que la asignación y la secuencia
-	(Cuadro~\in[tab:diferencias_modelos]), de modo que ampliar la grilla
-	encarece también la parte de asignación y secuencia, y viceversa.
-	\item {\bf La relajación lineal del monolítico es débil.} El tiempo de
-	ruta, el tiempo de ejecución y la secuencia se vinculan con restricciones
-	de M grande, que debilitan la relajación lineal
-	(Sección~\in[sec:marco_mip]). En consecuencia, el resolvedor puede
-	encontrar soluciones buenas sin lograr probar que lo son, porque la cota
-	dual avanza poco.
-	\item {\bf Cada etapa del Split tiene su propio límite.} La Etapa~1 no
-	depende de la cantidad de {\em pickers} ni de la secuencia, pero cada uno
-	de sus \ac{mip} se plantea sobre el grafo completo, así que su costo crece
-	con el tamaño del almacén. La Etapa~2, en cambio, no depende del grafo,
-	pero tiene una variable de precedencia por cada par de lotes y una
-	asignación por cada par elegible, así que su costo crece con la cantidad
-	de lotes y de {\em pickers}. La descomposición traslada la dificultad del
-	ruteo fuera de la asignación, pero no elimina ninguna de las dos.
-	\item {\bf La exactitud del Split depende de los supuestos.} La
-	descomposición alcanza el óptimo del monolítico porque la ruta de un lote
-	no depende de quién lo ejecuta ni de cuándo, y porque la formulación
-	admite espera voluntaria (Sección~\in[sec:modelo_split]). Si la velocidad
-	no escalara todo el tiempo de ruta por igual, si se modelara la congestión
-	o si las finalizaciones quedaran fijadas por igualdades, la ruta mínima
-	dejaría de ser siempre la mejor y la descomposición dejaría de ser exacta.
-	\item {\bf El Split no tiene una solución completa hasta terminar la
-	Etapa~1.} La Etapa~2 necesita el tiempo de ruta mínimo de todos los lotes,
-	así que, si un \ac{mip} de ruteo no termina, no se dispone de ninguna
-	asignación ni secuencia, aunque los demás lotes ya estén resueltos.
-\stopitemize
+{\bf Cada etapa del Split tiene su propio límite.} La Etapa~1 no
+depende de la cantidad de {\em pickers} ni de la secuencia, pero cada uno
+de sus \ac{mip} se plantea sobre el grafo completo, así que su costo crece
+con el tamaño del almacén. La Etapa~2, en cambio, no depende del grafo,
+pero tiene una variable de precedencia por cada par de lotes y una
+asignación por cada par elegible, así que su costo crece con la cantidad
+de lotes y de {\em pickers}. La descomposición traslada la dificultad del
+ruteo fuera de la asignación, pero no elimina ninguna de las dos.
+
+{\bf El Split no tiene una solución completa hasta terminar la
+Etapa~1.} La Etapa~2 necesita el tiempo de ruta mínimo de todos los lotes,
+así que, si un \ac{mip} de ruteo no termina, no se dispone de ninguna
+asignación ni secuencia, aunque los demás lotes ya estén resueltos.
 
 El Capítulo~\in[Capitulo_6] muestra el efecto de estas limitaciones sobre las
 instancias de prueba (Sección~\in[sec:comparacion_lineales]).
+
+\stopsubsection
 
 \stopsection
 \stopchapter
@@ -931,7 +922,9 @@ instancias de prueba (Sección~\in[sec:comparacion_lineales]).
 % requeridas, la reducción al modelo de referencia, el cuadro de diferencias, el nivel de
 % servicio (Anexo C), la nota de las restricciones de demora y las dos decisiones
 % (M_seq con espera quedó como característica de la formulación, con el Anexo C, y
-% v_start distinto de v_end quedó como supuesto). Los TODO del texto se resolvieron y se
+% v_start distinto de v_end quedó como supuesto). El 11/11, "Características comunes" y
+% "Limitaciones" se unieron en "Limitaciones de las formulaciones", sin las propiedades
+% propias de cualquier MIP (tamaño, relajación débil), que explica 2.1. Los TODO del texto se resolvieron y se
 % borraron el 02/11/2026 (el de explicar una por una las restricciones de visitas se
 % descartó).
 % Además: la descripción del modelo de referencia pasó a 2.6 (acá queda solo qué se agrega
