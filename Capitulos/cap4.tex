@@ -373,8 +373,7 @@ $s^*$ se define recién cuando la búsqueda encuentra una.
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Búsqueda estocástica de primera mejora}, reference=sec:hc_busqueda]
 
-\ac{hc} aplica una búsqueda local estocástica de primera mejora
-\cite[hoos2015sls,talbi2009metaheuristics]. Como en cada iteración genera un
+\ac{hc} aplica una búsqueda local estocástica de primera mejora. Como en cada iteración genera un
 único vecino, que acepta si reduce el costo penalizado $f'$
 (Ecuación~\in[eq:hc_costo]), cada iteración es barata. Por la misma razón, un
 vecino rechazado no indica que la solución actual sea un óptimo local, y la
@@ -385,8 +384,7 @@ elige uno con probabilidad uniforme entre los que son aplicables a la
 solución actual:
 \startitemize[n]
 	\item {\bf 2-opt sobre la ruta de un lote.} Se elige al azar un lote y,
-	entre las inversiones de un tramo de su ruta (Ecuación~\in[eq:2opt])
-	\cite[croes1958method] que el grafo permite, se toma la mejor según un
+	entre las inversiones de un tramo de su ruta (Ecuación~\in[eq:2opt]) que el grafo permite, se toma la mejor según un
 	costo local que combina la distancia de la ruta con el exceso sobre la
 	cadena de frío del lote (Sección~\in[sec:anexo_2opt]). Si ninguna
 	inversión mejora ese costo, el movimiento no genera vecino.
@@ -485,10 +483,10 @@ con los valores que se usaron, se presentan en la Sección~\in[sec:ejecucion].
 sino la feromona. Hay dos matrices de feromona, una para cada tipo de
 decisión que toman las hormigas:
 \startitemize[n]
-	\item {\bf Feromona de ruta.} Siguiendo a Chen et al., la ruta de un lote
-	se construye eligiendo el orden en que se visitan las ubicaciones
-	requeridas \cite[chen2013antcolony]. La
-	feromona $\tau_{ij}$, entonces, no se ubica sobre los arcos del almacén, sino sobre
+	\item {\bf Feromona de ruta.} Como la ruta de un lote se construye
+	eligiendo el orden en que se visitan las ubicaciones requeridas
+	(Sección~\in[sec:heur_rutas]), la feromona $\tau_{ij}$ no se ubica sobre
+	los arcos del almacén, sino sobre
 	los pares ordenados de ubicaciones entre las que una hormiga puede ir de
 	una a la otra. Para cada lote $b$, se
 	definen los pares $(i, j)$ con
@@ -538,7 +536,7 @@ hormiga se descarta.
 
 Cada ruta construida por una hormiga se mejora con 2-opt y re-ruteo de
 tramos (Sección~\in[sec:heur_rutas]). Chen et al. no aplican búsqueda local, pero combinar las soluciones de las hormigas con una
-búsqueda local es una práctica habitual en \ac{aco} \cite[dorigo2004aco]. Su
+búsqueda local es una práctica habitual en \ac{aco} (Sección~\in[sec:marco_aco]). Su
 aporte al resultado se mide en la Sección~\in[sec:calib_aco_ablacion].
 
 {\bf Picker de cada lote.} Una vez armada la ruta de un lote $b$, la
@@ -609,7 +607,7 @@ Una ruta más corta no siempre reduce $f$, porque terminar antes puede aumentar 
 adelanto cuando $W^{c}$ es chico, así que la decisión la toma la función de
 evaluación. Es una forma de memoria elitista, en el espíritu del depósito
 de la mejor solución del {\em Elitist Ant System} y de MMAS
-\cite[dorigo2004aco], pero aplicada a cada lote por separado.
+(Sección~\in[sec:marco_aco]), pero aplicada a cada lote por separado.
 
 {\bf Búsqueda local sobre la asignación.} Aun con las rutas óptimas, la
 asignación por ruleta y la secuencia por fecha de entrega no son óptimas.
@@ -642,7 +640,7 @@ siguen esquemas distintos. La feromona de ruta aprende solo de la distancia
 de las rutas, y la de asignación, del costo penalizado $f'$ de cada hormiga.
 
 {\bf Feromona de ruta: MAX-MIN Ant System.} La feromona de ruta se actualiza
-según MMAS \cite[stutzle2000mmas]. Primero se evaporan todos los pares,
+según MMAS (Sección~\in[sec:marco_aco]). Primero se evaporan todos los pares,
 \startformula
 	\tau_{ij} \leftarrow \max\left(\tau_{\min},\; (1 - \rho)\, \tau_{ij}\right),
 \stopformula
