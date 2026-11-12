@@ -381,11 +381,55 @@ portátil: si el equipo se suspende durante una corrida, ese tiempo queda
 incluido en la duración. Por eso, las corridas en las que se registró una
 suspensión se reemplazaron por otras.
 
-{\bf Parámetros de las heurísticas.} HC y ACO se ejecutan una vez por
-instancia, con semilla 1. En las instancias funcionales capturadas del
-Split (Sección~\in[sec:pruebas_funcionales]) usan sus valores por defecto.
-En estrés, HC usa los valores de estrés del Cuadro~\in[tab:hc_parametros]
-y ACO, sus valores por defecto (Cuadro~\in[tab:aco_parametros]).
+{\bf Parámetros de las heurísticas.} Los Cuadros~\in[tab:hc_parametros]
+y~\in[tab:aco_parametros] resumen los parámetros de HC y de ACO que se
+configuran en cada ejecución. Las constantes de la implementación, que no se
+configuran, se detallan en el Anexo~\in[Anexo_Metaheuristicas]. HC y ACO se
+ejecutan una vez por instancia, con semilla 1. En las instancias funcionales
+capturadas del Split (Sección~\in[sec:pruebas_funcionales]) usan sus valores
+por defecto. En estrés, ACO usa sus valores por defecto, y HC, los valores
+de estrés del Cuadro~\in[tab:hc_parametros], con un tope de iteraciones menor
+que el valor por defecto pero el doble de iteraciones sin mejora. Si esos
+valores limitan la búsqueda de HC se evalúa en la
+Sección~\in[sec:calib_hc_presupuesto], y la sensibilidad de ACO a $\alpha$,
+$\beta$ y $\rho$, en la Sección~\in[sec:calib_aco_sensibilidad].
+
+\startplacetable[reference=tab:hc_parametros, location=here, title={Parámetros de \ac{hc}. Los valores de estrés son los usados en los escenarios de estrés.}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][4][width=6.5cm, align=flushleft]
+\bTR \bTH Parámetro \eTH \bTH Por defecto \eTH \bTH Estrés \eTH \bTH Función \eTH \eTR
+\bTR \bTD $\text{Max}_{\text{it}}$ \eTD \bTD 500 \eTD \bTD 200 \eTD \bTD Iteraciones máximas de la búsqueda. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{imp}}$ \eTD \bTD 30 \eTD \bTD 60 \eTD \bTD Iteraciones consecutivas sin aceptar un vecino antes de detenerse. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{time}}$ \eTD \bTD 30~s \eTD \bTD 30~s \eTD \bTD Tiempo de reloj máximo, controlado entre iteraciones. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD 1 \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\eTABLE
+\stopplacetable
+
+\startplacetable[reference=tab:aco_parametros, location=here, title={Parámetros de \ac{aco}.}]
+\bTABLE[split=yes, align=middle, frame=on, width=fit]
+\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+\setupTABLE[column][3][width=8cm, align=flushleft]
+\bTR \bTH Parámetro \eTH \bTH Valor \eTH \bTH Función \eTH \eTR
+\bTR \bTD $m$ \eTD \bTD 15 \eTD \bTD Hormigas por iteración. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{it}}$ \eTD \bTD 60 \eTD \bTD Iteraciones de la colonia. \eTD \eTR
+\bTR \bTD $\text{Max}_{\text{time}}$ \eTD \bTD 1800~s \eTD \bTD Tiempo de reloj máximo. \eTD \eTR
+\bTR \bTD $\alpha$ \eTD \bTD 1 \eTD \bTD Peso de la feromona en las reglas de elección (Ecuaciones~\in[eq:aco_regla_ruta] y \in[eq:aco_regla_picker]). \eTD \eTR
+\bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD Peso de la información heurística en las mismas reglas. \eTD \eTR
+\bTR \bTD $\rho$ \eTD \bTD 0,15 \eTD \bTD Tasa de evaporación de ambas feromonas. Define también $\tau_{\max}$ (Ecuación~\in[eq:aco_cotas]). \eTD \eTR
+\bTR \bTD $Q$ \eTD \bTD 100 \eTD \bTD Factor de depósito de la feromona de asignación. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\eTABLE
+\stopplacetable
+
+La semilla determina todos los sorteos de las dos heurísticas, así que la
+misma instancia, los mismos parámetros y la misma semilla producen siempre
+la misma solución, salvo que la ejecución se detenga por tiempo, ya que en
+ese caso lo que se alcanza a hacer depende de la velocidad de la máquina.
+Para que esto valga también entre procesos distintos, los candidatos de cada
+sorteo se recorren siempre en el mismo orden. Cuánto varía el resultado al
+cambiar la semilla se mide en las Secciones~\in[sec:calib_hc_semillas]
+y~\in[sec:calib_aco_semillas].
 
 \stopsection
 
@@ -403,7 +447,7 @@ modelos lineales.
 {\bf Factibilidad por diseño.} Por la forma en que representan y construyen
 una solución, las heurísticas cumplen todas las restricciones salvo la
 cadena de frío, unas por construcción y otras porque los operadores las
-preservan (Secciones~\in[sec:hc_evaluacion] y~\in[sec:aco_evaluacion]). La
+preservan (Sección~\in[sec:heur_evaluacion] y Cuadro~\in[tab:heur_restricciones]). La
 cadena de frío se penaliza durante la búsqueda, pero solo se informa como
 resultado una solución que la cumple. Además, antes de buscar, las
 heurísticas aplican a los datos de entrada las mismas verificaciones previas
