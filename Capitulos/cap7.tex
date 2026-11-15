@@ -1,7 +1,8 @@
 \startchapter[title={Discusión y conclusiones}, reference=Capitulo_7]
 
-Este capítulo discute los resultados frente a la literatura y a las
-decisiones de modelado (Sección~\in[sec:discusion]) y las limitaciones de los
+Este capítulo discute los resultados frente al modelo de referencia, a la
+literatura y a las decisiones de modelado (Sección~\in[sec:discusion]).
+También discute las limitaciones de los
 cuatro métodos y de la experimentación (Sección~\in[sec:limitaciones]).
 Luego presenta las conclusiones en relación con los objetivos planteados en
 el Capítulo~\in[Capitulo_1] (Sección~\in[sec:conclusiones]) y propone
@@ -10,14 +11,103 @@ líneas de trabajo futuro (Sección~\in[sec:trabajo_futuro]).
 %----------------------------------------------------------------------------------------
 \startsection[title={Discusión}, reference=sec:discusion]
 
-Los resultados de esta tesina son consistentes con la experiencia de
-Coruzzolo et al., que no pudieron resolver su modelo lineal sobre el caso de
-estudio (Sección~\in[sec:trabajos_relacionados]). Aún sin decidir el loteo,
-el modelo monolítico solo prueba el óptimo en instancias pequeñas
-(Sección~\in[sec:comparacion_lineales]). La descomposición en dos etapas
-amplía ese alcance sin perder optimalidad, y es lo que permite medir la
-calidad de las heurísticas contra un óptimo probado en instancias de tamaño
-realista.
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Comparación con el modelo de referencia}, reference=sec:disc_referencia]
+
+Respecto del modelo de Coruzzolo et al. \cite[coruzzolo2023orderpicking],
+el problema abordado en esta tesina es más amplio en
+algunos aspectos pero más acotado en otro. Es más amplio porque incorpora la
+velocidad heterogénea entre operarios, la cadena de frío y un tiempo de
+servicio en cada ubicación, y es más acotado porque no se
+decide el loteo, y la capacidad del carro se verifica antes de resolver en
+lugar de formar parte del modelo (Capítulo~\in[Capitulo_3]). Cuando se cumple que las
+velocidades son iguales, la cadena de frío no restringe, y que no hay tiempos de
+servicio, los dos modelos lineales se reducen al de referencia con los lotes
+fijos, y las pruebas funcionales lo confirman. Esto delimita el alcance de los
+resultados, ya que lo que esta tesina resuelve hasta el óptimo, en las instancias que
+los modelos lineales llegan a terminar, es el modelo de referencia sin el
+loteo, extendido con las tres características anteriores, y no el problema
+conjunto de cuatro decisiones que plantean Coruzzolo et al. (que incluye el
+loteo).
+
+En cuanto a la dificultad de los modelos lineales, Coruzzolo et al. no pudieron
+resolver sobre su caso de estudio ninguno de sus dos modelos, ni
+siquiera el simplificado (Sección~\in[sec:trabajos_relacionados]). Los
+resultados de esta tesina son consistentes con esa experiencia, ya que,
+aun con los lotes dados, el modelo monolítico no termina ninguno de
+los 19 escenarios de estrés dentro del tope de 40 minutos
+(Sección~\in[sec:comparacion_lineales]). Por lo tanto, la dificultad no
+proviene solo de decidir el loteo, sino también de reunir el ruteo, la
+asignación y la secuencia en un mismo modelo.
+
+Tanto el modelo simplificado de Coruzzolo
+et al. como el Split coinciden en extraer el ruteo del modelo, y en
+pasar como dato la duración de cada lote al modelo que asigna y secuencia los mismos.
+Difieren, sin embargo, en cómo obtienen esa duración y, en consecuencia, en qué garantiza cada uno.
+Coruzzolo et al.
+enumeran todos los lotes factibles y calculan la ruta de cada uno con la
+heurística del vecino más cercano, por lo que su óptimo depende de la calidad de las
+rutas generadas, y el modelo resultante ya no es exacto para el problema original. El Split, como recibe los
+lotes ya formados, solo necesita la ruta de cada uno, y la calcula con un \ac{mip}
+que la resuelve hasta el óptimo (Etapa~1). Además, la descomposición es exacta
+porque la ruta de un lote no
+depende de quién lo ejecuta ni de cuándo, y porque la formulación admite
+espera voluntaria (Sección~\in[sec:modelo_split]). Los datos lo confirman, ya que los
+dos modelos coinciden en los 60 pares comparables de las pruebas funcionales
+(Sección~\in[sec:mismo_optimo]). El costo es que la Etapa~1
+resuelve un \ac{mip} de ruteo por lote sobre el grafo completo, lo cual es una limitación
+en almacenes grandes (Sección~\in[sec:caracteristicas_formulacion]).
+Si se quisiera decidir el loteo con el mismo esquema, la Etapa~1 tendría que
+rutear cada lote candidato, cuya cantidad crece combinatoriamente con las
+órdenes, lo que ayuda a explicar por qué Coruzzolo et al. recurren a una ruta
+heurística en ese paso.
+
+En cuanto a la medición de calidad contra el óptimo, Coruzzolo et al.,
+ante la dificultad de los modelos
+lineales, resuelven su caso con una heurística constructiva
+por fecha de entrega más temprana, mejorada con búsqueda local iterada, sin
+poder contrastar sus resultados con el óptimo. En esta tesina, el Split
+permite hacer esa medición en instancias de tamaño realista: \ac{aco} alcanza
+el óptimo en las 45 instancias funcionales comparables y queda a lo sumo a un
+0,04~\% en estrés, y \ac{hc} lo alcanza en 40 de las 45 y queda a lo sumo a un
+0,21~\% en estrés (Sección~\in[sec:res_calidad]). No se implementó la heurística de los autores,
+de modo que estos resultados no miden su calidad, pero sí
+indican qué puede esperarse de sus componentes. La regla de fecha de entrega
+más temprana también está presente en \ac{aco}, aunque aplicada de otra
+forma. La heurística de los autores recorre las órdenes por fecha de entrega
+y, a medida que avanza, forma los lotes, agregando cada orden al lote en curso
+del operario con el que termina antes, o abriendo uno nuevo si se supera la
+capacidad del carro. \ac{aco}, en cambio, recibe los lotes ya formados, los
+asigna a los {\em pickers} por ruleta y luego ordena la secuencia de cada uno
+según la menor fecha de entrega entre las órdenes de cada lote
+(Sección~\in[sec:aco_construccion]). En \ac{aco}, esa regla no basta por sí
+sola, y se complementa con una búsqueda local sobre la asignación
+(Sección~\in[sec:aco_pulido]). Una búsqueda local que solo acepta
+mejoras, como \ac{hc}, puede quedar hasta un 5,88~\% por encima del óptimo en
+instancias funcionales de grilla, porque se detiene en un óptimo local. La
+búsqueda local iterada de los autores incluye, justamente, un
+mecanismo para escapar de ellos, reiniciando la búsqueda local desde una
+perturbación de la mejor solución encontrada (Sección~\in[sec:marco_hc]).
+
+En cuanto a lo que no es comparable, la reducción del 57~\% en el tiempo de
+picking que informan Coruzzolo et al. se mide contra preparar los pedidos de
+a uno, y proviene enteramente de agrupar las órdenes en lotes, sobre todo de
+la reducción del tiempo de preparación. De los 207,97 minutos diarios que se
+ahorran, 169,20 corresponden a la preparación y 38,77 al recorrido. Como en esta
+tesina los lotes son un dato, ese ahorro no puede reproducirse ni
+contrastarse. Además, su resultado proviene de un caso real, mientras que las
+instancias de esta tesina son generadas
+(Sección~\in[sec:limitaciones]). Lo que esta tesina aporta frente a ese
+trabajo es la distancia al óptimo y el tiempo de cada método.
+
+En síntesis, frente al modelo de referencia, esta tesina amplía las
+características de la operación que se representan y la capacidad de
+certificar la calidad de las soluciones, a cambio de no decidir el loteo.
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Comparación con la literatura y decisiones de modelado}, reference=sec:disc_literatura]
 
 La dificultad del monolítico no está en encontrar buenas soluciones, sino en
 probar que lo son, ya que su cota dual casi no avanza. Es un comportamiento
@@ -45,6 +135,8 @@ requeridas, como proponen Chen et al. \cite[chen2013antcolony], con la
 adaptación necesaria para producir caminos simples. Chen et al. modelan
 además la congestión entre operarios, que en esta tesina queda fuera del alcance
 (Sección~\in[sec:limitaciones]).
+
+\stopsubsection
 
 \stopsection
 
