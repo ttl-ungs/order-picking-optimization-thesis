@@ -40,22 +40,22 @@ Hoy aparecen dispersos en las conclusiones.
 
 ## 3. Trabajo futuro (7.4)
 
-Hoy son 7 ítems de una línea, sin justificación.
+El 15/11 se reescribió la Sección 7.4 en cuatro subsecciones (modelos lineales, metaheurísticas, comparación entre métodos y alcance del problema). Cada línea indica de qué limitación sale y qué se espera ganar.
 
-- [ ] **Justificar cada ítem:** de qué limitación de 7.2 sale y qué se espera ganar.
-- [ ] **Limitaciones de 7.2 que no tienen su línea de trabajo futuro:**
+- [x] **Justificar cada ítem:** de qué limitación de 7.2 sale y qué se espera ganar.
+- [x] **Limitaciones de 7.2 que no tienen su línea de trabajo futuro:**
   - ACO: un criterio de estancamiento.
   - ACO: una información heurística de asignación que considere la velocidad, la duración de los lotes y las fechas de entrega.
   - ACO: rutas que no se elijan solo por distancia.
   - Que el tiempo máximo de las heurísticas sea estricto.
   - Que las heurísticas no informen como infactible una instancia factible.
   - HC: una secuencia inicial por fecha de entrega, en lugar del orden de los identificadores.
-- [ ] **Ideas de la guía del capítulo que no están en el texto:**
-  - Una expansión sin cruces para la clausura métrica. Se descartó porque los lotes volvían al grafo completo, pero eso era evitable.
-  - El branching por pseudocosto ya se probó y no generalizó; mencionarlo para no proponerlo de nuevo.
-  - Un modelo exacto sin espera voluntaria, para poder comparar en objetivo las 10 instancias que hoy se comparan solo en estado.
-  - Las variantes hc_3 y aco_3 del repositorio, que modelan la congestión.
-- [ ] **A partir de la comparación con Coruzzolo et al.:**
+- [ ] **Ideas de la guía del capítulo que no están en el texto:** (queda abierto hasta decidir lo de hc_3 y aco_3)
+  - [x] Una expansión sin cruces para la clausura métrica (en "Modelos lineales", dentro de acelerar la Etapa 1).
+  - [x] El branching por pseudocosto ya se probó y no generalizó (en "Modelos lineales", dentro de acelerar la Etapa 2).
+  - [x] Un modelo exacto sin espera voluntaria (en "Comparación entre métodos").
+  - [ ] (D) Las variantes hc_3 y aco_3 del repositorio, que modelan la congestión. No se nombran: la tesina no las describe en ningún lado. Decidir si se mencionan en el ítem de congestión de "Alcance del problema".
+- [x] **A partir de la comparación con Coruzzolo et al.:**
   - Integrar el loteo, combinando la enumeración de lotes candidatos con rutas exactas o heurísticas.
   - Implementar su heurística (fecha de entrega más temprana más búsqueda local iterada) y medirla contra el óptimo del Split.
 

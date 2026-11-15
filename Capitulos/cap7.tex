@@ -397,22 +397,141 @@ encontraron solución (Sección~\in[sec:calib_aco_semillas]).
 %----------------------------------------------------------------------------------------
 \startsection[title={Trabajo futuro}, reference=sec:trabajo_futuro]
 
-A partir de estos resultados y de las limitaciones anteriores, se proponen
-las siguientes líneas de trabajo:
+Las líneas de trabajo que siguen surgen de las limitaciones de la
+Sección~\in[sec:limitaciones] y de la comparación con el modelo de referencia
+(Sección~\in[sec:disc_referencia]). Se agrupan según el método o el aspecto
+del problema al que apuntan, y para cada una se indica qué se espera ganar.
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Modelos lineales}]
+
 \startitemize
-	\item Corregir la cota de $M^{\text{seq}}$ (Anexo~\in[Anexo_Modelos]) y
-	descartar los lotes vacíos antes de resolver.
-	\item Acelerar el Split: identificar qué encarece la Etapa~1 en los
-	almacenes grandes y, en la Etapa~2, romper la simetría entre los
-	{\em pickers} de una misma banda de velocidad, que son intercambiables.
-	\item Incorporar en HC mecanismos para escapar de los óptimos locales,
-	como reinicios, recocido simulado o búsqueda tabú
-	(Sección~\in[sec:marco_hc]).
-	\item Permitir que las heurísticas inserten tiempo ocioso.
-	\item Permitir rutas que repitan ubicaciones.
-	\item Incorporar el loteo como decisión y la congestión entre operarios.
-	\item Evaluar los métodos con datos de una operación real.
+	\item Reemplazar la cota de $M^{\text{seq}}$ por la cota válida en todos los
+	casos del Anexo~\in[Anexo_Modelos], para que la formulación siga siendo
+	correcta cuando conviene la espera voluntaria. Como una constante M grande
+	mayor puede debilitar la relajación lineal (Sección~\in[sec:marco_mip]),
+	convendría medir su efecto sobre los tiempos de resolución.
+	\item Descartar los lotes vacíos antes de resolver. En el caso 30a, SCIP no
+	terminó en 600 segundos con los lotes vacíos y terminó en 0,13 segundos sin
+	ellos (Sección~\in[sec:comparacion_lineales]).
+	\item Acelerar la Etapa~1 del Split, que limita en los almacenes grandes.
+	Una vía concreta es retomar la clausura métrica, que reduce el grafo de
+	cada lote a las ubicaciones requeridas y, en una grilla de 100×100, baja
+	los arcos de unos 40.000 a unos 700. Se descartó porque, al expandir cada
+	arco en un camino mínimo, dos tramos de la ruta podían pasar por la misma
+	ubicación, y el lote debía resolverse de nuevo sobre el grafo completo
+	(Sección~\in[sec:anexo_intentos_split]). En una grilla suele haber muchos
+	caminos mínimos del mismo largo, de modo que podría elegirse, entre ellos,
+	una expansión sin cruces, y volver al grafo completo solo cuando no exista
+	ninguna.
+	\item Acelerar la Etapa~2, que limita cuando hay muchos lotes. Los
+	{\em pickers} de una misma banda de velocidad son intercambiables, lo que
+	multiplica las soluciones equivalentes que debe descartar el resolvedor,
+	como ocurre con los lotes vacíos. Agregar restricciones que rompan esa
+	simetría podría reducir el árbol de búsqueda. En cambio, ajustar la regla
+	de ramificación de SCIP no parece una vía prometedora: el {\em branching}
+	por pseudocosto ya se probó, y su ventaja en una instancia no se repitió
+	en la vecina (Sección~\in[sec:anexo_intentos_split]).
+	\item Admitir rutas que repitan ubicaciones, reescribiendo las restricciones
+	de ruteo y el cálculo del tiempo de ruta. Eso permitiría representar
+	almacenes con pasillos sin salida, que hoy la formulación declara
+	infactibles (Sección~\in[sec:caracteristicas_formulacion]).
 \stopitemize
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Metaheurísticas}]
+
+\startitemize
+	\item Incorporar en \ac{hc} un mecanismo para escapar de los óptimos
+	locales, como reinicios o búsqueda tabú
+	(Sección~\in[sec:marco_hc]), o la búsqueda local iterada de Coruzzolo et
+	al. Son esos óptimos locales los que dejan a \ac{hc} hasta un 5,88~\% por
+	encima del óptimo en 5 instancias funcionales de grilla
+	(Sección~\in[sec:res_calidad]).
+	\item Construir la secuencia inicial de \ac{hc} por fecha de entrega, como
+	hace \ac{aco}, en lugar de seguir el orden de los identificadores de los
+	lotes. Como la búsqueda corrige la secuencia de a pasos chicos
+	(Sección~\in[sec:hc_limitaciones]), partir de un orden mejor debería
+	acercarla antes a una buena solución.
+	\item Agregar a \ac{aco} un criterio de estancamiento, que detenga la
+	colonia cuando $s^*$ deja de mejorar durante cierta cantidad de
+	iteraciones, como ya hace \ac{hc} con $\text{Max}_{\text{imp}}$. Hoy la
+	colonia ejecuta siempre $\text{Max}_{\text{it}}$ iteraciones
+	(Sección~\in[sec:aco_limitaciones]), así que el criterio reduciría el
+	tiempo sin cambiar la solución en las instancias en que $s^*$ se estabiliza
+	pronto.
+	\item Mejorar la información heurística de \ac{aco}. En la asignación,
+	$\eta_p$ podría considerar la velocidad del {\em picker}, la duración de
+	los lotes y las fechas de entrega, y no solo la cantidad de lotes ya
+	asignados. En las rutas, la feromona podría reforzar las que mejoran el
+	objetivo y no solo las más cortas, ya que una ruta más corta puede
+	aumentar el adelanto (Sección~\in[sec:aco_limitaciones]).
+	\item Hacer estricto el tiempo máximo de las dos heurísticas: en \ac{hc},
+	controlándolo también durante la construcción inicial y, en \ac{aco},
+	aplicándolo aunque todavía no exista una solución factible. En el escenario
+	de 100×100, \ac{hc} tardó 17 minutos y \ac{aco}, 32
+	(Sección~\in[sec:res_tiempos]).
+	\item Evitar que las heurísticas informen como infactible una instancia que
+	tiene solución, por ejemplo, repitiendo la búsqueda con otra semilla o
+	ampliando el tope de la búsqueda {\em best-first} antes de declarar la
+	infactibilidad. Los dos casos se observaron en \ac{hc} al variar la semilla
+	(Sección~\in[sec:heur_limitaciones]).
+	\item Permitir que las heurísticas inserten tiempo ocioso. Además de
+	mejorar la solución en las instancias en que conviene esperar, haría
+	comparables en objetivo las 10 instancias funcionales que hoy se comparan
+	solo en estado (Sección~\in[sec:res_espera]).
+\stopitemize
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Comparación entre métodos}]
+
+\startitemize
+	\item Formular un modelo exacto sin espera voluntaria, en el que cada lote
+	termine exactamente cuando completa su ejecución. Es la alternativa
+	inversa a la anterior. El modelo resolvería el mismo problema que las
+	heurísticas, y su óptimo serviría de referencia en las instancias que hoy
+	se comparan solo en estado. Sin espera voluntaria, sin embargo, la
+	descomposición del Split deja de ser exacta en general
+	(Sección~\in[sec:modelo_split]), de modo que habría que resolverlo con el
+	monolítico o buscar otra descomposición.
+	\item Implementar la heurística de Coruzzolo et al., con la construcción
+	por fecha de entrega más temprana y la búsqueda local iterada, y medirla
+	contra el óptimo del Split. Respondería la pregunta que sus autores no
+	pudieron responder, cuánto se aleja su solución del óptimo, y permitiría
+	compararla con \ac{hc} y \ac{aco} sobre los mismos datos
+	(Sección~\in[sec:disc_referencia]).
+\stopitemize
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Alcance del problema}]
+
+\startitemize
+	\item Incorporar el loteo como decisión, para resolver el problema conjunto
+	de cuatro decisiones que plantean Coruzzolo et al. La idea del Split
+	podría combinarse con la enumeración de lotes candidatos de su modelo
+	simplificado, ruteando cada candidato de forma exacta o heurística. Como la
+	cantidad de candidatos crece combinatoriamente con las órdenes, habría que
+	acotarla, y esa es la principal dificultad de esta línea
+	(Sección~\in[sec:disc_referencia]).
+	\item Modelar la congestión entre operarios, como hacen Chen et al.
+	\cite[chen2013antcolony]. Con congestión, la ruta de un lote dependería de
+	cuándo se ejecuta y de los demás lotes, y la descomposición del Split
+	dejaría de ser exacta (Sección~\in[sec:caracteristicas_formulacion]). Por
+	eso, las metaheurísticas son el punto de partida más natural para esta
+	extensión.
+	\item Evaluar los métodos con datos de una operación real. Las instancias
+	de esta tesina son generadas, y los datos reales permitirían comprobar si
+	el perfil realista representa bien una operación y medir el ahorro frente
+	a la práctica actual del almacén, como hacen Coruzzolo et al.
+\stopitemize
+
+\stopsubsection
 
 \stopsection
 \stopchapter
