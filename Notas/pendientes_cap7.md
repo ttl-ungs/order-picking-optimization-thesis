@@ -6,6 +6,8 @@ Ya resuelto en esta rama:
 - Las limitaciones de los cuatro métodos pasaron de los capítulos 3 y 4 a la Sección 7.2.
 - Se escribió la subsección 7.1.1, "Comparación con el modelo de referencia", y se verificó contra el paper de Coruzzolo et al. (`zpaper/logistics-07-00061 (1).pdf`).
 
+- Se sacaron las repeticiones del capítulo (15/11): cada dato queda en la sección que lo usa para su argumento, y las demás remiten a ella. Los números de 7.3 se limitaron a los tiempos de Recomendaciones de uso.
+
 ---
 
 ## 1. Comparación con el estado del arte (7.1.2)
@@ -61,10 +63,10 @@ El 15/11 se reescribió la Sección 7.4 en cuatro subsecciones (modelos lineales
 
 ## 4. Conclusión justificada (7.4)
 
-- [ ] **Que la conclusión general se apoye en lo anterior.** Hoy no remite a la discusión ni a las limitaciones. Por ejemplo: "dado lo discutido en 7.1, y considerando las limitaciones de 7.2, la recomendación vale para…".
-- [ ] **Cerrar la comparación con Coruzzolo et al.** en la conclusión: donde ellos no pudieron medir la calidad de su heurística, acá se muestra qué tan cerca del óptimo quedan HC y ACO.
-- [ ] **Párrafo de robustez** ("La robustez se evaluó con cinco semillas…"). Son resultados más que conclusión; evaluar si va a la Discusión.
-- [ ] **Actualizar el resumen y escribir el abstract** con estas conclusiones (pendiente de la guía del capítulo).
+- [x] **Que la conclusión general se apoye en lo anterior.** El párrafo del objetivo general ahora caracteriza calidad, tiempo y robustez, remite a las recomendaciones de 7.3.3 y tiene un párrafo de alcance que se apoya en las limitaciones de 7.2 (15/11).
+- [x] **Cerrar la comparación con Coruzzolo et al.** en la conclusión (párrafo nuevo, 15/11): donde ellos no pudieron medir la calidad de su heurística, acá se muestra qué tan cerca del óptimo quedan HC y ACO.
+- [x] **Párrafo de robustez.** Se mantuvo en Conclusiones porque la robustez es parte del objetivo general, pero se integró al párrafo del objetivo general como una de las tres dimensiones (15/11).
+- [x] **Actualizar el resumen y escribir el abstract.** El último párrafo del resumen pasó a tener resultados y conclusión, y `abstract.tex` es su traducción al inglés (15/11). Revisar el inglés.
 
 ## 5. Detalles menores de redacción
 
