@@ -1,1 +1,20 @@
-% TODO: traducir el resumen al inglés
+In distribution centres, the order picking problem ({\bf OPP}) consists of assigning batches of orders to pickers, determining the order
+in which each picker executes them, and establishing the picking route through the warehouse. The objective is to minimise the total
+completion time, together with the penalties for earliness and tardiness with respect to the committed due dates. Although solving this
+problem exactly guarantees optimality, the computation time grows quickly with the size of the warehouse and the number of orders. This
+hinders its use in real operations, where decisions must be made within limited response times.
+
+This work takes as its starting point a mixed integer linear programming model for the OPP from the literature. Using it as a guide, we
+formulate our own linear model, which we call {\em monolithic}, that incorporates heterogeneous picker speeds and cold chain constraints.
+Then, in order to reduce its running times and address larger instances, this model is decomposed into two stages that are solved one after
+the other: first the routing of each batch, and then the assignment and sequencing of the batches. We call this second model {\em Split}.
+Since the Split model is still too costly to solve in practical times for moderately large instances, two metaheuristics based on
+{\em Hill Climbing} and {\em Ant Colony Optimization} are developed, equivalent to the linear models in the features they consider.
+
+The four methods are evaluated on 38 functional test cases and 19 stress scenarios, most of them with a realistic warehouse profile. The
+Split model reaches the same optimum as the monolithic model and is the only one of the two that proves it at a realistic scale, in 9 of
+the 19 stress scenarios. The metaheuristics find a valid solution in every feasible instance. In the stress tests, {\em Ant Colony Optimization}
+stays within 0.04\,\% of the optimum and {\em Hill Climbing} within 0.21\,\%, with median times 1.5 and 53 times shorter than those of the Split,
+respectively. Since no method dominates the others in quality, time and robustness at once, we conclude that the Split is preferable when
+a proven optimum is needed, in instances of up to 6 batches on grids of up to 15×15; {\em Ant Colony Optimization}, when solution quality
+matters, and {\em Hill Climbing}, when a response within seconds is required.
