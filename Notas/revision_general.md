@@ -28,6 +28,31 @@ Por decisión de las autoras (16/11/2026) quedan fuera de esta revisión, porque
 - Que los estudios de escala de 6.1.3 se ejecutaron con la máquina compartida con otras corridas.
 - Que los resultados provienen de corridas de fechas y versiones del código distintas.
 
+## Estado al 16/11/2026
+
+Los cambios directos se aplicaron en la rama `revision-fixes` (PR #10). Las decisiones tomadas ese día:
+
+| ID | Estado |
+|---|---|
+| P-1, P-2, P-6, P-7 | Aplicados. La carrera es "Licenciatura en Sistemas". |
+| P-3 | Pendiente: la dedicatoria queda para el final. Hay un solo bloque de dedicatoria. |
+| P-4, C7-5, C7-6, A-2 | Aplicados. El estudio de semillas se mantiene como evidencia de la robustez; el resumen se acota a la corrida principal, sin mencionar los 2 de 90. |
+| P-5, C6-5 | Aplicados con otra redacción: "entre lo mismo que el Split y 6 veces menos, según el escenario". La propuesta original ("chicos" y "grandes") no era exacta: el escenario 10 es de 7×7 y tiene el cociente más alto. |
+| C1-1, C2-2, C2-3, C3-1, C3-2, C4-1, C4-2, A-3 | Aplicados. En C2-2 hay que revisar la cita a Talbi. |
+| C1-2, A-1 | Aplicado: se quitó el anexo de diagramas. |
+| C1-3, G-2 | Aplicados: 1.1 avisa que "picker" se usa desde el Capítulo 3, el Capítulo 7 quedó unificado y 5 introduce "heurísticas". |
+| C2-1, C7-2 | Pendientes. Se decidió no ampliar "Trabajos relacionados" por ahora. |
+| C4-3 | Cerrado, sin cambios. |
+| C5-1 | Retirado: el código confirma que las heurísticas corren las instancias capturadas del Split, como dice 5.2. |
+| C5-2, C6-3 | Descartados: los números del texto (68 y 12) son correctos. |
+| C5-3, C6-4, C6-6, C7-3, C7-4, C7-9 | Aplicados. |
+| C6-1 | Descartado: el `no_result` del monolítico en el 01 no es relevante. |
+| C6-2 | Aplicado: 35 instancias y 11 restantes; las medianas pasan a 0,295 y 0,225 s. Las dos de más son los casos 02 y 03, que comparten nombre de prueba. |
+| C7-1 | Aplicado: se quitó "y las pruebas funcionales lo confirman". Las pruebas ejercitan el caso reducido, pero no se comparan con el modelo de referencia, que no está implementado. |
+| C7-7 | Resuelto con C2-2. |
+| C7-8 | Cerrado: no se mencionan `hc_3` ni `aco_3`. |
+| C3-3, C5-4, G-1 | Aplicados: se borraron las guías y los comentarios; lo abierto pasó a `Notas/pendientes_cap7.md`, sección 6. |
+
 ## Lo que se verificó y coincide
 
 Estas cifras del texto coinciden con los CSV actuales:
