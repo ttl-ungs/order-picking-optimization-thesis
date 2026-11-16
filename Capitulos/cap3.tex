@@ -15,7 +15,7 @@ las diferencias entre ellas. Las limitaciones de las dos formulaciones se
 discuten en la Sección~\in[sec:caracteristicas_formulacion], junto con su
 efecto sobre los resultados.
 
-Respecto de ese modelo, la formulación agrega la velocidad heterogénea entre
+Respecto del modelo de referencia, la formulación agrega la velocidad heterogénea entre
 operarios, la restricción de cadena de frío y un tiempo de servicio en cada
 ubicación que atraviesa la ruta. Lo que simplifica es la formación de los
 lotes, que aquí son un dato de entrada, de modo que la capacidad del carro
@@ -826,7 +826,7 @@ modelo monolítico y el modelo Split.
 	\bTR \bTD Tiempos de ruta y de ejecución \eTD \bTD Variables de decisión ($r_b$ y $u_{pb}$, con M grande) \eTD \bTD Datos ($R_b$, de la Etapa~1, y $T^{\text{exec}}_{pb}$) \eTD \eTR
 	\bTR \bTD Cadena de frío \eTD \bTD Cota superior de $u_{pb}$; si la vuelve infactible, lo detecta el resolvedor \eTD \bTD Pares elegibles $\mathcal{PB}^{\text{elig}}$; la infactibilidad se detecta antes de la Etapa~2 \eTD \eTR
 	\bTR \bTD Ruta mínima garantizada \eTD \bTD No (puede elegir una ruta no mínima) \eTD \bTD Sí (la Etapa 1 minimiza $r_b$) \eTD \eTR
-	\bTR \bTD Tamaño \eTD \bTD $2 |\mathcal{E}| |\mathcal{B}|$ variables de ruteo en el mismo \ac{mip} que la asignación y la secuencia \eTD \bTD $2 |\mathcal{E}| + 1$ variables por cada \ac{mip} de la Etapa~1; la Etapa~2 no depende del grafo \eTD \eTR
+	\bTR \bTD Tamaño \eTD \bTD $(2 |\mathcal{E}| + 1)\, |\mathcal{B}|$ variables de ruteo en el mismo \ac{mip} que la asignación y la secuencia \eTD \bTD $2 |\mathcal{E}| + 1$ variables por cada \ac{mip} de la Etapa~1; la Etapa~2 no depende del grafo \eTD \eTR
 	
 	\eTABLE
 \stopplacetable
@@ -834,42 +834,3 @@ modelo monolítico y el modelo Split.
 \stopsection
 
 \stopchapter
-
-%========================================================================================
-% GUÍA DE TRABAJO - CAPÍTULO 3 (Modelos lineales)
-% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026 y revisada el 02/11/2026 sobre el texto actual. Se quitaron los
-% ítems ya resueltos: los supuestos (congestión, capacidad, velocidad, cadena de frío,
-% extremos de la ruta, camino simple y lotes vacíos), las condiciones de M y M_seq, el
-% argumento de exactitud del Split, cómo se resuelve, el ciclo suelto por ubicaciones no
-% requeridas, la reducción al modelo de referencia, el cuadro de diferencias, el nivel de
-% servicio (Anexo C), la nota de las restricciones de demora y las dos decisiones
-% (M_seq con espera quedó como característica de la formulación, con el Anexo C, y
-% v_start distinto de v_end quedó como supuesto). El 11/11, "Características comunes" y
-% "Limitaciones" se unieron en "Limitaciones de las formulaciones", sin las propiedades
-% propias de cualquier MIP (tamaño, relajación débil), que explica 2.1. Los TODO del texto se resolvieron y se
-% borraron el 02/11/2026 (el de explicar una por una las restricciones de visitas se
-% descartó). El 13/11/2026 (rama cap7-limitaciones), "Limitaciones de las formulaciones"
-% pasó al cap. 7 (Sección "Limitaciones", dentro de la discusión), con la misma referencia.
-% Además: la descripción del modelo de referencia pasó a 2.6 (acá queda solo qué se agrega
-% y qué se simplifica) y la M grande con varias binarias pasó a 2.1. Se decidió no
-% incluir pseudocódigos de los modelos lineales: la Figura 3.1 cumple ese papel.
-% [ ] = tarea; (D) = decisión de ustedes.
-%========================================================================================
-%
-% 1. PENDIENTE
-% [ ] Validación de los datos: se describe en 3.3.3 y la vuelven a listar 4.1.3, 4.2.3,
-%     5.2 y 5.5. Al revisar esos capítulos, que remitan a 3.3.3.
-% [ ] Paralelismo de la Etapa 1: queda en 3.3.1 y en el cuadro de 3.5. El
-%     detalle de cómo se ejecutó va en 5.4.
-%
-% 2. FUENTES
-% - linear-picking-routing: models/opp_v5_1_mono/opp_model_v5_1_mono.zpl,
-%   models/opp_v5_2_split/*.zpl, models/opp_v5_2_split/utils/cold_chain_validation.py,
-%   tests/infra/zimpl/dat_files_builder.py (_compute_m_seq), tests/infra/zimpl/zpl_utils.py;
-%   docs/thesis/models.tex (secs. 2 a 6).
-% - Notas/opp_v5_development.tex: secs. "El problema y sus supuestos" a "Relación entre las
-%   dos formulaciones", "Implementación" y "Estudio 07".
-%========================================================================================
-% NOTA: Añadí todo, pero con comentarios para revisar. No creo que esté finalizado,
-% creo que hay cosas que conviene pulir antes de cerrar este capítulo.

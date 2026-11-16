@@ -273,7 +273,9 @@ respectivamente, con cinco semillas por escenario. El 01 queda afuera porque
 la búsqueda no llega a iterar (Sección~\in[sec:heur_limitaciones]). Con 200 y
 60, la búsqueda se detiene por estancamiento en 82 de las 88 ejecuciones que
 encuentran una solución factible, y solo alcanza el tope de 200 iteraciones
-en el 03, con todas las semillas, y en el 18, con una. Los presupuestos
+en el 03, con todas las semillas, y en el 18, con una (en la corrida
+principal, con semilla 1, fueron el 03 y el 17;
+Sección~\in[sec:res_memoria]). Los presupuestos
 mayores nunca empeoran la solución y la mejoran solo en cuatro escenarios:
 el 03, con un único {\em picker} y 40 lotes para secuenciar, mejora hasta un
 0,59~\%; el 15, el 17 y el 18, como máximo un 0,11~\%. Las diferencias de
@@ -291,8 +293,8 @@ mejoras y no por el tope de iteraciones.
 Al cambiar los sorteos en cinco ejecuciones de cada escenario de estrés, con
 200 iteraciones máximas y 60 sin mejora, la diferencia entre el mejor y el
 peor valor objetivo fue menor que un 0,1~\% en todos los escenarios salvo el
-17 (0,12~\%) y el 03 (0,44~\%), con una mediana de 0,02~\%. Además, con una
-de las cinco semillas, dos escenarios terminaron sin solución factible: en
+17 (0,12~\%) y el 03 (0,44~\%), con una mediana de 0,02~\%. Además, dos de las 90 ejecuciones, cada una con una semilla distinta,
+terminaron sin solución factible: en
 el 11, que tiene un límite de cadena de frío efectivo, la búsqueda no
 alcanzó una solución que lo cumpla, y en el 09 no se consiguió construir la
 ruta inicial de un lote. En ambos casos el resultado fue el mismo con los

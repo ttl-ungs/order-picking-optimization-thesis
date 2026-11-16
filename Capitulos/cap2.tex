@@ -267,7 +267,10 @@ familias de enfoques, que consisten en reiniciar la búsqueda desde distintas
 soluciones iniciales, cambiar la vecindad, modificar la función objetivo o
 los datos de entrada, o aceptar movimientos que no mejoran la solución
 actual, como hacen el recocido simulado y la búsqueda tabú
-\cite[talbi2009metaheuristics,hoos2015sls].
+\cite[talbi2009metaheuristics,hoos2015sls]. La búsqueda local iterada
+pertenece a la primera familia: en lugar de reiniciar desde una solución
+nueva, perturba un óptimo local ya encontrado y vuelve a aplicar la búsqueda
+local desde allí \cite[talbi2009metaheuristics].
 
 \stopsection
 
@@ -384,7 +387,7 @@ estrategia más simple es la de {\em rechazo}, que descarta automáticamente
 toda solución infactible y conserva solo las factibles durante la búsqueda.
 Esta estrategia es razonable cuando la porción infactible del espacio de
 búsqueda es muy pequeña, pero desaprovecha la información que aportan las
-soluciones infactibles, aún cuando las soluciones óptimas suelen
+soluciones infactibles, aun cuando las soluciones óptimas suelen
 encontrarse en la frontera entre la región factible y la infactible.
 Además, cuando la región factible es discontinua, el único camino entre dos
 soluciones factibles puede atravesar soluciones infactibles
@@ -474,37 +477,3 @@ heurísticas.
 
 \stopsection
 \stopchapter
-
-%========================================================================================
-% GUÍA DE TRABAJO - CAPÍTULO 2 (Marco teórico y estado del arte)
-% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
-% (linear-picking-routing, origin/main 75d553c del 19/10), docs/thesis/models.tex y
-% Notas/opp_v5_development.tex. Solo cubre la base teórica que necesitan los modelos
-% lineales, la comparación de modelos y la validación de las metaheurísticas.
-%
-% 02/11/2026: eliminado adelanto y demora, que ahora es la Sección 2.2; los 
-% números del último párrafo de 2.6, que ya no describe el
-% alcance de los modelos; y la descomposición del Split.
-% Para no alargar el capítulo, se descartaron simetría, los problemas numéricos de la M
-% grande y la evaluación experimental de metaheurísticas. La cota dual débil quedó en 2.1.
-% Además, 2.6 describe ahora el modelo de referencia (decisiones, capacidad, ruta, flujo,
-% secuencia por posiciones, objetivo y modelo simplificado), que antes estaba en la
-% introducción del cap. 3, y 2.1 explica la M grande con varias binarias, que usan las
-% restricciones de secuencia del cap. 3.
-% [ ] = tarea; (D) = decisión de ustedes.
-%========================================================================================
-%
-% 1. QUÉ FALTA (conceptos que usan los cap. 3 a 6 y que hoy no están acá)
-% (resuelto el 03/11/2026: 2.5 explica la preservación, que usa el cap. 4)
-
-%
-% 2. QUÉ CORREGIR O MEJORAR
-% [ ] Unificar términos con los cap. 3 a 6: "resolvedor"/"solver", "locación"/"ubicación",
-%     "completitud"/"finalización".
-%
-% 3. FUENTES
-% - Notas/opp_v5_development.tex: secs. "Notación común" (historia de M_seq), "Espera
-%   voluntaria y el SLA", "Estudio 03" (hipótesis de simetría) y "Verificación cruzada"
-%   (lotes vacíos del 30a).
-%========================================================================================
