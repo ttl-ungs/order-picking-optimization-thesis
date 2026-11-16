@@ -23,22 +23,22 @@ Hoy la subsección 7.1.2 solo cita a Kanet y Sridharan (tiempo ocioso insertado)
 
 ## 2. Aportes y beneficios (sección nueva)
 
-Hoy aparecen dispersos en las conclusiones.
+El 15/11 se agregó la Sección 7.3, "Aportes y recomendaciones", entre Limitaciones y Conclusiones, con tres subsecciones: Aportes, Beneficios y Recomendaciones de uso. Las conclusiones y el trabajo futuro pasaron a ser 7.4 y 7.5.
 
-- [ ] **(D) Decidir dónde va.** Puede ser una sección "Aportes y beneficios" o "Recomendaciones", entre Limitaciones y Conclusiones o dentro de Conclusiones. La guía original del capítulo preveía una 7.3 "Recomendaciones".
-- [ ] **Retomar los tres aportes que anuncia la Sección 1.2:**
+- [x] **(D) Decidir dónde va.** Puede ser una sección "Aportes y beneficios" o "Recomendaciones", entre Limitaciones y Conclusiones o dentro de Conclusiones. La guía original del capítulo preveía una 7.3 "Recomendaciones". Se eligió una sección nueva entre Limitaciones y Conclusiones.
+- [x] **Retomar los tres aportes que anuncia la Sección 1.2:**
   1. La descomposición Split, que alcanza el mismo óptimo y resuelve instancias que el monolítico no termina.
   2. La verificación independiente de las soluciones de las heurísticas contra el monolítico (150 de 150).
   3. La comparación de los cuatro métodos sobre los mismos datos.
-- [ ] **Beneficios prácticos para la operación:**
+- [x] **Beneficios prácticos para la operación:**
   - Replanificar en segundos con HC.
   - Calidad casi óptima con ACO.
-  - Cadena de frío garantizada.
+  - Cadena de frío garantizada (quedó como "Sus soluciones son válidas", con las 150 verificadas).
   - Aprovechar operarios con velocidades distintas.
-- [ ] **Beneficios metodológicos:** el verificador, el conjunto de pruebas funcionales y de estrés, y las reglas de comparabilidad se pueden reutilizar.
-- [ ] **Recomendación de uso.** Mover acá el párrafo de "En cuanto al objetivo general…" de las conclusiones: el Split hasta 6 lotes en grillas de hasta 15×15, ACO cuando importa la calidad y HC cuando importa el tiempo.
+- [x] **Beneficios metodológicos:** el verificador, el conjunto de pruebas funcionales y de estrés, y las reglas de comparabilidad se pueden reutilizar.
+- [x] **Recomendación de uso.** Mover acá el párrafo de "En cuanto al objetivo general…" de las conclusiones: el Split hasta 6 lotes en grillas de hasta 15×15, ACO cuando importa la calidad y HC cuando importa el tiempo.
 
-## 3. Trabajo futuro (7.4)
+## 3. Trabajo futuro (7.5)
 
 El 15/11 se reescribió la Sección 7.4 en cuatro subsecciones (modelos lineales, metaheurísticas, comparación entre métodos y alcance del problema). Cada línea indica de qué limitación sale y qué se espera ganar.
 
@@ -59,7 +59,7 @@ El 15/11 se reescribió la Sección 7.4 en cuatro subsecciones (modelos lineales
   - Integrar el loteo, combinando la enumeración de lotes candidatos con rutas exactas o heurísticas.
   - Implementar su heurística (fecha de entrega más temprana más búsqueda local iterada) y medirla contra el óptimo del Split.
 
-## 4. Conclusión justificada (7.3)
+## 4. Conclusión justificada (7.4)
 
 - [ ] **Que la conclusión general se apoye en lo anterior.** Hoy no remite a la discusión ni a las limitaciones. Por ejemplo: "dado lo discutido en 7.1, y considerando las limitaciones de 7.2, la recomendación vale para…".
 - [ ] **Cerrar la comparación con Coruzzolo et al.** en la conclusión: donde ellos no pudieron medir la calidad de su heurística, acá se muestra qué tan cerca del óptimo quedan HC y ACO.

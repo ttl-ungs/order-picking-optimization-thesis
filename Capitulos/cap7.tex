@@ -3,8 +3,9 @@
 Este capítulo discute los resultados frente al modelo de referencia, a la
 literatura y a las decisiones de modelado (Sección~\in[sec:discusion]).
 También discute las limitaciones de los
-cuatro métodos y de la experimentación (Sección~\in[sec:limitaciones]).
-Luego presenta las conclusiones en relación con los objetivos planteados en
+cuatro métodos y de la experimentación (Sección~\in[sec:limitaciones]) y
+resume los aportes del trabajo y cuándo conviene cada método
+(Sección~\in[sec:aportes]). Luego presenta las conclusiones en relación con los objetivos planteados en
 el Capítulo~\in[Capitulo_1] (Sección~\in[sec:conclusiones]) y propone
 líneas de trabajo futuro (Sección~\in[sec:trabajo_futuro]).
 
@@ -332,6 +333,109 @@ pueden compararse solo en estado.
 \stopsection
 
 %----------------------------------------------------------------------------------------
+\startsection[title={Aportes y recomendaciones}, reference=sec:aportes]
+
+Esta sección retoma los aportes anunciados en la Sección~\in[sec:enfoque],
+resume qué beneficios ofrecen los métodos desarrollados, tanto para la
+operación como para trabajos posteriores, y, a partir de los resultados y de
+las limitaciones anteriores, indica cuándo conviene cada método.
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Aportes}, reference=sec:aportes_lista]
+
+\startitemize[n]
+	\item La descomposición del modelo monolítico en el modelo Split, que
+	alcanza el mismo óptimo y resuelve instancias que el monolítico no llega a
+	terminar. Los dos modelos coinciden en los 60 pares comparables de las
+	pruebas funcionales (Sección~\in[sec:mismo_optimo]) y, en las pruebas de
+	estrés, el Split prueba el óptimo en 9 de los 19 escenarios, frente a
+	ninguno del monolítico (Sección~\in[sec:comparacion_lineales]). Es lo que
+	permite medir las heurísticas contra un óptimo probado en instancias de
+	tamaño realista, algo que Coruzzolo et al. no pudieron hacer
+	(Sección~\in[sec:disc_referencia]).
+	\item Una verificación independiente de las soluciones de las heurísticas,
+	que fija cada solución en el modelo monolítico y comprueba que cumple todas
+	sus restricciones (Sección~\in[sec:validacion]). Las 150 soluciones
+	verificadas las cumplen (Sección~\in[sec:validez_resultados]). Como la
+	verificación no usa el código de evaluación de las heurísticas, su
+	validez no depende de que ese código sea correcto.
+	\item Una comparación de los cuatro métodos sobre exactamente los mismos
+	datos, con reglas que establecen qué puede compararse en cada instancia
+	según el resultado del Split (Sección~\in[sec:comparacion]). Sobre esa
+	base se caracteriza en qué condiciones conviene cada método
+	(Sección~\in[sec:recomendaciones]).
+\stopitemize
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Beneficios}, reference=sec:beneficios]
+
+Para la operación de un almacén, los métodos desarrollados ofrecen los
+siguientes beneficios:
+\startitemize
+	\item Representan características de la operación que el modelo de
+	referencia no contempla. Con velocidades heterogéneas, un mismo lote dura
+	distinto según quién lo ejecute, y la asignación lo tiene en cuenta. Por
+	ejemplo, un lote cuya ejecución supera el límite de la cadena de frío para
+	los {\em pickers} lentos solo puede asignarse a los rápidos.
+	\item Permiten responder en segundos. En las pruebas de estrés, \ac{hc}
+	tarda menos de 5 segundos en todos los escenarios salvo el de 100×100
+	(Sección~\in[sec:res_tiempos]), lo que permite volver a planificar durante
+	el turno, por ejemplo, cuando llegan pedidos nuevos o falta un operario.
+	\item Ofrecen soluciones de calidad casi óptima en minutos. \ac{aco} tarda
+	entre 14 segundos y 6 minutos en esos escenarios y, donde hay una
+	referencia, queda a lo sumo a un 0,04~\% del óptimo
+	(Sección~\in[sec:res_calidad]), un tiempo compatible con planificar un
+	turno de antemano.
+	\item Sus soluciones son válidas. Todas las soluciones verificadas cumplen
+	las restricciones del problema, incluida la cadena de frío, y las
+	heurísticas coinciden con el Split en el estado de todas las instancias
+	comparables (Sección~\in[sec:validez_resultados]).
+\stopitemize
+
+Para trabajos posteriores, el beneficio principal es metodológico. El
+verificador, los 38 casos de prueba funcionales, los 19 escenarios de estrés
+con el perfil realista que surgió del relevamiento
+(Sección~\in[sec:relevamiento]) y las reglas de comparabilidad pueden
+reutilizarse para evaluar nuevos métodos sobre los mismos datos, por ejemplo,
+las variantes propuestas como trabajo futuro (Sección~\in[sec:trabajo_futuro]).
+
+\stopsubsection
+
+%----------------------------------------------------------------------------------------
+\startsubsection[title={Recomendaciones de uso}, reference=sec:recomendaciones]
+
+Ninguno de los métodos domina a los otros en calidad y en tiempo a la vez
+(Sección~\in[sec:sintesis_resultados]), de modo que la elección depende del
+tamaño de la instancia y de lo que importe en cada caso:
+\startitemize
+	\item {\em Split}, cuando se necesita el óptimo probado. Hasta 6 lotes en
+	grillas de hasta 15×15, lo prueba en minutos y sirve como referencia para
+	evaluar otros métodos.
+	\item {\em Monolítico}, solo como verificador. Encuentra buenas soluciones,
+	pero no logra demostrar que son óptimas a escala realista, y el Split
+	resuelve el mismo problema con el mismo óptimo.
+	\item {\em ACO}, cuando importa la calidad de la solución y se dispone de
+	minutos, por ejemplo, para planificar un turno.
+	\item {\em HC}, cuando importa responder en segundos, por ejemplo, para
+	volver a planificar durante la operación. Su brecha es mayor que la de
+	\ac{aco}, aunque en estrés no supera el 0,21~\%.
+\stopitemize
+
+Por encima del tamaño que resuelve el Split, o cuando el tiempo de respuesta
+es determinante, las heurísticas son la única alternativa, y a igual tiempo
+obtienen mejores soluciones que los modelos lineales
+(Sección~\in[sec:res_igual_tiempo]). Estas recomendaciones tienen el alcance
+de la experimentación, es decir, se basan en instancias generadas y en tiempos medidos
+en una computadora portátil (Sección~\in[sec:limitaciones]). En almacenes
+muy grandes, además, el tiempo máximo de las heurísticas no es estricto.
+
+\stopsubsection
+
+\stopsection
+
+%----------------------------------------------------------------------------------------
 \startsection[title={Conclusiones}, reference=sec:conclusiones]
 
 Los objetivos específicos planteados en la Sección~\in[sec:objetivo] se
@@ -375,15 +479,10 @@ cumplieron de la siguiente manera:
 	trabajo futuro de la Sección~\in[sec:trabajo_futuro].
 \stopitemize
 
-En cuanto al objetivo general, ninguno de los tres métodos domina a los
-otros en calidad y en tiempo a la vez (Sección~\in[sec:sintesis_resultados]),
-de modo que la elección depende del tamaño de la instancia y de lo que
-importe en cada caso. Hasta 6 lotes en grillas de hasta 15×15, el Split
-prueba el óptimo en minutos y sirve como referencia. Por encima de ese
-tamaño, o cuando el tiempo de respuesta es determinante, las heurísticas son
-la alternativa: ACO cuando importa la calidad de la solución, y HC cuando
-importa responder en segundos, por ejemplo para volver a planificar durante
-la operación.
+En cuanto al objetivo general, ninguno de los métodos domina a los otros en
+calidad y en tiempo a la vez, de modo que la elección depende del tamaño de
+la instancia y de lo que importe en cada caso
+(Sección~\in[sec:recomendaciones]).
 
 La robustez se evaluó con cinco semillas en los escenarios de estrés 02 a
 19. En HC, la diferencia entre la mejor y la peor fue menor al 0,5~\% en
