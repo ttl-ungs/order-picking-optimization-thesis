@@ -13,7 +13,10 @@ secuenciación de los lotes. A este segundo modelo lo llamamos {\em Split}. Debi
 prácticos para instancias moderadamente grandes, se desarrollan dos metaheurísticas basadas en {\em Hill Climbing} y {\em Ant Colony Optimization},
 equivalentes a los modelos lineales en las características que contemplan.
 
-Los modelos se evalúan sobre un conjunto de escenarios de prueba funcionales y de estrés. A partir de la proporción de instancias resueltas, el
-tiempo de ejecución y la calidad de la solución respecto del óptimo, se busca caracterizar el compromiso entre calidad, tiempo de cómputo y robustez,
-para identificar bajo qué condiciones resulta conveniente reemplazar el modelo exacto por una heurística, y cuál de las dos metaheurísticas
-elegidas es más favorable.
+Los cuatro métodos se evalúan sobre 38 casos de prueba funcionales y 19 escenarios de estrés, la mayoría con un
+perfil realista de almacén. El modelo Split alcanza el mismo óptimo que el monolítico y es el único de los dos que lo prueba a escala realista, en 9 de
+los 19 escenarios de estrés. Las metaheurísticas encuentran una solución válida en todas las instancias factibles. En las pruebas de
+estrés, {\em Ant Colony Optimization} queda a lo sumo a un 0,04\,\% del óptimo y {\em Hill Climbing}, a un 0,21\,\%, con tiempos que en la mediana son 1,5 y
+53 veces menores que los del Split, respectivamente. Como ningún método domina a los otros en calidad, tiempo y robustez a la vez, se
+concluye que el Split conviene cuando se necesita el óptimo probado, en instancias de hasta 6 lotes en grillas de hasta 15×15; {\em Ant
+Colony Optimization}, cuando importa la calidad de la solución, y {\em Hill Climbing}, cuando importa responder en segundos.

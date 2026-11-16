@@ -16,8 +16,8 @@ solución, el tratamiento de las restricciones, la verificación previa de los
 datos y la manera de construir rutas que no repitan ubicaciones. Por eso, la
 Sección~\in[sec:heur_comunes] presenta primero estos elementos comunes, y las
 Secciones~\in[sec:hc] y~\in[sec:aco] describen después cómo funciona cada
-algoritmo. Las limitaciones de las dos se reúnen en la
-Sección~\in[sec:heur_limitaciones].
+algoritmo. Las limitaciones de las dos se discuten en la
+Sección~\in[sec:heur_limitaciones], junto con su efecto sobre los resultados.
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Elementos comunes}, reference=sec:heur_comunes]
@@ -708,91 +708,6 @@ los lotes que cumplen siguen aprendiendo aunque otro no lo haga.
 
 \stopsection
 
-%----------------------------------------------------------------------------------------
-\startsection[title={Limitaciones}, reference=sec:heur_limitaciones]
-
-Las dos implementaciones tienen algunas limitaciones en común y otras propias
-de cada una. Se incluyen solo las que surgen de decisiones de esta
-implementación. Las propias de cada método, como que \ac{hc} pueda quedar
-detenido en un óptimo local, se describen en las Secciones~\in[sec:marco_hc]
-y~\in[sec:marco_aco].
-
-%----------------------------------------------------------------------------------------
-\startsubsection[title={Comunes a las dos metaheurísticas}]
-
-\startitemize
-	\item {\bf Pueden informar infactible una instancia factible.} Si cada
-	lote cumple la cota de la Ecuación~\in[eq:hc_cota_frio], pero la
-	búsqueda termina sin encontrar una solución que cumpla la cadena de frío
-	en todos los lotes a la vez, la instancia se informa como infactible
-	aunque tenga solución. Lo mismo ocurre si la búsqueda {\em best-first} de
-	respaldo alcanza su tope sin encontrar la ruta de un lote. En \ac{hc},
-	los dos casos se observaron al variar la semilla
-	(Sección~\in[sec:calib_hc_semillas]).
-	\item {\bf El tiempo máximo no es estricto.} \ac{hc} lo controla entre
-	iteraciones e incluye la construcción inicial, que no se interrumpe, de
-	modo que en almacenes grandes la búsqueda puede no llegar a iterar.
-	\ac{aco} lo controla antes de cada hormiga y no lo aplica mientras no
-	exista una solución factible, así que una instancia en la que ninguna
-	hormiga cumple la cadena de frío corre las $\text{Max}_{\text{it}}$
-	iteraciones completas (Sección~\in[sec:res_tiempos]).
-\stopitemize
-
-\stopsubsection
-
-%----------------------------------------------------------------------------------------
-\startsubsection[title={Propias de Hill Climbing}, reference=sec:hc_limitaciones]
-
-\startitemize
-	\item {\bf En la práctica, la búsqueda puede no modificar las rutas.} El pulido
-	de la ruta inicial termina con 2-opt aplicado hasta que ninguna inversión
-	acorta la ruta, y el costo local del movimiento crece con la distancia
-	(Sección~\in[sec:anexo_2opt]). Por lo tanto, el movimiento 2-opt de la búsqueda
-	no siempre encuentra una inversión que mejore. Las iteraciones en que
-	el movimiento no genera ningún vecino se consumen sin efecto y cuentan
-	para $\text{Max}_{\text{imp}}$. En consecuencia, la calidad de las rutas
-	depende fuertemente de la construcción inicial
-	(Sección~\in[sec:res_calidad]).
-	\item {\bf La secuencia se corrige de a pasos chicos.} El orden inicial de
-	cada {\em picker} es el de los identificadores de los lotes, sin tener en
-	cuenta las fechas de entrega. La búsqueda solo lo cambia con intercambios
-	de dos lotes y con reasignaciones que ubican el lote al final de la
-	secuencia de su nuevo {\em picker}, y cada paso debe mejorar $f'$ por sí
-	mismo para ser aceptado.
-\stopitemize
-
-\stopsubsection
-
-%----------------------------------------------------------------------------------------
-\startsubsection[title={Propias de Ant Colony Optimization}, reference=sec:aco_limitaciones]
-
-\startitemize
-	\item {\bf Costo de construir rutas.} Para no repetir ubicaciones, cada
-	paso de la construcción de una ruta recalcula caminos con el algoritmo de
-	Dijkstra y hace un chequeo de completitud. Como ese costo crece con el
-	tamaño del grafo y cada iteración construye $m$ soluciones completas, en
-	los almacenes grandes la colonia agota el tiempo máximo antes de
-	completar $\text{Max}_{\text{it}}$ iteraciones
-	(Sección~\in[sec:res_tiempos]).
-	\item {\bf No hay criterio de estancamiento.} La colonia ejecuta siempre
-	$\text{Max}_{\text{it}}$ iteraciones, salvo que se alcance el tiempo
-	máximo, aunque $s^*$ deje de mejorar mucho antes.
-	\item {\bf La información heurística de la asignación es limitada.}
-	$\eta_p$ solo equilibra la cantidad de lotes por {\em picker}, sin
-	considerar su velocidad, la duración de los lotes ni las fechas de
-	entrega. La secuencia por fecha de entrega tampoco considera la duración
-	de los lotes. Ambas se corrigen solo en $s^*$, con la búsqueda local
-	sobre la asignación.
-	\item {\bf Las rutas se eligen por distancia.} Tanto la feromona de ruta
-	como $\pi^{bs}_b$ favorecen las rutas más cortas. Sin embargo, bajo esta función
-	objetivo, una ruta más corta no siempre es mejor, porque puede aumentar
-	el adelanto. La recombinación lo tiene en cuenta al decidir si la
-	acepta, pero la colonia no aprende rutas más largas aunque convengan.
-\stopitemize
-
-\stopsubsection
-
-\stopsection
 \stopchapter
 
 %========================================================================================
@@ -812,6 +727,8 @@ y~\in[sec:marco_aco].
 % se sacaron dos repeticiones en HC, 4.3.2 pasó a llamarse "Mejoras al final de cada
 % iteración" y se corrigieron erratas. En 4.4 se sacó "No escapa de los óptimos locales",
 % que es propia de HC (2.3), y se juntaron los dos ítems sobre la secuencia de HC.
+% El 13/11/2026 (rama cap7-limitaciones), la sección 4.4 de limitaciones pasó al cap. 7
+% (Sección "Limitaciones", dentro de la discusión), con las mismas referencias.
 % [ ] = tarea; (D) = decisión de ustedes.
 %========================================================================================
 %

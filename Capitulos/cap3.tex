@@ -10,9 +10,10 @@ secuenciación en un único modelo. El modelo Split
 (Sección~\in[sec:modelo_split]) resuelve el mismo problema en dos etapas
 sucesivas, con modelos más pequeños, y alcanza el mismo valor óptimo. La
 Sección~\in[sec:espera_voluntaria] describe una propiedad común a ambas
-formulaciones, la Sección~\in[sec:diferencias_modelos] resume las diferencias
-entre ellas y, por último, la Sección~\in[sec:caracteristicas_formulacion]
-reúne sus limitaciones.
+formulaciones y, por último, la Sección~\in[sec:diferencias_modelos] resume
+las diferencias entre ellas. Las limitaciones de las dos formulaciones se
+discuten en la Sección~\in[sec:caracteristicas_formulacion], junto con su
+efecto sobre los resultados.
 
 Respecto de ese modelo, la formulación agrega la velocidad heterogénea entre
 operarios, la restricción de cadena de frío y un tiempo de servicio en cada
@@ -832,84 +833,6 @@ modelo monolítico y el modelo Split.
 
 \stopsection
 
-%----------------------------------------------------------------------------------------
-\startsection[title={Limitaciones de las formulaciones}, reference=sec:caracteristicas_formulacion]
-
-Las dos formulaciones tienen limitaciones de dos tipos. Algunas restringen qué
-instancias pueden representar, y otras hacen que resolverlas sea costoso. Las
-que son propias de cualquier modelo de este tipo, como que su tamaño crezca
-con la instancia o que las constantes M grande debiliten la relajación
-lineal, se explican en la Sección~\in[sec:marco_mip] y no se repiten acá.
-
-%----------------------------------------------------------------------------------------
-\startsubsection[title={Instancias que representan}]
-
-{\bf Camino simple.} Las restricciones (\in[eq:mono_entra_max]) y
-(\in[eq:mono_sale_max]) impiden que una ruta pase dos veces por la misma
-ubicación. Es una característica que se hereda del modelo de referencia y que resulta
-adecuada para el almacén de este trabajo, pero en otros almacenes un operario puede entrar a un pasillo sin
-salida y volver por donde vino, de modo que existen instancias físicamente
-posibles que la formulación declara infactibles. Por ejemplo, si una ubicación requerida está al fondo de un pasillo sin salida que 
-no contiene el depósito ni el punto de entrega, la única forma de visitarla es 
-volver por el mismo camino, lo que obliga a pasar dos veces por la ubicación que 
-da acceso al pasillo. Lo mismo puede ocurrir cuando un lote debe visitar casi todas las
-ubicaciones de un almacén pequeño y no existe un camino simple que las recorra
-a todas. Para cubrir esos casos habría que admitir rutas que repitan ubicaciones,
-reescribiendo las restricciones de ruteo y el cálculo del tiempo de ruta. Es
-posible, pero complica la formulación y la resolución, y no forma parte del
-problema que se estudia.
-
-{\bf Validez de $M^{\text{seq}}$ con espera voluntaria.} La cota de
-$M^{\text{seq}}$ (Sección~\in[sec:mono_asignacion]) se basa en el tiempo total de
-trabajo, lo que alcanza cuando cada lote termina en cuanto completa su
-ejecución. Con espera voluntaria, en cambio, la separación entre las
-finalizaciones de dos lotes de un mismo {\em picker} puede superar la cota, y
-la restricción de secuencia que debería estar inactiva puede excluir la
-solución óptima. El Anexo~\in[Anexo_Modelos] muestra un ejemplo y una cota
-válida en todos los casos. Cuando la espera no conviene
-(Sección~\in[sec:espera_voluntaria]), la cota original alcanza.
-
-{\bf Lotes vacíos.} La formulación no distingue los lotes sin órdenes. Si
-$\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
-nodo final, un {\em picker} y un lugar en una secuencia, y su finalización
-entra en el objetivo. Además, los lotes vacíos son intercambiables entre sí,
-lo que multiplica las soluciones equivalentes que debe considerar el
-resolvedor. Como los lotes son un dato del problema y no una decisión de la
-formulación, se considera que este caso debe resolverse antes, al conformar
-los lotes.
-
-{\bf Exactitud del Split.} La descomposición alcanza el óptimo del monolítico
-porque la ruta de un lote no depende de quién lo ejecuta ni de cuándo, y
-porque la formulación admite espera voluntaria
-(Sección~\in[sec:modelo_split]). Si la velocidad no escalara todo el tiempo
-de ruta por igual o si se modelara la congestión, la ruta mínima dejaría de
-ser siempre la mejor, y la descomposición dejaría de ser exacta.
-
-\stopsubsection
-
-%----------------------------------------------------------------------------------------
-\startsubsection[title={Costo de resolución}]
-
-{\bf Cada etapa del Split tiene su propio límite.} La Etapa~1 no
-depende de la cantidad de {\em pickers} ni de la secuencia, pero cada uno
-de sus \ac{mip} se plantea sobre el grafo completo, así que su costo crece
-con el tamaño del almacén. La Etapa~2, en cambio, no depende del grafo,
-pero tiene una variable de precedencia por cada par de lotes y una
-asignación por cada par elegible, así que su costo crece con la cantidad
-de lotes y de {\em pickers}. La descomposición traslada la dificultad del
-ruteo fuera de la asignación, pero no elimina ninguna de las dos.
-
-{\bf El Split no tiene una solución completa hasta terminar la
-Etapa~1.} La Etapa~2 necesita el tiempo de ruta mínimo de todos los lotes,
-así que, si un \ac{mip} de ruteo no termina, no se dispone de ninguna
-asignación ni secuencia, aunque los demás lotes ya estén resueltos.
-
-El Capítulo~\in[Capitulo_6] muestra el efecto de estas limitaciones sobre las
-instancias de prueba (Sección~\in[sec:comparacion_lineales]).
-
-\stopsubsection
-
-\stopsection
 \stopchapter
 
 %========================================================================================
@@ -926,7 +849,8 @@ instancias de prueba (Sección~\in[sec:comparacion_lineales]).
 % "Limitaciones" se unieron en "Limitaciones de las formulaciones", sin las propiedades
 % propias de cualquier MIP (tamaño, relajación débil), que explica 2.1. Los TODO del texto se resolvieron y se
 % borraron el 02/11/2026 (el de explicar una por una las restricciones de visitas se
-% descartó).
+% descartó). El 13/11/2026 (rama cap7-limitaciones), "Limitaciones de las formulaciones"
+% pasó al cap. 7 (Sección "Limitaciones", dentro de la discusión), con la misma referencia.
 % Además: la descripción del modelo de referencia pasó a 2.6 (acá queda solo qué se agrega
 % y qué se simplifica) y la M grande con varias binarias pasó a 2.1. Se decidió no
 % incluir pseudocódigos de los modelos lineales: la Figura 3.1 cumple ese papel.
