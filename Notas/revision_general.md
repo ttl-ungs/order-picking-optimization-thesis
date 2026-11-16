@@ -1,4 +1,4 @@
-# Revisión de la tesina sobre el PR 8 (`cap7-limitaciones`)
+# Revisión general de la tesina (sobre el PR 8, `cap7-limitaciones`)
 
 Armada el 16/11/2026 sobre el commit `67ee851` de la rama `cap7-limitaciones`, contrastando el texto con la rama `integration/four-models` (commit `ddc51fe`) del repositorio de implementación, `linear-picking-routing`.
 
