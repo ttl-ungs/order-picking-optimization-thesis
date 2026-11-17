@@ -36,8 +36,8 @@ para Python, {\bf PySCIPOpt} 5.6.0. Para resolver las relajaciones
 lineales, SCIP utiliza SoPlex 7.1.5. Las heurísticas están implementadas
 íntegramente en Python, sin depender de un resolvedor externo.
 
-Todas las pruebas y los estudios se ejecutaron en una notebook, con
-un procesador Intel i7-1360P. Este procesador tiene 4 núcleos de
+Todas las pruebas y los estudios se ejecutaron en una computadora
+portátil, con un procesador Intel i7-1360P. Este procesador tiene 4 núcleos de
 rendimiento, con {\em hyperthreading}, y 8 de eficiencia, que funcionan a
 cerca de la mitad de la velocidad de los primeros. Esto explica, en parte,
 que repartir un cálculo entre varios procesos no lo acelere en proporción a
@@ -146,7 +146,7 @@ problemas más chicos, permite recorrer más instancias en el mismo tiempo.
 
 Antes de definir los escenarios se realizó una serie de estudios
 exploratorios sobre los modelos lineales, que se detallan en el
-Anexo~\in[Anexo_Relevamiento]. Un test responde si una instancia determinada
+Anexo~\in[Anexo_Relevamiento]. Una prueba responde si una instancia determinada
 se resuelve o no; un estudio, en cambio, recorre una familia de instancias y
 muestra a partir de qué tamaño y por qué un modelo deja de resolver en
 tiempos razonables. En cada estudio se varió un único factor por vez,
@@ -173,7 +173,7 @@ fueron los siguientes:
 	de 13×13 domina la Etapa~1, y en 15×15 la Etapa~1 superó el rango
 	buscado. Estas mediciones definieron los escenarios de tamaño creciente.
 	\item {\bf Alcance del monolítico.} El monolítico solo probó el óptimo en
-	instancias mucho más chicas que las de la calibración, y donde fue
+	instancias mucho más chicas que las del relevamiento, y donde fue
 	cortado ya tenía soluciones cercanas al óptimo, por lo cual su dificultad está en
 	demostrar la optimalidad y no en encontrar buenas soluciones
 	(Sección~\in[sec:alcance_monolitico] del Anexo~\in[Anexo_Relevamiento]).
@@ -184,7 +184,7 @@ También se probaron cambios para acelerar el modelo Split. De ellos, solo
 se adoptó repartir la Etapa~1 entre varios procesos
 (Sección~\in[sec:anexo_intentos_split] del Anexo~\in[Anexo_Relevamiento]).
 
-Los tiempos de la calibración no son los de la suite final
+Los tiempos del relevamiento no son los de la suite final
 (Capítulo~\in[Capitulo_6]), por tres motivos: después se cambió el peso de
 la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
 (Sección~\in[sec:ejecucion]) y el tiempo de reloj de una misma instancia
@@ -341,12 +341,10 @@ Anexo~\in[Anexo_Relevamiento].
 	sobre la prueba completa depende de cuánto pesa la Etapa~1: es mayor en
 	las grillas grandes, donde la Etapa~1 domina, y nulo en las instancias
 	dominadas por la Etapa~2.
-	\item {\bf Repartir la Etapa~1 no siempre conviene.} Cada proceso
-	necesita su propia copia de los datos, en un directorio temporal, y
-	crearlos lleva un tiempo que no depende del tamaño de la instancia.
-	En instancias chicas ese tiempo supera lo que ahorra: en la suite
-	funcional, la corrida con 6 procesos tardó 51~segundos y la corrida en
-	secuencia, 46. Por eso la Etapa~1 solo se reparte cuando hay más de
+	\item {\bf Repartir la Etapa~1 no siempre conviene.} Preparar cada
+	proceso lleva un tiempo fijo, que en las instancias chicas supera lo que se
+	ahorra: la suite funcional tardó 51~segundos con 6 procesos y 46 en
+	secuencia. Por eso la Etapa~1 solo se reparte cuando hay más de
 	4 lotes.
 \stopitemize
 
@@ -544,7 +542,7 @@ La comparación tiene dos partes. La primera enfrenta al modelo monolítico
 con el Split, para validar que la descomposición alcanza el mismo óptimo y
 medir cuánto tiempo ahorra dividir el modelo. La segunda compara el Split con
 las heurísticas, para medir cuánto se pierde en calidad y cuánto se gana en
-tiempo. Esto porque el modelo Split fue el único modelo lineal que
+tiempo. Se usa el Split porque fue el único modelo lineal que
 terminó escenarios de estrés dentro del tope (Sección~\in[sec:comparacion_lineales]).
 
 {\bf Mismos datos.} Solo se comparan instancias en las que los métodos
