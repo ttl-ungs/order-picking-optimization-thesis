@@ -39,7 +39,7 @@ arcos de la ruta del lote y 0 en el resto), $x_{pb}$ (1 para el
 lotes en la secuencia de cada {\em picker}). En el nivel~2 se fijan, además,
 los instantes de finalización $c_{pb}$ y $c_b$ informados. Las demás
 variables, como el flujo $q_{ijb}$, el tiempo de ruta $r_b$, el tiempo de
-ejecución $u_{pb}$ y el adelanto y la demora de cada orden, quedan libres y
+ejecución $u_{pb}$ y el adelanto y la demora de cada pedido, quedan libres y
 las completa el resolvedor. Si el nivel~1 resulta infactible, el verificador
 busca qué lote lo provoca, para que el reporte indique dónde está la
 violación.
@@ -99,7 +99,7 @@ sombrero son los que recalcula el verificador.
 {\bf Salida:} válida o con violaciones, y un registro $R$ con los motivos
 \blank[small]
 {\em Preparación}
-1.\quad quitar de $\mathcal{B}$ los lotes sin órdenes que no aparecen en $s$
+1.\quad quitar de $\mathcal{B}$ los lotes sin pedidos que no aparecen en $s$
 2.\quad $R \leftarrow \emptyset$;\; $\mathcal{F} \leftarrow \emptyset$ \hfill {\em lotes que se fijarán en el modelo}
 {\em Chequeos directos}
 3.\quad {\bf para cada} lote $b \in \mathcal{B}$ {\bf hacer}
