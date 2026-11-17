@@ -8,33 +8,112 @@
 - Convención de severidad del prompt: **Crítico** (falso o contradice el código o los datos), **Mayor** (omisión o explicación errónea importante), **Menor** (estilo, redundancia, precisión).
 
 
-## 1. Resumen ejecutivo
+## 1. Problemas Críticos y Mayores (ordenados por severidad)
 
-**Recuento tras la verificación:** 2 Críticos, 14 Mayores (11 con su propio apartado, más C1, C2 y C5 en la tabla de la sección C) y más de 60 Menores. La tesina es, en general, fiel al código: las fórmulas de los tres modelos `.zpl` y los algoritmos de HC y ACO coinciden con lo descripto, y la gran mayoría de las cifras de los cuadros se reproducen desde los CSV. Los problemas están en afirmaciones de alcance, en la procedencia de algunos resultados y en la descripción de las pruebas.
+Todos verificados contra la fuente. El orden dentro de cada nivel va de mayor a menor efecto sobre las conclusiones de la tesina. Cada ítem remite a su detalle (sección 3), con la evidencia y las sugerencias completas.
 
-### Los 10 problemas más graves
+### Críticos (falso o contradice el código o los datos)
 
-| # | Sev. | Problema | Ubicación | Hallazgo |
-|---|------|----------|-----------|----------|
-| 1 | Crítico | «El monolítico no termina ninguno de los 19 escenarios de estrés» está medido solo en 7: el 01 sin resultado por memoria de ZIMPL, el 02 cargado a mano y los 08–19 no se terminaron de ejecutar (no hay CSV real). | `cap6.tex:345,359`, `cap7.tex:38,436`, `cap5.tex:569`, resumen y abstract | D-1 |
-| 2 | Crítico | El texto dice que con 40 min el monolítico «sigue sin probar el óptimo en esos puntos», pero su propio Cuadro y el estudio 11 muestran que en 6 lotes 5×5 sí lo prueba (a los 32 min). | `cap6.tex:314-317` vs `cap6.tex:329-332` | D-5 |
-| 3 | Mayor | Los resultados de HC (estrés y funcional) y de ACO funcional son de una versión del código anterior al arreglo que hizo determinista la construcción de rutas (2026-10-19); ACO en estrés es posterior. Con el código final, 17 de 18 escenarios de HC cambian y la brecha máxima baja de 0,21 % a 0,18 %. La tesina afirma reproducibilidad y no declara la versión de cada corrida. | `cap5.tex:425-432`, cuadros de `cap6`, `resumen.tex`, `abstract.tex`, `cap7.tex` | D-2 |
-| 4 | Mayor | «Se reducen al modelo de referencia» se prueba contra `opp_v4` (un modelo propio del repositorio), no contra la formulación publicada; la tesina no nombra ese modelo ni explica que 31 pruebas funcionales migradas verifican la reducción. | `cap3.tex:26-30`, `cap7.tex:23-27, 425-429`, `cap5.tex` | E-02 |
-| 5 | Mayor | El caso 30a presenta tiempos de *verificación* (0,13 s sin lotes vacíos; 600 s con ellos) como si fueran tiempos de *resolución*, y una «probable causa» como confirmada. | `cap6.tex:45-54`, `cap7.tex:505-508` | D-4 |
-| 6 | Mayor | HC se queda en «óptimo local» como explicación de su brecha (hasta 5,88 %), sin evidencia, y contradice el Cap. 4, que dice que un vecino rechazado no prueba un óptimo local. | `cap6.tex:459-462`, `cap7.tex:83-88, 533-537` vs `cap4.tex:378-380` | F1 |
-| 7 | Mayor | El Cap. 6 dice que los estudios de escala se corrieron «con la máquina compartida con otras corridas», lo que contradice el Cap. 5 («de a una»), y sobre esos tiempos se calculan los factores 27× y 71×. | `cap6.tex:336-340` vs `cap5.tex:334-337` | F6 |
-| 8 | Mayor | «Los casos se diseñaron uno por uno» es inexacto: 45 de las 64 pruebas del Split son los tests de `opp_v4` reutilizados por un adaptador que fuerza `V_p = 1` y desactiva la cadena de frío. Además, el caso 24b no prueba el chequeo de producción sino una réplica escrita en el test. | `cap5.tex:56-58`, `ap4.tex:44` | C1, C2 |
-| 9 | Mayor | El «57 %» de Coruzzolo et al. es del tiempo de recorrido + preparación (no del tiempo total de picking), proviene de la heurística y no de los modelos, y no incluye la clasificación posterior; el 81 % del ahorro es el tiempo de preparación supuesto (180 s por lista). | `cap2.tex:445-446`, `cap7.tex:90-99` | E-03 |
-| 10 | Mayor | Los rangos de la sensibilidad de ACO «abarcan» los valores de Alaya et al. y Lesch et al.: falso para ρ (0,01 y 0,02 contra un mínimo probado de 0,05) y para β (8 contra un máximo de 4). | `ap8.tex:390-391` | E-01 |
+1. **D-1 — El monolítico «no termina ninguno de los 19 escenarios de estrés» está medido solo en 7.** El 01 quedó sin resultado por memoria de ZIMPL, el 02 se cargó a mano y los 08–19 no se terminaron de ejecutar (no hay CSV real; `meta.md:623`). *Dónde:* `cap6.tex:345,359`, `cap7.tex:38,436`, `cap5.tex:569`, resumen y abstract. *Corrección:* decir «ninguno de los 7 que se ejecutaron (01–07); los 08–19 son más grandes que el 04, que ya no cierra a 40 min», o correr 08–19 (≈8 h).
+2. **D-5 — Un párrafo contradice su propio cuadro.** `cap6.tex:314-315` dice que con 40 min el monolítico «sigue sin probar el óptimo en esos puntos», pero el cuadro (`cap6.tex:329-332`) y el estudio 11 muestran que en 6 lotes 5×5 sí lo prueba, a los 32 min (8 veces el Split). *Corrección:* reescribir como «en dos de esos tres puntos (y en el estrés 04); el tercero lo cierra a los 32 min» y quitar «no cambia este resultado».
 
-**Otros Mayores confirmados:** la tesina no menciona el repositorio ni cómo reproducir los resultados (B1); la «validación del verificador» con cuatro errores inyectados no tiene rastro en el repositorio (C5); el estado del arte no sustenta la novedad de la velocidad heterogénea y la cadena de frío (E-04); texto provisorio en el PDF: dedicatoria y agradecimientos (H-1).
+### Mayores (omisión o explicación errónea importante)
 
+3. **D-2 — Los resultados de HC (estrés y funcional) y de ACO funcional son de una versión anterior del código.** Son anteriores al arreglo de determinismo del 2026-10-19 (`75d553c`); ACO en estrés es posterior (10/11). Con el código final, 17 de 18 escenarios de HC cambian y la brecha máxima baja de 0,214 % a 0,18 %. La tesina afirma reproducibilidad (`cap5.tex:425-432`) y no declara la versión de cada corrida. *Corrección:* re-correr con el código final, o declarar la versión de cada corrida y limitar la afirmación al código actual.
+4. **E-02 — «Se reducen al modelo de referencia» se prueba contra `opp_v4`, no contra el paper.** El modelo de referencia contra el que se testea es un modelo propio del repositorio (precedencias y tiempo de servicio), y 31 pruebas migradas de v4 verifican la reducción; la tesina no lo dice y `cap7.tex:425-429` atribuye a las pruebas funcionales más de lo que describe `cap5`. *Dónde:* `cap3.tex:26-30`, `cap5.tex`, `cap7.tex:23-27,425-429`. *Corrección:* aclarar que la reducción se verifica contra la adaptación propia y describir las pruebas migradas.
+5. **D-4 — Caso 30a: tiempos de verificación presentados como de resolución.** Los 0,13 s y 600 s son del verificador con decisiones fijadas; la causa es una hipótesis (`meta.md:655`: «probable causa»), no una confirmación. *Dónde:* `cap6.tex:50-53`, `cap7.tex:505-508`. *Corrección:* «es consistente con esto» y «al verificar una solución de 30a…».
+6. **F1 — «Óptimo local» como explicación de la brecha de HC, sin evidencia.** `cap4.tex:378-380` dice que un vecino rechazado no prueba un óptimo local; `cap6.tex:459-462` y `cap7.tex:83-88,533-537` lo usan para explicar la brecha de hasta 5,88 %. *Corrección:* presentarlo como hipótesis (estancamiento) o respaldarlo con corridas de más iteraciones.
+7. **F6 — «Máquina compartida con otras corridas» contradice la metodología.** `cap6.tex:336-339` vs `cap5.tex:334-337` («de a una y sin procesos pesados en paralelo»); sobre esos tiempos se calculan los factores 27× y 71×. *Corrección:* declarar el carácter exploratorio de esos estudios y presentar los factores como órdenes de magnitud.
+8. **E-03 — El «57 %» de Coruzzolo et al. y sus condiciones.** Es el ahorro de recorrido + preparación (no del tiempo total de picking), sale de la heurística y no de los modelos, no incluye la clasificación posterior, y el 81 % es el tiempo de preparación supuesto (180 s por lista). *Dónde:* `cap2.tex:445-446`, `cap7.tex:90-99`.
+9. **C1 — «Los casos se diseñaron uno por uno» es inexacto.** 45 de las 64 pruebas del Split son los tests de `opp_v4` reutilizados por un adaptador que fuerza `V_p = 1` y desactiva la cadena de frío. *Dónde:* `cap5.tex:56-58`, `ap4.tex`.
+10. **C2 — El caso 24b no prueba el chequeo de producción.** Afirma sobre `eligible_pairs`, una réplica escrita dentro del test. *Dónde:* `ap4.tex:44`, `cap5.tex:64`. *Corrección:* reformular la fila o hacer que el test llame a `batches_without_eligible_picker`.
+11. **E-01 — Los rangos de la sensibilidad de ACO no «abarcan» los valores de Alaya y Lesch.** ρ = 0,01 y 0,02 quedan fuera del mínimo probado (0,05) y β = 8 fuera del máximo (4). *Dónde:* `ap8.tex:390-391`. *Corrección:* decir qué valores quedan fuera o ampliar la grilla; citar «Alaya et al.».
+12. **B1 — La tesina no menciona el repositorio ni cómo reproducir los resultados.** Falta enlace y commit, estructura, variables de entorno, comandos de cada suite y estudio. *Corrección:* agregar una sección o anexo «Implementación y reproducibilidad».
+13. **H-1 — Texto provisorio visible en el PDF.** Dedicatoria «Para / Dedicada a / Para mi ...» (`tesina.tex:140-145`) y Agradecimientos marcados `% TODO: cambiar esto!`.
+14. **C5 — La «validación del verificador» (4 errores inyectados) no deja rastro en el repositorio.** *Dónde:* `ap6.tex:78-81`. *Corrección:* agregar un script o test que la reproduzca, o describirla como control manual.
+15. **E-04 — El estado del arte no sustenta la novedad.** Solo 4 trabajos de picking; el propio paper cita literatura de pickers heterogéneos y de optimización conjunta que la tesina no revisa. *Dónde:* `cap2.tex:426-473`. Está registrado como pendiente en `Notas/pendientes_cap7.md` §6.
+16. **H-2 — La «Comparación con el estado del arte» sigue pendiente.** De los 5 ítems de `Notas/pendientes_cap7.md` §1, 4 no se hicieron y 1 está parcial (ver E-04).
 
-## 2. Hallazgos por sección
+## 2. Problemas Menores (ordenados por severidad)
+
+Los ordené en tres niveles: **alto** (una cifra o afirmación verificable es imprecisa o incorrecta), **medio** (precisión o rigor de una explicación, trazabilidad) y **bajo** (estilo, redundancia, terminología). Dentro de cada nivel, de mayor a menor efecto.
+
+### Nivel alto: cifras y afirmaciones imprecisas
+
+1. **D-3** — El Cap. 6 llama «pequeña» a la variación entre semillas y omite que HC no encontró solución en 2 de 90 ejecuciones (`cap6.tex:938-943`).
+2. **D-15** — «35 de las 45» y las medianas de tiempo (0,295 / 0,061 / 0,225 s) no se reproducen con el CSV, que da 33 y 0,300 / 0,061 / 0,224 (`cap6.tex:575-581`).
+3. **D-8** — «Con hasta 4 lotes resuelve cualquier grilla en menos de 10 s»: no hay medición del Split con 4 lotes en 7×7; y «1 a 6 lotes» cuando la figura muestra 2, 3, 4 y 6 (`cap6.tex:171,283-284`).
+4. **D-7** — «Al menos 71 veces» debería ser «al menos 68» (569,8 s / 8,4 s); el tope de 10 min fue un límite de SCIP de 570 s (`cap6.tex:288-290`).
+5. **D-11 / F7** — «Reduce la Etapa 1 como mucho a la mitad (2,2 veces)»: 2,2 veces es menos de la mitad (`cap6.tex:356-360`).
+6. **D-12** — «Unas 1.500 de 10.000 ubicaciones» debería ser «unas 1.400» (1.425 en HC, 1.365 en ACO), y el recorte de subgrafo se aplica en las 19 filas de ACO, no «en pocos casos» (`cap6.tex:408-412`).
+7. **D-9** — «De modo que HC es 5,1 veces más rápido» mezcla la mediana de los tiempos (4,9) con la mediana de los cocientes (5,1) (`cap6.tex:578-581`).
+8. **D-10** — «De alrededor de un segundo» cuando son de 0,3 a 1,1 s (`cap6.tex:580`).
+9. **D-13 / F23** — Cifras y redacciones imprecisas: «6 segundos» (es 6,19), «tres escenarios» con solución inicial óptima (son cuatro), la comparación del 09, el 5,3 y 10,5 % (respecto de ACO serían 5,6 y 11,7), «un orden de magnitud menor» en `ap8.tex:423`, «248 soluciones» vs 150 + 9, y las 9 soluciones del Split sin reporte guardado.
+9b. **C12** — `ap7.tex` caso 27: objetivo «58,0», el valor es 58,05.
+10. **C7 / F22** — «38 casos de prueba»: el caso 12 no tiene pruebas activas, son 37 casos con pruebas (64 pruebas) (`resumen.tex:15`, `abstract.tex`, `cap5.tex:56`, `cap7.tex:442`).
+11. **C4 / F21** — «60 pares comparables, es decir, instancias»: son pruebas; 6 pruebas resuelven dos instancias y `ap7` informa el objetivo de la última (`cap6.tex:23-24`).
+12. **F20** — «Se verifica lo mismo con los cuatro métodos»: en 10 de 19 escenarios ni el monolítico ni el Split obtienen solución (`cap5.tex:261`).
+13. **F24** — «Cada grupo modifica un único aspecto»: los escenarios 10 y 11 cambian más de uno (`cap5.tex:210-216`).
+14. **A1 / F11** — λ = 1000 no cumple la cota K de la propia tesina en los escenarios 01 y 19 (K = 1020 y 1272), aunque ahí la cadena de frío no está activa (`cap4.tex:177-181`, `ap8.tex:127-143`).
+15. **A2** — El reparto 50 % de ACO compara 1.403.120 (600 s) con 917.328 (corrida de ~1878 s); el dato que sostiene la decisión es 1.061.148 (`ap8.tex:339-344`).
+16. **A4** — «Etapa 1 en seis procesos» en toda la suite de estrés: solo las filas re-corridas el 29/09 (`cap5.tex:353-361`).
+17. **C14** — El tope de 40 min en estrés sale de `.env`; el valor por defecto del código es 25 (`cap5.tex:314-315`).
+18. **E-05** — «No pudieron resolver ninguno de sus modelos»: omite que los autores sí resolvieron problemas pequeños, sin publicar resultados (`cap7.tex:34-42`).
+19. **E-10** — Roberti y Toth: GG «llegó al óptimo en todas las instancias» son 10 instancias pequeñas de TSPLIB; MTZ, DL y SD resolvieron 9 (`cap2.tex:101-105`).
+20. **E-09** — Gutiérrez et al.: «8 horas» es el ciclo completo del pedido (según el tipo de pedido, de 2 a 8 h), no solo la preparación (`cap1.tex:12-16`).
+21. **E-13** — Los criterios de parada de HC («máximo de iteraciones o límite de tiempo») no son de Talbi (`cap2.tex:259-262`).
+22. **E-07** — «Cota primal/dual» y «gap» citados a Hillier y Lieberman, que no usa esos términos (`cap2.tex:130-139`).
+23. **E-06** — «Flujo de tipo Gavish y Graves» se atribuye al paper, que no lo menciona (`cap2.tex:434-436`).
+24. **F13** — «Aun con las rutas óptimas»: son las más cortas encontradas (`cap4.tex:612`).
+25. **F14** — El argumento del ciclo suelto («nunca mejora el objetivo») ignora el adelanto; lo que lo hace inocuo es la espera voluntaria (`cap3.tex:298-303`).
+26. **F8** — HC llega a 200 iteraciones en el 03 y el 17 en el cuadro, y en el 03 y el 18 en `ap8`; vienen de corridas distintas y no se aclara (`cap6.tex:922-924`).
+
+### Nivel medio: precisión, rigor y trazabilidad
+
+27. **C6** — El test del caso 28 acepta `infeasible` en la fecha ajustada, aunque la tesina dice que ambas tienen solución (`ap4.tex:57`).
+28. **C8** — 36c: el rechazo de velocidades ≤ 0 lo hace el helper del test, no el pipeline de producción (`ap4.tex:75`).
+29. **C3** — Las letras de los casos (06a, 19b…) no existen en el código; trazabilidad frágil (`ap4.tex:3-5`).
+30. **C11** — Descripciones imprecisas en `ap4` (04, 08, 34a, «camino válido», «carga equilibrada»).
+31. **C13** — Los casos 13 y 14 son la misma instancia (duplicados efectivos).
+32. **C15** — Detalles del verificador (`ap6.tex`): tolerancia mixta, tope de 300 s por solve, diagnóstico lote por lote solo con ≤ 40 lotes, reloj desde `start_time`.
+33. **A6** — `τ_max = 2/ρ` supone un único lote por par (`ap8.tex:184-189`).
+34. **A7** — La tolerancia ε «la misma» de los lineales: en el monolítico es la de SCIP (~1e-6) (`cap3.tex:115`, `ap8.tex:259`).
+35. **A9** — Las heurísticas devuelven `status = "optimal"`; aclararlo al describir las columnas de los CSV (`cap5.tex:363-371`).
+36. **A10** — «Orden de sus identificadores» es orden alfabético de cadenas (B10 < B2) (`cap4.tex:350-351`).
+37. **A12** — Duración del escenario 01 en el estudio de semillas: 32 min en `ap8` y ~35 min en el código.
+38. **A14** — La brecha divide por |v5| en la spec; irrelevante con objetivos positivos.
+39. **A8** — Los evaluadores acumulan desde 0 y `_build_solution_info` usa `start_time`; sin efecto si es siempre 0.
+40. **F9** — La feromona de ruta es «inspirada en MMAS» (depósito unitario), no MMAS estricto (`cap4.tex:642-675`).
+41. **F10** — Con objetivos del orden de 10⁵, el depósito `Q/f'` de la feromona de asignación es casi inerte frente a `τ = 1`; la ablación no lo aísla.
+42. **F12** — TSP/ATSP usado antes de definirse y rótulo impreciso (`cap2.tex:103-104`, `cap4.tex:264`).
+43. **E-08** — Falta atribuir a Coruzzolo el vecino más cercano, swap/insert y multi-start (`ap8.tex:22-30`, `cap7.tex:71-73`).
+44. **E-11** — `tesina.bib`: «Sellitto, Miguel Alfonso» es «Afonso».
+45. **E-14** — Remisión incorrecta a `sec:marco_hc` para ILS, que `cap2` no define (`cap7.tex:86-88`).
+46. **E-12 / F17** — «Preparación» con tres sentidos; términos sin definir o con dos nombres (heredados, cuadrilla, ola, operario/picker, orden/pedido, nodo final/punto de entrega).
+47. **F18** — Notación sobrecargada (`C`, `T`, `𝒩`, `a`, `q`, `u`, `R`, `m`).
+48. **F15** — «Brecha» con dos sentidos (heurística–óptimo y gap de SCIP).
+49. **F16** — «Heurística» y «metaheurística» como sinónimos.
+50. **D-6** — `results/comparability/*.csv` está desactualizado respecto de ACO en estrés (problema del repo, no de la tesina).
+51. **D-14** — `compare_v5_split_vs_mono.csv` une por nombre de método y colapsa los casos 02 y 03.
+52. **B5** — Falta el argumento de paridad del 4×4 (baja prioridad).
+53. **C9 / C16** — No se informan pruebas que pasan/fallan; tests y herramientas del repo no mencionados (ver sección 4.1).
+54. **G6** — Referencias cruzadas: `cap6.tex:727` apunta a `sec:heur_limitaciones` en vez de `sec:aco_limitaciones`; el PDF y el log son anteriores a los últimos cambios (hay que recompilar).
+
+### Nivel bajo: estilo, redundancia y terminología
+
+55. **G2** — Repeticiones entre capítulos: caso 30a (`cap6.tex:51` y `cap7.tex:507`), HC 17 min / ACO 32 min, «el monolítico no termina ninguno de los 19» (3 veces), reducción al modelo de referencia (3 veces), lista de validaciones de datos (`cap3`, `cap4`, `cap5`), entre otras (R1–R13).
+56. **G1** — Colores de las figuras fuera de la guía de estilo: HC en `greenline` y ACO en `redline`, uso de `darkgray`/`darkblue` en diagramas, grosores de la Fig. 3.2, `\placefigure` vs `\startplacefigure`, negritas, comillas, guía desactualizada (G1a–G1i).
+57. **G3** — Resumen vs. abstract: «optimidad» → «optimalidad», «se optimiza mediante su descomposición» ambiguo, falta el segundo aporte (verificación de las 150 soluciones), sin palabras clave, retoques de inglés.
+58. **G4** — Español y formato: «ya que se ve que», «un poco» (`cap6.tex:75,928`), «Los cuatro modelos» (`cap6.tex:960`), anglicismo «test» (`cap5.tex:149`), primera persona plural (`resumen.tex`, `ap5.tex`), espaciado del `%`, cita atribuida a «Lao Tse», `picker` sin cursiva.
+59. **G5** — Pasajes densos o ambiguos: `cap7.tex:44-88`, `cap6.tex:460-472` y `859-877`, `cap3.tex:381-404`, `cap5.tex:56-66`.
+
+*(Los detalles de cada ítem Menor están en la sección 3; las tablas completas de G1, G2 y G4 están en G.)*
+
+## 3. Detalle de los hallazgos por sección
 
 ### A. Veracidad: tesina contra código
 
-Ninguna fórmula ni parámetro de `cap3`, `cap4` ni `cap5` contradice el código leído. Las afirmaciones contrastadas están en la tabla de la sección 3.4.
+Ninguna fórmula ni parámetro de `cap3`, `cap4` ni `cap5` contradice el código leído. Las afirmaciones contrastadas están en la tabla de la sección 4.4.
 
 #### A1 — Menor (reclasificado; el informe parcial decía Mayor) — La justificación de λ = 1000 no se cumple con la propia cota K de la tesina
 
@@ -902,9 +981,9 @@ Búsqueda de `TODO`, `ToDo`, `\todo`, `XXX`, `FIXME`, `??`, `pendiente`, `placeh
 | `ap6.tex:151-152` | `TODO: no estoy segura de esto en general, podemos ver si queda o no. quizas ya es mucho ruido` (al final de «Pseudocódigo») |
 | `tesina.tex:101-103` | Comentario con una cita alternativa («me gustó jaja») |
 
-## 3. Tablas de trazabilidad
+## 4. Tablas de trazabilidad
 
-### 3.1 Tests (tesina ↔ repositorio)
+### 4.1 Tests (tesina ↔ repositorio)
 
 * La tesina nunca cita nombres de test; usa «caso NN[letra]». El «nombre exacto» verificable es el archivo **`tests/opp_v5_2_split/functional/test_case_NN.py`** y **`tests/opp_v5_1_mono/functional/test_case_NN.py`**: existen los 38 en ambos (✓).
 * Las letras no existen en el código. Mapeo inferido: letra = posición alfabética del método `test_*` dentro del caso (se cumple en todos los casos con ≥ 2 métodos; la tabla §3 lo muestra).
@@ -1018,7 +1097,7 @@ Veredictos: **Coincide** = lo que dice `ap4.tex` coincide con los asserts; **Imp
 | Escenarios de estrés | 19, tamaños de `cap5` tabla | 19 archivos; (lotes, pickers, pedidos, grilla) coinciden con las llamadas | ✓ |
 | «Se verificó que los datos son idénticos en los 19» (`cap5:555`) | verificación | Las 19 llamadas a los generadores son textualmente idénticas en los 4 métodos; no hay un test que compare los datos | Parcial; evidencia de la verificación efectiva: no verificado |
 
-### 3.2 Experimentos (tesina ↔ script ↔ resultados)
+### 4.2 Experimentos (tesina ↔ script ↔ resultados)
 
 | # | Experimento (tesina) | Dónde | Script / comando | Archivo de resultados | Estado |
 |---|---|---|---|---|---|
@@ -1035,11 +1114,11 @@ Veredictos: **Coincide** = lo que dice `ap4.tex` coincide con los asserts; **Imp
 | E11 | Presupuesto de iteraciones de HC; sensibilidad α, β, ρ; ablación de ACO | `cap5` §5.6 remite a `ap8` | `analysis/run_hc_budget_study.py`, `run_aco_pheromone_study.py`, `run_aco_ablation_study.py` | `results/opp_hc_4/budget`, `results/opp_aco_4/{pheromone,ablation}` | Solo verifiqué el presupuesto de HC (82 de 88 por estancamiento; mejoras ≤ 0,59 %). Pheromone y ablación **no auditados** (`ap8`, fuera de alcance) |
 | E12 | Relevamiento (estudios 01–07), cap5 §5.4.1 y `ap5` | `cap5` §5.4.1 | `experiments/opp_v5/studies/01…07` | CSV de `studies/01…07` | **No verificado** (`ap5` fuera de alcance) |
 
-### 3.3 Números de tablas y figuras (valor en la tesina ↔ valor recalculado)
+### 4.3 Números de tablas y figuras (valor en la tesina ↔ valor recalculado)
 
-Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las filas marcadas ✗ o ~ remiten al hallazgo correspondiente (D-15 corrige las dos filas de tiempos funcionales después del cambio reciente de `cap6`).
+Los subapartados 4.3.1 a 4.3.7 corresponden a los 3.1 a 3.7 del informe D parcial. Las filas marcadas ✗ o ~ remiten al hallazgo correspondiente (D-15 corrige las dos filas de tiempos funcionales después del cambio reciente de `cap6`).
 
-#### 3.3.1 Monolítico contra Split, funcionales (`cap6` §6.1.1–6.1.2, `ap7`)
+#### 4.3.1 Monolítico contra Split, funcionales (`cap6` §6.1.1–6.1.2, `ap7`)
 
 | Valor | Tesina | Recalculado | OK |
 |---|---|---|---|
@@ -1057,7 +1136,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | `ap7` Cuadro de pares (49 filas) y de infactibles (11): tiempos, cocientes y objetivos | — | las 60 filas coinciden con los CSV (tiempos a 3 decimales, cocientes, objetivos); única diferencia: caso 27, objetivo 58,0 contra 58,05 | ✓ (salvo redondeo del 27) |
 | Figura de dispersión: 49 puntos | 49 | 49, desvío máximo 0,05 % respecto de los CSV | ✓ |
 
-#### 3.3.2 Escala y 40 minutos (`cap6` §6.1.3)
+#### 4.3.2 Escala y 40 minutos (`cap6` §6.1.3)
 
 | Valor | Tesina | Repo | OK |
 |---|---|---|---|
@@ -1073,7 +1152,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | `tab:res_40min`: gap informado | 11,0 / 10,4 / – / 143,5 % | 11,01 / 10,37 / – / 143,52 | ✓ |
 | Texto: "no prueba el óptimo en esos puntos" | las tres | solo dos; el 6 lotes 5×5 cierra a 32 min | ✗ (D-5) |
 
-#### 3.3.3 Estrés: Split, HC, ACO (`cap6` §6.1.4 y §6.3; `ap7`)
+#### 4.3.3 Estrés: Split, HC, ACO (`cap6` §6.1.4 y §6.3; `ap7`)
 
 | Valor | Tesina | Recalculado | OK |
 |---|---|---|---|
@@ -1103,7 +1182,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | Escenarios: lotes, pickers, pedidos y grilla de los 19 | `tab:escenarios_estres` | coinciden con N, B, P, V de los CSV de HC y ACO | ✓ |
 | Parámetros de HC y ACO | `tab:hc_parametros`, `tab:aco_parametros` | 500/30/30 s (`dtos/hc/solve_hc_model_dto.py`); estrés 200/60 (CSV); ACO m=15, 60 it., 1.800 s, α=1, β=2,5, ρ=0,15, Q=100 (`dtos/aco/…`, `models/opp_aco_4/opp_aco_4.py:225-236`); semilla 1 (`v5_scenario_adapter.py`) | ✓ |
 
-#### 3.3.4 HC y ACO frente al Split, funcionales (`cap5` §5.3, `cap6` §6.3)
+#### 4.3.4 HC y ACO frente al Split, funcionales (`cap5` §5.3, `cap6` §6.3)
 
 | Valor | Tesina | Recalculado | OK |
 |---|---|---|---|
@@ -1120,7 +1199,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | HC más rápido; ACO más rápido | 35 y 24 (texto actual) | 33 y 24 | ✗ (D-15) |
 | Cociente "5,1" y "1,4" | "de modo que" las medianas | mediana de cocientes 5,14 y 1,44; cociente de medianas 4,93 y 1,34 | ~ (D-9) |
 
-#### 3.3.5 Verificación (`cap6` §6.2)
+#### 4.3.5 Verificación (`cap6` §6.2)
 
 | Valor | Tesina | Recalculado | OK |
 |---|---|---|---|
@@ -1133,7 +1212,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | Subgrafo 100×100 "unas 1.500 de 10.000" | sí | HC 1.425, ACO 1.365 | ~ (D-12) |
 | 9 soluciones de estrés del Split válidas | sí | sin CSV; solo `meta.md:693` | No reproducible |
 
-#### 3.3.6 A igual tiempo (`cap6` §6.3.6)
+#### 4.3.6 A igual tiempo (`cap6` §6.3.6)
 
 | Valor | Tesina | Recalculado | OK |
 |---|---|---|---|
@@ -1149,7 +1228,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | Exceso de presupuesto "a lo sumo 6 s" (salvo 01) | 6 s | 6,19 s | ~ (D-13) |
 | Monolítico 01: 59 min, casi el doble del presupuesto | sí | 3.537,6 s = 58,96 min; 1,87× | ✓ |
 
-#### 3.3.7 Semillas y presupuesto (consultados en `ap8`)
+#### 4.3.7 Semillas y presupuesto (consultados en `ap8`)
 
 | Valor | Tesina | Recalculado | OK |
 |---|---|---|---|
@@ -1161,7 +1240,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | HC: mejoras con presupuestos mayores | hasta 0,59 % (03); ≤ 0,11 % | mínimo delta −0,5877 %; −0,1063 % | ✓ |
 | HC: 2 escenarios sin solución con una semilla | 09 y 11 | 09 semilla 4; 11 semilla 5 | ✓ (D-3) |
 
-### 3.4 Afirmaciones técnicas contrastadas con el código
+### 4.4 Afirmaciones técnicas contrastadas con el código
 
 | Afirmación (tesina) | Código | Resultado |
 |---|---|---|
@@ -1201,7 +1280,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 | Hardware: i7-1360P, 4 P + 8 E (`cap5.tex:L39-44`) | `meta.md:L420`, `L565` ("CPU híbrida") | ✓ |
 | Timeouts 25 min funcional / 40 min estrés (`cap5.tex:L314-316`) | `.env.example:L8-12` (25 por defecto; 40 min "se usó para estrés ACO") | ✓ coherente; **la configuración de cada corrida no se pudo ver** (código en `tests/infra/execution`) |
 
-### 3.5 Experimentos o resultados del repositorio no reportados
+### 4.5 Experimentos o resultados del repositorio no reportados
 
 **Debería estar**
 - La **procedencia de cada CSV** (qué corrida, qué fecha y qué versión del código) y la mezcla de versiones (D-2). Hoy solo se declara para el Split del escenario 10 y los presupuestos de HC.
@@ -1218,7 +1297,7 @@ Los subapartados 3.3.1 a 3.3.7 corresponden a los 3.1 a 3.7 del informe D. Las f
 - Estudios 09 y 10 del monolítico (`09_shared_with_split`, `10_mono_scale_axes`: el monolítico no prueba ninguna de las 15 instancias de los estudios del Split en 300 s, y en 7 de 15 no encuentra solución factible; los 25 óptimos coinciden con el Split). No aparecen en `cap5`, `cap6` ni `ap7`, aunque refuerzan "el monolítico no escala". Pueden estar en `ap5`; no lo verifiqué.
 - Funcionales: la agrupación `migrated` (44) / `own` (19) de `compare_v5_split_vs_mono.csv`.
 
-## 4. Estado de los ToDos
+## 5. Estado de los ToDos
 
 Los ítems que ya estaban resueltos se quitaron antes de esta consolidación. Las guías de trabajo de los capítulos se borraron el 16/11; lo que seguía abierto pasó a `Notas/pendientes_cap7.md` §6.
 
@@ -1272,7 +1351,7 @@ Las guías de trabajo de los capítulos se borraron el 16/11. Lo que seguía abi
 
 **Pendientes que no figuran en `Notas/pendientes_cap7.md`:** la decisión sobre la versión del código de las heurísticas (D-2), la convergencia de HC en 03/17 vs 03/18 (F8), los dos ítems de `cap7` sobre qué limita a la Etapa 1 y los depósitos con estanterías, y el rótulo `Licenciadas en Sistemas` de `tesina.tex:20`.
 
-## 5. Qué no se pudo verificar y por qué
+## 6. Qué no se pudo verificar y por qué
 
 - **Ejecución de tests y experimentos:** por indicación, no se ejecutó nada. Los resultados de pasa/falla de cada prueba, los tiempos del monolítico en las pruebas funcionales y todo lo que dependa de re-ejecutar (por ejemplo, el funcional de HC, 40 de 45, y el de ACO con el código final) quedan como «no verificado (no se ejecutó)». D-2 se apoya en fechas de commit y en la comparación entre CSV.
 - **Compilación de la tesina:** no se recompiló. `tesina.log` y `tesina.pdf` son anteriores a las últimas modificaciones; no se pudo comprobar la numeración visible ni la ausencia de `??` en el PDF.
