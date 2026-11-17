@@ -18,20 +18,19 @@ las mejoras en la planificación de la operación de picking generan
 beneficios directos para la empresa y para los clientes, tales como:
 
 \startitemize
-	\item Reducción de costos operativos, ya que los operarios pueden preparar más
+	\item Menores costos operativos, porque los operarios preparan más
 	pedidos en el mismo tiempo.
-	\item Reducción de los tiempos de entrega, ya que los pedidos se preparan y
-	se envían con mayor rapidez.
-	\item Una mejor planificación de entregas, ya que los pedidos se preparan y
-	se entregan en el momento justo, evitando cuellos de botella en la zona de
-	despacho.
-	\item Una mejor experiencia de compra para los clientes, ya que reciben sus
+	\item Menores tiempos de entrega, porque los pedidos salen antes del
+	almacén.
+	\item Una mejor planificación de las entregas, porque los pedidos quedan
+	listos en el momento justo y no se acumulan en la zona de despacho.
+	\item Una mejor experiencia de compra, porque los clientes reciben sus
 	pedidos en el tiempo acordado.
 \stopitemize
 
 En este trabajo se considera un almacén con pasillos que guarda productos
 congelados, sujetos a la cadena de frío. Para recolectar varios pedidos en
-un mismo recorrido, los pedidos (también llamados {\em órdenes}) de los clientes
+un mismo recorrido, los pedidos de los clientes
 se agrupan en {\em lotes}. Cada lote es ejecutado por un único operario de picking
 ({\em picker}, término que se usa a partir del
 Capítulo~\in[Capitulo_3]), que parte del depósito, recorre los pasillos visitando cada
@@ -158,8 +157,8 @@ qué condiciones cada enfoque resulta más apropiado.
 	\ac{aco}, equivalentes a los modelos lineales, con la misma función
 	objetivo y las mismas restricciones, de forma tal que sus resultados sean
 	comparables. A diferencia de los modelos lineales, las metaheurísticas no
-	contemplan que un operario espere voluntariamente antes de comenzar un
-	lote.
+	contemplan que un operario demore a propósito el comienzo de un lote para
+	acercar su finalización a la fecha de entrega.
 	\item Diseñar un conjunto de escenarios de prueba (funcionales y de estrés)
 	que permitan comparar los cuatro métodos bajo condiciones equivalentes.
 	\item Medir y comparar, sobre esos escenarios, la proporción de instancias

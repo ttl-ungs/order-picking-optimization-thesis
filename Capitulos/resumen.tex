@@ -6,9 +6,9 @@ almacén y la cantidad de pedidos. Esto dificulta su aplicación en escenarios o
 de respuesta acotados.
 
 Este trabajo toma como punto de partida un modelo de programación lineal entera mixta de la literatura para el OPP. Tomándolo como guía,
-se formula un modelo lineal propio, al que llamamos {\em monolítico}, que incorpora velocidades heterogéneas entre operarios y restricciones
+se formula un modelo lineal propio, denominado {\em monolítico}, que incorpora velocidades heterogéneas entre operarios y restricciones
 de cadena de frío. Luego, con el fin de reducir sus tiempos de ejecución y abordar instancias de mayor escala, este modelo se descompone en dos etapas, que se resuelven una después de la otra. Primero se resuelve el ruteo de cada lote y luego, la asignación y la
-secuenciación de los lotes. A este segundo modelo lo llamamos {\em Split}. Debido a que el modelo Split sigue sin resolverse en tiempos
+secuenciación de los lotes. Este segundo modelo se denomina {\em Split}. Debido a que el modelo Split sigue sin resolverse en tiempos
 prácticos para instancias moderadamente grandes, se desarrollan dos metaheurísticas basadas en {\em Hill Climbing} y {\em Ant Colony Optimization},
 equivalentes a los modelos lineales en las características que contemplan.
 
