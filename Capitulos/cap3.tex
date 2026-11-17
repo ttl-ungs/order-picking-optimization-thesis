@@ -1,4 +1,4 @@
-\startchapter[title={Modelos Lineales}, reference=Capitulo_3]
+\startchapter[title={Modelos lineales}, reference=Capitulo_3]
 
 En este capítulo se presentan los dos modelos lineales desarrollados en esta
 tesina. Ambos parten del modelo de referencia de Coruzzolo et al.
@@ -172,7 +172,7 @@ segunda.
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Modelo Monolítico}, reference=sec:modelo_monolitico]
+\startsection[title={Modelo monolítico}, reference=sec:modelo_monolitico]
 
 El modelo monolítico es un único \ac{mip} que decide a la vez la ruta de cada
 lote, a qué {\em picker} se asigna y en qué orden se ejecuta.
@@ -429,7 +429,7 @@ $ea_n = \max(0,\, T^{\text{due}}_n - c_b)$.
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Modelo en Dos Etapas (Split)}, reference=sec:modelo_split]
+\startsection[title={Modelo en dos etapas (Split)}, reference=sec:modelo_split]
 
 El modelo Split resuelve el mismo problema mediante dos \ac{mip} que se
 ejecutan uno después del otro:
@@ -449,15 +449,19 @@ La descomposición se apoya en dos propiedades. La primera es que la ruta de
 un lote no depende de qué {\em picker} lo ejecuta ni del orden entre lotes,
 por los supuestos de velocidad y de ausencia de congestión. La segunda es que
 reemplazar la ruta de un lote por una más corta nunca empeora el objetivo.
-Para verlo, considérese una solución óptima del modelo monolítico y
-reemplácese la ruta de cada lote por su ruta mínima. El tiempo de ejecución
-$F_b + r_b / V_p$ de cada lote no aumenta, de modo que la cadena de frío se
-sigue cumpliendo. Además, como las restricciones que vinculan la ejecución con
+Para verlo, se toma una solución óptima del modelo monolítico y se reemplaza
+la ruta de cada lote por su ruta mínima. Entonces:
+\startitemize[n]
+	\item El tiempo de ejecución $F_b + r_b / V_p$ de cada lote no aumenta, de
+	modo que la cadena de frío se sigue cumpliendo.
+	\item Como las restricciones que vinculan la ejecución con
 la finalización, (\in[eq:mono_piso]) y
 (\in[eq:mono_seq1])--(\in[eq:mono_seq2]), son desigualdades, los mismos
-instantes de finalización $c_{pb}$, la misma asignación $x_{pb}$ y la misma
-secuencia $y_{bk}$ siguen siendo factibles. El objetivo depende solo de las
-finalizaciones y de los adelantos y demoras, así que no cambia. Existe, por lo
+instantes de finalización $c_{pb}$, la misma asignación $x_{pb}$ y la misma secuencia $y_{bk}$ siguen siendo factibles.
+	\item El objetivo depende solo de las finalizaciones y de los adelantos y
+	demoras, así que no cambia.
+\stopitemize
+Existe, por lo
 tanto, una solución óptima con rutas mínimas, que es la que busca el modelo
 Split, y ambos modelos alcanzan el mismo valor óptimo.
 
