@@ -31,7 +31,7 @@ loteo, extendido con las tres características anteriores, y no el problema
 conjunto de cuatro decisiones que plantean Coruzzolo et al. (que incluye el
 loteo).
 
-En cuanto a la dificultad de los modelos lineales, Coruzzolo et al. no pudieron
+{\bf Dificultad de los modelos lineales.} Coruzzolo et al. no pudieron
 resolver sobre su caso de estudio ninguno de sus dos modelos, ni
 siquiera el simplificado (Sección~\in[sec:trabajos_relacionados]). Los
 resultados de esta tesina son consistentes con esa experiencia, ya que,
@@ -41,7 +41,7 @@ los 19 escenarios de estrés dentro del tope de 40 minutos
 proviene solo de decidir el loteo, sino también de reunir el ruteo, la
 asignación y la secuencia en un mismo modelo.
 
-Tanto el modelo simplificado de Coruzzolo
+{\bf Descomposición.} Tanto el modelo simplificado de Coruzzolo
 et al. como el Split coinciden en extraer el ruteo del modelo, y en
 pasar como dato la duración de cada lote al modelo que los asigna y secuencia.
 Difieren, sin embargo, en cómo obtienen esa duración y, en consecuencia, en qué garantiza cada uno.
@@ -56,40 +56,43 @@ comparables de las pruebas funcionales (Sección~\in[sec:mismo_optimo]). El cost
 resuelve un \ac{mip} de ruteo por lote sobre el grafo completo, lo cual es una limitación
 en almacenes grandes (Sección~\in[sec:caracteristicas_formulacion]).
 Si se quisiera decidir el loteo con el mismo esquema, la Etapa~1 tendría que
-rutear cada lote candidato, cuya cantidad crece combinatoriamente con las
-órdenes, lo que ayuda a explicar por qué Coruzzolo et al. recurren a una ruta
+rutear cada lote candidato, cuya cantidad crece combinatoriamente con los
+pedidos, lo que ayuda a explicar por qué Coruzzolo et al. recurren a una ruta
 heurística en ese paso.
 
-En cuanto a la medición de calidad contra el óptimo, Coruzzolo et al.,
-ante la dificultad de los modelos
-lineales, resuelven su caso con una heurística constructiva
+{\bf Medición contra el óptimo.} Ante la dificultad de los modelos lineales,
+Coruzzolo et al. resuelven su caso con una heurística constructiva
 por fecha de entrega más temprana, mejorada con búsqueda local iterada, sin
 poder contrastar sus resultados con el óptimo. En esta tesina, el Split
 permite hacer esa medición en instancias de tamaño realista: \ac{aco} alcanza
 el óptimo en las 45 instancias funcionales comparables y queda a lo sumo a un
 0,04~\% en estrés, y \ac{hc} lo alcanza en 40 de las 45 y queda a lo sumo a un
-0,21~\% en estrés (Sección~\in[sec:res_calidad]). No se implementó la heurística de los autores,
+0,21~\% en estrés (Sección~\in[sec:res_calidad]).
+
+No se implementó la heurística de los autores,
 de modo que estos resultados no miden su calidad, pero sí
 indican qué puede esperarse de sus componentes. La regla de fecha de entrega
 más temprana también está presente en \ac{aco}, aunque aplicada de otra
-forma. La heurística de los autores recorre las órdenes por fecha de entrega
-y, a medida que avanza, forma los lotes, agregando cada orden al lote en curso
+forma. La heurística de los autores recorre los pedidos por fecha de entrega
+y, a medida que avanza, forma los lotes, agregando cada pedido al lote en curso
 del {\em picker} con el que termina antes, o abriendo uno nuevo si se supera la
 capacidad del carro. \ac{aco}, en cambio, recibe los lotes ya formados, los
 asigna a los {\em pickers} por ruleta y luego ordena la secuencia de cada uno
-según la menor fecha de entrega entre las órdenes de cada lote
+según la menor fecha de entrega entre los pedidos de cada lote
 (Sección~\in[sec:aco_construccion]). En \ac{aco}, esa regla no basta por sí
 sola, y se complementa con una búsqueda local sobre la asignación
-(Sección~\in[sec:aco_pulido]). Una búsqueda local que solo acepta
+(Sección~\in[sec:aco_pulido]).
+
+Una búsqueda local que solo acepta
 mejoras, como \ac{hc}, puede quedar hasta un 5,88~\% por encima del óptimo en
 instancias funcionales de grilla, porque se detiene en un óptimo local. La
 búsqueda local iterada de los autores incluye, justamente, un
 mecanismo para escapar de ellos, reiniciando la búsqueda local desde una
 perturbación de la mejor solución encontrada (Sección~\in[sec:marco_hc]).
 
-En cuanto a lo que no es comparable, la reducción del 57~\% en el tiempo de
+{\bf Lo que no es comparable.} La reducción del 57~\% en el tiempo de
 picking que informan Coruzzolo et al. se mide contra preparar los pedidos de
-a uno, y proviene enteramente de agrupar las órdenes en lotes, sobre todo de
+a uno, y proviene enteramente de agrupar los pedidos en lotes, sobre todo de
 la reducción del tiempo de preparación. De los 207,97 minutos diarios que se
 ahorran, 169,20 corresponden a la preparación y 38,77 al recorrido. Como en esta
 tesina los lotes son un dato, ese ahorro no puede reproducirse ni
@@ -184,7 +187,7 @@ válida en todos los casos. Cuando la espera no conviene
 afecta a las soluciones de este trabajo, como se comprobó sobre las 59
 soluciones del Split (Sección~\in[sec:anexo_mseq]).
 
-Además, la formulación no distingue los lotes vacíos, es decir, sin órdenes. Si
+Además, la formulación no distingue los lotes vacíos, es decir, sin pedidos. Si
 $\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
 nodo final, un {\em picker} y un lugar en una secuencia, y su finalización
 entra en el objetivo. Además, los lotes vacíos son intercambiables entre sí,
@@ -603,7 +606,7 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 	de cuatro decisiones que plantean Coruzzolo et al. La idea del Split
 	podría combinarse con la enumeración de lotes candidatos de su modelo
 	simplificado, ruteando cada candidato de forma exacta o heurística. Como la
-	cantidad de candidatos crece combinatoriamente con las órdenes, habría que
+	cantidad de candidatos crece combinatoriamente con los pedidos, habría que
 	acotarla, y esa es la principal dificultad de esta línea
 	(Sección~\in[sec:disc_referencia]).
 	\item Modelar la congestión entre {\em pickers}, como hacen Chen et al.
