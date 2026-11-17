@@ -9,7 +9,6 @@ resolver en tiempos razonables. En cada estudio se varió un único factor
 por vez (tamaño del almacén, cantidad de lotes, pedidos por lote, cantidad
 de {\em pickers} y sus velocidades), manteniendo fijo el resto.
 
-% TODO: Tengo que verificar ese porcentaje. No es claro.
 En todos los estudios, el almacén es una grilla de $n \times n$ ubicaciones,
 con el depósito y el punto de entrega en esquinas opuestas. Cada pedido se
 ubica al azar en una de las ubicaciones, con una semilla fija, los pedidos se
@@ -115,8 +114,6 @@ draw unitsquare scaled 0.3cm shifted (5.5cm,h+0.75cm) withpen pencircle scaled 1
 label.rt(textext("\tfx 4 pickers, sin terminar en 300 s"), (5.85cm,h+0.9cm));
 \stopMPcode}
 
-% TODO: ojo acá--no es que no miramos la demora, aclarar eso. Si no, parece
-% que solo testeamos el adelanto.
 {\bf Pedidos por lote y peso de la finalización.} Se fijaron 26 pedidos por
 lote. Durante la exploración, con un peso de finalización $W^{c} = 9$,
 alrededor de dos tercios de los pedidos se completaban a tiempo, de modo que
