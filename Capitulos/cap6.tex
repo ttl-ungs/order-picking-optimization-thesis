@@ -72,7 +72,7 @@ resueltos.
 \stopplacetable
 
 En la suma, el monolítico tardó 5,75 veces más que el Split, pero en la
-mediana la relación se invierte, ya que se ve que el monolítico fue más rápido en 38 de los
+mediana la relación se invierte: el monolítico fue más rápido en 38 de los
 49 pares, con tiempos de entre el 37~\% y el 98~\% de los del Split. Se trata
 de instancias pequeñas, en las que el resolvedor tarda milisegundos y el
 tiempo total depende sobre todo de la compilación. Como es esperable, compilar un único modelo
@@ -454,20 +454,25 @@ del óptimo del Split, con la definición de la Sección~\in[sec:comparacion].
 \stopplacetable
 
 ACO alcanza el óptimo en las 45 instancias funcionales y, en estrés, queda a
-lo sumo a un 0,04~\% de él. HC llega al óptimo en 40 de las 45 instancias
+lo sumo a un 0,04~\% de él.
+
+HC llega al óptimo en 40 de las 45 instancias
 funcionales. Las 5 en las que no lo alcanza son todas de grilla
 (Cuadro~\in[tab:res_fallos_hc]). En ellas hay muchas rutas y asignaciones de
 costo parecido, y una búsqueda que solo acepta mejoras se detiene en un
 óptimo local (Sección~\in[sec:marco_hc]). En estrés, HC queda a lo
-sumo a un 0,21~\%, en el escenario con cadena de frío (11). Además, HC casi
-no modifica las rutas que obtiene en la construcción inicial. En tres
+sumo a un 0,21~\%, en el escenario con cadena de frío (11). Como muestra la
+Figura~\in[fig:res_brecha], ACO obtiene una brecha menor que HC en 8 de los 9
+escenarios.
+
+Además, HC casi no modifica las rutas que obtiene en la construcción inicial. En tres
 escenarios de estrés del perfil realista (grilla de 7×7 con 6 lotes y 3
 {\em pickers}, 7×7 con 10 lotes y 5 {\em pickers}, y 10×10 con 12 lotes y
 12 {\em pickers}), el movimiento 2-opt se eligió 86 veces y no generó ningún
 vecino. Esas iteraciones fueron entre el 26~\% y el 48~\% del total, según
-el escenario. Como muestra la
-Figura~\in[fig:res_brecha], ACO obtiene una brecha menor que HC en 8 de los 9
-escenarios. Ninguna heurística queda por debajo de un óptimo probado del
+el escenario.
+
+Ninguna heurística queda por debajo de un óptimo probado del
 Split, como corresponde a soluciones válidas de un problema de minimización.
 
 \startplacetable[reference=tab:res_fallos_hc, location=here, title={Instancias funcionales en las que HC no alcanza el óptimo. ACO lo alcanza en las cinco.}]
@@ -572,9 +577,9 @@ Split, lo que confirma que toda la diferencia se explica por el tiempo ocioso in
 \startsubsection[title={Tiempos}, reference=sec:res_tiempos]
 
 En las pruebas funcionales, los tiempos se comparan sobre 35 de las 45
-instancias comparables en objetivo, ya que el registro del Split guarda una fila por
-prueba, y algunas pruebas resuelven más de una instancia, por lo que solo se
-conoce el tiempo de las que resuelven una sola. En la mediana, el Split tarda
+instancias comparables en objetivo. El registro del Split guarda una fila por
+prueba y algunas pruebas resuelven más de una instancia, de modo que solo se
+conoce el tiempo de las instancias cuya prueba resuelve una sola. En la mediana, el Split tarda
 0,295 segundos, HC 0,061 y ACO 0,225, de modo que HC es 5,1 veces más rápido
 que el Split y ACO, 1,4 veces. HC fue más rápido que el Split en las 35
 instancias; ACO, en 24. En las 11 restantes, de alrededor de un segundo, ACO
@@ -859,16 +864,19 @@ el que el presupuesto fue unos 3~minutos mayor que el tiempo de esa corrida.
 {\bf Con el tiempo de \ac{aco}.} Los presupuestos van de 14 a 357~segundos, salvo en el 01, donde es de unos
 32~minutos (Cuadro~\in[tab:res_igual_tiempo_aco]). El Split obtiene una
 solución en 15 de los 19 escenarios. En 7 de ellos (04, 05, 06, 09, 10, 12 y 13) queda a
-menos de un 0,1~\% de \ac{aco}, y en el 09 la mejora por menos de un
-0,01~\%. En el 02, el presupuesto de 28~segundos no le alcanza para probar el
-óptimo, que en su propia corrida obtiene en 33, y \ac{aco} es mejor por un
-0,8~\%. En el 03, \ac{aco} es mejor por un 0,7~\%; en el 15 y el 14, por un 15
+menos de un 0,1~\% de \ac{aco}, y en el 09 incluso la mejora, por menos de un
+0,01~\%. En el 02 y el 03, \ac{aco} es mejor por menos de un 1~\%; en el 15 y
+el 14, por un 15
 y un 30~\%, y en los cuatro escenarios de cuadrilla grande (16 a 19), por entre un
-46 y un 58~\%. Con el tiempo de \ac{aco}, entonces, el Split entrega soluciones de
-mucha peor calidad. En el 01, el 07 y el 08, la Etapa~1 no llega a rutear todos
-los lotes, y en el 11 rutea lotes que ningún picker habilitado para la cadena de
-frío puede tomar, así que la Etapa~2 no tiene una asignación factible. El
-monolítico solo obtiene una solución en el 04 y el 12, un 5,3 y un 10,5~\%
+46 y un 58~\%. La diferencia es, entonces, chica en la mayoría de los escenarios y grande en
+los de cuadrilla grande.
+
+En los cuatro escenarios restantes, el Split no llega a una solución. En el
+01, el 07 y el 08, la Etapa~1 no llega a rutear todos
+los lotes, y en el 11 rutea lotes que ningún {\em picker} habilitado para la cadena de
+frío puede tomar, así que la Etapa~2 no tiene una asignación factible.
+
+El monolítico solo obtiene una solución en el 04 y el 12, un 5,3 y un 10,5~\%
 peor que la de \ac{aco}. Salvo en el 01, los modelos lineales excedieron su
 presupuesto en a lo sumo 6~segundos. En el 01, el monolítico tardó
 59~minutos, casi el doble de su presupuesto, porque el límite se aplica solo
