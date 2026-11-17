@@ -32,7 +32,7 @@ y definir sus movimientos (Sección~\in[sec:marco_hc]). En las dos
 metaheurísticas, una solución $s = (\pi, a, \sigma)$ tiene tres componentes,
 que corresponden a las tres decisiones del problema:
 \startitemize[n]
-	\item {\bf Una ruta por lote.} Para cada lote $b$ con órdenes,
+	\item {\bf Una ruta por lote.} Para cada lote $b$ con pedidos,
 	$\pi_b = (v_1, \dots, v_k)$ es una secuencia de ubicaciones intermedias,
 	que el {\em picker} recorre desde $v_{\text{start}}$ hasta
 	$v_{\text{end}}$. Además de las ubicaciones que debe recolectar, la
@@ -106,7 +106,7 @@ anterior, el instante de finalización del $k$-ésimo lote de $\sigma_p$ es
 	c_{b_k} = \sum_{l=1}^{k} T^{\text{exec}}_{p\,b_l},
 \stopformula
 \stopplaceformula
-y a partir de los $c_b$ se calculan el adelanto y la demora de cada orden.
+y a partir de los $c_b$ se calculan el adelanto y la demora de cada pedido.
 Por lo tanto, las metaheurísticas siempre informan el instante real de
 finalización de cada lote, y no pueden generar la espera voluntaria que sí
 admiten los modelos lineales (Sección~\in[sec:espera_voluntaria]).
@@ -119,7 +119,7 @@ admiten los modelos lineales (Sección~\in[sec:espera_voluntaria]).
 Las dos metaheurísticas minimizan la misma función objetivo que los modelos
 lineales (Ecuación~\in[eq:mono_objetivo]). Dada una solución $s$, los
 instantes de finalización $c_b$ se obtienen con la
-Ecuación~\in[eq:hc_finalizacion], y el adelanto y la demora de cada orden $n$
+Ecuación~\in[eq:hc_finalizacion], y el adelanto y la demora de cada pedido $n$
 se calculan respecto del lote $b(n)$ al que pertenece:
 \startformula
 	ea_n = \max\left(0,\; T^{\text{due}}_n - c_{b(n)}\right), \qquad
@@ -214,7 +214,7 @@ que la instancia no tiene solución. Si alguno falla, la ejecución termina y la
 informa como infactible.
 
 Los primeros chequeos validan los datos de entrada y son los mismos que en
-los modelos lineales (Sección~\in[sec:split_resolucion]). Cada orden debe
+los modelos lineales (Sección~\in[sec:split_resolucion]). Cada pedido debe
 pertenecer a exactamente un lote, ningún lote puede superar la capacidad del
 carro y todas las velocidades deben ser positivas. A los {\em pickers} sin
 velocidad informada se les asigna la velocidad de referencia $V_p = 1$.
@@ -347,7 +347,7 @@ más lejano y 20 construcciones aleatorias
 distancia, que después se pule (Sección~\in[sec:anexo_rutas_pulido]).
 
 {\bf Asignación inicial y secuencia.} Con las rutas armadas, cada lote con
-órdenes se asigna a un {\em picker} de forma golosa, recorriendo los lotes en
+pedidos se asigna a un {\em picker} de forma golosa, recorriendo los lotes en
 el orden de sus identificadores. Para el lote $b$ se calcula el conjunto de
 {\em pickers} con los que cumple la cadena de frío,
 \startformula
@@ -503,7 +503,7 @@ decisión que toman las hormigas:
 No hay feromona para la secuencia $\sigma_p$, porque las hormigas la
 construyen con una regla fija.
 
-{\bf Ruta de cada lote.} Cada hormiga recorre los lotes con órdenes y, para
+{\bf Ruta de cada lote.} Cada hormiga recorre los lotes con pedidos y, para
 cada uno, primero arma su ruta y después le elige un {\em picker}. Las rutas
 de los distintos lotes se construyen de forma independiente. La hormiga viaja
 de una ubicación requerida a otra, como en la Sección~\in[sec:heur_rutas].
@@ -564,7 +564,7 @@ frío y es penalizada (Sección~\in[sec:heur_evaluacion]).
 {\bf Secuencia.} Después de asignar todos los lotes, la secuencia
 $\sigma_p$ de cada {\em picker} se ordena por fecha de entrega más
 temprana. De esta forma, cada lote se ordena según la menor $T^{\text{due}}_n$ entre sus
-órdenes. A diferencia de la secuencia inicial de \ac{hc}, esta regla tiene
+pedidos. A diferencia de la secuencia inicial de \ac{hc}, esta regla tiene
 en cuenta las fechas de entrega, pero no la duración de los lotes ni los pesos de la función objetivo.
 
 Como cada hormiga construye una solución completa, $f$ y $v$ se calculan
