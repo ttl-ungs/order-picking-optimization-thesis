@@ -6,7 +6,7 @@ Capítulo~\in[Capitulo_4]. Estos detalles incluyen la construcción de las rutas
 (Sección~\in[sec:anexo_impl]), y las constantes de implementación y los
 estudios con los que se evaluaron sus parámetros
 (Secciones~\in[sec:calib_hc] y~\in[sec:calib_aco]). Los parámetros de
-cada metaheurística, con sus valores por defecto, se presentan en las
+cada metaheurística, con sus valores por defecto, se presentan en la
 Sección~\in[sec:ejecucion].
 
 %----------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ El valor de $\lambda$ de la Ecuación~\in[eq:hc_costo] se eligió comparándolo
 con cuánto puede aumentar $f$ cuando un lote tarda una unidad de tiempo más.
 En el peor caso, ese lote y todos los que le siguen en la secuencia de su
 {\em picker} terminan una unidad más tarde, y el adelanto o la demora de cada
-una de sus órdenes cambia en una unidad, de modo que el aumento de $f$ está
+uno de sus pedidos cambia en una unidad, de modo que el aumento de $f$ está
 acotado por
 \startformula
 	K = W^{c} \, |\mathcal{B}| + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) |\mathcal{N}|.
@@ -153,7 +153,7 @@ solución aceptada. Para cada {\em picker}, los instantes de finalización se
 recalculan desde la primera posición de su secuencia en la que cambió el lote
 o su ruta, ya que las posiciones anteriores no se ven afectadas
 (Ecuación~\in[eq:hc_finalizacion]). El adelanto y la demora se recalculan
-solo para las órdenes de los lotes cuyo instante de finalización cambió, y el
+solo para los pedidos de los lotes cuyo instante de finalización cambió, y el
 exceso sobre $T^{\text{cold}}$, solo para los lotes cuya ruta o cuyo
 {\em picker} cambió, porque no depende de la posición en la secuencia. Los
 valores guardados se actualizan únicamente cuando el vecino es aceptado.
