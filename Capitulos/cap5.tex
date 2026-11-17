@@ -1,7 +1,7 @@
 \startchapter[title={Metodología}, reference=Capitulo_5]
 
 Este capítulo describe cómo se evaluaron los modelos lineales y las
-heurísticas. El trabajo siguió un orden en el que cada paso se apoyó en los
+metaheurísticas (en adelante, heurísticas). El trabajo siguió un orden en el que cada paso se apoyó en los
 resultados del anterior:
 \startitemize[n]
 	\item {\bf Pruebas funcionales.} Se verificó, sobre instancias chicas, que
@@ -31,13 +31,13 @@ Los modelos de esta tesina están implementados en Python 3.13. Los dos
 modelos lineales están formulados en {\bf ZIMPL} 3.6.2, un lenguaje de
 modelado algebraico para programación matemática. Cada formulación se
 compila a un archivo en formato LP, que luego se resuelve con {\bf SCIP}
-9.2.3, un solver de \ac{mip} de código abierto, a través de su interfaz
+9.2.3, un resolvedor de \ac{mip} de código abierto, a través de su interfaz
 para Python, {\bf PySCIPOpt} 5.6.0. Para resolver las relajaciones
 lineales, SCIP utiliza SoPlex 7.1.5. Las heurísticas están implementadas
-íntegramente en Python, sin depender de un solver externo.
+íntegramente en Python, sin depender de un resolvedor externo.
 
-Todas las pruebas y los estudios se ejecutaron en una notebook, con
-un procesador Intel i7-1360P. Este procesador tiene 4 núcleos de
+Todas las pruebas y los estudios se ejecutaron en una computadora
+portátil, con un procesador Intel i7-1360P. Este procesador tiene 4 núcleos de
 rendimiento, con {\em hyperthreading}, y 8 de eficiencia, que funcionan a
 cerca de la mitad de la velocidad de los primeros. Esto explica, en parte,
 que repartir un cálculo entre varios procesos no lo acelere en proporción a
@@ -146,9 +146,9 @@ problemas más chicos, permite recorrer más instancias en el mismo tiempo.
 
 Antes de definir los escenarios se realizó una serie de estudios
 exploratorios sobre los modelos lineales, que se detallan en el
-Anexo~\in[Anexo_Relevamiento]. Un test responde si una instancia determinada
+Anexo~\in[Anexo_Relevamiento]. Una prueba responde si una instancia determinada
 se resuelve o no; un estudio, en cambio, recorre una familia de instancias y
-muestra a partir de qué tamaño y porqué un modelo deja de resolver en
+muestra a partir de qué tamaño y por qué un modelo deja de resolver en
 tiempos razonables. En cada estudio se varió un único factor por vez,
 manteniendo fijo el resto. Los resultados que definieron los escenarios
 fueron los siguientes:
@@ -173,7 +173,7 @@ fueron los siguientes:
 	de 13×13 domina la Etapa~1, y en 15×15 la Etapa~1 superó el rango
 	buscado. Estas mediciones definieron los escenarios de tamaño creciente.
 	\item {\bf Alcance del monolítico.} El monolítico solo probó el óptimo en
-	instancias mucho más chicas que las de la calibración, y donde fue
+	instancias mucho más chicas que las del relevamiento, y donde fue
 	cortado ya tenía soluciones cercanas al óptimo, por lo cual su dificultad está en
 	demostrar la optimalidad y no en encontrar buenas soluciones
 	(Sección~\in[sec:alcance_monolitico] del Anexo~\in[Anexo_Relevamiento]).
@@ -184,7 +184,7 @@ También se probaron cambios para acelerar el modelo Split. De ellos, solo
 se adoptó repartir la Etapa~1 entre varios procesos
 (Sección~\in[sec:anexo_intentos_split] del Anexo~\in[Anexo_Relevamiento]).
 
-Los tiempos de la calibración no son los de la suite final
+Los tiempos del relevamiento no son los de la suite final
 (Capítulo~\in[Capitulo_6]), por tres motivos: después se cambió el peso de
 la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
 (Sección~\in[sec:ejecucion]) y el tiempo de reloj de una misma instancia
@@ -341,12 +341,10 @@ Anexo~\in[Anexo_Relevamiento].
 	sobre la prueba completa depende de cuánto pesa la Etapa~1: es mayor en
 	las grillas grandes, donde la Etapa~1 domina, y nulo en las instancias
 	dominadas por la Etapa~2.
-	\item {\bf Repartir la Etapa~1 no siempre conviene.} Cada proceso
-	necesita su propia copia de los datos, en un directorio temporal, y
-	crearlos lleva un tiempo que no depende del tamaño de la instancia.
-	En instancias chicas ese tiempo supera lo que ahorra: en la suite
-	funcional, la corrida con 6 procesos tardó 51~segundos y la corrida en
-	secuencia, 46. Por eso la Etapa~1 solo se reparte cuando hay más de
+	\item {\bf Repartir la Etapa~1 no siempre conviene.} Preparar cada
+	proceso lleva un tiempo fijo, que en las instancias chicas supera lo que se
+	ahorra: la suite funcional tardó 51~segundos con 6 procesos y 46 en
+	secuencia. Por eso la Etapa~1 solo se reparte cuando hay más de
 	4 lotes.
 \stopitemize
 
@@ -544,7 +542,7 @@ La comparación tiene dos partes. La primera enfrenta al modelo monolítico
 con el Split, para validar que la descomposición alcanza el mismo óptimo y
 medir cuánto tiempo ahorra dividir el modelo. La segunda compara el Split con
 las heurísticas, para medir cuánto se pierde en calidad y cuánto se gana en
-tiempo. Esto porque el modelo Split fue el único modelo lineal que
+tiempo. Se usa el Split porque fue el único modelo lineal que
 terminó escenarios de estrés dentro del tope (Sección~\in[sec:comparacion_lineales]).
 
 {\bf Mismos datos.} Solo se comparan instancias en las que los métodos
@@ -616,7 +614,7 @@ tiene referencia.
 	la diferencia relativa entre el mejor y el peor valor objetivo de cada
 	escenario y la cantidad de ejecuciones que no encuentran una solución
 	factible (Secciones~\in[sec:calib_hc_semillas]
-	y~\in[sec:calib_aco_semillas]). Se decidió no considerar el test 01 porque en él las dos
+	y~\in[sec:calib_aco_semillas]). Se decidió no considerar el escenario 01 porque en él las dos
 	heurísticas terminan por tope de tiempo, con muy pocas o ninguna iteración.
 \stopitemize
 Para resumir los tiempos y las brechas se usan medianas además de medias,
@@ -641,28 +639,3 @@ compilación, el tiempo transcurrido puede superar el presupuesto.
 
 \stopsection
 \stopchapter
-
-%========================================================================================
-% PENDIENTE (guía de trabajo del 21/10, ítem C3; el resto de la guía ya se resolvió y se borró)
-% [ ] Controles de los modelos exactos: Split contra monolítico (compare_v5); las 9
-%     soluciones de estrés del Split verificadas contra el monolítico (--verify-split-stress);
-%     reducción a v4 (cap. 3).
-
-% Otros comentarios, ya respondidos/completados:
-
-% Estos detalles quizás merezcan una(s) sección(es) a parte:
-% * el tema de procesos y memoria, que no se había previsto y que nos obligó a
-%   cambiar la forma de ejecutar la Etapa 1, y que explica por qué no se
-%   puede extrapolar de la calibración a la suite final. --> nuevo item en la lista de más abajo
-% * el tema de la variabilidad de los tiempos de reloj --> está en 5.4
-% * el tema de la ejecución en paralelo --> está en 5.4
-% * el tema de otras optimizaciones intentadas en la etapa 1, que no dieron resultado --> Anexo
-
-% Estoy casi segura que falta una sección de experimentos. más que nada
-% porque se hicieron en el modelo Split, y seguro tambien se hicieron en las
-% metaheurísticas. el tema ahí es que creo que no tengo pruebas de eso D:
-% el codigo no está en el repo porque no sirvió mucho, solo sirvió el paralelismo
-% (que ahora que lo menciono, no se si lo justifique bien y si dije a partir de
-% qué tamaño es conveniente)
-% --> Lo agregué en anexos
-%========================================================================================

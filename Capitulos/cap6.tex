@@ -72,7 +72,7 @@ resueltos.
 \stopplacetable
 
 En la suma, el monolítico tardó 5,75 veces más que el Split, pero en la
-mediana la relación se invierte, ya que se ve que el monolítico fue más rápido en 38 de los
+mediana la relación se invierte: el monolítico fue más rápido en 38 de los
 49 pares, con tiempos de entre el 37~\% y el 98~\% de los del Split. Se trata
 de instancias pequeñas, en las que el resolvedor tarda milisegundos y el
 tiempo total depende sobre todo de la compilación. Como es esperable, compilar un único modelo
@@ -333,7 +333,6 @@ Split como referencia, no habría forma de saber que esa solución es casi
 	\eTABLE
 \stopplacetable
 
-% mmmm.....
 Estos estudios se ejecutaron con la máquina compartida con otras corridas,
 por lo que sus tiempos absolutos están inflados. Lo que se compara es la
 relación entre los dos modelos sobre la misma instancia, resueltos uno
@@ -455,20 +454,25 @@ del óptimo del Split, con la definición de la Sección~\in[sec:comparacion].
 \stopplacetable
 
 ACO alcanza el óptimo en las 45 instancias funcionales y, en estrés, queda a
-lo sumo a un 0,04~\% de él. HC llega al óptimo en 40 de las 45 instancias
+lo sumo a un 0,04~\% de él.
+
+HC llega al óptimo en 40 de las 45 instancias
 funcionales. Las 5 en las que no lo alcanza son todas de grilla
 (Cuadro~\in[tab:res_fallos_hc]). En ellas hay muchas rutas y asignaciones de
 costo parecido, y una búsqueda que solo acepta mejoras se detiene en un
 óptimo local (Sección~\in[sec:marco_hc]). En estrés, HC queda a lo
-sumo a un 0,21~\%, en el escenario con cadena de frío (11). Además, HC casi
-no modifica las rutas que obtiene en la construcción inicial. En tres
+sumo a un 0,21~\%, en el escenario con cadena de frío (11). Como muestra la
+Figura~\in[fig:res_brecha], ACO obtiene una brecha menor que HC en 8 de los 9
+escenarios.
+
+Además, HC casi no modifica las rutas que obtiene en la construcción inicial. En tres
 escenarios de estrés del perfil realista (grilla de 7×7 con 6 lotes y 3
 {\em pickers}, 7×7 con 10 lotes y 5 {\em pickers}, y 10×10 con 12 lotes y
 12 {\em pickers}), el movimiento 2-opt se eligió 86 veces y no generó ningún
 vecino. Esas iteraciones fueron entre el 26~\% y el 48~\% del total, según
-el escenario. Como muestra la
-Figura~\in[fig:res_brecha], ACO obtiene una brecha menor que HC en 8 de los 9
-escenarios. Ninguna heurística queda por debajo de un óptimo probado del
+el escenario.
+
+Ninguna heurística queda por debajo de un óptimo probado del
 Split, como corresponde a soluciones válidas de un problema de minimización.
 
 \startplacetable[reference=tab:res_fallos_hc, location=here, title={Instancias funcionales en las que HC no alcanza el óptimo. ACO lo alcanza en las cinco.}]
@@ -572,13 +576,13 @@ Split, lo que confirma que toda la diferencia se explica por el tiempo ocioso in
 
 \startsubsection[title={Tiempos}, reference=sec:res_tiempos]
 
-En las pruebas funcionales, los tiempos se comparan sobre 33 de las 45
-instancias comparables en objetivo, ya que el registro del Split guarda una fila por
-prueba, y algunas pruebas resuelven más de una instancia, por lo que solo se
-conoce el tiempo de las que resuelven una sola. En la mediana, el Split tarda
-0,300 segundos, HC 0,061 y ACO 0,224, de modo que HC es 5,1 veces más rápido
-que el Split y ACO, 1,4 veces. HC fue más rápido que el Split en las 33
-instancias; ACO, en 24. En las 9 restantes, de alrededor de un segundo, ACO
+En las pruebas funcionales, los tiempos se comparan sobre 35 de las 45
+instancias comparables en objetivo. El registro del Split guarda una fila por
+prueba y algunas pruebas resuelven más de una instancia, de modo que solo se
+conoce el tiempo de las instancias cuya prueba resuelve una sola. En la mediana, el Split tarda
+0,295 segundos, HC 0,061 y ACO 0,225, de modo que HC es 5,1 veces más rápido
+que el Split y ACO, 1,4 veces. HC fue más rápido que el Split en las 35
+instancias; ACO, en 24. En las 11 restantes, de alrededor de un segundo, ACO
 ejecuta todas sus iteraciones aunque la instancia sea trivial. El
 Anexo~\in[Anexo_Resultados] muestra el detalle.
 
@@ -718,8 +722,8 @@ label.rt(textext("\tfx ACO"), (13.000cm,2.240cm));
 En los 9 escenarios que el Split resuelve, la mediana del cociente entre su
 tiempo y el de cada heurística es de 53,1 para HC y de 1,5 para ACO. HC
 resuelve todos los escenarios en menos de 5 segundos, salvo el 01, mientras
-que ACO tarda entre 14 segundos y 6 minutos, por lo que sus tiempos son del mismo orden que los
-del Split en los escenarios pequeños y bastante menores en los grandes. El
+que ACO, también salvo el 01, tarda entre 14 segundos y 6 minutos: en los escenarios que el Split resuelve, sus
+tiempos van de iguales a los del Split a 6 veces menores, según el escenario. El
 escenario de 100×100 (01) es el más costoso para las dos heurísticas: HC
 tarda 17 minutos, casi todos en construir la solución inicial, y ACO, 32,
 porque en ese tiempo completa solo dos iteraciones; las 60 completas
@@ -860,16 +864,19 @@ el que el presupuesto fue unos 3~minutos mayor que el tiempo de esa corrida.
 {\bf Con el tiempo de \ac{aco}.} Los presupuestos van de 14 a 357~segundos, salvo en el 01, donde es de unos
 32~minutos (Cuadro~\in[tab:res_igual_tiempo_aco]). El Split obtiene una
 solución en 15 de los 19 escenarios. En 7 de ellos (04, 05, 06, 09, 10, 12 y 13) queda a
-menos de un 0,1~\% de \ac{aco}, y en el 09 la mejora por menos de un
-0,01~\%. En el 02, el presupuesto de 28~segundos no le alcanza para probar el
-óptimo, que en su propia corrida obtiene en 33, y \ac{aco} es mejor por un
-0,8~\%. En el 03, \ac{aco} es mejor por un 0,7~\%; en el 15 y el 14, por un 15
+menos de un 0,1~\% de \ac{aco}, y en el 09 incluso la mejora, por menos de un
+0,01~\%. En el 02 y el 03, \ac{aco} es mejor por menos de un 1~\%; en el 15 y
+el 14, por un 15
 y un 30~\%, y en los cuatro escenarios de cuadrilla grande (16 a 19), por entre un
-46 y un 58~\%. Con el tiempo de \ac{aco}, entonces, el Split entrega soluciones de
-mucha peor calidad. En el 01, el 07 y el 08, la Etapa~1 no llega a rutear todos
-los lotes, y en el 11 rutea lotes que ningún picker habilitado para la cadena de
-frío puede tomar, así que la Etapa~2 no tiene una asignación factible. El
-monolítico solo obtiene una solución en el 04 y el 12, un 5,3 y un 10,5~\%
+46 y un 58~\%. La diferencia es, entonces, chica en la mayoría de los escenarios y grande en
+los de cuadrilla grande.
+
+En los cuatro escenarios restantes, el Split no llega a una solución. En el
+01, el 07 y el 08, la Etapa~1 no llega a rutear todos
+los lotes, y en el 11 rutea lotes que ningún {\em picker} habilitado para la cadena de
+frío puede tomar, así que la Etapa~2 no tiene una asignación factible.
+
+El monolítico solo obtiene una solución en el 04 y el 12, un 5,3 y un 10,5~\%
 peor que la de \ac{aco}. Salvo en el 01, los modelos lineales excedieron su
 presupuesto en a lo sumo 6~segundos. En el 01, el monolítico tardó
 59~minutos, casi el doble de su presupuesto, porque el límite se aplica solo
@@ -978,8 +985,8 @@ capítulo pueden resumirse de la siguiente forma:
 	0,04~\%. HC falla el óptimo en 5 instancias de grilla y, en estrés, queda a
 	lo sumo a un 0,21~\%.
 	\item {\bf HC es el método más rápido}: en estrés, su tiempo es unas 53
-	veces menor que el del Split en la mediana, frente a 1,5 veces en el caso de
-	ACO.
+	veces menor que el del Split en la mediana. ACO tarda entre lo mismo que el
+	Split y 6 veces menos, según el escenario.
 	\item {\bf Las heurísticas resuelven donde el Split no termina}: en los 10
 	escenarios de estrés sin referencia, las dos dan una solución válida, y ACO
 	obtiene el mejor objetivo en 9 de ellos.
@@ -995,155 +1002,3 @@ cuándo conviene cada método.
 
 \stopsection
 \stopchapter
-
-%========================================================================================
-% GUÍA DE TRABAJO - CAPÍTULO 6 (Resultados)
-% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
-% (linear-picking-routing, origin/main 75d553c del 19/10), docs/thesis/models.tex, las dos
-% comparaciones de docs/thesis/, los CSV de results/ (recalculados el 21/10) y
-% Notas/opp_v5_development.tex. Foco: comparación entre modelos y validación de las
-% metaheurísticas. Los números de abajo salen de las corridas consolidadas actuales.
-% [ ] = tarea; (D) = decisión de ustedes.
-%========================================================================================
-%
-% 0. ANTES DE ESCRIBIR NÚMEROS
-% (D) Versión de las heurísticas. Las corridas consolidadas de HC y ACO (funcional
-%     test_v5eq__* y estrés) son del 28 y 29/09, anteriores al commit 75d553c (19/10), que
-%     fijó el orden de la ruleta de las construcciones aleatorias. Con el código actual la
-%     misma semilla ya no da esas soluciones, y antes dependían de PYTHONHASHSEED (según el
-%     commit, el 14/10: hasta 0,5 % de dispersión en el 03 y el 11 infactible en 2 de 7
-%     procesos). Opciones: (a) volver a correr HC y ACO (funcional y estrés, con
-%     WRITE_RESULTS_CSV=1 y WRITE_SOLUTIONS=1), verificarlos con run_compliance, regenerar el
-%     registro (python -m analysis.comparability) y el documento
-%     (experiments/opp_v5/reports/build_heuristics_comparison.py). Por los tiempos actuales,
-%     unos 20 min HC (casi todo el 100×100) y 1,5 h ACO (35 min el 100×100), más unos
-%     minutos de verificación; con la notebook enchufada y sin suspensión. (b) Dejar los
-%     números del 28-29/09 y declarar la versión del código y esa dependencia.
-% (D) Tiempos de estrés del Split con la Etapa 1 en 6 procesos (ver la guía del cap. 5).
-% [ ] No usar analysis/output/report.md: su sección 4.1 mezcla tests no equivalentes (brechas
-%     de hasta 1.180 %). Las fuentes son results/comparability/*.csv y los documentos
-%     generados de docs/thesis/ (models.tex y las dos comparaciones), que salen de los CSV
-%     consolidados.
-%
-% 1. ORGANIZACIÓN PROPUESTA (las dos secciones actuales pasan a 6.1 y 6.3)
-% 6.1 Comparación entre modelos lineales
-%   6.1.1 Mismo óptimo: 49 de 49 pares resueltos con el mismo objetivo (diferencia máxima
-%         3,83 · 10^-6, casos 13 y 14) y 11 de 11 infactibles en los dos; 28 con la misma
-%         solución y 21 óptimos alternativos (13 con otras rutas, 16 con otra asignación).
-%         Explicar por qué: el objetivo no penaliza la longitud de la ruta, y los empates de
-%         asignación los rompe cada resolución a su manera.
-%   6.1.2 Instancias chicas (funcional): suma de total_time 140,3 contra 24,4 s (5,75×), pero
-%         mediana 0,225 contra 0,309 s: el monolítico es más rápido en 38 de 49 pares
-%         (compila un MIP en vez de dos) y hasta 28,9 veces más lento en las grillas (caso
-%         29); model_time 17,35 veces en la suma. Cuadro y gráfico de dispersión.
-%   6.1.3 Escala (estudios 08 a 11, la misma instancia en los dos modelos): frontera a 10 min
-%         (3 lotes en 6×6, 4 en 5×5 y 6 en 3×3; el Split cierra todos); el cociente crece
-%         con la grilla (11 a 15 veces con 2 lotes, hasta 27 con 3 y 4 lotes, y al menos 59 y
-%         68 donde se cortó); encontrar no es el problema, probar sí: soluciones a menos de
-%         1 % antes de 75 s, pero la cota dual se estanca entre el 88 % y el 97 % del óptimo;
-%         40 min no lo arreglan (estrés 04 con W^c = 9: solución a 0,66 % y gap de 143,5 %).
-%         Tamaño de los MIP (cuadro del cap. 3). Decidir si la figura de la frontera queda acá
-%         o en 5.3.1.4.
-%   6.1.4 Estrés: Split 9 de 19, monolítico 0 de 19. Cuadro por test con total, Etapa 1
-%         estimada (total menos Etapa 2) y Etapa 2: domina la Etapa 1 salvo en el 04 (7×7) y
-%         en los de agenda pesada (10 y 15); de 13×13 a 14×14 se multiplica por 2,0 y de
-%         14×14 a 15×15 por 4,6; el 8×21 tarda más que el 14×14 en la Etapa 1 (pesa la
-%         forma); el Split no termina con 8 lotes o más ni en 16×16: dos paredes (la Etapa 2
-%         con los lotes, la Etapa 1 con la grilla).
-%   6.1.5 Cierre: el Split es la referencia de las heurísticas; el monolítico, la de la
-%         verificación.
-% 6.2 Validez de las soluciones de las metaheurísticas (sección nueva; el método está en el
-%     cap. 5)
-%   - 150 de 150 "compliant": 56 funcionales y 19 de estrés por heurística, con el objetivo
-%     recalculado igual al reportado en todas. Además dan compliant las soluciones de las
-%     suites funcionales propias (51 por heurística) y las 9 de estrés del Split verificadas
-%     contra el monolítico. Las infactibles (12 por heurística) no tienen solución que
-%     verificar.
-%   - Donde el modelo exacto esperaría (y en el 30a), el nivel 1 da un objetivo menor que el
-%     reportado, hasta un 96 % menos (26b): es la espera voluntaria con las mismas
-%     decisiones, no una violación.
-%   - Notas del verificador: lotes vacíos quitados en 4 tests, M reemplazada en 1 (de la
-%     suite propia) y subgrafo en el 100×100 (HC: 1.425 de 10.000 nodos y 2.900 de 39.600
-%     arcos; ACO: 1.499 nodos y 3.160 arcos).
-%   - Ninguna brecha negativa: ninguna heurística queda por debajo de un óptimo probado.
-% 6.3 Split contra metaheurísticas
-%   6.3.1 Estado: 67 de 67 funcionales comparables y 9 de 9 de estrés, con la lectura
-%         correcta (no inventan soluciones donde no las hay; no prueban infactibilidad).
-%         Desglosar las 12 infactibles por causa (cap. 5): las de validación de entrada se
-%         detectan con la misma regla que en los exactos; las de ruta, por búsqueda con tope;
-%         las de frío, por el prechequeo o por agotar la búsqueda.
-%   6.3.2 Calidad: funcional, ACO 45 de 45 óptimas; HC 40 de 45 (media 0,36 %, máxima
-%         5,88 %; las 5 que falla son de grilla: 20, 25c, 25e·1, 25f·1 y 25f·2). Estrés: ACO
-%         3 de 9 óptimas, media 0,01 % y máxima 0,04 %; HC 1 de 9, media 0,06 % y máxima
-%         0,21 % (el 11, con cadena de frío); ACO mejor que HC en 8 de 9. Gráfico de brecha
-%         por escenario.
-%   6.3.3 Instancias con espera voluntaria (10): cuadro Split / HC / ACO con los lotes que
-%         esperan; se comparan solo en estado y la diferencia no es una brecha (en el 26b el
-%         objetivo del Split es unas 30 veces menor; en las demás, entre 1,3 y 13 veces).
-%   6.3.4 Tiempos: funcional, sobre las 33 instancias con tiempo del Split conocido (su CSV
-%         guarda una fila por método): medianas de 0,300 / 0,061 / 0,224 s, cocientes de 5,1
-%         (HC) y 1,4 (ACO); ACO es más lento que el Split en 9 de las 33. Estrés: cociente
-%         mediano de 53,1 (HC) y 1,5 (ACO); HC en menos de 5 s salvo el 100×100 (17 min); ACO
-%         de 14 s a 6 min (32 min en el 100×100). Gráficos: tiempo por escenario y tiempo
-%         contra lotes × ubicaciones.
-%   6.3.5 Sin referencia (los 10 escenarios que el Split no termina): las dos heurísticas
-%         dan solución válida; ACO es mejor en 9 de 10 (por menos de 1 %); en el 01 ACO hizo
-%         2 iteraciones antes de su tope de 30 min: vale como solución factible, no como
-%         medida de calidad.
-%   6.3.6 A igual tiempo: con el tiempo de HC, ningún modelo exacto obtiene solución en los
-%         19; con el de ACO, el Split da solución en 15 de 19 y ACO empata o mejora en 14
-%         (en el 09 el Split es mejor por 0,008 %): en 7 a menos de 0,1 %, en el 02 y el 03 a
-%         menos de 1 %, 15 y 30 % a favor de ACO en el 15 y el 14, y entre 46 y 58 % en los
-%         de cuadrilla grande (16-19); sin solución en el 01, 07 y 08 (la Etapa 1 no rutea
-%         todos los lotes) y en el 11 (rutas
-%         cortadas que dejan lotes sin picker elegible por frío); el monolítico solo en el 04
-%         y el 12 (entre 5 y 10 % peor que ACO). Advertencias en el cap. 5.
-%   6.3.7 Nivel de servicio, memoria y convergencia (o a un anexo): SLA 100 % en el perfil
-%         realista salvo el 11 (Split 97,4; HC 96,8; ACO 97,4) y 0 % en 01-03; memoria
-%         mediana de 27 MB (HC) y 30 MB (ACO), 867 y 907 MB en el 100×100, y un pico de ACO
-%         de 1.672 MB en el 09 sin explicar; HC corre entre 60 y 200 iteraciones (0
-%         en el 01) y su solución inicial ya es la mejor en 3 escenarios; ACO corre las 60
-%         iteraciones salvo en el 01 (2) y su mejor solución aparece entre la 1 y la 56.
-%   6.3.8 Variabilidad entre semillas: hoy no hay datos con el código final (una corrida
-%         con semilla 1; los CSV de results/*/stability son del 11/09, con otras versiones
-%         de los modelos y otras instancias). Ver 2.
-% 6.4 Síntesis: quién domina en qué (gráfico de brecha contra tiempo) y la recomendación, o
-%     dejarla para el cap. 7.
-%
-% 2. QUÉ FALTA
-% [ ] Variabilidad entre semillas (quedó para después el 29/09): con el código final, p. ej.
-%     10 semillas en los 19 escenarios de estrés (HC es barato; en ACO dejar afuera el 01),
-%     reportando brecha mínima, mediana y máxima, y en cuántas semillas se encuentra
-%     solución en el 11. Es necesario si "robustez" queda en los objetivos. El estudio de
-%     cinco sorteos de HC del cap. 4 puede venir acá.
-% [ ] Responder explícitamente los objetivos específicos del cap. 1 (convergencia, tiempo,
-%     calidad, robustez y limitaciones estructurales), al final de cada sección o en 6.4.
-% [ ] Sensibilidad a los parámetros de las heurísticas, si se muda del cap. 4: HC 200/60
-%     contra 500/120; ACO, ablación y feromonas (results/opp_aco_4/{ablation,pheromone}).
-%
-% 3. QUÉ CORREGIR O MEJORAR (presentación)
-% [ ] Colores: la guía de estilo asigna darkblue a los modelos exactos, blueline a HC y
-%     greenline a ACO; los gráficos de models.tex y de las comparaciones usan greenline para
-%     HC y redline para ACO. Unificar al reutilizarlos (el cap. 5 ya usa darkblue y redline
-%     para las etapas del Split).
-% [ ] Nombres: "monolítico", "Split", "HC" y "ACO" (no opp_v5_*, HC-4 ni ACO-4).
-% [ ] Cada tiempo con qué mide (total o solver) y en qué condiciones (una corrida, una
-%     máquina, Etapa 1 en paralelo, suspensiones); brecha y cociente con su fórmula.
-% [ ] Conteos funcionales coherentes en todo el texto: 70 instancias = 68 que corren las
-%     heurísticas + el 36c (no se captura) + el 37a (excluido); 64 métodos en el Split y 63
-%     en el monolítico.
-%
-% 4. FUENTES
-% - linear-picking-routing/docs/thesis/: models.tex (sec. "Comparación de los modelos
-%   exactos con las heurísticas", con figuras MetaPost listas para reutilizar),
-%   opp_v5_1_mono_vs_opp_v5_2_split_comparison.tex,
-%   opp_v5_2_split_vs_heuristics_comparison.tex y opp_v5_1_mono_exploration.tex (estudios
-%   08 a 11).
-% - results/comparability/{comparability_v5_vs_heuristics, results_v5_vs_heuristics,
-%   compare_v5_split_vs_mono}.csv; results/compliance/opp_{hc,aco}_4/; results/equal_time/
-%   (27/09); los CSV de nombre fijo de results/opp_v5_*/ y results/opp_{hc,aco}_4/. Si
-%   cambian, regenerar con experiments/opp_v5/reports/build_*.py.
-% - Notas/opp_v5_development.tex: secs. "Resultados de las suites" y "El Split como
-%   referencia para las heurísticas".
-%========================================================================================

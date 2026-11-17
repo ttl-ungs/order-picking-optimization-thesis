@@ -6,7 +6,7 @@ adelanto y la demora. También se revisan los trabajos relacionados con el probl
 abordado.
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Modelo de Programación Lineal Entera Mixta}, reference=sec:marco_mip]
+\startsection[title={Programación lineal entera mixta}, reference=sec:marco_mip]
 
 Un problema de programación lineal consiste en optimizar una función
 objetivo lineal sujeta a un conjunto de restricciones lineales, bajo el
@@ -98,11 +98,7 @@ recorrido. Para valores fijos de $x_{ij}$, ambas restricciones definen un
 problema de flujo en redes, por lo que las variables $g_{ij}$ toman valores
 enteros sin necesidad de exigirlo \cite[roberti2012atsp].
 
-La relajación lineal de GG es más ajustada que la de MTZ. En la comparación
-experimental de Roberti y Toth, que resuelve distintas formulaciones del
-TSP asimétrico directamente con un resolvedor comercial, GG fue la única
-que llegó al óptimo en todas las instancias consideradas dentro del límite
-de tiempo \cite[roberti2012atsp].
+
 
 Un concepto central para resolver estos problemas es la {\em relajación
 lineal}, que se obtiene al eliminar la exigencia de valores enteros. Como la
@@ -143,6 +139,13 @@ subproblemas podrán podarse. Por eso, en las restricciones de tipo M grande
 conviene elegir el menor valor de $M$ que mantenga válida la formulación,
 porque un valor innecesariamente grande afloja la relajación y empeora el
 rendimiento del algoritmo.
+
+Lo mismo vale para las formulaciones que eliminan {\em subtours}: la
+relajación lineal de GG es más ajustada que la de MTZ. En la comparación
+experimental de Roberti y Toth, que resuelve distintas formulaciones del
+problema del viajante asimétrico directamente con un resolvedor comercial, GG
+fue la única que llegó al óptimo en todas las instancias consideradas dentro
+del límite de tiempo \cite[roberti2012atsp].
 
 \stopsection
 
@@ -194,13 +197,11 @@ programaciones sin tiempo ocioso insertado.
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:marco_hc]
 
-El algoritmo de Hill Climbing, también referido frecuentemente como
-búsqueda local, descenso o mejora iterativa, es considerado el método
-metaheurístico más antiguo y sencillo. Pertenece a la familia de las
-metaheurísticas basadas en una sola solución, cuyo funcionamiento principal
-consiste en mejorar una solución individual realizando recorridos o
-trayectorias a través de las vecindades del espacio de búsqueda de un
-problema \cite[talbi2009metaheuristics].
+Hill Climbing, también llamado búsqueda local, descenso o mejora iterativa,
+es la metaheurística más antigua y sencilla. Pertenece a la familia de las
+metaheurísticas basadas en una sola solución, que parten de una solución y la
+mejoran paso a paso, moviéndose en cada paso a una solución vecina
+\cite[talbi2009metaheuristics].
 
 El concepto central de toda metaheurística basada en una sola solución es
 el de {\em vecindad}. Formalmente, una función de vecindad $N : S
@@ -238,11 +239,9 @@ La vecindad de 2-opt tiene $n(n-1)/2 - n$ elementos, ya que se consideran
 todos los pares de aristas excepto los adyacentes
 \cite[talbi2009metaheuristics].
 
-El proceso de optimización comienza siempre evaluando una solución inicial
-dada. A partir de ese punto, y durante cada iteración, el algoritmo
-reemplaza la solución actual por un vecino que logre mejorar el valor de la
-función objetivo. Para decidir qué camino tomar en el espacio de búsqueda,
-el método necesita una estrategia de selección del próximo vecino. Las
+La búsqueda parte de una solución inicial. En cada iteración, el algoritmo
+reemplaza la solución actual por un vecino que mejora el valor de la función
+objetivo, para lo cual necesita una estrategia de selección del vecino. Las
 opciones habituales son elegir la mejor mejora disponible, tomar la primera
 mejora que se encuentre o seleccionar una mejora al azar
 \cite[talbi2009metaheuristics]. La estrategia de primera
@@ -267,7 +266,10 @@ familias de enfoques, que consisten en reiniciar la búsqueda desde distintas
 soluciones iniciales, cambiar la vecindad, modificar la función objetivo o
 los datos de entrada, o aceptar movimientos que no mejoran la solución
 actual, como hacen el recocido simulado y la búsqueda tabú
-\cite[talbi2009metaheuristics,hoos2015sls].
+\cite[talbi2009metaheuristics,hoos2015sls]. La búsqueda local iterada
+pertenece a la primera familia: en lugar de reiniciar desde una solución
+nueva, perturba un óptimo local ya encontrado y vuelve a aplicar la búsqueda
+local desde allí.
 
 \stopsection
 
@@ -283,11 +285,9 @@ este comportamiento con hormigas artificiales, agentes estocásticos que
 construyen soluciones de forma incremental moviéndose por un grafo de
 construcción \cite[dorigo2004aco].
 
-El proceso de búsqueda en ACO se basa en la construcción probabilística de
-soluciones \cite[hoos2015sls]. A medida que una hormiga avanza por el
-grafo, toma decisiones sobre el siguiente paso basándose en la interacción
-de dos factores fundamentales: los rastros de feromona artificial y la
-información heurística dependiente del problema. Así, las hormigas realizan
+ACO construye soluciones de forma probabilística \cite[hoos2015sls]. A
+medida que avanza por el grafo, cada hormiga elige el siguiente paso según la
+feromona y la información heurística, que depende del problema. Así, las hormigas realizan
 una búsqueda constructiva aleatorizada pero fuertemente sesgada hacia
 opciones que parecen prometedoras tanto a nivel heurístico como según la
 experiencia previa de la colonia \cite[dorigo2004aco]. Por un lado, la
@@ -365,12 +365,10 @@ además limita la feromona al intervalo $[\tau_{\min}, \tau_{\max}]$ y la
 inicializa en $\tau_{\max}$ para favorecer la exploración al comienzo de la
 búsqueda \cite[dorigo2004aco].
 
-Para maximizar la calidad de los resultados, los algoritmos ACO suelen
-incorporar acciones centralizadas que no pueden realizar las hormigas a
-nivel individual, conocidas como “acciones de demonio”. Una de las
-estrategias más extendidas y recomendables es aplicar algoritmos de
-búsqueda local o procedimientos de mejora iterativa a las soluciones
-completas antes de proceder a la actualización de las feromonas
+Los algoritmos ACO suelen incorporar, además, acciones centralizadas que las
+hormigas no pueden realizar individualmente, conocidas como {\em acciones de
+demonio}. La más habitual es aplicar una búsqueda local a las soluciones
+completas antes de actualizar la feromona
 \cite[dorigo2004aco].
 
 \stopsection
@@ -384,7 +382,7 @@ estrategia más simple es la de {\em rechazo}, que descarta automáticamente
 toda solución infactible y conserva solo las factibles durante la búsqueda.
 Esta estrategia es razonable cuando la porción infactible del espacio de
 búsqueda es muy pequeña, pero desaprovecha la información que aportan las
-soluciones infactibles, aún cuando las soluciones óptimas suelen
+soluciones infactibles, aun cuando las soluciones óptimas suelen
 encontrarse en la frontera entre la región factible y la infactible.
 Además, cuando la región factible es discontinua, el único camino entre dos
 soluciones factibles puede atravesar soluciones infactibles
@@ -427,7 +425,7 @@ no siempre pueden construirse para todas las restricciones
 
 El modelo de referencia de esta tesina es el propuesto por Coruzzolo et al.
 \cite[coruzzolo2023orderpicking], que formula como un modelo de \ac{mip} la
-optimización conjunta de cuatro decisiones: qué órdenes forman cada lote
+optimización conjunta de cuatro decisiones: qué pedidos forman cada lote
 ({\em batching}), a qué operario se asigna cada lote, en qué orden los ejecuta
 y qué ruta sigue en cada uno. Los lotes se forman respetando la capacidad del
 carro, y la ruta de cada lote parte de un depósito inicial, termina en un
@@ -436,7 +434,7 @@ eliminan con un flujo de tipo Gavish y Graves (Sección~\in[sec:marco_mip])
 acotado por la capacidad del carro, y la secuencia de cada operario se modela
 asignando cada lote a una posición numerada de su agenda. El objetivo combina
 la suma de los tiempos de finalización con una suma ponderada de la demora y
-el adelanto de las órdenes, ya que preparar un pedido demasiado pronto ocupa
+el adelanto de los pedidos, ya que preparar un pedido demasiado pronto ocupa
 espacio en el almacén sin necesidad.
 
 Para reducir la complejidad, los autores proponen también un modelo
@@ -474,37 +472,3 @@ heurísticas.
 
 \stopsection
 \stopchapter
-
-%========================================================================================
-% GUÍA DE TRABAJO - CAPÍTULO 2 (Marco teórico y estado del arte)
-% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026 contrastando el capítulo con el repo de implementación
-% (linear-picking-routing, origin/main 75d553c del 19/10), docs/thesis/models.tex y
-% Notas/opp_v5_development.tex. Solo cubre la base teórica que necesitan los modelos
-% lineales, la comparación de modelos y la validación de las metaheurísticas.
-%
-% 02/11/2026: eliminado adelanto y demora, que ahora es la Sección 2.2; los 
-% números del último párrafo de 2.6, que ya no describe el
-% alcance de los modelos; y la descomposición del Split.
-% Para no alargar el capítulo, se descartaron simetría, los problemas numéricos de la M
-% grande y la evaluación experimental de metaheurísticas. La cota dual débil quedó en 2.1.
-% Además, 2.6 describe ahora el modelo de referencia (decisiones, capacidad, ruta, flujo,
-% secuencia por posiciones, objetivo y modelo simplificado), que antes estaba en la
-% introducción del cap. 3, y 2.1 explica la M grande con varias binarias, que usan las
-% restricciones de secuencia del cap. 3.
-% [ ] = tarea; (D) = decisión de ustedes.
-%========================================================================================
-%
-% 1. QUÉ FALTA (conceptos que usan los cap. 3 a 6 y que hoy no están acá)
-% (resuelto el 03/11/2026: 2.5 explica la preservación, que usa el cap. 4)
-
-%
-% 2. QUÉ CORREGIR O MEJORAR
-% [ ] Unificar términos con los cap. 3 a 6: "resolvedor"/"solver", "locación"/"ubicación",
-%     "completitud"/"finalización".
-%
-% 3. FUENTES
-% - Notas/opp_v5_development.tex: secs. "Notación común" (historia de M_seq), "Espera
-%   voluntaria y el SLA", "Estudio 03" (hipótesis de simetría) y "Verificación cruzada"
-%   (lotes vacíos del 30a).
-%========================================================================================

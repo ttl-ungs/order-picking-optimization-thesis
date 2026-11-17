@@ -323,7 +323,7 @@ en la Sección~\in[sec:ejecucion].
 8.\quad\qquad $s' \leftarrow m(s)$
 9.\quad\qquad {\bf si} $s'$ existe {\bf y} $f'(s') < f'(s)$ {\bf entonces}
 10.\quad\qquad\qquad $s \leftarrow s'$;\; $u \leftarrow 0$
-11.\quad\qquad\qquad {\bf si} $v(s) = 0$ {\bf y} $f(s) < f(s^*)$ {\bf entonces} $s^* \leftarrow s$
+11.\quad\qquad\qquad {\bf si} $v(s) = 0$ {\bf y} ($s^*$ es ninguna {\bf o} $f(s) < f(s^*)$) {\bf entonces} $s^* \leftarrow s$
 12.\quad\qquad {\bf si no}
 13.\quad\qquad\qquad $u \leftarrow u + 1$
 14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
@@ -466,7 +466,7 @@ con los valores que se usaron, se presentan en la Sección~\in[sec:ejecucion].
 7.\quad\qquad\qquad ordenar cada $\sigma^k_p$ por fecha de entrega
 8.\quad\qquad\qquad {\bf si} $s^k$ no cumple las restricciones de la ruta {\bf entonces} descartar $s^k$
 9.\quad\qquad {\bf para cada} lote $b$: {\bf si} $\pi^{ib}_b$ es más corta que $\pi^{bs}_b$ {\bf entonces} $\pi^{bs}_b \leftarrow$ pulir$(\pi^{ib}_b)$
-10.\quad\qquad $s^* \leftarrow$ la mejor $s^k$ con $v(s^k) = 0$, si mejora $f(s^*)$
+10.\quad\qquad $s^* \leftarrow$ la mejor $s^k$ con $v(s^k) = 0$, si $s^*$ es ninguna o mejora $f(s^*)$
 11.\quad\qquad $s^* \leftarrow$ recombinar$(s^*, \pi^{bs})$, si mejora $f(s^*)$
 12.\quad\qquad {\bf si} $s^*$ mejoró {\bf entonces} $s^* \leftarrow$ búsqueda local sobre la asignación$(s^*)$
 13.\quad\qquad actualizar $\tau$ con $\pi^{ib}$ y $\pi^{bs}$;\; actualizar $\tau^{P}$ con las $s^k$ y $s^*$
@@ -709,47 +709,3 @@ los lotes que cumplen siguen aprendiendo aunque otro no lo haga.
 \stopsection
 
 \stopchapter
-
-%========================================================================================
-% GUÍA DE TRABAJO - CAPÍTULO 4 (Metaheurísticas)
-% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026, revisada el 03/11/2026 y reestructurada el 11/11/2026 (rama
-% cap4-reestructura). Nueva organización: 4.1 elementos comunes (representación, con una
-% figura de ejemplo; evaluación y cuadro de cómo se cumple cada restricción; verificación
-% previa, con la alcanzabilidad de ACO; construcción de rutas), 4.2 HC y 4.3 ACO como
-% algoritmos, cada uno con su pseudocódigo (antes en el Anexo B, que se eliminó), y 4.4
-% limitaciones comunes y propias. La deducción de lambda, la evaluación incremental, el
-% control del tiempo y los intentos y la ruta de respaldo de ACO pasaron al Anexo D
-% (sección "Otros detalles de implementación"). El 11/11 se borraron los TODO y los
-% párrafos comentados del texto, y se acortó el párrafo final de los movimientos de HC.
-% También el 11/11: los cuadros de parámetros pasaron a 5.4 (son configurables por
-% ejecución), y el detalle del 2-opt y de las cotas de la feromona, al Anexo D. Además,
-% se sacaron dos repeticiones en HC, 4.3.2 pasó a llamarse "Mejoras al final de cada
-% iteración" y se corrigieron erratas. En 4.4 se sacó "No escapa de los óptimos locales",
-% que es propia de HC (2.3), y se juntaron los dos ítems sobre la secuencia de HC.
-% El 13/11/2026 (rama cap7-limitaciones), la sección 4.4 de limitaciones pasó al cap. 7
-% (Sección "Limitaciones", dentro de la discusión), con las mismas referencias.
-% [ ] = tarea; (D) = decisión de ustedes.
-%========================================================================================
-%
-% 1. PENDIENTE
-% (D) Versión del código de las heurísticas para los resultados. Las corridas consolidadas
-%     son del 28 y 29/09, anteriores a 75d553c (19/10, "Add sorted()"), que hizo que la
-%     semilla sea reproducible entre procesos. El párrafo de reproducibilidad de 5.4
-%     describe el código actual. Decidir si se vuelve a correr o se aclara (ver la
-%     guía del cap. 6).
-% [ ] Convergencia de HC con 200/60: el Anexo D (estudio de presupuesto, cinco semillas)
-%     dice que el tope de 200 iteraciones se alcanza en el 03 y el 18; el cap. 6 (corrida
-%     consolidada) dice 03 y 17. Vienen de corridas distintas: aclararlo o unificar.
-% [ ] El código marca el estado de una solución heurística como "optimal": en el texto usar
-%     "encontró solución", porque una heurística no prueba optimalidad.
-% [ ] 5.5 ("Factibilidad por diseño") puede remitir al cuadro de 4.1.2 en lugar de
-%     resumirlo.
-%
-% 2. FUENTES
-% - linear-picking-routing: docs/thesis/models.tex (sec. "Heurísticas: HC y ACO", con los
-%   pseudocódigos y la tabla "Los cuatro métodos lado a lado"), models/opp_hc_4/,
-%   models/opp_aco_4/, models/utils/route_construction.py,
-%   analysis/run_aco_ablation_study.py y analysis/run_aco_pheromone_study.py.
-% - Notas/opp_v5_development.tex, sec. "El Split como referencia para las heurísticas".
-%========================================================================================

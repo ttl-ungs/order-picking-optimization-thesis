@@ -18,20 +18,20 @@ líneas de trabajo futuro (Sección~\in[sec:trabajo_futuro]).
 Respecto del modelo de Coruzzolo et al. \cite[coruzzolo2023orderpicking],
 el problema abordado en esta tesina es más amplio en
 algunos aspectos pero más acotado en otro. Es más amplio porque incorpora la
-velocidad heterogénea entre operarios, la cadena de frío y un tiempo de
+velocidad heterogénea entre {\em pickers}, la cadena de frío y un tiempo de
 servicio en cada ubicación, y es más acotado porque no se
 decide el loteo, y la capacidad del carro se verifica antes de resolver en
 lugar de formar parte del modelo (Capítulo~\in[Capitulo_3]). Cuando las
 velocidades son iguales, la cadena de frío no restringe y no hay tiempos de
 servicio, los dos modelos lineales se reducen al de referencia con los lotes
-fijos, y las pruebas funcionales lo confirman. Esto delimita el alcance de los
+fijos. Esto delimita el alcance de los
 resultados, ya que lo que esta tesina resuelve hasta el óptimo, en las instancias que
 los modelos lineales llegan a terminar, es el modelo de referencia sin el
 loteo, extendido con las tres características anteriores, y no el problema
 conjunto de cuatro decisiones que plantean Coruzzolo et al. (que incluye el
 loteo).
 
-En cuanto a la dificultad de los modelos lineales, Coruzzolo et al. no pudieron
+{\bf Dificultad de los modelos lineales.} Coruzzolo et al. no pudieron
 resolver sobre su caso de estudio ninguno de sus dos modelos, ni
 siquiera el simplificado (Sección~\in[sec:trabajos_relacionados]). Los
 resultados de esta tesina son consistentes con esa experiencia, ya que,
@@ -41,7 +41,7 @@ los 19 escenarios de estrés dentro del tope de 40 minutos
 proviene solo de decidir el loteo, sino también de reunir el ruteo, la
 asignación y la secuencia en un mismo modelo.
 
-Tanto el modelo simplificado de Coruzzolo
+{\bf Descomposición.} Tanto el modelo simplificado de Coruzzolo
 et al. como el Split coinciden en extraer el ruteo del modelo, y en
 pasar como dato la duración de cada lote al modelo que los asigna y secuencia.
 Difieren, sin embargo, en cómo obtienen esa duración y, en consecuencia, en qué garantiza cada uno.
@@ -56,40 +56,43 @@ comparables de las pruebas funcionales (Sección~\in[sec:mismo_optimo]). El cost
 resuelve un \ac{mip} de ruteo por lote sobre el grafo completo, lo cual es una limitación
 en almacenes grandes (Sección~\in[sec:caracteristicas_formulacion]).
 Si se quisiera decidir el loteo con el mismo esquema, la Etapa~1 tendría que
-rutear cada lote candidato, cuya cantidad crece combinatoriamente con las
-órdenes, lo que ayuda a explicar por qué Coruzzolo et al. recurren a una ruta
+rutear cada lote candidato, cuya cantidad crece combinatoriamente con los
+pedidos, lo que ayuda a explicar por qué Coruzzolo et al. recurren a una ruta
 heurística en ese paso.
 
-En cuanto a la medición de calidad contra el óptimo, Coruzzolo et al.,
-ante la dificultad de los modelos
-lineales, resuelven su caso con una heurística constructiva
+{\bf Medición contra el óptimo.} Ante la dificultad de los modelos lineales,
+Coruzzolo et al. resuelven su caso con una heurística constructiva
 por fecha de entrega más temprana, mejorada con búsqueda local iterada, sin
 poder contrastar sus resultados con el óptimo. En esta tesina, el Split
 permite hacer esa medición en instancias de tamaño realista: \ac{aco} alcanza
 el óptimo en las 45 instancias funcionales comparables y queda a lo sumo a un
 0,04~\% en estrés, y \ac{hc} lo alcanza en 40 de las 45 y queda a lo sumo a un
-0,21~\% en estrés (Sección~\in[sec:res_calidad]). No se implementó la heurística de los autores,
+0,21~\% en estrés (Sección~\in[sec:res_calidad]).
+
+No se implementó la heurística de los autores,
 de modo que estos resultados no miden su calidad, pero sí
 indican qué puede esperarse de sus componentes. La regla de fecha de entrega
 más temprana también está presente en \ac{aco}, aunque aplicada de otra
-forma. La heurística de los autores recorre las órdenes por fecha de entrega
-y, a medida que avanza, forma los lotes, agregando cada orden al lote en curso
-del operario con el que termina antes, o abriendo uno nuevo si se supera la
+forma. La heurística de los autores recorre los pedidos por fecha de entrega
+y, a medida que avanza, forma los lotes, agregando cada pedido al lote en curso
+del {\em picker} con el que termina antes, o abriendo uno nuevo si se supera la
 capacidad del carro. \ac{aco}, en cambio, recibe los lotes ya formados, los
 asigna a los {\em pickers} por ruleta y luego ordena la secuencia de cada uno
-según la menor fecha de entrega entre las órdenes de cada lote
+según la menor fecha de entrega entre los pedidos de cada lote
 (Sección~\in[sec:aco_construccion]). En \ac{aco}, esa regla no basta por sí
 sola, y se complementa con una búsqueda local sobre la asignación
-(Sección~\in[sec:aco_pulido]). Una búsqueda local que solo acepta
+(Sección~\in[sec:aco_pulido]).
+
+Una búsqueda local que solo acepta
 mejoras, como \ac{hc}, puede quedar hasta un 5,88~\% por encima del óptimo en
 instancias funcionales de grilla, porque se detiene en un óptimo local. La
 búsqueda local iterada de los autores incluye, justamente, un
 mecanismo para escapar de ellos, reiniciando la búsqueda local desde una
 perturbación de la mejor solución encontrada (Sección~\in[sec:marco_hc]).
 
-En cuanto a lo que no es comparable, la reducción del 57~\% en el tiempo de
+{\bf Lo que no es comparable.} La reducción del 57~\% en el tiempo de
 picking que informan Coruzzolo et al. se mide contra preparar los pedidos de
-a uno, y proviene enteramente de agrupar las órdenes en lotes, sobre todo de
+a uno, y proviene enteramente de agrupar los pedidos en lotes, sobre todo de
 la reducción del tiempo de preparación. De los 207,97 minutos diarios que se
 ahorran, 169,20 corresponden a la preparación y 38,77 al recorrido. Como en esta
 tesina los lotes son un dato, ese ahorro no puede reproducirse ni
@@ -131,7 +134,7 @@ finalización evitó que este efecto distorsionara la comparación.
 Por último, las metaheurísticas construyen las rutas sobre las ubicaciones
 requeridas, como proponen Chen et al. \cite[chen2013antcolony], con la
 adaptación necesaria para producir caminos simples. Chen et al. modelan
-además la congestión entre operarios, que en esta tesina queda fuera del alcance
+además la congestión entre {\em pickers}, que en esta tesina queda fuera del alcance
 (Sección~\in[sec:limitaciones]).
 
 \stopsubsection
@@ -154,13 +157,13 @@ instancias pueden representar, y otras hacen que resolverlas sea costoso.
 \startsubsubsection[title={Instancias que representan}]
 
 Los lotes y la ubicación de los productos son
-datos del problema, y no se modela la congestión entre operarios
+datos del problema, y no se modela la congestión entre {\em pickers}
 (Capítulo~\in[Capitulo_3]).
 
 Las restricciones (\in[eq:mono_entra_max]) y
 (\in[eq:mono_sale_max]) impiden que una ruta pase dos veces por la misma
 ubicación, es decir, la ruta de cada lote debe ser un camino simple. Es una característica que se hereda del modelo de referencia y que resulta
-adecuada para el almacén de este trabajo, pero en otros almacenes un operario puede entrar a un pasillo sin
+adecuada para el almacén de este trabajo, pero en otros almacenes un {\em picker} puede entrar a un pasillo sin
 salida y volver por donde vino, de modo que existen instancias físicamente
 posibles que la formulación declara infactibles. Por ejemplo, si una ubicación requerida está al fondo de un pasillo sin salida que 
 no contiene el depósito ni el punto de entrega, la única forma de visitarla es 
@@ -181,9 +184,10 @@ la restricción de secuencia que debería estar inactiva puede excluir la
 solución óptima. El Anexo~\in[Anexo_Modelos] muestra un ejemplo y una cota
 válida en todos los casos. Cuando la espera no conviene
 (Sección~\in[sec:espera_voluntaria]), la cota original alcanza, y el caso no
-afecta a las soluciones de este trabajo.
+afecta a las soluciones de este trabajo, como se comprobó sobre las 59
+soluciones del Split (Sección~\in[sec:anexo_mseq]).
 
-Además, la formulación no distingue los lotes vacíos, es decir, sin órdenes. Si
+Además, la formulación no distingue los lotes vacíos, es decir, sin pedidos. Si
 $\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
 nodo final, un {\em picker} y un lugar en una secuencia, y su finalización
 entra en el objetivo. Además, los lotes vacíos son intercambiables entre sí,
@@ -315,7 +319,9 @@ de cada una.
 \startsubsection[title={De la experimentación}]
 
 Las instancias son generadas y no provienen de
-una operación real. Los tiempos son de reloj, medidos en una computadora
+una operación real. Cada escenario de estrés es una única instancia y, en el
+perfil realista, todas se generan con la misma semilla, de modo que los
+resultados no miden la variación entre instancias del mismo tamaño. Los tiempos son de reloj, medidos en una computadora
 portátil, y pueden variar hasta el doble entre corridas; en las pruebas de
 estrés, además, la Etapa~1 del Split se ejecutó en paralelo. En las corridas
 principales, cada heurística se ejecutó una sola vez por instancia, con
@@ -386,20 +392,22 @@ mismos datos, por ejemplo, las variantes propuestas como trabajo futuro
 La elección del método depende del tamaño de la instancia y de lo que importe
 en cada caso:
 \startitemize
-	\item {\em Split}, cuando se necesita el óptimo probado. Hasta 6 lotes en
+	\item {\em Split}, cuando se necesita el óptimo probado. En el perfil
+	realista, hasta 6 lotes en
 	grillas de hasta 15×15, lo prueba en minutos y sirve como referencia para
 	evaluar otros métodos.
 	\item {\em Monolítico}, solo como verificador, ya que el Split resuelve el
 	mismo problema con el mismo óptimo y escala mejor.
 	\item {\em ACO}, cuando importa la calidad de la solución y se dispone de
-	minutos: en las pruebas de estrés, tarda entre 14 segundos y 6 minutos
+	minutos: en las pruebas de estrés, salvo en el escenario de 100×100, tarda
+	entre 14 segundos y 6 minutos
 	(Sección~\in[sec:res_tiempos]). Sirve, por ejemplo, para planificar un
 	turno.
 	\item {\em HC}, cuando importa responder en segundos: en las pruebas de
 	estrés tarda menos de 5 segundos en todos los escenarios salvo el de
 	100×100 (Sección~\in[sec:res_tiempos]). Sirve, por ejemplo, para volver a
 	planificar durante el turno, cuando llegan pedidos nuevos o falta un
-	operario, a cambio de una brecha mayor que la de \ac{aco}
+	{\em picker}, a cambio de una brecha mayor que la de \ac{aco}
 	(Sección~\in[sec:res_calidad]).
 \stopitemize
 
@@ -419,9 +427,9 @@ cumplieron de la siguiente manera:
 	\item Se formuló e implementó un modelo lineal monolítico que extiende el
 	modelo de referencia con velocidades heterogéneas y cadena de frío
 	(Capítulo~\in[Capitulo_3]). Las pruebas funcionales verifican que respeta
-	las reglas del problema y, cuando todos los operarios tienen la misma
-	velocidad y la cadena de frío no restringe, el modelo se reduce al
-	problema original.
+	las reglas del problema y, cuando todos los {\em pickers} tienen la misma
+	velocidad, la cadena de frío no restringe y no hay tiempos de servicio, el
+	modelo se reduce al de referencia con los lotes fijos.
 	\item Se desarrolló un modelo en dos etapas que alcanza el mismo valor
 	óptimo que el monolítico: lo hace en los 49 pares que los dos resuelven, y
 	los 11 pares infactibles lo son en ambos. La mejora en tiempo, en cambio,
@@ -440,11 +448,12 @@ cumplieron de la siguiente manera:
 	garantizan que los cuatro métodos resuelven exactamente los mismos datos
 	(Capítulo~\in[Capitulo_5]).
 	\item Se compararon los métodos sobre esos escenarios
-	(Capítulo~\in[Capitulo_6]). Las heurísticas encuentran una solución en
-	todas las instancias factibles y en ninguna de las infactibles. ACO queda
-	prácticamente en el óptimo y HC, a menos de un 0,21~\% en estrés, con
-	tiempos que en la mediana son entre 1,5 y 53 veces menores que los del
-	Split. A igual tiempo, los modelos lineales no obtienen ninguna solución
+	(Capítulo~\in[Capitulo_6]). En la corrida principal, las heurísticas
+	encuentran una solución en todas las instancias factibles y en ninguna de
+	las infactibles. ACO queda
+	prácticamente en el óptimo y HC, a lo sumo a un 0,21~\% en estrés. HC
+	responde unas 53 veces más rápido que el Split en la mediana, y ACO tarda
+	entre lo mismo que el Split y 6 veces menos, según el escenario. A igual tiempo, los modelos lineales no obtienen ninguna solución
 	en el tiempo de HC, y con el de ACO el Split queda entre un 46 y un 58~\%
 	por encima en los escenarios de cuadrilla grande
 	(Sección~\in[sec:res_igual_tiempo]).
@@ -462,8 +471,8 @@ robustez, evaluada con cinco semillas en los escenarios de estrés 02 a 19,
 \ac{aco} es el más estable: la diferencia entre la mejor y la peor semilla fue
 como máximo de un 0,05~\%, y todas las ejecuciones encontraron solución
 (Sección~\in[sec:calib_aco_semillas]). En \ac{hc}, esa diferencia fue menor
-al 0,5~\%, pero con una de las semillas dos escenarios terminaron sin solución
-factible (Sección~\in[sec:calib_hc_semillas]). Por eso, la elección depende
+al 0,5~\%, pero dos de las 90 ejecuciones, cada una con una semilla distinta,
+terminaron sin solución factible (Sección~\in[sec:calib_hc_semillas]). Por eso, la elección depende
 del tamaño de la instancia y de lo que importe en cada caso, según las
 recomendaciones de la Sección~\in[sec:recomendaciones].
 
@@ -597,10 +606,10 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 	de cuatro decisiones que plantean Coruzzolo et al. La idea del Split
 	podría combinarse con la enumeración de lotes candidatos de su modelo
 	simplificado, ruteando cada candidato de forma exacta o heurística. Como la
-	cantidad de candidatos crece combinatoriamente con las órdenes, habría que
+	cantidad de candidatos crece combinatoriamente con los pedidos, habría que
 	acotarla, y esa es la principal dificultad de esta línea
 	(Sección~\in[sec:disc_referencia]).
-	\item Modelar la congestión entre operarios, como hacen Chen et al.
+	\item Modelar la congestión entre {\em pickers}, como hacen Chen et al.
 	\cite[chen2013antcolony]. Con congestión, la ruta de un lote dependería de
 	cuándo se ejecuta y de los demás lotes, y la descomposición del Split
 	dejaría de ser exacta (Sección~\in[sec:caracteristicas_formulacion]). Por
@@ -615,74 +624,3 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 
 \stopsection
 \stopchapter
-
-%========================================================================================
-% GUÍA DE TRABAJO - CAPÍTULO 7 (Conclusión y discusión)
-% Comentarios: no se compilan ni salen en el PDF. Borrar antes de la entrega.
-% Armada el 21/10/2026 a partir del repo de implementación (linear-picking-routing,
-% origin/main 75d553c del 19/10), docs/thesis/models.tex, las dos comparaciones de
-% docs/thesis/ y Notas/opp_v5_development.tex. Foco: conclusiones de la comparación de
-% modelos y de la validación. Revisar los números si se vuelven a correr las heurísticas
-% (guía del cap. 6).
-% [ ] = tarea; (D) = decisión de ustedes.
-%========================================================================================
-%
-% 1. ORGANIZACIÓN PROPUESTA (el flujo de la plantilla: discusión, conclusiones,
-%    recomendaciones, trabajo futuro)
-%   7.1 Discusión: los resultados frente a la literatura y a las decisiones de modelado.
-%   7.2 Conclusiones: una por objetivo específico del cap. 1, en el mismo orden.
-%   7.2 Limitaciones (dentro de la discusión; el 13/11/2026 se trajeron acá las
-%       limitaciones de 3.6 y 4.4, rama cap7-limitaciones).
-%   7.3 Recomendaciones: cuándo conviene cada método.
-%   7.5 Trabajo futuro.
-%
-% 2. QUÉ TIENE QUE DECIR
-% [ ] Discusión: Coruzzolo et al. no pudieron resolver su MIP sobre el caso real; acá los
-%     modelos exactos prueban el óptimo solo a escala chica (Split: hasta 6 lotes en grillas
-%     de hasta 15×15; monolítico: con 10 min, hasta 3 lotes en 6×6), lo que es consistente y
-%     justifica las heurísticas. La descomposición conserva el óptimo y es la que escala. La
-%     espera voluntaria es una propiedad de las formulaciones con objetivo de adelanto y
-%     demora y terminación como desigualdad: condiciona qué se puede comparar.
-% [ ] Conclusiones por objetivo: (1) monolítico formulado, implementado y validado (mismo
-%     óptimo que el Split; se reduce a v4); (2) Split: mismo óptimo en 49 de 49 pares, algo
-%     más lento en instancias chicas y el único que resuelve a escala (estrés: 9 de 19 contra
-%     0 de 19); (3) HC y ACO equivalentes salvo la espera voluntaria, con todas sus
-%     soluciones verificadas contra el monolítico (150 de 150); (4) pruebas: 64 funcionales
-%     y 19 de estrés, con un perfil realista sin las degeneraciones de las heredadas;
-%     (5) estado 67/67 y 9/9, brechas (en estrés ACO <= 0,04 % y HC <= 0,21 %), tiempos (en
-%     la mediana de estrés HC unas 53 veces y ACO 1,5 veces más rápidos que el Split) y, a
-%     igual tiempo, las heurísticas dominan; (6) limitaciones estructurales (ver 7.4).
-% [ ] Recomendación (models.tex, "Conclusiones"): hasta 6 lotes en grillas de hasta 15×15,
-%     el Split da el óptimo probado en minutos y sirve de referencia; por encima, o cuando
-%     importa el tiempo de respuesta, las heurísticas: ACO cuando importa la calidad y HC
-%     cuando importan los segundos (por ejemplo, para replanificar).
-% [ ] Limitaciones de la formulación: camino simple; sin congestión; loteo y ubicación de
-%     productos dados; validez de M_seq con espera voluntaria (si no se corrige, guía del
-%     cap. 3); los lotes vacíos se rutean y se cobran.
-% [ ] Limitaciones experimentales: instancias generadas, no datos reales, con una sola
-%     semilla de generación; tiempos de una notebook (variación de hasta 2 veces entre
-%     corridas, Etapa 1 en paralelo, suspensiones); una corrida por heurística con semilla 1
-%     (si no se hace el estudio de semillas); referencia de objetivo solo donde el Split
-%     termina (9 de 19 en estrés); 10 instancias funcionales comparables solo en estado por
-%     la espera.
-% [ ] Limitaciones de las heurísticas: HC no escapa de óptimos locales y en la práctica casi
-%     no modifica las rutas después de la construcción; los topes de tiempo no son estrictos
-%     (en el 100×100, 17 min HC y 32 min ACO); ACO tiene un pico de memoria sin explicar (09).
-% [ ] Trabajo futuro: identificar qué limita a la Etapa 1 en grillas grandes (el mecanismo no
-%     se identificó); acelerar la Etapa 2 (p. ej. romper la simetría entre pickers de la
-%     misma banda; el branching por pseudocosto ya se probó y no generalizó); una expansión
-%     sin cruces para la clausura métrica (se descartó porque los lotes volvían al grafo
-%     completo, pero eso era evitable y no se intentó); escapar de óptimos locales en HC
-%     (reinicios, recocido simulado o búsqueda tabú: las familias del cap. 2); heurísticas
-%     que inserten espera, o un modelo exacto sin espera, para comparar también donde hoy se
-%     compara solo el estado; integrar el loteo (como Coruzzolo); congestión (en el repo hay
-%     variantes hc_3 y aco_3 que la modelan, fuera del alcance); depósitos con estanterías y
-%     datos reales.
-% [ ] Actualizar el resumen y escribir el abstract (hoy "% TODO") con estas conclusiones.
-%
-% 3. FUENTES
-% - linear-picking-routing/docs/thesis/models.tex, sec. "Conclusiones"; las secciones de
-%   conclusiones y limitaciones de las dos comparaciones de docs/thesis/.
-% - Notas/opp_v5_development.tex: secs. "Limitaciones y preguntas abiertas" y "Síntesis
-%   para la tesina".
-%========================================================================================

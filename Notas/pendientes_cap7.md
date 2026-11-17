@@ -56,7 +56,7 @@ El 15/11 se reescribió la Sección 7.4 en cuatro subsecciones (modelos lineales
   - [x] Una expansión sin cruces para la clausura métrica (en "Modelos lineales", dentro de acelerar la Etapa 1).
   - [x] El branching por pseudocosto ya se probó y no generalizó (en "Modelos lineales", dentro de acelerar la Etapa 2).
   - [x] Un modelo exacto sin espera voluntaria (en "Comparación entre métodos").
-  - [ ] (D) Las variantes hc_3 y aco_3 del repositorio, que modelan la congestión. No se nombran: la tesina no las describe en ningún lado. Decidir si se mencionan en el ítem de congestión de "Alcance del problema".
+  - [x] (D) Las variantes hc_3 y aco_3 del repositorio, que modelaban la congestión. No se mencionan: ya no existen en el repositorio de implementación (16/11).
 - [x] **A partir de la comparación con Coruzzolo et al.:**
   - Integrar el loteo, combinando la enumeración de lotes candidatos con rutas exactas o heurísticas.
   - Implementar su heurística (fecha de entrega más temprana más búsqueda local iterada) y medirla contra el óptimo del Split.
@@ -78,3 +78,17 @@ El 15/11 se reescribió la Sección 7.4 en cuatro subsecciones (modelos lineales
 ---
 
 (D) = decisión de ustedes.
+
+---
+
+## 6. Pendientes que venían de las guías de trabajo de los capítulos
+
+El 16/11/2026 se borraron las guías de trabajo que estaban como comentarios al final de cada capítulo. Lo que seguía abierto en ellas:
+
+- [ ] **Capítulo 2:** unificar "locación"/"ubicación" y "completitud"/"finalización" con los capítulos 3 a 6.
+- [ ] **Capítulo 3:** que las secciones que vuelven a listar la validación de los datos (4.1.3 y 5.2) remitan a 3.3.3.
+- [ ] **Capítulo 6:** colores de los gráficos según la guía de estilo (`darkblue` para los modelos exactos, `blueline` para HC y `greenline` para ACO); hoy usan `greenline` para HC y `redline` para ACO.
+- [ ] **Capítulo 2 y 7:** ampliar "Trabajos relacionados" y la comparación con la literatura (sección 1 de este documento). Se decidió dejarlo pendiente.
+- [ ] **Dedicatoria:** escribirla o quitar el bloque de `tesina.tex`.
+
+El detalle de la revisión general está en `Notas/revision_general.md`.
