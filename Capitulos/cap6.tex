@@ -20,9 +20,9 @@ de la Sección~\in[sec:comparacion].
 
 \startsubsection[title={Mismo óptimo}, reference=sec:mismo_optimo]
 
-En las pruebas funcionales hay 60 pares comparables, es decir, instancias
-que se resolvieron con los dos modelos. Los dos modelos coinciden en los 60.
-En 49 pares, los dos encuentran el óptimo con el mismo valor
+En las pruebas funcionales hay 66 pares comparables, es decir, instancias
+que se resolvieron con los dos modelos. Los dos modelos coinciden en los 66.
+En 55 pares, los dos encuentran el óptimo con el mismo valor
 objetivo. La mayor diferencia es de $3\mathord{,}83 \cdot 10^{-6}$, en los
 casos 13 y 14, y está dentro de la tolerancia de SCIP. En los otros 11 pares,
 los dos modelos indican que la instancia es infactible.
@@ -33,8 +33,8 @@ monolítico. La coincidencia incluye las pruebas de cadena de frío, de
 velocidades y de elección de la ruta más corta.
 
 Los dos modelos, sin embargo, no siempre llegan a la misma solución. En
-21 pares, el monolítico devuelve un óptimo
-alternativo, con otras rutas (13 pares), otra asignación (16) o ambas cosas.
+25 pares, el monolítico devuelve un óptimo
+alternativo, con otras rutas (17 pares), otra asignación (20) o ambas cosas.
 Esto es esperable, ya que el objetivo no penaliza la longitud de la ruta, por lo que el
 monolítico puede elegir cualquier ruta que no empeore las penalizaciones,
 mientras que la Etapa~1 del Split siempre devuelve la ruta mínima. Las
@@ -56,24 +56,24 @@ vacíos antes de resolver.
 
 \startsubsection[title={Tiempos en las pruebas funcionales}]
 
-El Cuadro~\in[tab:res_tiempos_lineales] resume los tiempos de los 49 pares
+El Cuadro~\in[tab:res_tiempos_lineales] resume los tiempos de los 55 pares
 resueltos.
 
-\startplacetable[reference=tab:res_tiempos_lineales, location=here, title={Tiempos de los 49 pares resueltos en las pruebas funcionales. El tiempo total incluye escribir los datos y compilar los modelos; el del resolvedor cubre solo la última resolución de SCIP, que en el Split es la de la Etapa~2.}]
+\startplacetable[reference=tab:res_tiempos_lineales, location=here, title={Tiempos de los 55 pares resueltos en las pruebas funcionales. El tiempo total incluye escribir los datos y compilar los modelos; el del resolvedor cubre solo la última resolución de SCIP, que en el Split es la de la Etapa~2.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 	\bTR \bTH Medida \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \eTR
-	\bTR \bTD Tiempo total: suma \eTD \bTD 140,3 \eTD \bTD 24,4 \eTD \bTD 5,75 \eTD \eTR
-	\bTR \bTD Tiempo total: mediana \eTD \bTD 0,225 \eTD \bTD 0,309 \eTD \bTD 0,73 \eTD \eTR
+	\bTR \bTD Tiempo total: suma \eTD \bTD 148,1 \eTD \bTD 26,5 \eTD \bTD 5,60 \eTD \eTR
+	\bTR \bTD Tiempo total: mediana \eTD \bTD 0,226 \eTD \bTD 0,315 \eTD \bTD 0,72 \eTD \eTR
 	\bTR \bTD Tiempo total: máximo \eTD \bTD 43,5 \eTD \bTD 3,9 \eTD \bTD 11,27 \eTD \eTR
-	\bTR \bTD Tiempo del resolvedor: suma \eTD \bTD 124,8 \eTD \bTD 7,2 \eTD \bTD 17,35 \eTD \eTR
-	\bTR \bTD Tiempo del resolvedor: mediana \eTD \bTD 0,007 \eTD \bTD 0,003 \eTD \bTD 2,33 \eTD \eTR
+	\bTR \bTD Tiempo del resolvedor: suma \eTD \bTD 131,9 \eTD \bTD 7,5 \eTD \bTD 17,66 \eTD \eTR
+	\bTR \bTD Tiempo del resolvedor: mediana \eTD \bTD 0,007 \eTD \bTD 0,003 \eTD \bTD 1,99 \eTD \eTR
 	\eTABLE
 \stopplacetable
 
-En la suma, el monolítico tardó 5,75 veces más que el Split, pero en la
-mediana la relación se invierte: el monolítico fue más rápido en 38 de los
-49 pares, con tiempos de entre el 37~\% y el 98~\% de los del Split. Se trata
+En la suma, el monolítico tardó 5,60 veces más que el Split, pero en la
+mediana la relación se invierte: el monolítico fue más rápido en 42 de los
+55 pares, con tiempos de entre el 31~\% y el 98~\% de los del Split. Se trata
 de instancias pequeñas, en las que el resolvedor tarda milisegundos y el
 tiempo total depende sobre todo de la compilación. Como es esperable, compilar un único modelo
 cuesta menos que compilar los de las dos etapas. La suma, en cambio, la
@@ -125,6 +125,7 @@ fill fullcircle scaled 4pt shifted (1.638cm,1.872cm) withcolor \MPcolor{darkblue
 fill fullcircle scaled 4pt shifted (1.329cm,1.058cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.226cm,0.769cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.119cm,1.096cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.393cm,0.182cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.407cm,1.154cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.050cm,0.855cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.854cm,4.541cm) withcolor \MPcolor{darkblue};
@@ -135,13 +136,18 @@ fill fullcircle scaled 4pt shifted (1.213cm,0.915cm) withcolor \MPcolor{darkblue
 fill fullcircle scaled 4pt shifted (1.872cm,0.779cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.661cm,5.305cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.683cm,4.536cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.731cm,3.388cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (2.114cm,3.145cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.254cm,4.560cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (2.199cm,4.671cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.736cm,4.762cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.590cm,1.118cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (2.151cm,1.866cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.654cm,1.502cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (1.466cm,1.315cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (2.061cm,2.022cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.135cm,0.921cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (0.972cm,-0.403cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.493cm,1.074cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.457cm,5.353cm) withcolor \MPcolor{darkblue};
 fill fullcircle scaled 4pt shifted (1.226cm,0.938cm) withcolor \MPcolor{darkblue};

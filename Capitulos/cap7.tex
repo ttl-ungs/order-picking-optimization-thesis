@@ -51,7 +51,7 @@ heurística del vecino más cercano, por lo que su óptimo depende de la calidad
 rutas generadas, y el modelo resultante ya no es exacto para el problema original. El Split, como recibe los
 lotes ya formados, solo necesita la ruta de cada uno, y la calcula con un \ac{mip}
 que la resuelve hasta el óptimo (Etapa~1). Además, la descomposición es exacta
-(Sección~\in[sec:modelo_split]), y los dos modelos coinciden en los 60 pares
+(Sección~\in[sec:modelo_split]), y los dos modelos coinciden en los 66 pares
 comparables de las pruebas funcionales (Sección~\in[sec:mismo_optimo]). El costo es que la Etapa~1
 resuelve un \ac{mip} de ruteo por lote sobre el grafo completo, lo cual es una limitación
 en almacenes grandes (Sección~\in[sec:caracteristicas_formulacion]).
@@ -431,7 +431,7 @@ cumplieron de la siguiente manera:
 	velocidad, la cadena de frío no restringe y no hay tiempos de servicio, el
 	modelo se reduce al de referencia con los lotes fijos.
 	\item Se desarrolló un modelo en dos etapas que alcanza el mismo valor
-	óptimo que el monolítico: lo hace en los 49 pares que los dos resuelven, y
+	óptimo que el monolítico: lo hace en los 55 pares que los dos resuelven, y
 	los 11 pares infactibles lo son en ambos. La mejora en tiempo, en cambio,
 	depende de la escala. En las instancias pequeñas, el monolítico es algo
 	más rápido, porque compila un único modelo; a escala realista, solo el
