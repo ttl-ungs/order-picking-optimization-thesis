@@ -60,7 +60,9 @@ estrés, que surgen de un relevamiento sistemático
 (Sección~\in[sec:relevamiento]). Cada caso genera una instancia,
 con un almacén y un conjunto de pedidos, lotes y {\em pickers}, la resuelve y 
 compara el resultado con el esperado. Un caso puede agrupar varias pruebas sobre
-variantes de una misma instancia; cada una se distingue con una letra. En
+variantes de una misma instancia; cada una se distingue con una letra. Si
+una prueba resuelve más de una instancia, cada instancia se indica con un
+número después de un punto medio (por ejemplo, 25e·1 y 25e·2). En
 total, el modelo Split corre 64 pruebas y el monolítico 63. La diferencia es
 la prueba 24b, que verifica el chequeo de elegibilidad previo a la Etapa~2, un
 paso que solo existe en el Split. Las demás pruebas son las mismas en los dos
@@ -145,7 +147,7 @@ Las pruebas de estrés buscan determinar
 hasta qué tamaño de instancia llega cada modelo. Para dimensionarlas se
 realizó primero un relevamiento de los modelos lineales
 (Sección~\in[sec:relevamiento]), cuyos resultados definieron los
-escenarios descriptos en la Sección~\in[sec:escenarios_estres]. El
+escenarios descritos en la Sección~\in[sec:escenarios_estres]. El
 relevamiento empezó por el modelo Split porque, al descomponerse en
 problemas más chicos, permite recorrer más instancias en el mismo tiempo.
 
@@ -191,7 +193,7 @@ También se probaron cambios para acelerar el modelo Split. De ellos, solo
 se adoptó repartir la Etapa~1 entre varios procesos
 (Sección~\in[sec:anexo_intentos_split] del Anexo~\in[Anexo_Relevamiento]).
 
-Los tiempos del relevamiento no son los de la suite final
+Los tiempos del relevamiento no son los de la {\em suite} final
 (Capítulo~\in[Capitulo_6]), por tres motivos: después se cambió el peso de
 la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
 (Sección~\in[sec:ejecucion]) y el tiempo de reloj de una misma instancia
@@ -252,7 +254,7 @@ Etapa~2, que decide qué {\em picker} puede ejecutar cada lote.
 	\eTABLE
 \stopplacetable
 
-Los escenarios 01 a 03 se heredaron de una versión anterior de la suite de
+Los escenarios 01 a 03 se heredaron de una versión anterior de la {\em suite} de
 estrés, previa al relevamiento (en adelante, {\em escenarios heredados}). No
 tienen velocidades ni cadena de frío, y conservan los datos de esa versión: todos los {\em pickers} tienen la misma velocidad, todos
 los arcos de la grilla tienen el mismo peso, cada pedido tiene 10 unidades y
@@ -261,7 +263,7 @@ modo que todos los pedidos llegan tarde, no hay adelanto que recortar y el
 peso de finalización puede quedar en $W^{c} = 9$ sin que convenga esperar.
 Además, en los escenarios 01 y 02 hay tantos {\em pickers} como lotes, así
 que cada uno ejecuta un solo lote y la secuencia no interviene. Se
-conservaron por lo que aportan: el 01 es el almacén más grande de la suite
+conservaron por lo que aportan: el 01 es el almacén más grande de la {\em suite}
 (100×100), el 02 era el único de los heredados que el modelo Split resolvía
 y el 03 concentra 40 lotes en un único {\em picker}, lo que pone a prueba la
 secuencia.
@@ -316,10 +318,10 @@ Secciones~\in[sec:pruebas_funcionales] y~\in[sec:pruebas_estres]. Los
 resultados se presentan en el Capítulo~\in[Capitulo_6].
 
 Todas las pruebas, funcionales y de estrés, se ejecutan con un mismo
-programa, que recibe el método (Split, monolítico, HC o ACO) y la suite que
+programa, que recibe el método (Split, monolítico, HC o ACO) y la {\em suite} que
 se quiere correr. Cada prueba
 se ejecuta en un proceso propio y las pruebas se ejecutan de a una, en serie.
-El tope de tiempo es de 25 minutos por prueba en la suite funcional y de 40
+El tope de tiempo es de 25 minutos por prueba en la {\em suite} funcional y de 40
 minutos en la de estrés. Al vencer el tope, el programa termina desde afuera
 el proceso de la prueba, junto con todos los procesos que este haya lanzado,
 y la prueba se registra como no terminada ({\em timeout}). A SCIP no se le
@@ -351,22 +353,22 @@ Anexo~\in[Anexo_Relevamiento].
 	dominadas por la Etapa~2.
 	\item {\bf Repartir la Etapa~1 no siempre conviene.} Preparar cada
 	proceso lleva un tiempo fijo, que en las instancias chicas supera lo que se
-	ahorra: la suite funcional tardó 51~segundos con 6 procesos y 46 en
+	ahorra: la {\em suite} funcional tardó 51~segundos con seis procesos y 46 en
 	secuencia. Por eso la Etapa~1 solo se reparte cuando hay más de
 	4 lotes.
 \stopitemize
 
 El paralelismo de la Etapa~1 es distinto del que se evita entre pruebas:
 ocurre dentro de una misma prueba, que sigue ejecutándose sola en la
-máquina. La suite de estrés del modelo Split se ejecutó con la Etapa~1
+máquina. La {\em suite} de estrés del modelo Split se ejecutó con la Etapa~1
 repartida en seis procesos, mientras que el monolítico, que no puede
 descomponerse, y las heurísticas usan un único proceso. Por lo tanto, en
 estrés el Split no se compara con los demás métodos en igualdad de recursos,
 algo que se tiene en cuenta al comparar los tiempos
-(Sección~\in[sec:comparacion_lineales]). En la suite funcional, la
+(Sección~\in[sec:comparacion_lineales]). En la {\em suite} funcional, la
 Etapa~1 se ejecutó en un solo proceso.
 
-{\bf Qué se registra.} Cada corrida de una suite produce un archivo CSV por
+{\bf Qué se registra.} Cada corrida de una {\em suite} produce un archivo CSV por
 método, con una fila por prueba: el estado, el tiempo total, el tiempo del
 resolvedor, el valor objetivo, la memoria pico y la proporción de pedidos
 que llegan a tiempo. En las heurísticas se registran, además, la cantidad de
@@ -556,7 +558,7 @@ tiempo. Se usa el Split porque fue el único modelo lineal que
 terminó escenarios de estrés dentro del tope (Sección~\in[sec:comparacion_lineales]).
 
 {\bf Mismos datos.} Solo se comparan instancias en las que los métodos
-resuelven exactamente los mismos datos. En la suite funcional, las
+resuelven exactamente los mismos datos. En la {\em suite} funcional, las
 heurísticas resuelven las instancias capturadas del Split
 (Sección~\in[sec:pruebas_funcionales]). En la de estrés, los cuatro métodos
 construyen cada escenario con la misma llamada al mismo generador y con los
@@ -630,7 +632,7 @@ tiene referencia.
 \stopitemize
 Para resumir los tiempos y las brechas se usan medianas además de medias,
 porque sus distribuciones son muy asimétricas. Unas pocas instancias
-concentran los valores extremos, y en la suite funcional los tiempos dependen
+concentran los valores extremos, y en la {\em suite} funcional los tiempos dependen
 sobre todo de la compilación de los modelos.
 
 {\bf A igual tiempo.} En las comparaciones anteriores, cada método corre

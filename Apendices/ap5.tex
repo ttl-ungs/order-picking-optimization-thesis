@@ -41,8 +41,8 @@ distinta: la cantidad de lotes aumenta el tiempo de la Etapa~2 (asignación y
 secuencia), y el tamaño del almacén, el de la Etapa~1
 (ruteo). Agregar pedidos a cada lote, en cambio, no tuvo impacto significativo: 
 la Etapa~2 exploró 153.934 nodos con 10 pedidos por lote y
-4.144 con 26. Esta separación entre las dos etapas orientó el resto de la
-exploración, ya que permite elegir qué etapa se pone bajo presión en cada
+4.144 con 26. Esta separación entre las dos etapas orientó el resto del
+relevamiento, ya que permite elegir qué etapa se pone bajo presión en cada
 prueba.
 
 \stopsection
@@ -107,21 +107,21 @@ label.bot(textext("\tfx Tres bandas"), (c3,-0.12cm));
 label.bot(textext("Velocidades de la cuadrilla"), (w/2,-0.75cm));
 label.lft(textext("Tiempo de la Etapa 2 (s)") rotated 90, (-1.1cm,h/2));
 fill unitsquare scaled 0.3cm shifted (0.3cm,h+0.75cm) withcolor \MPcolor{darkblue};
-label.rt(textext("\tfx 3 pickers"), (0.65cm,h+0.9cm));
+label.rt(textext("\tfx 3 {\em pickers}"), (0.65cm,h+0.9cm));
 fill unitsquare scaled 0.3cm shifted (2.9cm,h+0.75cm) withcolor \MPcolor{redline};
-label.rt(textext("\tfx 4 pickers"), (3.25cm,h+0.9cm));
+label.rt(textext("\tfx 4 {\em pickers}"), (3.25cm,h+0.9cm));
 draw unitsquare scaled 0.3cm shifted (5.5cm,h+0.75cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{redline};
 label.rt(textext("\tfx 4 pickers, sin terminar en 300 s"), (5.85cm,h+0.9cm));
 \stopMPcode}
 
 {\bf Pedidos por lote y peso de la finalización.} Se fijaron 26 pedidos por
-lote. Durante la exploración, con un peso de finalización $W^{c} = 9$,
+lote. Durante el relevamiento, con un peso de finalización $W^{c} = 9$,
 alrededor de dos tercios de los pedidos se completaban a tiempo, de modo que
 en el objetivo actuaban tanto la penalidad por adelanto como la de demora.
 Con ese peso, sin embargo, a los modelos lineales les convenía la espera
 voluntaria (Sección~\in[sec:espera_voluntaria]), que las heurísticas no
 pueden reproducir, y los objetivos de unos y otras dejaban de ser
-comparables. Por eso, en la suite final el peso de finalización se fijó en
+comparables. Por eso, en la {\em suite} final el peso de finalización se fijó en
 uno más que la cantidad de pedidos por lote ($W^{c} = 27$), de modo que
 esperar nunca resulte conveniente. Con este peso los lotes terminan lo antes
 posible y prácticamente todos los pedidos llegan a tiempo, por lo que en el
@@ -132,7 +132,7 @@ en los escenarios de grilla del perfil realista, su tiempo bajó de entre 86 y
 {\bf Forma de la agenda.} Se fijaron 6 lotes para 3 {\em pickers}, de modo
 que cada uno ejecute dos lotes y la secuenciación tenga efecto. Con las
 velocidades en bandas, las formas más cargadas no terminaron en 25
-minutos: con 6 lotes y 4 {\em pickers} la brecha al corte fue de 1,09\%,
+minutos: con 6 lotes y 4 {\em pickers} el {\em gap} al corte fue de 1,09\%,
 con 7 lotes y 3 {\em pickers} de 2,6\%, y con 8 lotes y 3 {\em pickers}
 de 9,48\%.
 
@@ -209,8 +209,8 @@ algunas instancias y empeoraron otras, y se descartaron
 	\bTR \bTH Cambio \eTH \bTH Etapa \eTH \bTH Efecto medido \eTH \bTH Decisión \eTH \eTR
 	\bTR \bTD Clausura métrica \eTD \bTD 1 \eTD \bTD Ahorró entre el 19 y el 33\% en los escenarios heredados, pero en las grillas del perfil realista entre el 67 y el 100\% de los lotes debían resolverse de nuevo sobre el grafo completo, y terminó siendo más lenta. \eTD \bTD Descartada \eTD \eTR
 	\bTR \bTD Quitar el límite de un arco por ubicación \eTD \bTD 1 \eTD \bTD Mismas rutas. Fue un 33\% más rápida en 7×7 y un 24\% más lenta en 13×13; en 25×25, ninguna de las dos versiones terminó en 15 minutos. \eTD \bTD Se mantiene el límite \eTD \eTR
-	\bTR \bTD {\em Branching} por pseudocosto \eTD \bTD 2 \eTD \bTD Fue 2,2 veces más rápido con 10 lotes y 10 {\em pickers}. Con 10 lotes y 12 {\em pickers}, en cambio, la configuración por defecto resolvió en 118,5~s y el pseudocosto agotó el tope con una brecha del 3,3\%. No terminó ninguna instancia que la configuración por defecto no terminara. \eTD \bTD Descartado \eTD \eTR
-	\bTR \bTD Etapa~1 en 6 procesos \eTD \bTD 1 \eTD \bTD Fue 2,2 veces más rápida en 13×13 y 1,9 veces en 14×14, con rutas idénticas. En instancias chicas no tuvo efecto. \eTD \bTD Adoptado en la suite de estrés \eTD \eTR
+	\bTR \bTD {\em Branching} por pseudocosto \eTD \bTD 2 \eTD \bTD Fue 2,2 veces más rápido con 10 lotes y 10 {\em pickers}. Con 10 lotes y 12 {\em pickers}, en cambio, la configuración por defecto resolvió en 118,5~s y el pseudocosto agotó el tope con un {\em gap} del 3,3\%. No terminó ninguna instancia que la configuración por defecto no terminara. \eTD \bTD Descartado \eTD \eTR
+	\bTR \bTD Etapa~1 en 6 procesos \eTD \bTD 1 \eTD \bTD Fue 2,2 veces más rápida en 13×13 y 1,9 veces en 14×14, con rutas idénticas. En instancias chicas no tuvo efecto. \eTD \bTD Adoptado en la {\em suite} de estrés \eTD \eTR
 	\eTABLE
 \stopplacetable
 
@@ -278,7 +278,7 @@ y 6 lotes en 3×3. El modelo Split resolvió todos esos puntos en menos de
 dónde llega el modelo monolítico en comparación con el Split, sin tener que
 ejecutarlo en instancias más grandes.
 
-\placefigure[force][fig:relev_frontera]{Resultado del modelo monolítico en cada punto del estudio, con un tope de 10 minutos (perfil realista). En azul, el tiempo que tardó en probar el óptimo; en rojo, la brecha al momento del corte.}
+\placefigure[force][fig:relev_frontera]{Resultado del modelo monolítico en cada punto del estudio, con un tope de 10 minutos (perfil realista). En azul, el tiempo que tardó en probar el óptimo; en rojo, el {\em gap} al momento del corte.}
 {\startMPcode
 numeric cw, ch; cw := 1.9cm; ch := 0.85cm;
 color azul, rojo, gris; azul := 0.25[white,\MPcolor{darkblue}]; rojo := 0.35[white,\MPcolor{redline}]; gris := \MPcolor{darkgray};
@@ -298,7 +298,7 @@ label.top(textext("Tamaño de la grilla"), (2.5cw,5ch+0.5cm));
 fill unitsquare scaled 0.3cm shifted (0.5cm,-0.6cm) withcolor azul;
 label.rt(textext("\tfx probó el óptimo (tiempo)"), (0.85cm,-0.45cm));
 fill unitsquare scaled 0.3cm shifted (5.0cm,-0.6cm) withcolor rojo;
-label.rt(textext("\tfx cortado a los 10 min (brecha)"), (5.35cm,-0.45cm));
+label.rt(textext("\tfx cortado a los 10 min ({\em gap})"), (5.35cm,-0.45cm));
 fill unitsquare scaled 0.3cm shifted (0.5cm,-1.1cm) withcolor gris;
 label.rt(textext("\tfx infactible"), (0.85cm,-0.95cm));
 label.rt(textext("\tfx --: no se corrió"), (5.0cm,-0.95cm));

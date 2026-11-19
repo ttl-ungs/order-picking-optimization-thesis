@@ -197,7 +197,7 @@ soluciones del Split (Sección~\in[sec:anexo_mseq]).
 
 Además, la formulación no distingue los lotes vacíos, es decir, sin pedidos. Si
 $\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
-nodo final, un {\em picker} y un lugar en una secuencia, y su finalización
+punto de entrega, un {\em picker} y un lugar en una secuencia, y su finalización
 entra en el objetivo. Además, los lotes vacíos son intercambiables entre sí,
 lo que multiplica las soluciones equivalentes que debe considerar el
 resolvedor. Por eso, el caso 30a, con 10 lotes vacíos de 12, no termina en
@@ -453,7 +453,8 @@ cumplieron de la siguiente manera:
 	restricciones del problema.
 	\item Se definieron 38 casos de prueba funcionales, que suman 64 pruebas,
 	y 19 escenarios de estrés, con un perfil realista calibrado para exigir a los modelos sin las
-	degeneraciones de los escenarios heredados, y reglas de comparabilidad que
+	particularidades de los escenarios heredados (velocidades iguales y fechas
+	de entrega imposibles de cumplir), y reglas de comparabilidad que
 	garantizan que los cuatro métodos resuelven exactamente los mismos datos
 	(Capítulo~\in[Capitulo_5]).
 	\item Se compararon los métodos sobre esos escenarios

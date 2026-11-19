@@ -72,14 +72,14 @@
           \raggedleft
           {\em Supervisor:}\par
           \TesinaSupervisor\par
-          \TesinaCosupervisor\par}%
+          \doifsomething{\TesinaCosupervisor}{\TesinaCosupervisor\par}}%
        \hss}
     \vfill
     {\em La tesina se presenta para cumplir con los requerimientos de grado de\\
      \TesinaGrado\par
      en el\par}
     \blank
-    {\TesinaGrupo\par}
+    \doifsomething{\TesinaGrupo}{{\TesinaGrupo\par}}
     {\tfb \goto{\TesinaInstituto}[url(\TesinaInstitutoUrl)]\par}
     \vfill
     {\currentdate[day,{ de },month,{ de },year]\par}

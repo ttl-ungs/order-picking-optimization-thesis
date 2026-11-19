@@ -38,7 +38,7 @@ que corresponden a las tres decisiones del problema:
 	$v_{\text{end}}$. Además de las ubicaciones que debe recolectar, la
 	secuencia puede incluir ubicaciones de paso, que el {\em picker}
 	atraviesa sin recolectar.
-	\item {\bf Una asignación de lotes a pickers.} Una función
+	\item {\bf Una asignación de lotes a {\em pickers}.} Una función
 	$a : \mathcal{B} \to \mathcal{P}$ que indica qué {\em picker} ejecuta cada
 	lote.
 	\item {\bf Una secuencia por picker.} Para cada {\em picker} $p$,
@@ -82,7 +82,7 @@ label.top(textext("\tfx $c_{B1}$"), (4ux, ya + h/2));
 label.top(textext("\tfx $c_{B3}$"), (7ux, ya + h/2));
 label.top(textext("\tfx $c_{B2}$"), (5ux, yb + h/2));
 drawarrow (0, yb - h/2 - 3mm) -- (10ux, yb - h/2 - 3mm) withpen pencircle scaled .5pt;
-label.rt(textext("\tfx tiempo"), (10ux, yb - h/2 - 3mm));
+label.rt(textext("\tfx tiempo (unidades de tiempo)"), (10ux, yb - h/2 - 3mm));
 \stopMPcode
 \stopplacefigure
 
@@ -326,16 +326,16 @@ en la Sección~\in[sec:ejecucion].
 1.\quad {\bf si} la verificación previa falla {\bf entonces devolver} infactible
 2.\quad $s \leftarrow$ solución inicial; {\bf si} no existe {\bf entonces devolver} infactible
 3.\quad $s^* \leftarrow s$ si $v(s) = 0$; si no, $s^* \leftarrow$ ninguna
-4.\quad $k \leftarrow 0$;\; $u \leftarrow 0$
-5.\quad {\bf mientras} $k < \text{Max}_{\text{it}}$ {\bf y} $u < \text{Max}_{\text{imp}}$ {\bf y} tiempo $\leq \text{Max}_{\text{time}}$ {\bf hacer}
-6.\quad\qquad $k \leftarrow k + 1$
-7.\quad\qquad elegir al azar un movimiento $m$ entre los aplicables a $s$
-8.\quad\qquad $s' \leftarrow m(s)$
+4.\quad $it \leftarrow 0$;\; $sm \leftarrow 0$
+5.\quad {\bf mientras} $it < \text{Max}_{\text{it}}$ {\bf y} $sm < \text{Max}_{\text{imp}}$ {\bf y} tiempo $\leq \text{Max}_{\text{time}}$ {\bf hacer}
+6.\quad\qquad $it \leftarrow it + 1$
+7.\quad\qquad elegir al azar un movimiento $\mu$ entre los aplicables a $s$
+8.\quad\qquad $s' \leftarrow \mu(s)$
 9.\quad\qquad {\bf si} $s'$ existe {\bf y} $f'(s') < f'(s)$ {\bf entonces}
-10.\quad\qquad\qquad $s \leftarrow s'$;\; $u \leftarrow 0$
+10.\quad\qquad\qquad $s \leftarrow s'$;\; $sm \leftarrow 0$
 11.\quad\qquad\qquad {\bf si} $v(s) = 0$ {\bf y} ($s^*$ es ninguna {\bf o} $f(s) < f(s^*)$) {\bf entonces} $s^* \leftarrow s$
 12.\quad\qquad {\bf si no}
-13.\quad\qquad\qquad $u \leftarrow u + 1$
+13.\quad\qquad\qquad $sm \leftarrow sm + 1$
 14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
 15.\quad {\bf devolver} $s^*$, $f(s^*)$
 \stoplines
@@ -634,9 +634,9 @@ primera mejora con las rutas fijas, sobre tres vecindarios:
 	secuencia de cualquier {\em picker}, incluido el suyo. A diferencia de
 	\ac{hc}, que lo ubica siempre al final
 	(Sección~\in[sec:hc_limitaciones]), se prueban todas las posiciones.
-	\item {\bf Intercambio dentro de un picker.} Se intercambian las
+	\item {\bf Intercambio dentro de un {\em picker}.} Se intercambian las
 	posiciones de dos lotes de la misma secuencia.
-	\item {\bf Intercambio entre pickers.} Dos lotes asignados a
+	\item {\bf Intercambio entre {\em pickers}.} Dos lotes asignados a
 	{\em pickers} distintos intercambian sus lugares en las secuencias.
 \stopitemize
 Un vecino se acepta si cumple las restricciones de la ruta, cumple $v = 0$ y
