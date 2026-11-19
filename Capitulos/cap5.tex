@@ -255,18 +255,14 @@ Etapa~2, que decide qué {\em picker} puede ejecutar cada lote.
 	\eTABLE
 \stopplacetable
 
-Los escenarios 01 a 03 no usan el perfil realista: no
-tienen velocidades ni cadena de frío, todos los {\em pickers} tienen la misma velocidad, todos
-los arcos de la grilla tienen el mismo peso, cada pedido tiene 10 unidades y
-todas las fechas de entrega valen 30. Esa fecha es imposible de cumplir, de
-modo que todos los pedidos llegan tarde, no hay adelanto que recortar y el
-peso de finalización puede quedar en $W^{c} = 9$ sin que convenga esperar.
-Además, en los escenarios 01 y 02 hay tantos {\em pickers} como lotes, así
-que cada uno ejecuta un solo lote y la secuencia no interviene. Se
-conservaron por lo que aportan: el 01 es el almacén más grande de la {\em suite}
-(100×100), el 02 es el único de los tres que el modelo Split resuelve
-y el 03 concentra 40 lotes en un único {\em picker}, lo que pone a prueba la
-secuencia.
+En los escenarios 01 a 03, todos los {\em pickers} tienen la misma
+velocidad, no hay cadena de frío, todos los arcos de la grilla tienen el
+mismo peso, cada pedido tiene 10 unidades y todas las fechas de entrega
+valen 30. Como esa fecha no se puede cumplir, todos los pedidos llegan
+tarde, no hay adelanto que recortar y el peso de finalización es
+$W^{c} = 9$ sin que convenga esperar. En el 01 y el 02 hay tantos
+{\em pickers} como lotes, así que cada uno ejecuta un solo lote y la
+secuencia no interviene.
 
 En todos los escenarios se verifica lo mismo, con los cuatro métodos (los
 modelos monolítico y Split, HC y ACO): que se
