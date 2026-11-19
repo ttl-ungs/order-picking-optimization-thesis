@@ -24,15 +24,17 @@ decide el loteo, y la capacidad del carro se verifica antes de resolver en
 lugar de formar parte del modelo (Capítulo~\in[Capitulo_3]). Cuando las
 velocidades son iguales, la cadena de frío no restringe y no hay tiempos de
 servicio, los dos modelos lineales se reducen al de referencia con los lotes
-fijos. Esto delimita el alcance de los
+fijos, siempre que este tenga suficientes posiciones por operario y que los
+pesos se correspondan (Capítulo~\in[Capitulo_3]). Esto delimita el alcance de los
 resultados, ya que lo que esta tesina resuelve hasta el óptimo, en las instancias que
 los modelos lineales llegan a terminar, es el modelo de referencia sin el
 loteo, extendido con las tres características anteriores, y no el problema
 conjunto de cuatro decisiones que plantean Coruzzolo et al. (que incluye el
 loteo).
 
-{\bf Dificultad de los modelos lineales.} Coruzzolo et al. no pudieron
-resolver sobre su caso de estudio ninguno de sus dos modelos, ni
+{\bf Dificultad de los modelos lineales.} Coruzzolo et al. solo
+resolvieron sus modelos sobre un problema pequeño de prueba, y no pudieron
+resolver sobre su caso de estudio ninguno de los dos, ni
 siquiera el simplificado (Sección~\in[sec:trabajos_relacionados]). Los
 resultados de esta tesina son consistentes con esa experiencia, ya que,
 aun con los lotes dados, el modelo monolítico no termina ninguno de
@@ -62,8 +64,9 @@ heurística en ese paso.
 
 {\bf Medición contra el óptimo.} Ante la dificultad de los modelos lineales,
 Coruzzolo et al. resuelven su caso con una heurística constructiva
-por fecha de entrega más temprana, mejorada con búsqueda local iterada, sin
-poder contrastar sus resultados con el óptimo. En esta tesina, el Split
+por fecha de entrega más temprana, mejorada con búsqueda local iterada, y su
+mejor solución ({\em minimum solution}) es la mejor entre sus variantes
+heurísticas, sin un óptimo con que contrastarla. En esta tesina, el Split
 permite hacer esa medición en instancias de tamaño realista: \ac{aco} alcanza
 el óptimo en las 45 instancias funcionales comparables y queda a lo sumo a un
 0,04~\% en estrés, y \ac{hc} lo alcanza en 40 de las 45 y queda a lo sumo a un
@@ -93,8 +96,9 @@ perturbación de la mejor solución encontrada (Sección~\in[sec:marco_hc]).
 {\bf Lo que no es comparable.} La reducción del 57~\% en el tiempo de
 picking que informan Coruzzolo et al. se mide contra preparar los pedidos de
 a uno, y proviene enteramente de agrupar los pedidos en lotes, sobre todo de
-la reducción del tiempo de preparación. De los 207,97 minutos diarios que se
-ahorran, 169,20 corresponden a la preparación y 38,77 al recorrido. Como en esta
+la reducción del tiempo de preparación del recorrido ({\em setup}). De los
+207,97 minutos diarios que se ahorran, 169,20 corresponden a esa preparación y
+38,77 al recorrido. Como en esta
 tesina los lotes son un dato, ese ahorro no puede reproducirse ni
 contrastarse. Además, su resultado proviene de un caso real, mientras que las
 instancias de esta tesina son generadas
@@ -124,14 +128,14 @@ los objetivos que penalizan el adelanto y la demora
 (Sección~\in[sec:marco_adelanto_demora]), y tiene dos consecuencias. Por un
 lado, es la propiedad que hace exacta la descomposición
 (Sección~\in[sec:modelo_split]). Por otro, separa el espacio de soluciones de
-los modelos lineales del de las metaheurísticas, que solo generan
+los modelos lineales del de las heurísticas, que solo generan
 programaciones sin tiempo ocioso. Como anticipa la literatura
 \cite[kanet2000inserted], restringirse a ese subconjunto puede excluir el
 óptimo, y es lo que ocurre en las instancias funcionales que solo pueden
 compararse en estado. En las pruebas de estrés, la elección del peso de la
 finalización evitó que este efecto distorsionara la comparación.
 
-Por último, las metaheurísticas construyen las rutas sobre las ubicaciones
+Por último, las heurísticas construyen las rutas sobre las ubicaciones
 requeridas, como proponen Chen et al. \cite[chen2013antcolony], con la
 adaptación necesaria para producir caminos simples. Chen et al. modelan
 además la congestión entre {\em pickers}, que en esta tesina queda fuera del alcance
@@ -144,7 +148,7 @@ además la congestión entre {\em pickers}, que en esta tesina queda fuera del a
 %----------------------------------------------------------------------------------------
 \startsection[title={Limitaciones}, reference=sec:limitaciones]
 
-Esta sección reúne las limitaciones de los cuatro modelos y de la
+Esta sección reúne las limitaciones de los cuatro métodos y de la
 experimentación, junto con su efecto sobre los resultados del
 Capítulo~\in[Capitulo_6].
 
@@ -162,7 +166,11 @@ datos del problema, y no se modela la congestión entre {\em pickers}
 
 Las restricciones (\in[eq:mono_entra_max]) y
 (\in[eq:mono_sale_max]) impiden que una ruta pase dos veces por la misma
-ubicación, es decir, la ruta de cada lote debe ser un camino simple. Es una característica que se hereda del modelo de referencia y que resulta
+ubicación, es decir, la ruta de cada lote debe ser un camino simple. En
+Coruzzolo et al. las distancias forman una matriz completa de caminos mínimos
+entre las ubicaciones, sobre la que esta restricción no limita; aquí, en
+cambio, el grafo es de adyacencias, y por eso la restricción excluye rutas
+físicamente posibles. La restricción resulta
 adecuada para el almacén de este trabajo, pero en otros almacenes un {\em picker} puede entrar a un pasillo sin
 salida y volver por donde vino, de modo que existen instancias físicamente
 posibles que la formulación declara infactibles. Por ejemplo, si una ubicación requerida está al fondo de un pasillo sin salida que 
@@ -233,12 +241,12 @@ asignación ni secuencia, aunque los demás lotes ya estén resueltos.
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
-\startsubsection[title={De las metaheurísticas}, reference=sec:heur_limitaciones]
+\startsubsection[title={De las heurísticas}, reference=sec:heur_limitaciones]
 
 Las dos implementaciones tienen algunas limitaciones en común y otras propias
 de cada una.
 
-\startsubsubsection[title={Comunes a las dos metaheurísticas}]
+\startsubsubsection[title={Comunes a las dos heurísticas}]
 
 \startitemize
 	\item Las dos pueden informar como infactible una instancia que tiene
@@ -328,7 +336,7 @@ principales, cada heurística se ejecutó una sola vez por instancia, con
 semilla 1; la variación entre semillas se midió aparte, en los escenarios de
 estrés 02 a 19. La referencia de
 objetivo existe solo donde el Split termina, y 10 instancias funcionales
-pueden compararse solo en estado.
+factibles pueden compararse solo en estado, por la espera voluntaria.
 
 \stopsubsection
 
@@ -429,7 +437,8 @@ cumplieron de la siguiente manera:
 	(Capítulo~\in[Capitulo_3]). Las pruebas funcionales verifican que respeta
 	las reglas del problema y, cuando todos los {\em pickers} tienen la misma
 	velocidad, la cadena de frío no restringe y no hay tiempos de servicio, el
-	modelo se reduce al de referencia con los lotes fijos.
+	modelo se reduce al de referencia con los lotes fijos, con las dos
+	condiciones del Capítulo~\in[Capitulo_3].
 	\item Se desarrolló un modelo en dos etapas que alcanza el mismo valor
 	óptimo que el monolítico: lo hace en los 55 pares que los dos resuelven, y
 	los 11 pares infactibles lo son en ambos. La mejora en tiempo, en cambio,
@@ -453,9 +462,9 @@ cumplieron de la siguiente manera:
 	las infactibles. ACO queda
 	prácticamente en el óptimo y HC, a lo sumo a un 0,21~\% en estrés. HC
 	responde unas 53 veces más rápido que el Split en la mediana, y ACO tarda
-	entre lo mismo que el Split y 6 veces menos, según el escenario. A igual tiempo, los modelos lineales no obtienen ninguna solución
-	en el tiempo de HC, y con el de ACO el Split queda entre un 46 y un 58~\%
-	por encima en los escenarios de cuadrilla grande
+	entre algo más que el Split y 6 veces menos, según el escenario. A igual tiempo, los modelos lineales no obtienen ninguna solución
+	en el tiempo de HC, y con el de ACO el objetivo del Split es entre un 86 y
+	un 141~\% mayor que el de ACO en los escenarios de cuadrilla grande
 	(Sección~\in[sec:res_igual_tiempo]).
 	\item Se identificaron limitaciones estructurales de los enfoques
 	evaluados, tanto de la formulación lineal como de las heurísticas, que
@@ -536,7 +545,7 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
-\startsubsection[title={Metaheurísticas}]
+\startsubsection[title={Heurísticas}]
 
 \startitemize
 	\item Incorporar en \ac{hc} un mecanismo para escapar de los óptimos
@@ -613,7 +622,7 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 	\cite[chen2013antcolony]. Con congestión, la ruta de un lote dependería de
 	cuándo se ejecuta y de los demás lotes, y la descomposición del Split
 	dejaría de ser exacta (Sección~\in[sec:caracteristicas_formulacion]). Por
-	eso, las metaheurísticas son el punto de partida más natural para esta
+	eso, las heurísticas son el punto de partida más natural para esta
 	extensión.
 	\item Evaluar los métodos con datos de una operación real, que permitirían comprobar si
 	el perfil realista representa bien una operación y medir el ahorro frente

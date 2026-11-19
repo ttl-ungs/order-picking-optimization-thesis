@@ -27,7 +27,10 @@ carro (Sección~\in[sec:modelo_monolitico]). La forma de la función objetivo se
 mantiene, de modo que, si todos los {\em pickers} tienen la misma velocidad, el
 límite de la cadena de frío es suficientemente grande y no hay tiempos de
 servicio, los dos modelos se reducen al modelo de referencia con los lotes
-fijos.
+fijos. Para eso hacen falta, además, dos condiciones: que el modelo de
+referencia tenga suficientes posiciones por operario para todos los lotes que
+puede ejecutar, y que los pesos se correspondan ($W^{c}$ con $w_1$, y
+$W^{\text{pen}}W^{t}$ y $W^{\text{pen}}W^{e}$ con $w_2\gamma$ y $w_2\partial$).
 
 Los dos modelos resuelven el OPP tal como se definió en la
 Sección~\in[sec:problema], bajo los siguientes supuestos:

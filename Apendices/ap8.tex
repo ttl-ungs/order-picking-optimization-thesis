@@ -1,12 +1,12 @@
-\startchapter[title={Detalles de las metaheurísticas}, reference=Anexo_Metaheuristicas]
+\startchapter[title={Detalles de las heurísticas}, reference=Anexo_Metaheuristicas]
 
-Este anexo reúne detalles específicos de las dos metaheurísticas del
+Este anexo reúne detalles específicos de las dos heurísticas del
 Capítulo~\in[Capitulo_4]. Estos detalles incluyen la construcción de las rutas, que comparten \ac{hc} y \ac{aco}
 (Sección~\in[sec:anexo_rutas]), algunos aspectos de la implementación
 (Sección~\in[sec:anexo_impl]), y las constantes de implementación y los
 estudios con los que se evaluaron sus parámetros
 (Secciones~\in[sec:calib_hc] y~\in[sec:calib_aco]). Los parámetros de
-cada metaheurística, con sus valores por defecto, se presentan en la
+cada heurística, con sus valores por defecto, se presentan en la
 Sección~\in[sec:ejecucion].
 
 %----------------------------------------------------------------------------------------
@@ -26,8 +26,8 @@ Sección~\in[sec:heur_rutas]. El pulido y la búsqueda de respaldo se usan tambi
 	Dijkstra) que no pasa por ubicaciones ya visitadas ni por
 	$v_{\text{end}}$. Las ubicaciones requeridas por las que se pasa en el
 	camino cuentan como visitadas. Cuando no quedan pendientes, se llega a
-	$v_{\text{end}}$ por el camino más corto que evita lo ya recorrido. Es
-	determinística, y falla si en algún paso ninguna ubicación pendiente es
+	$v_{\text{end}}$ por el camino más corto que evita lo ya recorrido. No usa
+	sorteos, y falla si en algún paso ninguna ubicación pendiente es
 	alcanzable.
 	\item {\bf Inserción del más lejano.} Primero se decide el orden en que
 	se visitan las ubicaciones requeridas con la inserción del más lejano
@@ -52,9 +52,9 @@ Sección~\in[sec:heur_rutas]. El pulido y la búsqueda de respaldo se usan tambi
 	ubicación elegida, se verifica que la ruta todavía pueda completarse: cada
 	ubicación pendiente debe estar en algún camino simple entre la ubicación
 	elegida y $v_{\text{end}}$ que no pase por lo ya recorrido. Esto se
-	comprueba de forma exacta con las componentes biconexas del grafo. La
-	condición es necesaria pero no suficiente, así que la construcción
-	todavía puede trabarse. Cuando ninguna candidata la cumple, se deshace el
+	comprueba con las componentes biconexas del grafo no dirigido
+	subyacente, de modo que, en el grafo dirigido del almacén, es solo una
+	condición necesaria, y la construcción todavía puede trabarse. Cuando ninguna candidata la cumple, se deshace el
 	último paso y se prueba otra ubicación en su lugar, con un máximo de 30
 	retrocesos. Las construcciones alternan entre el grafo original y el
 	invertido, porque la regla favorece a las ubicaciones cercanas y deja para
@@ -63,7 +63,7 @@ Sección~\in[sec:heur_rutas]. El pulido y la búsqueda de respaldo se usan tambi
 	2-opt sobre las ubicaciones de la ruta (Ecuación~\in[eq:2opt]) y el
 	re-ruteo de tramos, que reemplaza el tramo entre dos ubicaciones
 	requeridas consecutivas por el camino más corto que evita el resto de la
-	ruta, cuando este es más corto.
+	ruta, cuando este es más corto, con un máximo de cinco rondas.
 \stopitemize
 
 Las rutas se comparan por distancia y no por tiempo de ruta $r_b$, que
@@ -94,7 +94,7 @@ ruta deja de acortarse, con un máximo de cinco rondas:
 	grilla casi nunca es aplicable porque los dos nuevos arcos deben unir
 	ubicaciones adyacentes, este movimiento redibuja los caminos completos.
 	\item {\bf Reubicación de ubicaciones.} Es una versión simplificada del
-	operador {\em or-opt}, propuesto por Or en su tesis doctoral de 1976
+	operador Or-opt, propuesto por Or en su tesis doctoral de 1976
 	\cite[babin2007oropt]. El operador original reubica cadenas de tres, dos
 	y un vértice consecutivos; aquí se reubica una sola ubicación requerida
 	por vez en otra posición de la secuencia, y se vuelven a trazar los
@@ -112,9 +112,9 @@ Si ninguna de las construcciones encuentra una ruta, se recurre a una
 búsqueda exhaustiva de tipo {\em best-first}, sobre estados formados por la
 ubicación actual, el conjunto de ubicaciones pendientes y el camino recorrido.
 Los estados se exploran primero por cantidad de ubicaciones pendientes y
-después por la distancia a la ubicación requerida más cercana, con un tope de
-2.000.000 de expansiones. Si se alcanza el tope sin encontrar una ruta, el
-lote queda sin ruta y la instancia se informa como infactible.
+después por la distancia a la ubicación requerida más cercana. La búsqueda
+hace dos pasadas, cada una con un tope de 2.000.000 de expansiones. Si se
+alcanza el tope en las dos sin encontrar una ruta, el lote queda sin ruta y la instancia se informa como infactible.
 
 \stopsubsection
 
@@ -133,9 +133,13 @@ En el peor caso, ese lote y todos los que le siguen en la secuencia de su
 uno de sus pedidos cambia en una unidad, de modo que el aumento de $f$ está
 acotado por
 \startformula
-	K = W^{c} \, |\mathcal{B}| + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) |\mathcal{N}|.
+	K_p = W^{c} \, m_p + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) n_p,
 \stopformula
-Con $\lambda > K$, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
+donde $m_p$ es la cantidad de lotes de la secuencia del {\em picker} $p$
+desde la posición del lote demorado hasta el final, y $n_p$, la cantidad de
+pedidos de esos lotes. El valor $\lambda = 1000$ es fijo para todas las
+instancias, y supera esa cota en todos los escenarios de estrés. Con
+$\lambda > K_p$, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
 más de lo que una unidad de tiempo adicional en un lote puede sumar a $f$,
 de modo que reducir el exceso tiene prioridad sobre mejorar $f$. A
 diferencia de las constantes M grande de los modelos lineales, un valor alto
@@ -165,7 +169,8 @@ valores guardados se actualizan únicamente cuando el vecino es aceptado.
 
 Como el grafo del almacén es dirigido, no toda inversión de un tramo de la
 ruta es posible. Se descartan las inversiones que usarían un arco que no
-existe en ese sentido, o cuyos dos nuevos arcos de unión no existen. Entre
+existe en ese sentido, o en las que falta alguno de los dos nuevos arcos de
+unión. Entre
 las inversiones posibles se toma la mejor, de acuerdo con un costo local que
 solo considera al lote $b$,
 \startplaceformula[reference=eq:hc_costo_local]
@@ -173,8 +178,11 @@ solo considera al lote $b$,
 	g_b(\pi_b) = T^{\text{travel}} \, d(\pi_b) + \lambda \max\left(0,\; T^{\text{exec}}_{a(b)\,b} - T^{\text{cold}}\right),
 \stopformula
 \stopplaceformula
-donde $d(\pi_b)$ es la distancia de la ruta. Si ninguna inversión reduce
-$g_b$, el movimiento no genera vecino.
+donde $d(\pi_b)$ es la distancia de la ruta. A diferencia de $v(s)$
+(Ecuación~\in[eq:hc_violacion]), en $g_b$ no se resta la tolerancia
+$\varepsilon$: $g_b$ solo ordena las inversiones posibles de una misma ruta,
+y si el vecino cumple la cadena de frío se decide después con $v(s)$. Si
+ninguna inversión reduce $g_b$, el movimiento no genera vecino.
 
 \stopsubsection
 
@@ -186,7 +194,11 @@ unidad por lote e iteración, uno de la mejor ruta de la iteración y otro de
 la mejor ruta histórica. Si los recibe en todas las iteraciones, la feromona
 evoluciona como $\tau \leftarrow (1-\rho)\,\tau + 2$, cuyo valor estacionario
 es $2 / \rho$. Por eso se fija $\tau_{\max} = 2/\rho$, y
-$\tau_{\min} = \tau_{\max}/50$ (Ecuación~\in[eq:aco_cotas]).
+$\tau_{\min} = \tau_{\max}/50$ (Ecuación~\in[eq:aco_cotas]). Ese valor
+estacionario corresponde a un solo lote: como los pares se comparten entre
+lotes (Sección~\in[sec:aco_construccion]), un par puede recibir más de dos
+depósitos por iteración, y en ese caso es la cota $\tau_{\max}$ la que lo
+limita.
 
 \stopsubsection
 
@@ -223,7 +235,7 @@ dirección entre intentos y empezando por una elegida al azar. Si los 10
 fallan, se usa una ruta de respaldo determinística. Primero se prueba la
 inserción del más lejano sobre el grafo original y, si no se puede realizar,
 se prueba sobre el invertido. Si ninguna funciona, se usa la búsqueda
-{\em best-first} con el tope de 2.000.000 de expansiones, como en \ac{hc}
+{\em best-first} con el tope de 2.000.000 de expansiones por pasada, como en \ac{hc}
 (Sección~\in[sec:anexo_rutas_respaldo]). La ruta de respaldo se pule y se
 guarda, de modo que se calcula una sola vez por lote y no una vez por
 hormiga. Si tampoco se encuentra una ruta de respaldo, la hormiga se
@@ -255,7 +267,7 @@ funcionales y en los de estrés.
 \bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción aleatoria antes de abandonarse. \eTD \eTR
 \bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Ubicaciones requeridas por bloque invertido en el 2-opt del pulido. \eTD \eTR
 \bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de la ruta inicial. \eTD \eTR
-\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
+\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de cada una de las dos pasadas de la búsqueda exhaustiva de respaldo. \eTD \eTR
 \bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
 \eTABLE
 \stopplacetable
@@ -327,7 +339,7 @@ funcionales y en los de estrés.
 \bTR \bTD Retrocesos \eTD \bTD 30 \eTD \bTD Pasos que puede deshacer cada construcción antes de abandonarse. \eTD \eTR
 \bTR \bTD Bloque de 2-opt \eTD \bTD 8 \eTD \bTD Ubicaciones requeridas por bloque invertido en el pulido. \eTD \eTR
 \bTR \bTD Rondas de pulido \eTD \bTD 5 \eTD \bTD Rondas máximas del pulido de cada récord. \eTD \eTR
-\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de la búsqueda exhaustiva de respaldo. \eTD \eTR
+\bTR \bTD Expansiones {\em best-first} \eTD \bTD 2.000.000 \eTD \bTD Tope de cada una de las dos pasadas de la búsqueda exhaustiva de respaldo. \eTD \eTR
 \bTR \bTD Fracción para hormigas \eTD \bTD 0,5 \eTD \bTD Parte de $\text{Max}_{\text{time}}$ que pueden usar las hormigas; el resto queda para el pulido y la búsqueda local. \eTD \eTR
 \bTR \bTD $\varepsilon$ \eTD \bTD $10^{-9}$ \eTD \bTD Tolerancia de la cadena de frío, la misma de los modelos lineales. \eTD \eTR
 \eTABLE
@@ -389,8 +401,14 @@ Para evaluar los valores de la colonia, se ejecutó el escenario 04 sin
 búsquedas locales, con todas las combinaciones de
 $\alpha \in \{0{,}5;\ 1;\ 2\}$, $\beta \in \{1;\ 2{,}5;\ 4\}$ y
 $\rho \in \{0{,}05;\ 0{,}15;\ 0{,}30\}$, y tres semillas por combinación.
-Los rangos abarcan los valores por defecto y los que reportan Alaya y Solnon
-\cite[alaya2007antcolony] y Lesch et al. \cite[lesch2023optimizing]. La
+Los rangos abarcan los valores por defecto y el $\alpha = 1$ que usan Alaya
+et al. \cite[alaya2007antcolony] y Lesch et al. \cite[lesch2023optimizing], y
+se acercan a sus valores de $\beta$ y $\rho$, aunque no los cubren: Alaya et
+al. usan $\beta \in \{4;\ 8\}$ y $\rho \in \{0{,}1;\ 0{,}01\}$, y Lesch et
+al., $\beta = 2$ y $\rho = 0{,}02$, de modo que $\beta = 8$ queda por encima
+de los valores probados, y $\rho = 0{,}01$ y $\rho = 0{,}02$, por debajo. Además, Alaya et al. calibran la colonia para
+la mochila multiobjetivo, así que sus valores sirven solo como orden de
+magnitud. La
 brecha media fue de 0,011~\% con los valores por defecto, de 0,009~\% con la
 mejor combinación ($\alpha = 2$, $\beta = 4$, $\rho = 0{,}05$) y de
 0,082~\% con la peor ($\alpha = 0{,}5$, $\beta = 1$, $\rho = 0{,}05$). El

@@ -7,7 +7,7 @@ Sección~\in[sec:aco]).
 Ambas resuelven el mismo problema que los modelos
 lineales del Capítulo~\in[Capitulo_3], con la misma función objetivo y las
 mismas restricciones, con la diferencia de que no garantizan encontrar el
-óptimo y solo generan soluciones sin espera voluntaria (Sección~\in[sec:espera_voluntaria]).
+óptimo, no cobran los lotes sin pedidos y solo generan soluciones sin espera voluntaria (Sección~\in[sec:espera_voluntaria]).
 Para comprobar que sus soluciones cumplen todas las restricciones, cada una se
 verificó de forma independiente contra el modelo monolítico (Sección~\in[sec:validacion]).
 
@@ -97,8 +97,9 @@ de decisión del Capítulo~\in[Capitulo_3]:
 \stopformula
 
 Los tiempos no son variables de decisión, sino que se calculan a partir de
-$s$. El tiempo de ruta $r_b$ y el tiempo de ejecución $T^{\text{exec}}_{pb}$
-se obtienen de $\pi_b$ según la Ecuación~\in[eq:texec]. Como cada
+$s$. El tiempo de ruta $r_b$ se obtiene de $\pi_b$ según la
+Ecuación~\in[eq:mono_ruta], y a partir de él, el tiempo de ejecución
+$T^{\text{exec}}_{pb}$ según la Ecuación~\in[eq:texec]. Como cada
 {\em picker} empieza en el instante 0 y comienza un lote apenas termina el
 anterior, el instante de finalización del $k$-ésimo lote de $\sigma_p$ es
 \startplaceformula[reference=eq:hc_finalizacion]
@@ -128,9 +129,14 @@ se calculan respecto del lote $b(n)$ al que pertenece:
 Con estos valores, el objetivo de la solución es
 \startplaceformula[reference=eq:hc_objetivo]
 \startformula
-	f(s) = W^{c} \sum_{b \in \mathcal{B}} c_b \;+\; W^{\text{pen}} \left( W^{e} \sum_{n \in \mathcal{N}} ea_n + W^{t} \sum_{n \in \mathcal{N}} ta_n \right).
+	f(s) = W^{c} \sum_{b \in \mathcal{B}^{+}} c_b \;+\; W^{\text{pen}} \left( W^{e} \sum_{n \in \mathcal{N}} ea_n + W^{t} \sum_{n \in \mathcal{N}} ta_n \right),
 \stopformula
 \stopplaceformula
+donde $\mathcal{B}^{+} = \{ b \in \mathcal{B} : \mathcal{N}_b \neq \emptyset \}$
+son los lotes con pedidos. Las heurísticas no rutean ni asignan los lotes
+vacíos, mientras que los modelos lineales los rutean, asignan y cobran a
+todos. Por eso, antes de comparar, el verificador quita los lotes vacíos de
+la instancia (Anexo~\in[Anexo_Verificacion]).
 
 En los modelos lineales, las restricciones forman parte de la formulación y
 el resolvedor solo devuelve soluciones que las cumplen todas. En las
@@ -175,8 +181,9 @@ Las decisiones de la búsqueda se toman con la función penalizada
 Como $v(s)$ suma {\em cuánto} se excede cada lote, y no {\em cuántos} lotes
 se exceden, un cambio que acerca un lote al límite sin llegar a cumplirlo
 igualmente reduce $f'$. El peso es fijo durante toda la búsqueda, por lo que
-se trata de una penalización estática. Su valor es mayor que lo que puede
-aumentar $f$ cuando un lote tarda una unidad de tiempo más, de modo que
+se trata de una penalización estática. En todos los escenarios de estrés,
+su valor es mayor que lo que puede aumentar $f$ cuando un lote tarda una
+unidad de tiempo más, de modo que
 reducir el exceso tiene prioridad sobre mejorar $f$
 (Sección~\in[sec:anexo_lambda] del Anexo~\in[Anexo_Metaheuristicas]).
 
@@ -261,7 +268,7 @@ Las dos metaheurísticas tienen que armar rutas, \ac{hc} para su solución
 inicial y \ac{aco} en cada hormiga. Sea
 $\mathcal{V}_b = \{ i \in \mathcal{V}^{\text{int}} : a_{bi} = 1 \}$ el
 conjunto de ubicaciones que el lote $b$ debe visitar. Armar su ruta es una
-variante del TSP, en la que hay que ir de $v_{\text{start}}$ a
+variante asimétrica del TSP en forma de camino, con ubicaciones de paso, en la que hay que ir de $v_{\text{start}}$ a
 $v_{\text{end}}$ pasando por todas las ubicaciones de $\mathcal{V}_b$, en
 cualquier orden y con la posibilidad de atravesar otras ubicaciones en el
 camino. Chen et al. tratan el ruteo de picking de esta forma, eligiendo el
@@ -274,12 +281,15 @@ Dijkstra evitando lo ya recorrido. Esto hace que una construcción golosa
 pueda trabarse, porque al entrar en una zona del almacén la ruta puede dejar
 sin salida a ubicaciones que todavía faltaba visitar. Para reducir ese
 riesgo, las dos metaheurísticas usan los mismos mecanismos, que son un
-chequeo de completitud antes de aceptar cada ubicación, un número acotado de
+chequeo de completitud antes de aceptar cada ubicación (que comprueba que
+la ruta todavía pueda completarse), un número acotado de
 retrocesos y la construcción en los dos sentidos, sobre el grafo original y
 sobre el invertido (Sección~\in[sec:anexo_rutas_construcciones]).
 
-Cada ruta construida se mejora alternando dos búsquedas locales hasta que
-deja de acortarse. Una es 2-opt sobre las ubicaciones de la ruta
+Las rutas que se construyen con la regla aleatoria se mejoran alternando dos
+búsquedas locales hasta que dejan de acortarse, con un máximo de cinco
+rondas. En \ac{hc}, las del vecino más cercano y la inserción del más lejano
+compiten sin esa mejora. Una es 2-opt sobre las ubicaciones de la ruta
 (Ecuación~\in[eq:2opt]), y la otra, el re-ruteo de tramos, que reemplaza el
 tramo entre dos ubicaciones requeridas consecutivas por un camino más corto
 que evita el resto de la ruta. Las rutas más prometedoras reciben además un
@@ -348,13 +358,14 @@ distancia, que después se pule (Sección~\in[sec:anexo_rutas_pulido]).
 
 {\bf Asignación inicial y secuencia.} Con las rutas armadas, cada lote con
 pedidos se asigna a un {\em picker} de forma golosa, recorriendo los lotes en
-el orden de sus identificadores. Para el lote $b$ se calcula el conjunto de
+el orden lexicográfico de sus identificadores (B10 antes que B2). Para el lote $b$ se calcula el conjunto de
 {\em pickers} con los que cumple la cadena de frío,
 \startformula
 	\mathcal{P}_b = \left\{ p \in \mathcal{P} : F_b + \frac{r_b}{V_p} \leq T^{\text{cold}} + \varepsilon \right\}.
 \stopformula
 Si $\mathcal{P}_b$ no es vacío, el lote se asigna al {\em picker} de
-$\mathcal{P}_b$ que tiene menos lotes asignados hasta el momento. Si es vacío, la ruta inicial es
+$\mathcal{P}_b$ que tiene menos lotes asignados hasta el momento y, ante un
+empate, al de menor índice. Si es vacío, la ruta inicial es
 demasiado larga incluso para el {\em picker} más rápido. En ese caso, el lote
 se asigna al {\em picker} que minimiza $T^{\text{exec}}_{pb}$, y la búsqueda se
 encarga de intentar corregirlo. La secuencia $\sigma_p$ de cada {\em picker} es el orden en que
@@ -371,9 +382,12 @@ $s^*$ se define recién cuando la búsqueda encuentra una.
 \stopsubsection
 
 %----------------------------------------------------------------------------------------
-\startsubsection[title={Búsqueda estocástica de primera mejora}, reference=sec:hc_busqueda]
+\startsubsection[title={Búsqueda estocástica}, reference=sec:hc_busqueda]
 
-\ac{hc} aplica una búsqueda local estocástica de primera mejora. Como en cada iteración genera un
+\ac{hc} aplica una búsqueda local estocástica ({\em stochastic hill
+climbing}): no recorre una vecindad buscando una mejora, sino que en cada
+iteración genera un único vecino al azar. Dentro del movimiento 2-opt, en
+cambio, se toma la mejor inversión posible. Como en cada iteración genera un
 único vecino, que acepta si reduce el costo penalizado $f'$
 (Ecuación~\in[eq:hc_costo]), cada iteración es barata. Por la misma razón, un
 vecino rechazado no indica que la solución actual sea un óptimo local, y la
@@ -462,16 +476,17 @@ con los valores que se usaron, se presentan en la Sección~\in[sec:ejecucion].
 3.\quad {\bf para} $t = 1, \dots, \text{Max}_{\text{it}}$ {\bf hacer}
 4.\quad\qquad {\bf para} $k = 1, \dots, m$ {\bf hacer}
 5.\quad\qquad\qquad {\bf si} se agotó el tiempo de las hormigas {\bf y} hay solución factible {\bf entonces} terminar
-6.\quad\qquad\qquad {\bf para cada} lote $b$: construir $\pi^k_b$, mejorarla y elegir $a^k(b) \in \mathcal{P}^k_b$
+6.\quad\qquad\qquad {\bf para cada} lote $b$: construir $\pi^k_b$, mejorarla y elegir $a^k(b) \in \mathcal{P}^k_b$ (entre todos los {\em pickers} si $\mathcal{P}^k_b = \emptyset$)
 7.\quad\qquad\qquad ordenar cada $\sigma^k_p$ por fecha de entrega
 8.\quad\qquad\qquad {\bf si} $s^k$ no cumple las restricciones de la ruta {\bf entonces} descartar $s^k$
-9.\quad\qquad {\bf para cada} lote $b$: {\bf si} $\pi^{ib}_b$ es más corta que $\pi^{bs}_b$ {\bf entonces} $\pi^{bs}_b \leftarrow$ pulir$(\pi^{ib}_b)$
-10.\quad\qquad $s^* \leftarrow$ la mejor $s^k$ con $v(s^k) = 0$, si $s^*$ es ninguna o mejora $f(s^*)$
-11.\quad\qquad $s^* \leftarrow$ recombinar$(s^*, \pi^{bs})$, si mejora $f(s^*)$
-12.\quad\qquad {\bf si} $s^*$ mejoró {\bf entonces} $s^* \leftarrow$ búsqueda local sobre la asignación$(s^*)$
-13.\quad\qquad actualizar $\tau$ con $\pi^{ib}$ y $\pi^{bs}$;\; actualizar $\tau^{P}$ con las $s^k$ y $s^*$
-14.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
-15.\quad {\bf devolver} $s^*$, $f(s^*)$
+9.\quad\qquad {\bf si} se descartaron todas las $s^k$ {\bf entonces} pasar a la iteración siguiente
+10.\quad\qquad {\bf para cada} lote $b$: {\bf si} $\pi^{ib}_b$ es más corta que $\pi^{bs}_b$ {\bf entonces} $\pi^{bs}_b \leftarrow$ pulir$(\pi^{ib}_b)$
+11.\quad\qquad $s^* \leftarrow$ la mejor $s^k$ con $v(s^k) = 0$, si $s^*$ es ninguna o mejora $f(s^*)$
+12.\quad\qquad $s^* \leftarrow$ recombinar$(s^*, \pi^{bs})$, si mejora $f(s^*)$
+13.\quad\qquad {\bf si} $s^*$ mejoró {\bf entonces} $s^* \leftarrow$ búsqueda local sobre la asignación$(s^*)$
+14.\quad\qquad actualizar $\tau$ con $\pi^{ib}$ y $\pi^{bs}$;\; actualizar $\tau^{P}$ con las $s^k$ y $s^*$
+15.\quad {\bf si} $s^*$ es ninguna {\bf entonces devolver} infactible
+16.\quad {\bf devolver} $s^*$, $f(s^*)$
 \stoplines
 \stopframedtext
 \stopplacefigure
@@ -509,7 +524,7 @@ de los distintos lotes se construyen de forma independiente. La hormiga viaja
 de una ubicación requerida a otra, como en la Sección~\in[sec:heur_rutas].
 Estando en la ubicación $i$, con $\mathcal{R}$ el conjunto de ubicaciones
 requeridas que todavía no visitó, la hormiga elige la siguiente ubicación
-$r \in \mathcal{R}$ con la regla proporcional aleatoria del {\em Ant System}
+$r \in \mathcal{R}'$ con la regla proporcional aleatoria del {\em Ant System}
 (Ecuación~\in[eq:aco_transicion]):
 \startplaceformula[reference=eq:aco_regla_ruta]
 \startformula
@@ -610,7 +625,8 @@ de la mejor solución del {\em Elitist Ant System} y de MMAS
 (Sección~\in[sec:marco_aco]), pero aplicada a cada lote por separado.
 
 {\bf Búsqueda local sobre la asignación.} Aun con las rutas óptimas, la
-asignación por ruleta y la secuencia por fecha de entrega no son óptimas.
+asignación por ruleta (la selección proporcional de la
+Ecuación~\in[eq:aco_regla_picker]) y la secuencia por fecha de entrega no son óptimas.
 Por eso, cada vez que $s^*$ mejora, se le aplica una búsqueda local de
 primera mejora con las rutas fijas, sobre tres vecindarios:
 \startitemize[n]
@@ -635,12 +651,18 @@ de \ac{hc}, ampliados, pero recorridos de forma exhaustiva.
 \startsubsection[title={Actualización de feromonas}, reference=sec:aco_feromonas]
 
 Al terminar cada iteración, después de las mejoras, se actualizan las dos
-matrices de feromona. Ambas usan la misma tasa de evaporación $\rho$, pero
+matrices de feromona. Si en una iteración se descartaron todas las hormigas,
+se pasa a la siguiente sin recombinación, sin búsqueda local y sin
+actualizar la feromona, ni siquiera con la evaporación. Ambas usan la misma tasa de evaporación $\rho$, pero
 siguen esquemas distintos. La feromona de ruta aprende solo de la distancia
 de las rutas, y la de asignación, del costo penalizado $f'$ de cada hormiga.
 
 {\bf Feromona de ruta: MAX-MIN Ant System.} La feromona de ruta se actualiza
-según MMAS (Sección~\in[sec:marco_aco]). Primero se evaporan todos los pares,
+con una variante de MMAS (Sección~\in[sec:marco_aco]) que conserva las cotas
+$[\tau_{\min}, \tau_{\max}]$ y la inicialización en $\tau_{\max}$, pero se
+diferencia en tres aspectos: el depósito es constante, depositan a la vez la
+mejor ruta de la iteración y la mejor histórica, y la feromona está sobre
+pares de ubicaciones requeridas y no sobre arcos. Primero se evaporan todos los pares,
 \startformula
 	\tau_{ij} \leftarrow \max\left(\tau_{\min},\; (1 - \rho)\, \tau_{ij}\right),
 \stopformula
@@ -671,8 +693,10 @@ rutas depositan, ya que solo lo hacen la mejor ruta (la más corta) de la iterac
 mejor histórica de cada lote.
 Así, la feromona de ruta aprende únicamente de la longitud de las rutas, y
 no del objetivo completo $f'$. No hace falta tener en cuenta la cadena de
-frío al elegirlas, porque una ruta más corta solo puede reducir el tiempo
-de ejecución del lote.
+frío al elegirlas, porque, cuando las ubicaciones de paso no tienen tiempo
+de servicio, como en las instancias de estrés
+(Sección~\in[sec:anexo_rutas_construcciones]), una ruta más corta solo
+puede reducir el tiempo de ejecución del lote.
 
 {\bf Feromona de asignación: Ant System elitista.} La feromona de
 asignación se evapora con
