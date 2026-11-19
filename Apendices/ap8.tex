@@ -136,9 +136,10 @@ acotado por
 	K = W^{c} \, |\mathcal{B}| + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) |\mathcal{N}|.
 \stopformula
 El valor $\lambda = 1000$ es fijo para todas las instancias. No supera $K$ en
-todos los escenarios (en el 01 y el 19, $K$ es 1020 y 1272), pero sí en el
-único con la cadena de frío activa, el 11 ($K = 318$), que es donde la
-penalización interviene. En ese caso, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
+todos los escenarios de estrés (en el 01 y el 19, $K$ es 1020 y 1272), pero
+sí en todas las instancias con la cadena de frío activa, que es donde la
+penalización interviene: el escenario de estrés 11 ($K = 318$) y las pruebas
+funcionales de cadena de frío ($K \leq 11$). En esos casos, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
 más de lo que una unidad de tiempo adicional en un lote puede sumar a $f$,
 de modo que reducir el exceso tiene prioridad sobre mejorar $f$. A
 diferencia de las constantes M grande de los modelos lineales, un valor alto
