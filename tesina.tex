@@ -91,7 +91,21 @@
 % PÁGINAS PRELIMINARES (numeración romana)
 \startfrontmatter
 
+\startpreliminar[title=, list={Dedicatoria}, bookmark={Dedicatoria}]
+  \blank[force,5cm]
+  \startalignment[flushright]
+    {\sl A mi familia, ...\par}
+    \blank[small]
+    {\tfx — Lucía\par}
+    \blank[3*big]
+    {\sl Dedicado a Juan, Marina, Melina y Alex, mi familia. Mi éxito es gracias a ustedes. Los amo incondicionalmente.\par}
+    \blank[small]
+    {\tfx — Ximena\par}
+  \stopalignment
+\stoppreliminar
+
 %	PÁGINA DE CITA
+\page
 \blank[force,2cm]
 {\em Todos los modelos están equivocados, pero algunos son útiles.}
 \startalignment[flushright]
@@ -130,19 +144,6 @@
 
 \startpreliminar[title={Índice general}]
   {\setupwhitespace[none]\placecontent}
-\stoppreliminar
-
-\startpreliminar[title=, list={Dedicatoria}]
-  \blank[force,5cm]
-  \startalignment[flushright]
-    {\sl A mi familia, ...\par}
-    \blank[small]
-    {\tfx — Lucía\par}
-    \blank[3*big]
-    {\sl Dedicado a Juan, Marina, Melina y Alex, mi familia. Mi éxito es gracias a ustedes. Los amo.\par}
-    \blank[small]
-    {\tfx — Ximena\par}
-  \stopalignment
 \stoppreliminar
 
 \stopfrontmatter
