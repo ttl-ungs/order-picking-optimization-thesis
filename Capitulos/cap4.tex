@@ -48,8 +48,8 @@ que corresponden a las tres decisiones del problema:
 El loteo sigue siendo un dato de entrada. La Figura~\in[fig:heur_solucion]
 muestra un ejemplo.
 
-\startplacefigure[title={Ejemplo de una solución con tres lotes y dos {\em pickers}. Arriba, la ruta $\pi_{B1} = (3, 7, 8)$ del lote $B1$, que debe recolectar en las ubicaciones 3 y 8 y pasa por la 7 sin recolectar. Abajo, la asignación $a(B1) = a(B3) = P1$ y $a(B2) = P2$, y las secuencias $\sigma_{P1} = (B1, B3)$ y $\sigma_{P2} = (B2)$. Cada lote comienza apenas termina el anterior.}, reference=fig:heur_solucion]
-\startMPcode
+\placefigure[force][fig:heur_solucion]{Ejemplo de una solución con tres lotes y dos {\em pickers}. Arriba, la ruta $\pi_{B1} = (3, 7, 8)$ del lote $B1$, que debe recolectar en las ubicaciones 3 y 8 y pasa por la 7 sin recolectar. Abajo, la asignación $a(B1) = a(B3) = P1$ y $a(B2) = P2$, y las secuencias $\sigma_{P1} = (B1, B3)$ y $\sigma_{P2} = (B2)$. Cada lote comienza apenas termina el anterior.}
+{\startMPcode
 numeric u, r, h, ux, ya, yb, yr;
 u := 1.7cm; r := 3.2mm; h := 0.6cm; ux := 0.62cm;
 yr := 0; ya := -1.9cm; yb := ya - 1.35cm;
@@ -83,8 +83,8 @@ label.top(textext("\tfx $c_{B3}$"), (7ux, ya + h/2));
 label.top(textext("\tfx $c_{B2}$"), (5ux, yb + h/2));
 drawarrow (0, yb - h/2 - 3mm) -- (10ux, yb - h/2 - 3mm) withpen pencircle scaled .5pt;
 label.rt(textext("\tfx tiempo (unidades de tiempo)"), (10ux, yb - h/2 - 3mm));
-\stopMPcode
-\stopplacefigure
+\stopMPcode}
+
 
 Cada solución así representada corresponde a una asignación de las variables
 de decisión del Capítulo~\in[Capitulo_3]:
@@ -181,9 +181,9 @@ Las decisiones de la búsqueda se toman con la función penalizada
 Como $v(s)$ suma {\em cuánto} se excede cada lote, y no {\em cuántos} lotes
 se exceden, un cambio que acerca un lote al límite sin llegar a cumplirlo
 igualmente reduce $f'$. El peso es fijo durante toda la búsqueda, por lo que
-se trata de una penalización estática. En todos los escenarios de estrés,
-su valor es mayor que lo que puede aumentar $f$ cuando un lote tarda una
-unidad de tiempo más, de modo que
+se trata de una penalización estática. En el único escenario con la cadena
+de frío activa, su valor es mayor que lo que puede aumentar $f$ cuando un
+lote tarda una unidad de tiempo más, de modo que
 reducir el exceso tiene prioridad sobre mejorar $f$
 (Sección~\in[sec:anexo_lambda] del Anexo~\in[Anexo_Metaheuristicas]).
 
@@ -288,8 +288,7 @@ sobre el invertido (Sección~\in[sec:anexo_rutas_construcciones]).
 
 Las rutas que se construyen con la regla aleatoria se mejoran alternando dos
 búsquedas locales hasta que dejan de acortarse, con un máximo de cinco
-rondas. En \ac{hc}, las del vecino más cercano y la inserción del más lejano
-compiten sin esa mejora. Una es 2-opt sobre las ubicaciones de la ruta
+rondas. Una es 2-opt sobre las ubicaciones de la ruta
 (Ecuación~\in[eq:2opt]), y la otra, el re-ruteo de tramos, que reemplaza el
 tramo entre dos ubicaciones requeridas consecutivas por un camino más corto
 que evita el resto de la ruta. Las rutas más prometedoras reciben además un
@@ -385,9 +384,8 @@ $s^*$ se define recién cuando la búsqueda encuentra una.
 \startsubsection[title={Búsqueda estocástica}, reference=sec:hc_busqueda]
 
 \ac{hc} aplica una búsqueda local estocástica ({\em stochastic hill
-climbing}): no recorre una vecindad buscando una mejora, sino que en cada
-iteración genera un único vecino al azar. Dentro del movimiento 2-opt, en
-cambio, se toma la mejor inversión posible. Como en cada iteración genera un
+climbing}): en cada iteración genera un único vecino al azar, en lugar de
+recorrer la vecindad buscando una mejora. Como en cada iteración genera un
 único vecino, que acepta si reduce el costo penalizado $f'$
 (Ecuación~\in[eq:hc_costo]), cada iteración es barata. Por la misma razón, un
 vecino rechazado no indica que la solución actual sea un óptimo local, y la

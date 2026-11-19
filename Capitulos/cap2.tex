@@ -145,9 +145,7 @@ relajación lineal de GG es más ajustada que la de MTZ. En la comparación
 experimental de Roberti y Toth, que resuelve distintas formulaciones del
 problema del viajante asimétrico directamente con un resolvedor comercial, GG
 fue la única que llegó al óptimo en todas las instancias consideradas dentro
-del límite de tiempo, aunque otras formulaciones de la comparación dan cotas
-de relajación lineal mejores, de modo que ese desempeño no se explica solo
-por lo ajustado de su relajación \cite[roberti2012atsp].
+del límite de tiempo \cite[roberti2012atsp].
 
 \stopsection
 
@@ -439,8 +437,7 @@ optimización conjunta de cuatro decisiones: qué pedidos forman cada lote
 y qué ruta sigue en cada uno. Los lotes se forman respetando la capacidad del
 carro, y la ruta de cada lote parte de un depósito inicial, termina en un
 depósito final y pasa a lo sumo una vez por cada ubicación. Los {\em subtours} se
-eliminan con un flujo de tipo Gavish y Graves (Sección~\in[sec:marco_mip])
-acotado por la capacidad del carro, y la secuencia de cada operario se modela
+eliminan con restricciones de flujo acotadas por la capacidad del carro, y la secuencia de cada operario se modela
 asignando cada lote a una posición numerada de su agenda. El objetivo combina
 la suma de los tiempos de finalización con una suma ponderada de la demora y
 el adelanto de los pedidos, ya que preparar un pedido demasiado pronto ocupa

@@ -200,7 +200,8 @@ la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
 varía hasta el doble entre corridas. Además, cada escenario se calibró sobre
 su propia instancia, porque una lección general del relevamiento es que sus
 conclusiones no se transfieren de una instancia a otra, ni siquiera a
-instancias vecinas, como ya se vio con los pesos asimétricos de la grilla.
+instancias vecinas, como muestran los pesos asimétricos de la grilla
+(Anexo~\in[Anexo_Relevamiento]).
 
 \stopsubsection
 
@@ -218,7 +219,7 @@ razonable.
 El Cuadro~\in[tab:escenarios_estres] lista los escenarios, agrupados según el
 aspecto que ponen a prueba. Los escenarios 04 a 19 usan el perfil realista
 surgido del relevamiento, cuyos parámetros resume el
-Cuadro~\in[tab:perfil_realista], y cada grupo modifica un único aspecto: el
+Cuadro~\in[tab:perfil_realista], y cada grupo pone a prueba un aspecto: el
 tamaño del almacén (04 a 08), su forma (09), la agenda de los {\em pickers}
 (10, 11 y 15) y el tamaño de la cuadrilla (12 a 14 y 16 a 19). En este
 último grupo, los escenarios 12 a 14 parten de la grilla de 7×7 y los 16 a
@@ -254,9 +255,8 @@ Etapa~2, que decide qué {\em picker} puede ejecutar cada lote.
 	\eTABLE
 \stopplacetable
 
-Los escenarios 01 a 03 se heredaron de una versión anterior de la {\em suite} de
-estrés, previa al relevamiento (en adelante, {\em escenarios heredados}). No
-tienen velocidades ni cadena de frío, y conservan los datos de esa versión: todos los {\em pickers} tienen la misma velocidad, todos
+Los escenarios 01 a 03 no usan el perfil realista: no
+tienen velocidades ni cadena de frío, todos los {\em pickers} tienen la misma velocidad, todos
 los arcos de la grilla tienen el mismo peso, cada pedido tiene 10 unidades y
 todas las fechas de entrega valen 30. Esa fecha es imposible de cumplir, de
 modo que todos los pedidos llegan tarde, no hay adelanto que recortar y el
@@ -264,7 +264,7 @@ peso de finalización puede quedar en $W^{c} = 9$ sin que convenga esperar.
 Además, en los escenarios 01 y 02 hay tantos {\em pickers} como lotes, así
 que cada uno ejecuta un solo lote y la secuencia no interviene. Se
 conservaron por lo que aportan: el 01 es el almacén más grande de la {\em suite}
-(100×100), el 02 era el único de los heredados que el modelo Split resolvía
+(100×100), el 02 es el único de los tres que el modelo Split resuelve
 y el 03 concentra 40 lotes en un único {\em picker}, lo que pone a prueba la
 secuencia.
 
@@ -410,7 +410,7 @@ $\beta$ y $\rho$, en la Sección~\in[sec:calib_aco_sensibilidad].
 \bTR \bTD $\text{Max}_{\text{it}}$ \eTD \bTD 500 \eTD \bTD 200 \eTD \bTD Iteraciones máximas de la búsqueda. \eTD \eTR
 \bTR \bTD $\text{Max}_{\text{imp}}$ \eTD \bTD 30 \eTD \bTD 60 \eTD \bTD Iteraciones consecutivas sin aceptar un vecino antes de detenerse. \eTD \eTR
 \bTR \bTD $\text{Max}_{\text{time}}$ \eTD \bTD 30~s \eTD \bTD 30~s \eTD \bTD Tiempo de reloj máximo, controlado entre iteraciones. \eTD \eTR
-\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD 1 \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD 1 \eTD \bTD Semilla del generador de números aleatorios. En las corridas principales se usa 1. \eTD \eTR
 \eTABLE
 \stopplacetable
 
@@ -426,7 +426,7 @@ $\beta$ y $\rho$, en la Sección~\in[sec:calib_aco_sensibilidad].
 \bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD Peso de la información heurística en las mismas reglas. \eTD \eTR
 \bTR \bTD $\rho$ \eTD \bTD 0,15 \eTD \bTD Tasa de evaporación de ambas feromonas. Define también $\tau_{\max}$ (Ecuación~\in[eq:aco_cotas]). \eTD \eTR
 \bTR \bTD $Q$ \eTD \bTD 100 \eTD \bTD Factor de depósito de la feromona de asignación. \eTD \eTR
-\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD Semilla del generador de números aleatorios. En las corridas principales se usa 1. \eTD \eTR
 \eTABLE
 \stopplacetable
 
@@ -435,9 +435,8 @@ misma instancia, los mismos parámetros y la misma semilla producen siempre
 la misma solución, salvo que la ejecución se detenga por tiempo, ya que en
 ese caso lo que se alcanza a hacer depende de la velocidad de la máquina.
 Para que esto valga también entre procesos distintos, los candidatos de cada
-sorteo se recorren siempre en el mismo orden, y además debe usarse el mismo
-valor de {\tt PYTHONHASHSEED}, porque el desempate del vecino más cercano de
-\ac{hc} depende del orden en que Python recorre un conjunto. Cuánto varía el resultado al
+sorteo se recorren siempre en el mismo orden, y con el mismo valor de
+{\tt PYTHONHASHSEED}. Cuánto varía el resultado al
 cambiar la semilla se mide en las Secciones~\in[sec:calib_hc_semillas]
 y~\in[sec:calib_aco_semillas].
 
@@ -493,8 +492,8 @@ Anexo~\in[Anexo_Verificacion] detalla los chequeos, los ajustes que hace el
 verificador para poder aplicarse a todas las instancias, la prueba de que
 detecta errores y su pseudocódigo.
 
-\startplacefigure[title={Pasos de la verificación de una solución heurística contra el modelo monolítico. Una solución es válida solo si pasa los tres.}, reference=fig:verificacion]
-\startMPcode
+\placefigure[force][fig:verificacion]{Pasos de la verificación de una solución heurística contra el modelo monolítico. Una solución es válida solo si pasa los tres.}
+{\startMPcode
 numeric w, h, dy; w := 7.6cm; h := 0.9cm; dy := 1.5cm;
 color borde, relleno, rojo;
 borde := \MPcolor{darkblue}; relleno := \MPcolor{darkgray}; rojo := \MPcolor{redline};
@@ -524,8 +523,8 @@ caja(y3, "Nivel 2: también las finalizaciones fijas");
 salida(y3, "\framed[frame=off, align=flushleft, offset=0pt]{\tfx infactible u\crlf objetivo distinto}");
 flecha(y3 - h/2, y4 + h/2);
 caja(y4, "Solución válida");
-\stopMPcode
-\stopplacefigure
+\stopMPcode}
+
 
 {\bf Qué no cubre.} La verificación no prueba que una solución sea óptima,
 solo que es factible y que su objetivo está bien calculado. Tampoco puede

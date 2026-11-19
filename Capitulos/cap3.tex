@@ -630,8 +630,8 @@ resuelve un único \ac{mip} que decide a la vez las rutas, la asignación y la
 secuencia. En ese caso, si la cadena de frío vuelve infactible la instancia,
 lo detecta el resolvedor.
 
-\startplacefigure[title={Flujo de resolución del modelo Split. Las flechas rojas marcan los casos en que la instancia se informa como infactible antes de resolver la Etapa~2.}, reference=fig:split_flujo]
-\startMPcode
+\placefigure[force][fig:split_flujo]{Flujo de resolución del modelo Split. Las flechas rojas marcan los casos en que la instancia se informa como infactible antes de resolver la Etapa~2.}
+{\startMPcode
 numeric w, h, dy, hs; w := 7.6cm; h := 0.9cm; dy := 1.5cm; hs := 1.8cm;
 color borde, relleno, rojo;
 borde := \MPcolor{darkblue}; relleno := \MPcolor{darkgray}; rojo := \MPcolor{redline};
@@ -672,8 +672,8 @@ flecha(y3 - h/2, y4 + h/2);
 caja(y4, h, "Etapa 2: un MIP de asignación y secuencia");
 flecha(y4 - h/2, y5 + h/2);
 caja(y5, h, "Solución: rutas, asignación y secuencia");
-\stopMPcode
-\stopplacefigure
+\stopMPcode}
+
 
 \stopsubsection
 \stopsection
@@ -785,8 +785,8 @@ resolvedor se detiene exactamente en la fecha de entrega. La
 Figura~\in[fig:espera_ejemplo] muestra ese aporte en función del instante en
 que se declara terminado el lote.
 
-\startplacefigure[title={Aporte al objetivo del lote del ejemplo según el instante $t$ en que se declara terminado. El lote termina realmente en $t = 10$, y el mínimo está en la fecha de entrega, $t = 20$.}, reference=fig:espera_ejemplo]
-\startMPcode
+\placefigure[force][fig:espera_ejemplo]{Aporte al objetivo del lote del ejemplo según el instante $t$ en que se declara terminado. El lote termina realmente en $t = 10$, y el mínimo está en la fecha de entrega, $t = 20$.}
+{\startMPcode
 numeric ux, uy; ux := 0.28cm; uy := 0.085cm;
 color borde, guia; borde := \MPcolor{darkblue}; guia := .55white;
 drawarrow (0, 0) -- (30ux, 0) withpen pencircle scaled 1pt;
@@ -811,8 +811,8 @@ fill fullcircle scaled 4pt shifted (20ux, 20uy) withcolor borde;
 label.top(textext("\tfx finalización real"), (10ux, 40uy + 1mm));
 label.llft(textext("\tfx pendiente $-2$"), (15ux, 30uy));
 label.lrt(textext("\tfx pendiente $4$"), (22.5ux, 30uy));
-\stopMPcode
-\stopplacefigure
+\stopMPcode}
+
 
 Las pruebas funcionales incluyen un caso que verifica este comportamiento
 (Sección~\in[sec:pruebas_funcionales]), y la Sección~\in[sec:res_espera]

@@ -133,13 +133,12 @@ En el peor caso, ese lote y todos los que le siguen en la secuencia de su
 uno de sus pedidos cambia en una unidad, de modo que el aumento de $f$ está
 acotado por
 \startformula
-	K_p = W^{c} \, m_p + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) n_p,
+	K = W^{c} \, |\mathcal{B}| + W^{\text{pen}} \max\left(W^{e}, W^{t}\right) |\mathcal{N}|.
 \stopformula
-donde $m_p$ es la cantidad de lotes de la secuencia del {\em picker} $p$
-desde la posición del lote demorado hasta el final, y $n_p$, la cantidad de
-pedidos de esos lotes. El valor $\lambda = 1000$ es fijo para todas las
-instancias, y supera esa cota en todos los escenarios de estrés. Con
-$\lambda > K_p$, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
+El valor $\lambda = 1000$ es fijo para todas las instancias. No supera $K$ en
+todos los escenarios (en el 01 y el 19, $K$ es 1020 y 1272), pero sí en el
+único con la cadena de frío activa, el 11 ($K = 318$), que es donde la
+penalización interviene. En ese caso, una unidad de exceso sobre $T^{\text{cold}}$ pesa en $f'$
 más de lo que una unidad de tiempo adicional en un lote puede sumar a $f$,
 de modo que reducir el exceso tiene prioridad sobre mejorar $f$. A
 diferencia de las constantes M grande de los modelos lineales, un valor alto
@@ -253,7 +252,7 @@ descarta.
 
 El Cuadro~\in[tab:hc_constantes] reúne las constantes de \ac{hc}, que no se
 configuran en cada ejecución. Se fijaron a partir de las mediciones
-descritas en el Capítulo~\in[Capitulo_4], y son las mismas en los escenarios
+descritas en la Sección~\in[sec:anexo_rutas_construcciones], y son las mismas en los escenarios
 funcionales y en los de estrés.
 
 \startplacetable[reference=tab:hc_constantes, location=here, title={Constantes de implementación de \ac{hc}.}]
@@ -403,12 +402,7 @@ $\alpha \in \{0{,}5;\ 1;\ 2\}$, $\beta \in \{1;\ 2{,}5;\ 4\}$ y
 $\rho \in \{0{,}05;\ 0{,}15;\ 0{,}30\}$, y tres semillas por combinación.
 Los rangos abarcan los valores por defecto y el $\alpha = 1$ que usan Alaya
 et al. \cite[alaya2007antcolony] y Lesch et al. \cite[lesch2023optimizing], y
-se acercan a sus valores de $\beta$ y $\rho$, aunque no los cubren: Alaya et
-al. usan $\beta \in \{4;\ 8\}$ y $\rho \in \{0{,}1;\ 0{,}01\}$, y Lesch et
-al., $\beta = 2$ y $\rho = 0{,}02$, de modo que $\beta = 8$ queda por encima
-de los valores probados, y $\rho = 0{,}01$ y $\rho = 0{,}02$, por debajo. Además, Alaya et al. calibran la colonia para
-la mochila multiobjetivo, así que sus valores sirven solo como orden de
-magnitud. La
+se acercan a sus valores de $\beta$ y $\rho$. La
 brecha media fue de 0,011~\% con los valores por defecto, de 0,009~\% con la
 mejor combinación ($\alpha = 2$, $\beta = 4$, $\rho = 0{,}05$) y de
 0,082~\% con la peor ($\alpha = 0{,}5$, $\beta = 1$, $\rho = 0{,}05$). El

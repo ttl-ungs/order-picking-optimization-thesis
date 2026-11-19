@@ -39,7 +39,7 @@ Cuadro~\in[tab:relev_ejes] resume el resultado.
 Solo dos ejes impidieron la resolución, y cada uno lo hizo en una etapa
 distinta: la cantidad de lotes aumenta el tiempo de la Etapa~2 (asignación y
 secuencia), y el tamaño del almacén, el de la Etapa~1
-(ruteo). Agregar pedidos a cada lote, en cambio, no tuvo impacto significativo: 
+(ruteo). Agregar pedidos a cada lote, en cambio, no impidió la resolución: 
 la Etapa~2 exploró 153.934 nodos con 10 pedidos por lote y
 4.144 con 26. Esta separación entre las dos etapas orientó el resto del
 relevamiento, ya que permite elegir qué etapa se pone bajo presión en cada
@@ -207,7 +207,7 @@ algunas instancias y empeoraron otras, y se descartaron
 	\setupTABLE[column][3][width=6.4cm, align=flushleft]
 	\setupTABLE[column][4][width=2.6cm, align=flushleft]
 	\bTR \bTH Cambio \eTH \bTH Etapa \eTH \bTH Efecto medido \eTH \bTH Decisión \eTH \eTR
-	\bTR \bTD Clausura métrica \eTD \bTD 1 \eTD \bTD Ahorró entre el 19 y el 33\% en los escenarios heredados, pero en las grillas del perfil realista entre el 67 y el 100\% de los lotes debían resolverse de nuevo sobre el grafo completo, y terminó siendo más lenta. \eTD \bTD Descartada \eTD \eTR
+	\bTR \bTD Clausura métrica \eTD \bTD 1 \eTD \bTD Ahorró entre el 19 y el 33\% en los escenarios 01 a 03, pero en las grillas del perfil realista entre el 67 y el 100\% de los lotes debían resolverse de nuevo sobre el grafo completo, y terminó siendo más lenta. \eTD \bTD Descartada \eTD \eTR
 	\bTR \bTD Quitar el límite de un arco por ubicación \eTD \bTD 1 \eTD \bTD Mismas rutas. Fue un 33\% más rápida en 7×7 y un 24\% más lenta en 13×13; en 25×25, ninguna de las dos versiones terminó en 15 minutos. \eTD \bTD Se mantiene el límite \eTD \eTR
 	\bTR \bTD {\em Branching} por pseudocosto \eTD \bTD 2 \eTD \bTD Fue 2,2 veces más rápido con 10 lotes y 10 {\em pickers}. Con 10 lotes y 12 {\em pickers}, en cambio, la configuración por defecto resolvió en 118,5~s y el pseudocosto agotó el tope con un {\em gap} del 3,3\%. No terminó ninguna instancia que la configuración por defecto no terminara. \eTD \bTD Descartado \eTD \eTR
 	\bTR \bTD Etapa~1 en 6 procesos \eTD \bTD 1 \eTD \bTD Fue 2,2 veces más rápida en 13×13 y 1,9 veces en 14×14, con rutas idénticas. En instancias chicas no tuvo efecto. \eTD \bTD Adoptado en la {\em suite} de estrés \eTD \eTR
