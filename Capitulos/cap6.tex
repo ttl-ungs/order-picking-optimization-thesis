@@ -483,8 +483,8 @@ escenarios.
 Además, HC casi no modifica las rutas que obtiene en la construcción inicial. En tres
 escenarios de estrés del perfil realista (grilla de 7×7 con 6 lotes y 3
 {\em pickers}, 7×7 con 10 lotes y 5 {\em pickers}, y 10×10 con 12 lotes y
-12 {\em pickers}), el movimiento 2-opt se eligió 86 veces y no generó ningún
-vecino. Esas iteraciones fueron entre el 26~\% y el 48~\% del total, según
+12 {\em pickers}), el movimiento 2-opt se eligió 86 veces en total, sumando los tres, y no
+generó ningún vecino. Esas iteraciones fueron entre el 26~\% y el 48~\% del total, según
 el escenario.
 
 Ninguna heurística queda por debajo de un óptimo probado del
@@ -591,14 +591,12 @@ Split, lo que confirma que toda la diferencia se explica por el tiempo ocioso in
 
 \startsubsection[title={Tiempos}, reference=sec:res_tiempos]
 
-En las pruebas funcionales, los tiempos se comparan sobre 35 de las 45
-instancias comparables en objetivo. El registro del Split guarda una fila por
-prueba y algunas pruebas resuelven más de una instancia, de modo que solo se
-conoce el tiempo de las instancias cuya prueba resuelve una sola. En la mediana, el Split tarda
-0,295 segundos, HC 0,061 y ACO 0,225. La mediana de los cocientes por
-instancia indica que HC es 5,1 veces más rápido que el Split y ACO, 1,4
-veces. HC fue más rápido que el Split en las 35
-instancias; ACO, en 24. En las 11 restantes, ACO
+En las pruebas funcionales, los tiempos se comparan sobre las 45
+instancias comparables en objetivo. En la mediana, el Split tarda
+0,315 segundos, HC 0,067 y ACO 0,261. La mediana de los cocientes por
+instancia indica que HC es 5,0 veces más rápido que el Split y ACO, 1,2
+veces. HC fue más rápido que el Split en las 45
+instancias; ACO, en 28. En las 17 restantes, ACO
 ejecuta todas sus iteraciones aunque la instancia sea trivial. El
 Anexo~\in[Anexo_Resultados] muestra el detalle.
 
