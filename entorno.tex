@@ -124,9 +124,10 @@
 % numéricas de cada cuadro se alinean a la derecha.
 \setupTABLE[loffset=.8ex, roffset=.8ex]
 
-% Los títulos de los cuadros pueden ocupar el ancho del texto, sin importar el
-% ancho del cuadro, y van centrados.
-\setupcaption[table][width=\textwidth, align=middle]
+% Los títulos de cuadros, figuras y pseudocódigos pueden ocupar el ancho del texto,
+% sin importar el ancho del flotante, y van centrados.
+\setupcaption[table] [width=\textwidth, align=middle]
+\setupcaption[figure][width=\textwidth, align=middle]
 
 %----------------------------------------------------------------------------------------
 % SIGLAS Y GLOSARIO
