@@ -113,7 +113,7 @@ sombrero son los que recalcula el verificador.
 8.\quad\qquad {\bf si} $T_b > T^{\text{cold}} + \varepsilon$ {\bf o} $T_b \neq \hat{T}_b$ {\bf entonces} registrar en $R$
 9.\quad\qquad agregar $b$ a $\mathcal{F}$
 10.\quad {\bf para cada} {\em picker} $p$ {\bf hacer}
-11.\quad\qquad recorrer $\sigma_p$ desde el instante 0 y calcular cada $c_b$ acumulando los $T_b$
+11.\quad\qquad recorrer $\sigma_p$ desde el instante de inicio y calcular cada $c_b$ acumulando los $T_b$
 12.\quad\qquad {\bf si} algún $c_b \neq \hat{c}_b$ {\bf entonces} registrar en $R$
 13.\quad calcular $f$ con la Ecuación~\in[eq:mono_objetivo] y los $c_b$
 14.\quad {\bf si} $f \neq \hat{f}$ {\bf entonces} registrar en $R$
@@ -137,12 +137,14 @@ sombrero son los que recalcula el verificador.
 \stopplacefigure
 
 Las comparaciones entre valores informados y recalculados se hacen con una
-tolerancia relativa de $10^{-6}$. Los lotes que no llegan a $\mathcal{F}$,
+tolerancia relativa de $10^{-6}$. En el paso~11, el reloj arranca en el
+instante de inicio de la operación que indica la instancia. La reducción del grafo del paso~15 exige, además, que ningún chequeo
+directo haya fallado. Los lotes que no llegan a $\mathcal{F}$,
 porque su ruta usa ubicaciones o arcos inexistentes, no se fijan: quedan
 libres en los niveles de SCIP, y su violación ya está registrada. En el
 diagnóstico del paso~20, las decisiones se liberan primero por tipo (rutas,
 secuencia, y asignación junto con secuencia) y después lote por lote, para
-indicar qué ruta provoca la infactibilidad. Si la verificación no puede
+indicar qué ruta provoca la infactibilidad, con un máximo de 40 lotes. Si la verificación no puede
 ejecutarse, por ejemplo porque el modelo no compila, el resultado se informa
 como un error del verificador y no como un veredicto sobre la solución. Las
 instancias en las que la heurística no encontró solución no tienen nada que

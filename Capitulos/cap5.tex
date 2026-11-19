@@ -69,13 +69,15 @@ modelos y se construyen a partir de las mismas instancias.
 {\bf Qué cubren.} Los casos recorren los distintos aspectos del problema:
 \startitemize
 	\item {\bf Ruteo}: rutas esperadas en pasillos, grillas y grafos
-	ramificados (01 a 05, 09 a 11 y 15 a 20), lotes que comparten ubicaciones
+	ramificados (01 a 05, 08 a 11 y 17), rutas que cubren las ubicaciones
+	requeridas (19c, 20 y 25c), instancias de ruteo factibles (15, 16, 18 y
+	19a), lotes que comparten ubicaciones
 	(11, 25b, 25g y 26c) y rutas imposibles, ya sea porque una ubicación
 	requerida es inalcanzable (21 y 26a) o porque la ruta debería repetir una
 	ubicación (07 y 38; el 08 es la variante factible del 07).
 	\item {\bf Asignación y secuencia}: carga repartida entre los
 	{\em pickers} y lotes de un mismo {\em picker} sin superposición en el
-	tiempo (01, 05, 09, 10, 13, 14 y 17).
+	tiempo (01, 05, 10, 13 y 14).
 	\item {\bf Datos de entrada}: capacidad del carro (25a, 25d, 25f, 30 y 32),
 	pedidos asignados a más de un lote (31) y velocidades no positivas (36c).
 	\item {\bf Fechas de entrega y pesos del objetivo}: adelanto, demora y
@@ -88,7 +90,8 @@ modelos y se construyen a partir de las mismas instancias.
 \stopitemize
 
 {\bf Qué se verifica.} No todas las pruebas verifican lo mismo. Algunas
-comparan la ruta de cada lote con una ruta esperada y controlan, además, que
+comparan el conjunto de arcos que usan las rutas de los lotes con el
+esperado y controlan, además, que
 la carga se reparta entre los {\em pickers} y que los lotes de un mismo
 {\em picker} no se superpongan. Cuando la instancia admite varias rutas
 óptimas, en cambio, solo se verifica que la ruta sea un camino válido que
@@ -127,6 +130,9 @@ voluntaria, que las heurísticas no modelan (Sección~\in[sec:espera_voluntaria]
 En estas pruebas solo se exige que el estado, con o sin solución, coincida con
 el del Split; los objetivos se comparan después, en el análisis
 (Sección~\in[sec:comparacion]).
+
+Además, las heurísticas tienen pruebas propias: en las dos, el rechazo de
+velocidades inválidas, y en ACO, una ubicación requerida inalcanzable.
 
 El Anexo~\in[Anexo_Pruebas] lista los casos y qué verifica cada uno.
 
@@ -246,8 +252,9 @@ Etapa~2, que decide qué {\em picker} puede ejecutar cada lote.
 	\eTABLE
 \stopplacetable
 
-Los escenarios 01 a 03 no tienen velocidades ni cadena de frío, y conservan sus
-datos originales: todos los {\em pickers} tienen la misma velocidad, todos
+Los escenarios 01 a 03 se heredaron de una versión anterior de la suite de
+estrés, previa al relevamiento (en adelante, {\em escenarios heredados}). No
+tienen velocidades ni cadena de frío, y conservan los datos de esa versión: todos los {\em pickers} tienen la misma velocidad, todos
 los arcos de la grilla tienen el mismo peso, cada pedido tiene 10 unidades y
 todas las fechas de entrega valen 30. Esa fecha es imposible de cumplir, de
 modo que todos los pedidos llegan tarde, no hay adelanto que recortar y el
@@ -426,7 +433,9 @@ misma instancia, los mismos parámetros y la misma semilla producen siempre
 la misma solución, salvo que la ejecución se detenga por tiempo, ya que en
 ese caso lo que se alcanza a hacer depende de la velocidad de la máquina.
 Para que esto valga también entre procesos distintos, los candidatos de cada
-sorteo se recorren siempre en el mismo orden. Cuánto varía el resultado al
+sorteo se recorren siempre en el mismo orden, y además debe usarse el mismo
+valor de {\tt PYTHONHASHSEED}, porque el desempate del vecino más cercano de
+\ac{hc} depende del orden en que Python recorre un conjunto. Cuánto varía el resultado al
 cambiar la semilla se mide en las Secciones~\in[sec:calib_hc_semillas]
 y~\in[sec:calib_aco_semillas].
 
@@ -560,7 +569,8 @@ cuatro: la 24b, que solo existe en el Split; la 30a, que no termina en
 ninguno de los dos (Sección~\in[sec:comparacion_lineales]); la 36c, que
 rechaza los datos antes de resolver, y la 37a, que verifica la espera
 voluntaria y se excluye para mantener la misma base que la comparación con
-las heurísticas. Quedan así 60 pares. En cada par se comparan el estado, el valor
+las heurísticas. Quedan así 60 pruebas, que suman 66 instancias, cada una
+un par comparable. En cada par se comparan el estado, el valor
 objetivo, con una tolerancia relativa de $10^{-6}$, y la solución (las
 rutas, la asignación y el orden de los lotes de cada {\em picker}). Comparar
 la solución permite distinguir los pares que llegan a la misma solución de
