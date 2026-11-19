@@ -120,6 +120,13 @@
 % Estilo de la guía: \bTABLE[split=yes, align=middle, frame=on, width=fit] con la
 % primera fila de encabezado en gris y negrita:
 %     \setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+% Margen interno en las celdas, para que el texto no toque los bordes. Las columnas
+% numéricas de cada cuadro se alinean a la derecha.
+\setupTABLE[offset=.5ex, loffset=.8ex, roffset=.8ex]
+
+% Los títulos de los cuadros ocupan siempre el ancho del texto, sin importar el
+% ancho del cuadro.
+\setupcaption[table][width=\textwidth]
 
 %----------------------------------------------------------------------------------------
 % SIGLAS Y GLOSARIO
@@ -167,6 +174,43 @@
 \usebtxdefinitions[aps]
 \setupbtx[dataset=default]
 \setupbtxrendering[aps][numbering=yes, sorttype=short]
+
+% Igual que en el estilo aps, pero con coma entre el volumen y las páginas cuando
+% el artículo no tiene número: "58, 402--407" en lugar de "58 402--407".
+\starttexdefinition mutable protected btx:aps:journal-volume-year
+    \btxdoif {journal} {
+        \btxspace
+        \btxstartstyleandcolor [aps:\s!list:journal]
+            \btxflush{expandedjournal -> journal}
+        \btxstopstyleandcolor
+        \btxdoifelse {volume} {
+            \btxspace
+            \btxstartstyleandcolor [aps:\s!list:volume]
+                \btxflush{volume}
+            \btxstopstyleandcolor
+            \btxdoifelse {number} {
+                \removeunwantedspaces(
+                \btxflush{number}
+                \btxrightparenthesiscomma
+            } {
+                \btxcomma
+            }
+        } {
+            \btxdoif {number} {
+                \btxspace
+                \btxflush{number}
+                \btxcomma
+            }
+        }
+        \btxdoif {pages} {
+            \btxspace
+            \btxflush{pages}
+        }
+    }
+    \btxleftparenthesis
+    \texdefinition{btx:aps:year}
+    \btxrightparenthesis
+\stoptexdefinition
 
 \starttexdefinition mutable protected btx:aps:doi-url #1
     #1

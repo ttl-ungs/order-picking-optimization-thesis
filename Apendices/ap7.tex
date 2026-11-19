@@ -14,6 +14,7 @@ Anexo~\in[Anexo_Pruebas].
 \startplacetable[reference=tab:res_pares, location={here,split}, title={Pares resueltos por los dos modelos lineales: tiempo total, objetivo y diferencias en la solución del monolítico.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4,5][align=flushright]
 	\bTABLEhead
 	\bTR \bTH Caso \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \bTH Objetivo \eTH \bTH Solución del monolítico \eTH \eTR
 	\eTABLEhead
@@ -80,6 +81,7 @@ Anexo~\in[Anexo_Pruebas].
 \startplacetable[reference=tab:res_infactibles, location=here, title={Pares que los dos modelos lineales declaran infactibles: tiempo total.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4][align=flushright]
 	\bTR \bTH Caso \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \eTR
 	\bTR \bTD 07 \eTD \bTD 0,134 \eTD \bTD 0,183 \eTD \bTD 0,73× \eTD \eTR
 	\bTR \bTD 21 \eTD \bTD 0,220 \eTD \bTD 0,199 \eTD \bTD 1,11× \eTD \eTR
@@ -232,6 +234,7 @@ label.rt(textext("\tfx igual tiempo"), (1.000cm,7.010cm));
 \startplacetable[reference=tab:res_sla, location=here, title={Porcentaje de pedidos que llegan a tiempo en cada escenario de estrés. El Split no tiene dato en los escenarios que no termina.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4][align=flushright]
 	\bTR \bTH Caso \eTH \bTH Split \eTH \bTH HC \eTH \bTH ACO \eTH \eTR
 	\bTR \bTD 01 \eTD \bTD -- \eTD \bTD 0,0~\% \eTD \bTD 0,0~\% \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD 0,0~\% \eTD \bTD 0,0~\% \eTD \bTD 0,0~\% \eTD \eTR
@@ -258,6 +261,7 @@ label.rt(textext("\tfx igual tiempo"), (1.000cm,7.010cm));
 \startplacetable[reference=tab:res_convergencia, location=here, title={Iteraciones de cada heurística en los escenarios de estrés e iteración en la que encontró su mejor solución (0 es la solución inicial).}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4,5][align=flushright]
 	\bTR \bTH Caso \eTH \bTH HC: iteraciones \eTH \bTH HC: mejor en \eTH \bTH ACO: iteraciones \eTH \bTH ACO: mejor en \eTH \bTH ACO: cortó por tiempo \eTH \eTR
 	\bTR \bTD 01 \eTD \bTD 0 \eTD \bTD 0 \eTD \bTD 2 \eTD \bTD 1 \eTD \bTD sí \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD 60 \eTD \bTD 0 \eTD \bTD 60 \eTD \bTD 1 \eTD \bTD no \eTD \eTR
