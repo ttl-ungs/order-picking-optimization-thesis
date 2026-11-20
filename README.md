@@ -4,7 +4,7 @@ Tesina de la Licenciatura en Sistemas, Instituto de Industria (IDEI), Universida
 
 - **Autoras:** Ximena Ebertz y Lucía Soria
 - **Supervisor:** Enrique Fernández
-- **PDF:** [out/ebertz-soria-2026-optimizacion-picking-ruteo.pdf](out/ebertz-soria-2026-optimizacion-picking-ruteo.pdf)
+- **PDF:** [ebertz-soria-2026-optimizacion-picking-ruteo.pdf](ebertz-soria-2026-optimizacion-picking-ruteo.pdf)
 - **Código de los modelos y de las pruebas:** [ttl-ungs/order-picking-optimization](https://github.com/ttl-ungs/order-picking-optimization)
 
 > *English:* ConTeXt source of our undergraduate thesis on the order picking problem: assigning batches of orders to pickers with heterogeneous speeds, sequencing them and routing each batch through the warehouse, under a cold-chain limit. Two mixed-integer models (monolithic and a two-stage Split) are compared with Hill Climbing and Ant Colony Optimization. The thesis is written in Spanish.
@@ -19,7 +19,6 @@ La tesina está escrita en [ConTeXt](https://wiki.contextgarden.net/) (LMTX). De
 
 ```bash
 context --result=ebertz-soria-2026-optimizacion-picking-ruteo tesina.tex
-mv ebertz-soria-2026-optimizacion-picking-ruteo.pdf out/
 ```
 
 ## Estructura
@@ -33,4 +32,4 @@ mv ebertz-soria-2026-optimizacion-picking-ruteo.pdf out/
 | `Referencias/tesina.bib` | Bibliografía |
 | `Figuras/` | Imágenes (logo de la portada) |
 | `Guias/` | Guía de estilo de ConTeXt |
-| `out/` | PDF compilado |
+| `ebertz-soria-2026-optimizacion-picking-ruteo.pdf` | PDF compilado |
