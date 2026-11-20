@@ -13,9 +13,9 @@ Este documento especifica los lineamientos estéticos, de diseño y estructuraci
 
 ## 2. Paleta de Colores
 Se debe inicializar el uso de colores al principio del documento (`\setupcolors[state=start]` y `\setupcolor[hex]`). Los colores oficiales son:
-* **`darkblue` (`#003366`):** Uso exclusivo para títulos de secciones (`\startsection`), curvas y puntos de los modelos exactos (OPP\_v3 / SCIP) en los gráficos.
+* **`darkblue` (`#003366`):** Uso exclusivo para títulos de secciones (`\startsection`), curvas y puntos de los modelos exactos (monolítico y Split) en los gráficos.
 * **`darkgray` (`#e6e6e6`):** Uso exclusivo para el fondo de la primera fila (encabezados) en las tablas.
-* **`redline` (`#d9534f`):** Uso para curvas de tendencia o gráficos relacionados con OPP\_v3 bajo estrés, y barras/áreas de "Solver" en gráficos de perfilado.
+* **`redline` (`#d9534f`):** Uso para curvas de tendencia o gráficos relacionados con el modelo monolítico bajo estrés, y barras/áreas de "Solver" en gráficos de perfilado.
 * **`blueline` (`#5bc0de`):** Uso para curvas de regresión lineal genéricas o desempeño de Hill Climbing (HC).
 * **`greenline` (`#5cb85c`):** Uso exclusivo para curvas de desempeño de la metaheurística Ant Colony Optimization (ACO).
 

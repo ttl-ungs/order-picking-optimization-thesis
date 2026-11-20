@@ -27,7 +27,10 @@ carro (Sección~\in[sec:modelo_monolitico]). La forma de la función objetivo se
 mantiene, de modo que, si todos los {\em pickers} tienen la misma velocidad, el
 límite de la cadena de frío es suficientemente grande y no hay tiempos de
 servicio, los dos modelos se reducen al modelo de referencia con los lotes
-fijos.
+fijos. Para eso hacen falta, además, dos condiciones: que el modelo de
+referencia tenga suficientes posiciones por operario para todos los lotes que
+puede ejecutar, y que los pesos se correspondan ($W^{c}$ con $w_1$, y
+$W^{\text{pen}}W^{t}$ y $W^{\text{pen}}W^{e}$ con $w_2\gamma$ y $w_2\partial$).
 
 Los dos modelos resuelven el OPP tal como se definió en la
 Sección~\in[sec:problema], bajo los siguientes supuestos:
@@ -51,8 +54,8 @@ Sección~\in[sec:problema], bajo los siguientes supuestos:
 	\item {\bf Cadena de frío por lote.} El límite de tiempo fuera de la cámara
 	de frío se aplica a la ejecución de cada lote, incluida su parte fija, y
 	no al turno del {\em picker} ni a la espera hasta el despacho.
-	\item {\bf Extremos de la ruta.} El depósito de partida y el punto de
-	entrega son ubicaciones distintas, como en el modelo de referencia.
+	\item {\bf Extremos de la ruta.} El depósito ($v_{\text{start}}$) y el punto de
+	entrega ($v_{\text{end}}$) son ubicaciones distintas, como en el modelo de referencia.
 	\item {\bf Camino simple.} La ruta de un lote no pasa dos veces por la misma
 	ubicación, como en el modelo de referencia. Es una simplificación de la
 	formulación y no una regla de la operación, y sus consecuencias se
@@ -72,7 +75,7 @@ sola vez en esta sección.
 		\NC \mathcal{N} \NC \quad \text{pedidos de clientes} \NR
 		\NC \mathcal{B} \NC \quad \text{lotes; cada pedido pertenece a un único lote} \NR
 		\NC \mathcal{P} \NC \quad \text{{\em pickers}} \NR
-		\NC \mathcal{V} \NC \quad \text{ubicaciones del almacén, incluidos el depósito $v_{\text{start}}$ y el nodo final $v_{\text{end}}$} \NR
+		\NC \mathcal{V} \NC \quad \text{ubicaciones del almacén, incluidos el depósito $v_{\text{start}}$ y el punto de entrega $v_{\text{end}}$} \NR
 		\NC \mathcal{E} \NC \quad \text{arcos del grafo de ubicaciones, es decir, los pares $(i,j)$ tales que se puede ir de $i$ a $j$} \NR
 	\stopalign
 \stopformula
@@ -98,6 +101,7 @@ siguientes subconjuntos:
 		\NC A_{ni} \in \{0,1\} \NC \quad \text{1 si el pedido $n$ tiene productos en la ubicación $i$} \NR
 		\NC B_{nb} \in \{0,1\} \NC \quad \text{1 si el pedido $n$ pertenece al lote $b$} \NR
 		\NC C_n \NC \quad \text{cantidad de unidades a recoger del pedido $n$} \NR
+		\NC Q^{\text{carro}} \NC \quad \text{capacidad del carro, en unidades; se verifica antes de resolver} \NR
 		\NC T^{\text{due}}_n \NC \quad \text{fecha de entrega del pedido $n$} \NR
 		\NC D_{ij} \NC \quad \text{distancia del arco $(i,j) \in \mathcal{E}$} \NR
 		\NC S_i \NC \quad \text{tiempo de servicio en la ubicación $i$} \NR
@@ -205,6 +209,9 @@ lote, a qué {\em picker} se asigna y en qué orden se ejecuta.
 		\NC ta_n \geq 0,\; ea_n \geq 0 \NC \quad \text{demora y adelanto del pedido $n$ respecto de $T^{\text{due}}_n$} \NR
 	\stopalign
 \stopformula
+Las variables $ta_n$ y $ea_n$ corresponden a la demora $T_j$ y el adelanto
+$E_j$ de la Sección~\in[sec:marco_adelanto_demora], con los pedidos en el
+lugar de los trabajos.
 
 La cota superior de $u_{pb}$ es la que impone la cadena de frío, como se
 explica en la Sección~\in[sec:mono_asignacion].
@@ -243,8 +250,8 @@ ubicación $i$, y 0 si no pasa por ella.
 
 {\bf Inicio y fin de la ruta.}
 La ruta sale una vez del depósito (\in[eq:mono_salida]) y llega una vez al
-nodo final (\in[eq:mono_llegada]). Además, no vuelve al depósito
-(\in[eq:mono_no_vuelve]) ni sale del nodo final (\in[eq:mono_no_sale]).
+punto de entrega (\in[eq:mono_llegada]). Además, no vuelve al depósito
+(\in[eq:mono_no_vuelve]) ni sale del punto de entrega (\in[eq:mono_no_sale]).
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
@@ -276,7 +283,7 @@ repite.
 
 {\bf Eliminación de {\em subtours}.}
 Las restricciones (\in[eq:mono_salida])--(\in[eq:mono_sale_max]) todavía
-admiten soluciones formadas por un camino del depósito al nodo final más un
+admiten soluciones formadas por un camino del depósito al punto de entrega más un
 ciclo disjunto que visita algunas ubicaciones requeridas sin conectarse con el
 depósito. Para eliminarlos se utiliza una variante de la formulación de flujo
 de Gavish y Graves (Ecuación~\in[eq:gg]). Un flujo $q$ sale del depósito con
@@ -316,7 +323,7 @@ por la que pasa la ruta, que se cuenta cuando la ruta sale de ella:
 El tiempo de servicio se cobra en toda ubicación intermedia que la ruta
 atraviesa, se recoja algo en ella o no.\footnote{En la implementación, la
 suma del traslado excluye los arcos que entran al depósito y los que salen del
-nodo final. Por (\in[eq:mono_no_vuelve]) y (\in[eq:mono_no_sale]) esos arcos
+punto de entrega. Por (\in[eq:mono_no_vuelve]) y (\in[eq:mono_no_sale]) esos arcos
 no se usan, así que las dos expresiones coinciden.}
 
 \stopsubsection
@@ -396,7 +403,8 @@ sigue siendo válida:
 		\NC R^{\max} \EQ T^{\text{travel}} \, |\mathcal{V}| \max_{(i,j) \in \mathcal{E}} D_{ij} \;+\; |\mathcal{V}| \max_{i \in \mathcal{V}} S_i. \NR
 	\stopalign
 \stopformula
-La constante se calcula a partir de los datos, en lugar de fijarse en un
+La constante se calcula a partir de los datos, en Python, al escribir los
+archivos de datos de cada instancia, en lugar de fijarse en un
 valor arbitrario, porque cuanto menor es una constante M grande, más ajustada
 resulta la relajación lineal (Sección~\in[sec:marco_mip]). Esta cota alcanza
 cuando cada lote termina en cuanto completa su ejecución, y la
@@ -530,7 +538,7 @@ instancia es infactible.
 		\NC x_{pb} \in \{0,1\} \NC \quad \text{1 si el lote $b$ se asigna al {\em picker} $p$, para $(p,b) \in \mathcal{PB}^{\text{elig}}$} \NR
 		\NC c_{pb} \geq 0 \NC \quad \text{instante en que termina el lote $b$ en la agenda de $p$, para $(p,b) \in \mathcal{PB}^{\text{elig}}$} \NR
 		\NC c_b \geq 0 \NC \quad \text{instante en que termina el lote $b$} \NR
-		\NC y_{bk} \in \{0,1\} \NC \quad \text{para $b < k$, 1 si $b$ se ejecuta antes que $k$} \NR
+		\NC y_{bk} \in \{0,1\} \NC \quad \text{para $b < k$, 1 si $b$ se ejecuta antes que $k$ cuando comparten {\em picker}} \NR
 		\NC ta_n \geq 0,\; ea_n \geq 0 \NC \quad \text{demora y adelanto del pedido $n$} \NR
 	\stopalign
 \stopformula
@@ -600,7 +608,8 @@ del modelo monolítico, restringidas a los pares elegibles:
 La Figura~\in[fig:split_flujo] muestra cómo se resuelve una instancia con el
 modelo Split.
 Primero se validan los datos. Se verifica que cada pedido pertenezca a un
-único lote, que ningún lote supere la capacidad del carro y que todas las
+único lote, que ningún lote supere la capacidad del carro
+($\sum_{n \in \mathcal{N}_b} C_n \leq Q^{\text{carro}}$) y que todas las
 velocidades sean positivas, ya que una velocidad nula dejaría indefinido el
 tiempo de ejecución y una negativa lo haría negativo. Si alguna de estas
 condiciones no se cumple, la instancia se informa como
@@ -621,8 +630,8 @@ resuelve un único \ac{mip} que decide a la vez las rutas, la asignación y la
 secuencia. En ese caso, si la cadena de frío vuelve infactible la instancia,
 lo detecta el resolvedor.
 
-\startplacefigure[title={Flujo de resolución del modelo Split. Las flechas rojas marcan los casos en que la instancia se informa como infactible antes de resolver la Etapa~2.}, reference=fig:split_flujo]
-\startMPcode
+\placefigure[force][fig:split_flujo]{Flujo de resolución del modelo Split. Las flechas rojas marcan los casos en que la instancia se informa como infactible antes de resolver la Etapa~2.}
+{\startMPcode
 numeric w, h, dy, hs; w := 7.6cm; h := 0.9cm; dy := 1.5cm; hs := 1.8cm;
 color borde, relleno, rojo;
 borde := \MPcolor{darkblue}; relleno := \MPcolor{darkgray}; rojo := \MPcolor{redline};
@@ -663,8 +672,8 @@ flecha(y3 - h/2, y4 + h/2);
 caja(y4, h, "Etapa 2: un MIP de asignación y secuencia");
 flecha(y4 - h/2, y5 + h/2);
 caja(y5, h, "Solución: rutas, asignación y secuencia");
-\stopMPcode
-\stopplacefigure
+\stopMPcode}
+
 
 \stopsubsection
 \stopsection
@@ -776,12 +785,12 @@ resolvedor se detiene exactamente en la fecha de entrega. La
 Figura~\in[fig:espera_ejemplo] muestra ese aporte en función del instante en
 que se declara terminado el lote.
 
-\startplacefigure[title={Aporte al objetivo del lote del ejemplo según el instante $t$ en que se declara terminado. El lote termina realmente en $t = 10$, y el mínimo está en la fecha de entrega, $t = 20$.}, reference=fig:espera_ejemplo]
-\startMPcode
+\placefigure[force][fig:espera_ejemplo]{Aporte al objetivo del lote del ejemplo según el instante $t$ en que se declara terminado. El lote termina realmente en $t = 10$, y el mínimo está en la fecha de entrega, $t = 20$.}
+{\startMPcode
 numeric ux, uy; ux := 0.28cm; uy := 0.085cm;
 color borde, guia; borde := \MPcolor{darkblue}; guia := .55white;
-drawarrow (0, 0) -- (30ux, 0) withpen pencircle scaled .6pt;
-drawarrow (0, 0) -- (0, 50uy) withpen pencircle scaled .6pt;
+drawarrow (0, 0) -- (30ux, 0) withpen pencircle scaled 1pt;
+drawarrow (0, 0) -- (0, 50uy) withpen pencircle scaled 1pt;
 label.rt(textext("$t$"), (30ux, 0));
 label.top(textext("\tfx aporte al objetivo"), (0, 50uy));
 for v = 10, 20, 25:
@@ -796,14 +805,14 @@ draw (10ux, 0) -- (10ux, 40uy) dashed evenly withpen pencircle scaled .4pt withc
 draw (0, 40uy) -- (10ux, 40uy) dashed evenly withpen pencircle scaled .4pt withcolor guia;
 draw (20ux, 0) -- (20ux, 20uy) dashed evenly withpen pencircle scaled .4pt withcolor guia;
 draw (0, 20uy) -- (20ux, 20uy) dashed evenly withpen pencircle scaled .4pt withcolor guia;
-draw (10ux, 40uy) -- (20ux, 20uy) -- (25ux, 40uy) withpen pencircle scaled 1.2pt withcolor borde;
-fill fullcircle scaled 1.8mm shifted (10ux, 40uy) withcolor borde;
-fill fullcircle scaled 1.8mm shifted (20ux, 20uy) withcolor borde;
+draw (10ux, 40uy) -- (20ux, 20uy) -- (25ux, 40uy) withpen pencircle scaled 1.5pt withcolor borde;
+fill fullcircle scaled 4pt shifted (10ux, 40uy) withcolor borde;
+fill fullcircle scaled 4pt shifted (20ux, 20uy) withcolor borde;
 label.top(textext("\tfx finalización real"), (10ux, 40uy + 1mm));
 label.llft(textext("\tfx pendiente $-2$"), (15ux, 30uy));
 label.lrt(textext("\tfx pendiente $4$"), (22.5ux, 30uy));
-\stopMPcode
-\stopplacefigure
+\stopMPcode}
+
 
 Las pruebas funcionales incluyen un caso que verifica este comportamiento
 (Sección~\in[sec:pruebas_funcionales]), y la Sección~\in[sec:res_espera]

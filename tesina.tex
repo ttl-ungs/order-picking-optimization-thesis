@@ -3,7 +3,7 @@
 %
 % Compilar desde la raíz del repositorio:
 %
-%     context tesina.tex && mv tesina.pdf out/
+%     context --result=ebertz-soria-2026-optimizacion-picking-ruteo tesina.tex
 %
 % El diseño, las siglas, el glosario y la bibliografía están en entorno.tex.
 %========================================================================================
@@ -17,7 +17,7 @@
 \def\TesinaInstituto     {Instituto de Industria (IDEI)}
 \def\TesinaInstitutoUrl  {https://www.ungs.edu.ar/idei/idei}
 \def\TesinaTitulo        {Optimización del picking y del ruteo de pedidos en un centro de distribución}
-\def\TesinaGrado         {Licenciadas en Sistemas} % Cambiar según corresponda (a/o/os/as)
+\def\TesinaGrado         {Licenciadas en Sistemas}
 \def\TesinaAutor         {Ebertz, Ximena}
 \def\TesinaAutorMail     {ebertz.xime@gmail.com}
 \def\TesinaCoautor       {Soria, Lucía}
@@ -64,7 +64,7 @@
        \vtop
          {\hsize=.4\textwidth
           \raggedright
-          {\em Autor/es:}\par
+          {\em Autoras:}\par
           \goto{\TesinaAutor}[url(mailto:\TesinaAutorMail)]\par
           \goto{\TesinaCoautor}[url(mailto:\TesinaCoautorMail)]\par}%
        \vtop
@@ -72,14 +72,14 @@
           \raggedleft
           {\em Supervisor:}\par
           \TesinaSupervisor\par
-          \TesinaCosupervisor\par}%
+          \doifsomething{\TesinaCosupervisor}{\TesinaCosupervisor\par}}%
        \hss}
     \vfill
     {\em La tesina se presenta para cumplir con los requerimientos de grado de\\
      \TesinaGrado\par
      en el\par}
     \blank
-    {\TesinaGrupo\par}
+    \doifsomething{\TesinaGrupo}{{\TesinaGrupo\par}}
     {\tfb \goto{\TesinaInstituto}[url(\TesinaInstitutoUrl)]\par}
     \vfill
     {\currentdate[day,{ de },month,{ de },year]\par}
@@ -91,16 +91,26 @@
 % PÁGINAS PRELIMINARES (numeración romana)
 \startfrontmatter
 
-%	PÁGINA DE CITA
-\blank[force,2cm]
-{\em Una hormiga en movimiento hace más que un buey dormido.}
-\startalignment[flushright]
-  Lao Tse
-\stopalignment
+\startpreliminar[title=, list={Dedicatoria}, bookmark={Dedicatoria}]
+  \blank[force,5cm]
+  \startalignment[flushright]
+  {\sl Dedicado a mi familia, Néstor, Maricel y Camila. Gracias por acompañarme siempre. Los amo.\par}
+\blank[small]
+    {\tfx — Lucía\par}
+    \blank[3*big]
+    {\sl Dedicado a Juan, Marina, Melina y Alex, mi familia. Este logro es gracias a ustedes; gracias por su apoyo incondicional. Los amo.\par}
+    \blank[small]
+    {\tfx — Ximena\par}
+  \stopalignment
+\stoppreliminar
 
-% Esta también me gustó jaja:
-% {\em Todos los modelos están equivocados, pero algunos son útiles.}
-% \startalignment[flushright] George E. P. Box \stopalignment
+%	PÁGINA DE CITA
+\page
+\blank[force,2cm]
+{\em Todos los modelos están equivocados, pero algunos son útiles.}
+\startalignment[flushright]
+  George E. P. Box
+\stopalignment
 
 \startpreliminar[title={Resumen}]
   \input{Capitulos/resumen.tex}
@@ -110,7 +120,6 @@
   \input{Capitulos/abstract.tex}
 \stoppreliminar
 
-% TODO: cambiar esto!
 \startpreliminar[title={Agradecimientos}]
 	Le agradecemos en particular a nuestra familia y amigos, por la paciencia y el apoyo incondicional a lo largo de toda nuestra formación.
 	A Enrique Fernández, nuestro supervisor, por su predisposición, sus consejos y por guiarnos en el desafío de optimizar y modelar este problema.
@@ -137,13 +146,6 @@
   {\setupwhitespace[none]\placecontent}
 \stoppreliminar
 
-\startpreliminar[title=, list={Dedicatoria}]
-  \blank[force,6cm]
-  \startalignment[middle]
-    {\tfb\sl Para / Dedicada a / Para mi ...\par}
-  \stopalignment
-\stoppreliminar
-
 \stopfrontmatter
 
 %----------------------------------------------------------------------------------------
@@ -159,8 +161,6 @@
 \input{Capitulos/cap5.tex} % Metodología
 \input{Capitulos/cap6.tex} % Resultados
 \input{Capitulos/cap7.tex} % Conclusión y Discusión
-% Capitulos/plantilla.tex: guía de la plantilla original en LaTeX; no se compila,
-% queda como referencia.
 
 \stopbodymatter
 
