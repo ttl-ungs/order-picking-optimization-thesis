@@ -62,6 +62,7 @@ resueltos.
 \startplacetable[reference=tab:res_tiempos_lineales, location=here, title={Tiempos de los 55 pares resueltos en las pruebas funcionales. El tiempo total incluye escribir los datos y compilar los modelos; el del resolvedor cubre solo la última resolución de SCIP, que en el Split es la de la Etapa~2.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4][align=flushright]
 	\bTR \bTH Medida \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \eTR
 	\bTR \bTD Tiempo total: suma \eTD \bTD 148,1 \eTD \bTD 26,5 \eTD \bTD 5,60 \eTD \eTR
 	\bTR \bTD Tiempo total: mediana \eTD \bTD 0,226 \eTD \bTD 0,315 \eTD \bTD 0,72 \eTD \eTR
@@ -314,6 +315,7 @@ en pocos segundos.
 \startplacetable[reference=tab:res_tamano_mip, location=here, title={Tamaño del \ac{mip} que resuelve SCIP: el modelo monolítico completo y la Etapa~2 del Split.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4,5][align=flushright]
 	\bTR \bTH Instancia \eTH \bTH Monolítico: variables \eTH \bTH Monolítico: restricciones \eTH \bTH Etapa~2: variables \eTH \bTH Etapa~2: restricciones \eTH \eTR
 	\bTR \bTD 3 lotes, 3×3 \eTD \bTD 327 \eTD \bTD 573 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
 	\bTR \bTD 3 lotes, 5×5 \eTD \bTD 663 \eTD \bTD 1.029 \eTD \bTD 174 \eTD \bTD 339 \eTD \eTR
@@ -341,6 +343,7 @@ Split como referencia, no habría forma de saber que esa solución es casi
 \startplacetable[reference=tab:res_40min, location=here, title={Resultado del monolítico con un tope de 40 minutos, frente al tiempo del Split en la misma instancia. La distancia al óptimo se mide contra el óptimo del Split.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,5,6][align=flushright]
 	\bTR \bTH Instancia \eTH \bTH Split (s) \eTH \bTH Monolítico \eTH \bTH ¿Prueba el óptimo? \eTH \bTH Distancia al óptimo \eTH \bTH {\em Gap} informado \eTH \eTR
 	\bTR \bTD 3 lotes, 7×7 \eTD \bTD 8,2 \eTD \bTD 40,0 min \eTD \bTD no \eTD \bTD 0,05~\% \eTD \bTD 11,0~\% \eTD \eTR
 	\bTR \bTD 4 lotes, 6×6 \eTD \bTD 9,5 \eTD \bTD 40,0 min \eTD \bTD no \eTD \bTD 0,00~\% \eTD \bTD 10,4~\% \eTD \eTR
@@ -394,6 +397,7 @@ Cuadro~\in[tab:res_validez] resume el resultado.
 \startplacetable[reference=tab:res_validez, location=here, title={Resultado de la verificación de las soluciones de las heurísticas contra el modelo monolítico.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][3,4,5,6][align=flushright]
 	\bTR \bTH Heurística \eTH \bTH Pruebas \eTH \bTH Instancias \eTH \bTH Válidas \eTH \bTH Con violaciones \eTH \bTH Sin solución \eTH \eTR
 	\bTR \bTD HC \eTD \bTD Funcionales \eTD \bTD 68 \eTD \bTD 56 \eTD \bTD 0 \eTD \bTD 12 \eTD \eTR
 	\bTR \bTD HC \eTD \bTD Estrés \eTD \bTD 19 \eTD \bTD 19 \eTD \bTD 0 \eTD \bTD 0 \eTD \eTR
@@ -460,6 +464,7 @@ del óptimo del Split, con la definición de la Sección~\in[sec:comparacion].
 \startplacetable[reference=tab:res_brecha, location=here, title={Brecha de cada heurística respecto del óptimo del Split, sobre las instancias comparables en objetivo. La columna {\em Óptimas} cuenta las instancias con brecha nula.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][3,4,5,6,7][align=flushright]
 	\bTR \bTH Heurística \eTH \bTH Pruebas \eTH \bTH Instancias \eTH \bTH Óptimas \eTH \bTH Brecha media \eTH \bTH Mediana \eTH \bTH Máxima \eTH \eTR
 	\bTR \bTD HC \eTD \bTD Funcionales \eTD \bTD 45 \eTD \bTD 40 \eTD \bTD 0,36~\% \eTD \bTD 0,00~\% \eTD \bTD 5,88~\% \eTD \eTR
 	\bTR \bTD ACO \eTD \bTD Funcionales \eTD \bTD 45 \eTD \bTD 45 \eTD \bTD 0,00~\% \eTD \bTD 0,00~\% \eTD \bTD 0,00~\% \eTD \eTR
@@ -493,6 +498,7 @@ Split, como corresponde a soluciones válidas de un problema de minimización.
 \startplacetable[reference=tab:res_fallos_hc, location=here, title={Instancias funcionales en las que HC no alcanza el óptimo. ACO lo alcanza en las cinco.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4][align=flushright]
 	\bTR \bTH Caso \eTH \bTH Split \eTH \bTH HC \eTH \bTH Brecha \eTH \eTR
 	\bTR \bTD 20 \eTD \bTD 2.620,0 \eTD \bTD 2.678,0 \eTD \bTD 2,2~\% \eTD \eTR
 	\bTR \bTD 25c \eTD \bTD 2.620,0 \eTD \bTD 2.678,0 \eTD \bTD 2,2~\% \eTD \eTR
@@ -567,6 +573,7 @@ El Cuadro~\in[tab:res_espera] muestra el tamaño de esa diferencia.
 \startplacetable[reference=tab:res_espera, location=here, title={Objetivo del Split y de las heurísticas en las instancias en que el Split usa espera voluntaria, y lotes del Split que esperan. Estas instancias se comparan solo en estado.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4][align=flushright]
 	\bTR \bTH Caso \eTH \bTH Split \eTH \bTH HC \eTH \bTH ACO \eTH \bTH Lotes que esperan \eTH \eTR
 	\bTR \bTD 01 \eTD \bTD 30,0 \eTD \bTD 39,0 \eTD \bTD 39,0 \eTD \bTD B1 \eTD \eTR
 	\bTR \bTD 06a \eTD \bTD 30,0 \eTD \bTD 144,0 \eTD \bTD 144,0 \eTD \bTD B1, B2 \eTD \eTR
@@ -608,6 +615,7 @@ seis procesos (Sección~\in[sec:ejecucion]).
 \startplacetable[reference=tab:res_estres_tiempos, location={here,split}, title={Tiempo total de cada método en los escenarios de estrés y brecha de las heurísticas respecto del Split, donde el Split termina. El tiempo del Split en el escenario 10 corresponde a una corrida anterior, con el mismo objetivo.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,4,5,6,7,8][align=flushright]
 	\bTR \bTH Caso \eTH \bTH Lotes \eTH \bTH Grilla \eTH \bTH Split (s) \eTH \bTH HC (s) \eTH \bTH Brecha \eTH \bTH ACO (s) \eTH \bTH Brecha \eTH \eTR
 	\bTR \bTD 01 \eTD \bTD 30 \eTD \bTD 100×100 \eTD \bTD sin terminar \eTD \bTD 1.029,2 \eTD \bTD -- \eTD \bTD 1.892,3 \eTD \bTD -- \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD 10 \eTD \bTD 10×10 \eTD \bTD 33 \eTD \bTD 0,9 \eTD \bTD 0,00~\% \eTD \bTD 27,8 \eTD \bTD 0,00~\% \eTD \eTR
@@ -833,6 +841,7 @@ pueden compararse entre sí (Cuadro~\in[tab:res_sin_referencia]).
 \startplacetable[reference=tab:res_sin_referencia, location=here, title={Objetivo de las heurísticas en los escenarios que el Split no termina. La última columna es $100 \cdot (z_{\text{ACO}} - z_{\text{HC}}) / z_{\text{HC}}$: un valor negativo indica que ACO obtuvo un objetivo menor.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4][align=flushright]
 	\bTR \bTH Caso \eTH \bTH HC \eTH \bTH ACO \eTH \bTH ACO contra HC \eTH \eTR
 	\bTR \bTD 01 \eTD \bTD 862.656,0 \eTD \bTD 909.168,0 \eTD \bTD 5,39~\% \eTD \eTR
 	\bTR \bTD 03 \eTD \bTD 1.767.172,0 \eTD \bTD 1.752.076,0 \eTD \bTD -0,85~\% \eTD \eTR
@@ -899,6 +908,7 @@ del modelo.
 \startplacetable[reference=tab:res_igual_tiempo_aco, location=here, title={Objetivo de cada modelo lineal al vencer el tiempo de ACO en el mismo escenario. La columna {\em ACO contra Split} es $100 \cdot (z_{\text{ACO}} - z_{\text{Split}}) / z_{\text{Split}}$: un valor negativo indica que ACO obtuvo un objetivo menor. Un guion indica que el modelo no obtuvo una solución.}]
 	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
+	\setupTABLE[column][2,3,4,5,6][align=flushright]
 	\bTR \bTH Caso \eTH \bTH Presupuesto (s) \eTH \bTH ACO \eTH \bTH Split \eTH \bTH ACO contra Split \eTH \bTH Monolítico \eTH \eTR
 	\bTR \bTD 01 \eTD \bTD 1.892,3 \eTD \bTD 909.168,0 \eTD \bTD -- \eTD \bTD -- \eTD \bTD -- \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD 27,8 \eTD \bTD 29.034,0 \eTD \bTD 29.262,0 \eTD \bTD -0,78~\% \eTD \bTD -- \eTD \eTR
