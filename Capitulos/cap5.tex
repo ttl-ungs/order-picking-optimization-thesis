@@ -1,7 +1,8 @@
 \startchapter[title={Metodología}, reference=Capitulo_5]
 
 Este capítulo describe cómo se evaluaron los modelos lineales y las
-metaheurísticas (en adelante, heurísticas). El trabajo siguió un orden en el que cada paso se apoyó en los
+metaheurísticas. Como en lo que sigue no hay otras heurísticas en juego, a
+partir de aquí se las llama, por brevedad, heurísticas. El trabajo siguió un orden en el que cada paso se apoyó en los
 resultados del anterior:
 \startitemize[n]
 	\item {\bf Pruebas funcionales.} Se verificó, sobre instancias chicas, que
@@ -59,7 +60,9 @@ estrés, que surgen de un relevamiento sistemático
 (Sección~\in[sec:relevamiento]). Cada caso genera una instancia,
 con un almacén y un conjunto de pedidos, lotes y {\em pickers}, la resuelve y 
 compara el resultado con el esperado. Un caso puede agrupar varias pruebas sobre
-variantes de una misma instancia; cada una se distingue con una letra. En
+variantes de una misma instancia; cada una se distingue con una letra. Si
+una prueba resuelve más de una instancia, cada instancia se indica con un
+número después de un punto medio (por ejemplo, 25e·1 y 25e·2). En
 total, el modelo Split corre 64 pruebas y el monolítico 63. La diferencia es
 la prueba 24b, que verifica el chequeo de elegibilidad previo a la Etapa~2, un
 paso que solo existe en el Split. Las demás pruebas son las mismas en los dos
@@ -68,13 +71,15 @@ modelos y se construyen a partir de las mismas instancias.
 {\bf Qué cubren.} Los casos recorren los distintos aspectos del problema:
 \startitemize
 	\item {\bf Ruteo}: rutas esperadas en pasillos, grillas y grafos
-	ramificados (01 a 05, 09 a 11 y 15 a 20), lotes que comparten ubicaciones
+	ramificados (01 a 05, 08 a 11 y 17), rutas que cubren las ubicaciones
+	requeridas (19c, 20 y 25c), instancias de ruteo factibles (15, 16, 18 y
+	19a), lotes que comparten ubicaciones
 	(11, 25b, 25g y 26c) y rutas imposibles, ya sea porque una ubicación
 	requerida es inalcanzable (21 y 26a) o porque la ruta debería repetir una
 	ubicación (07 y 38; el 08 es la variante factible del 07).
 	\item {\bf Asignación y secuencia}: carga repartida entre los
 	{\em pickers} y lotes de un mismo {\em picker} sin superposición en el
-	tiempo (01, 05, 09, 10, 13, 14 y 17).
+	tiempo (01, 05, 10, 13 y 14).
 	\item {\bf Datos de entrada}: capacidad del carro (25a, 25d, 25f, 30 y 32),
 	pedidos asignados a más de un lote (31) y velocidades no positivas (36c).
 	\item {\bf Fechas de entrega y pesos del objetivo}: adelanto, demora y
@@ -87,7 +92,8 @@ modelos y se construyen a partir de las mismas instancias.
 \stopitemize
 
 {\bf Qué se verifica.} No todas las pruebas verifican lo mismo. Algunas
-comparan la ruta de cada lote con una ruta esperada y controlan, además, que
+comparan el conjunto de arcos que usan las rutas de los lotes con el
+esperado y controlan, además, que
 la carga se reparta entre los {\em pickers} y que los lotes de un mismo
 {\em picker} no se superpongan. Cuando la instancia admite varias rutas
 óptimas, en cambio, solo se verifica que la ruta sea un camino válido que
@@ -127,6 +133,9 @@ En estas pruebas solo se exige que el estado, con o sin solución, coincida con
 el del Split; los objetivos se comparan después, en el análisis
 (Sección~\in[sec:comparacion]).
 
+Además, las heurísticas tienen pruebas propias: en las dos, el rechazo de
+velocidades inválidas, y en ACO, una ubicación requerida inalcanzable.
+
 El Anexo~\in[Anexo_Pruebas] lista los casos y qué verifica cada uno.
 
 \stopsection
@@ -138,7 +147,7 @@ Las pruebas de estrés buscan determinar
 hasta qué tamaño de instancia llega cada modelo. Para dimensionarlas se
 realizó primero un relevamiento de los modelos lineales
 (Sección~\in[sec:relevamiento]), cuyos resultados definieron los
-escenarios descriptos en la Sección~\in[sec:escenarios_estres]. El
+escenarios descritos en la Sección~\in[sec:escenarios_estres]. El
 relevamiento empezó por el modelo Split porque, al descomponerse en
 problemas más chicos, permite recorrer más instancias en el mismo tiempo.
 
@@ -184,14 +193,15 @@ También se probaron cambios para acelerar el modelo Split. De ellos, solo
 se adoptó repartir la Etapa~1 entre varios procesos
 (Sección~\in[sec:anexo_intentos_split] del Anexo~\in[Anexo_Relevamiento]).
 
-Los tiempos del relevamiento no son los de la suite final
+Los tiempos del relevamiento no son los de la {\em suite} final
 (Capítulo~\in[Capitulo_6]), por tres motivos: después se cambió el peso de
 la finalización, la Etapa~1 pasó a ejecutarse repartida en seis procesos
 (Sección~\in[sec:ejecucion]) y el tiempo de reloj de una misma instancia
 varía hasta el doble entre corridas. Además, cada escenario se calibró sobre
 su propia instancia, porque una lección general del relevamiento es que sus
 conclusiones no se transfieren de una instancia a otra, ni siquiera a
-instancias vecinas, como ya se vio con los pesos asimétricos de la grilla.
+instancias vecinas, como muestran los pesos asimétricos de la grilla
+(Anexo~\in[Anexo_Relevamiento]).
 
 \stopsubsection
 
@@ -209,7 +219,7 @@ razonable.
 El Cuadro~\in[tab:escenarios_estres] lista los escenarios, agrupados según el
 aspecto que ponen a prueba. Los escenarios 04 a 19 usan el perfil realista
 surgido del relevamiento, cuyos parámetros resume el
-Cuadro~\in[tab:perfil_realista], y cada grupo modifica un único aspecto: el
+Cuadro~\in[tab:perfil_realista], y cada grupo pone a prueba un aspecto: el
 tamaño del almacén (04 a 08), su forma (09), la agenda de los {\em pickers}
 (10, 11 y 15) y el tamaño de la cuadrilla (12 a 14 y 16 a 19). En este
 último grupo, los escenarios 12 a 14 parten de la grilla de 7×7 y los 16 a
@@ -245,18 +255,14 @@ Etapa~2, que decide qué {\em picker} puede ejecutar cada lote.
 	\eTABLE
 \stopplacetable
 
-Los escenarios 01 a 03 no tienen velocidades ni cadena de frío, y conservan sus
-datos originales: todos los {\em pickers} tienen la misma velocidad, todos
-los arcos de la grilla tienen el mismo peso, cada pedido tiene 10 unidades y
-todas las fechas de entrega valen 30. Esa fecha es imposible de cumplir, de
-modo que todos los pedidos llegan tarde, no hay adelanto que recortar y el
-peso de finalización puede quedar en $W^{c} = 9$ sin que convenga esperar.
-Además, en los escenarios 01 y 02 hay tantos {\em pickers} como lotes, así
-que cada uno ejecuta un solo lote y la secuencia no interviene. Se
-conservaron por lo que aportan: el 01 es el almacén más grande de la suite
-(100×100), el 02 era el único de los heredados que el modelo Split resolvía
-y el 03 concentra 40 lotes en un único {\em picker}, lo que pone a prueba la
-secuencia.
+En los escenarios 01 a 03, todos los {\em pickers} tienen la misma
+velocidad, no hay cadena de frío, todos los arcos de la grilla tienen el
+mismo peso, cada pedido tiene 10 unidades y todas las fechas de entrega
+valen 30. Como esa fecha no se puede cumplir, todos los pedidos llegan
+tarde, no hay adelanto que recortar y el peso de finalización es
+$W^{c} = 9$ sin que convenga esperar. En el 01 y el 02 hay tantos
+{\em pickers} como lotes, así que cada uno ejecuta un solo lote y la
+secuencia no interviene.
 
 En todos los escenarios se verifica lo mismo, con los cuatro métodos (los
 modelos monolítico y Split, HC y ACO): que se
@@ -308,10 +314,10 @@ Secciones~\in[sec:pruebas_funcionales] y~\in[sec:pruebas_estres]. Los
 resultados se presentan en el Capítulo~\in[Capitulo_6].
 
 Todas las pruebas, funcionales y de estrés, se ejecutan con un mismo
-programa, que recibe el método (Split, monolítico, HC o ACO) y la suite que
+programa, que recibe el método (Split, monolítico, HC o ACO) y la {\em suite} que
 se quiere correr. Cada prueba
 se ejecuta en un proceso propio y las pruebas se ejecutan de a una, en serie.
-El tope de tiempo es de 25 minutos por prueba en la suite funcional y de 40
+El tope de tiempo es de 25 minutos por prueba en la {\em suite} funcional y de 40
 minutos en la de estrés. Al vencer el tope, el programa termina desde afuera
 el proceso de la prueba, junto con todos los procesos que este haya lanzado,
 y la prueba se registra como no terminada ({\em timeout}). A SCIP no se le
@@ -343,23 +349,23 @@ Anexo~\in[Anexo_Relevamiento].
 	dominadas por la Etapa~2.
 	\item {\bf Repartir la Etapa~1 no siempre conviene.} Preparar cada
 	proceso lleva un tiempo fijo, que en las instancias chicas supera lo que se
-	ahorra: la suite funcional tardó 51~segundos con 6 procesos y 46 en
+	ahorra: la {\em suite} funcional tardó 51~segundos con seis procesos y 46 en
 	secuencia. Por eso la Etapa~1 solo se reparte cuando hay más de
 	4 lotes.
 \stopitemize
 
 El paralelismo de la Etapa~1 es distinto del que se evita entre pruebas:
 ocurre dentro de una misma prueba, que sigue ejecutándose sola en la
-máquina. La suite de estrés del modelo Split se ejecutó con la Etapa~1
+máquina. La {\em suite} de estrés del modelo Split se ejecutó con la Etapa~1
 repartida en seis procesos, mientras que el monolítico, que no puede
 descomponerse, y las heurísticas usan un único proceso. Por lo tanto, en
 estrés el Split no se compara con los demás métodos en igualdad de recursos,
 algo que se tiene en cuenta al comparar los tiempos
-(Sección~\in[sec:comparacion_lineales]). En la suite funcional, la
+(Sección~\in[sec:comparacion_lineales]). En la {\em suite} funcional, la
 Etapa~1 se ejecutó en un solo proceso.
 
-{\bf Qué se registra.} Cada corrida de una suite produce un archivo CSV por
-método, con una fila por prueba: el estado, el tiempo total, el tiempo del
+{\bf Qué se registra.} Cada corrida de una {\em suite} produce un archivo CSV por
+método, con una fila por instancia resuelta: el estado, el tiempo total, el tiempo del
 resolvedor, el valor objetivo, la memoria pico y la proporción de pedidos
 que llegan a tiempo. En las heurísticas se registran, además, la cantidad de
 iteraciones y la iteración en que se encontró la mejor solución. Cada
@@ -400,7 +406,7 @@ $\beta$ y $\rho$, en la Sección~\in[sec:calib_aco_sensibilidad].
 \bTR \bTD $\text{Max}_{\text{it}}$ \eTD \bTD 500 \eTD \bTD 200 \eTD \bTD Iteraciones máximas de la búsqueda. \eTD \eTR
 \bTR \bTD $\text{Max}_{\text{imp}}$ \eTD \bTD 30 \eTD \bTD 60 \eTD \bTD Iteraciones consecutivas sin aceptar un vecino antes de detenerse. \eTD \eTR
 \bTR \bTD $\text{Max}_{\text{time}}$ \eTD \bTD 30~s \eTD \bTD 30~s \eTD \bTD Tiempo de reloj máximo, controlado entre iteraciones. \eTD \eTR
-\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD 1 \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD 1 \eTD \bTD Semilla del generador de números aleatorios. En las corridas principales se usa 1. \eTD \eTR
 \eTABLE
 \stopplacetable
 
@@ -416,7 +422,7 @@ $\beta$ y $\rho$, en la Sección~\in[sec:calib_aco_sensibilidad].
 \bTR \bTD $\beta$ \eTD \bTD 2,5 \eTD \bTD Peso de la información heurística en las mismas reglas. \eTD \eTR
 \bTR \bTD $\rho$ \eTD \bTD 0,15 \eTD \bTD Tasa de evaporación de ambas feromonas. Define también $\tau_{\max}$ (Ecuación~\in[eq:aco_cotas]). \eTD \eTR
 \bTR \bTD $Q$ \eTD \bTD 100 \eTD \bTD Factor de depósito de la feromona de asignación. \eTD \eTR
-\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD Semilla del generador de números aleatorios. \eTD \eTR
+\bTR \bTD Semilla \eTD \bTD -- \eTD \bTD Semilla del generador de números aleatorios. En las corridas principales se usa 1. \eTD \eTR
 \eTABLE
 \stopplacetable
 
@@ -425,7 +431,8 @@ misma instancia, los mismos parámetros y la misma semilla producen siempre
 la misma solución, salvo que la ejecución se detenga por tiempo, ya que en
 ese caso lo que se alcanza a hacer depende de la velocidad de la máquina.
 Para que esto valga también entre procesos distintos, los candidatos de cada
-sorteo se recorren siempre en el mismo orden. Cuánto varía el resultado al
+sorteo se recorren siempre en el mismo orden, y con el mismo valor de
+{\tt PYTHONHASHSEED}. Cuánto varía el resultado al
 cambiar la semilla se mide en las Secciones~\in[sec:calib_hc_semillas]
 y~\in[sec:calib_aco_semillas].
 
@@ -481,8 +488,8 @@ Anexo~\in[Anexo_Verificacion] detalla los chequeos, los ajustes que hace el
 verificador para poder aplicarse a todas las instancias, la prueba de que
 detecta errores y su pseudocódigo.
 
-\startplacefigure[title={Pasos de la verificación de una solución heurística contra el modelo monolítico. Una solución es válida solo si pasa los tres.}, reference=fig:verificacion]
-\startMPcode
+\placefigure[force][fig:verificacion]{Pasos de la verificación de una solución heurística contra el modelo monolítico. Una solución es válida solo si pasa los tres.}
+{\startMPcode
 numeric w, h, dy; w := 7.6cm; h := 0.9cm; dy := 1.5cm;
 color borde, relleno, rojo;
 borde := \MPcolor{darkblue}; relleno := \MPcolor{darkgray}; rojo := \MPcolor{redline};
@@ -512,8 +519,8 @@ caja(y3, "Nivel 2: también las finalizaciones fijas");
 salida(y3, "\framed[frame=off, align=flushleft, offset=0pt]{\tfx infactible u\crlf objetivo distinto}");
 flecha(y3 - h/2, y4 + h/2);
 caja(y4, "Solución válida");
-\stopMPcode
-\stopplacefigure
+\stopMPcode}
+
 
 {\bf Qué no cubre.} La verificación no prueba que una solución sea óptima,
 solo que es factible y que su objetivo está bien calculado. Tampoco puede
@@ -546,7 +553,7 @@ tiempo. Se usa el Split porque fue el único modelo lineal que
 terminó escenarios de estrés dentro del tope (Sección~\in[sec:comparacion_lineales]).
 
 {\bf Mismos datos.} Solo se comparan instancias en las que los métodos
-resuelven exactamente los mismos datos. En la suite funcional, las
+resuelven exactamente los mismos datos. En la {\em suite} funcional, las
 heurísticas resuelven las instancias capturadas del Split
 (Sección~\in[sec:pruebas_funcionales]). En la de estrés, los cuatro métodos
 construyen cada escenario con la misma llamada al mismo generador y con los
@@ -559,7 +566,8 @@ cuatro: la 24b, que solo existe en el Split; la 30a, que no termina en
 ninguno de los dos (Sección~\in[sec:comparacion_lineales]); la 36c, que
 rechaza los datos antes de resolver, y la 37a, que verifica la espera
 voluntaria y se excluye para mantener la misma base que la comparación con
-las heurísticas. Quedan así 60 pares. En cada par se comparan el estado, el valor
+las heurísticas. Quedan así 60 pruebas, que suman 66 instancias, cada una
+un par comparable. En cada par se comparan el estado, el valor
 objetivo, con una tolerancia relativa de $10^{-6}$, y la solución (las
 rutas, la asignación y el orden de los lotes de cada {\em picker}). Comparar
 la solución permite distinguir los pares que llegan a la misma solución de
@@ -619,7 +627,7 @@ tiene referencia.
 \stopitemize
 Para resumir los tiempos y las brechas se usan medianas además de medias,
 porque sus distribuciones son muy asimétricas. Unas pocas instancias
-concentran los valores extremos, y en la suite funcional los tiempos dependen
+concentran los valores extremos, y en la {\em suite} funcional los tiempos dependen
 sobre todo de la compilación de los modelos.
 
 {\bf A igual tiempo.} En las comparaciones anteriores, cada método corre

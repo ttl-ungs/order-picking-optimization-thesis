@@ -3,12 +3,12 @@
 Este capítulo presenta los resultados de las pruebas definidas en el
 Capítulo~\in[Capitulo_5]. Primero se comparan los dos modelos lineales
 (Sección~\in[sec:comparacion_lineales]); después se muestra que las
-soluciones de las metaheurísticas son válidas (Sección~\in[sec:validez_resultados])
+soluciones de las heurísticas son válidas (Sección~\in[sec:validez_resultados])
 y se las compara con el modelo Split
 (Sección~\in[sec:comparacion_split_metaheuristicas]). Por último, la
 Sección~\in[sec:sintesis_resultados] resume los resultados. Todos
 los tiempos son de reloj, medidos en una misma máquina en las condiciones
-descriptas en la Sección~\in[sec:ejecucion].
+descritas en la Sección~\in[sec:ejecucion].
 
 %----------------------------------------------------------------------------------------
 \startsection[title={Comparación entre modelos lineales}, reference=sec:comparacion_lineales]
@@ -89,80 +89,84 @@ numeric w, h; w := 8cm; h := 8cm;
 drawarrow (0,0)--(w+0.4cm,0) withpen pencircle scaled 1pt;
 drawarrow (0,0)--(0,h+0.4cm) withpen pencircle scaled 1pt;
 draw (0.000cm,0.000cm)--(0.000cm,-0.120cm) withpen pencircle scaled .5pt;
-label.bot(textext("\tfx 0,1"), (0.000cm,-0.120cm));
-draw (2.667cm,0.000cm)--(2.667cm,-0.120cm) withpen pencircle scaled .5pt;
-label.bot(textext("\tfx 1"), (2.667cm,-0.120cm));
-draw (5.333cm,0.000cm)--(5.333cm,-0.120cm) withpen pencircle scaled .5pt;
-label.bot(textext("\tfx 10"), (5.333cm,-0.120cm));
+label.bot(textext("\tfx 0,01"), (0.000cm,-0.120cm));
+draw (2.000cm,0.000cm)--(2.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 0,1"), (2.000cm,-0.120cm));
+draw (4.000cm,0.000cm)--(4.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 1"), (4.000cm,-0.120cm));
+draw (6.000cm,0.000cm)--(6.000cm,-0.120cm) withpen pencircle scaled .5pt;
+label.bot(textext("\tfx 10"), (6.000cm,-0.120cm));
 draw (8.000cm,0.000cm)--(8.000cm,-0.120cm) withpen pencircle scaled .5pt;
 label.bot(textext("\tfx 100"), (8.000cm,-0.120cm));
 draw (0.000cm,0.000cm)--(-0.120cm,0.000cm) withpen pencircle scaled .5pt;
-label.lft(textext("\tfx 0,1"), (-0.120cm,0.000cm));
-draw (0.000cm,2.667cm)--(-0.120cm,2.667cm) withpen pencircle scaled .5pt;
-label.lft(textext("\tfx 1"), (-0.120cm,2.667cm));
-draw (0.000cm,5.333cm)--(-0.120cm,5.333cm) withpen pencircle scaled .5pt;
-label.lft(textext("\tfx 10"), (-0.120cm,5.333cm));
+label.lft(textext("\tfx 0,01"), (-0.120cm,0.000cm));
+draw (0.000cm,2.000cm)--(-0.120cm,2.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 0,1"), (-0.120cm,2.000cm));
+draw (0.000cm,4.000cm)--(-0.120cm,4.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 1"), (-0.120cm,4.000cm));
+draw (0.000cm,6.000cm)--(-0.120cm,6.000cm) withpen pencircle scaled .5pt;
+label.lft(textext("\tfx 10"), (-0.120cm,6.000cm));
 draw (0.000cm,8.000cm)--(-0.120cm,8.000cm) withpen pencircle scaled .5pt;
 label.lft(textext("\tfx 100"), (-0.120cm,8.000cm));
 label.bot(textext("Split, tiempo total (s, escala log.)"), (w/2,-0.85cm));
 label.lft(textext("Monolítico, tiempo total (s, escala log.)") rotated 90, (-1.25cm,h/2));
 draw (0.000cm,0.000cm)--(8.000cm,8.000cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
-fill fullcircle scaled 4pt shifted (1.107cm,0.921cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.149cm,0.946cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.249cm,0.873cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.273cm,0.866cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.087cm,0.749cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.346cm,1.368cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.402cm,1.207cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.254cm,0.823cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.021cm,0.824cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.229cm,0.803cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.175cm,0.899cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (4.232cm,7.037cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (4.187cm,7.036cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.202cm,1.020cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.638cm,1.872cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.329cm,1.058cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.226cm,0.769cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.119cm,1.096cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.393cm,0.182cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.407cm,1.154cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.050cm,0.855cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.854cm,4.541cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.099cm,0.987cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.069cm,0.896cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.463cm,1.097cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.213cm,0.915cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.872cm,0.779cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.661cm,5.305cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.683cm,4.536cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.731cm,3.388cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (2.114cm,3.145cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.254cm,4.560cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (2.199cm,4.671cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.736cm,4.762cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.590cm,1.118cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (2.151cm,1.866cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.654cm,1.502cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.466cm,1.315cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (2.061cm,2.022cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.135cm,0.921cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (0.972cm,-0.403cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.493cm,1.074cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.457cm,5.353cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.226cm,0.938cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.184cm,0.847cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.307cm,0.843cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.120cm,0.912cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.947cm,0.943cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.555cm,0.870cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (2.033cm,0.882cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (2.000cm,0.837cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.099cm,0.860cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.110cm,0.832cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (0.944cm,0.921cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (1.009cm,0.843cm) withcolor \MPcolor{darkblue};
-fill fullcircle scaled 4pt shifted (0.600cm,7.850cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.830cm,2.691cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.862cm,2.709cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.937cm,2.655cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.955cm,2.649cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.815cm,2.562cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.009cm,3.026cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.051cm,2.905cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.940cm,2.617cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.766cm,2.618cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.922cm,2.602cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.881cm,2.674cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (5.174cm,7.277cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (5.140cm,7.276cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.901cm,2.765cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.228cm,3.404cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.997cm,2.793cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.919cm,2.577cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.839cm,2.822cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.045cm,2.136cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.055cm,2.865cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.787cm,2.641cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.390cm,5.405cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.824cm,2.740cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.802cm,2.672cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.097cm,2.823cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.910cm,2.686cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.404cm,2.584cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.246cm,5.978cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.262cm,5.402cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.298cm,4.541cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.585cm,4.358cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.940cm,5.420cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.649cm,5.503cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.302cm,5.571cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.192cm,2.838cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.613cm,3.399cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.240cm,3.126cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.099cm,2.986cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.546cm,3.516cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.851cm,2.691cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.729cm,1.698cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.120cm,2.805cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.093cm,6.014cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.919cm,2.703cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.888cm,2.635cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.980cm,2.632cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.840cm,2.684cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.460cm,2.707cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.166cm,2.652cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.525cm,2.661cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (3.500cm,2.628cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.824cm,2.645cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.832cm,2.624cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.708cm,2.691cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.757cm,2.632cm) withcolor \MPcolor{darkblue};
+fill fullcircle scaled 4pt shifted (2.450cm,7.887cm) withcolor \MPcolor{darkblue};
 label.rt(textext("\tfx par resuelto"), (1.000cm,7.850cm));
 draw (0.300cm,7.430cm)--(0.900cm,7.430cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
 label.rt(textext("\tfx igual tiempo"), (1.000cm,7.430cm));
@@ -173,13 +177,14 @@ label.rt(textext("\tfx igual tiempo"), (1.000cm,7.430cm));
 \startsubsection[title={Escala}]
 
 Para analizar cómo se comportan los modelos a medida que crece la instancia,
-ambos modelos resolvieron una misma instancia del perfil realista (Cuadro~\in[tab:perfil_realista]) en
-grillas de 3×3 a 7×7, con 1 a 6 lotes y un tope de 10 minutos. En 4×4 la
-instancia es infactible y no se grafica. La Figura~\in[fig:res_lineales_escala]
+ambos modelos resolvieron instancias generadas con el perfil realista (Cuadro~\in[tab:perfil_realista]) en
+grillas de 3×3 a 7×7, con 2, 3, 4 y 6 lotes y un tope de 10 minutos. Con cada
+grilla y cada cantidad de lotes cambian también los {\em pickers}. En 4×4 las
+instancias son infactibles y no se grafican. La Figura~\in[fig:res_lineales_escala]
 muestra el resultado, y el Anexo~\in[Anexo_Relevamiento] presenta el mismo
 estudio desde el punto de vista del relevamiento.
 
-\placefigure[force][fig:res_lineales_escala]{Tiempo hasta probar el óptimo de una misma instancia del perfil realista, según la grilla y la cantidad de lotes, con un tope de 10 minutos (escala logarítmica, la misma en los dos paneles).}
+\placefigure[force][fig:res_lineales_escala]{Tiempo hasta probar el óptimo de las instancias del perfil realista, según la grilla y la cantidad de lotes, con un tope de 10 minutos (escala logarítmica, la misma en los dos paneles).}
 {\startcombination[2*1]
 {\startMPcode
 numeric w, h; w := 6.4cm; h := 6.5cm;
@@ -287,13 +292,16 @@ label.rt(textext("\tfx no termina (cortado al tope)"), (1.000cm,6.400cm));
 
 La diferencia entre los dos modelos no es solo de magnitud, sino también de
 la forma en que crecen sus tiempos. En el Split, las curvas crecen despacio:
-con hasta 4 lotes resuelve cualquier grilla en menos de 10 segundos. En el
+con hasta 4 lotes resuelve en menos de 10 segundos todas las grillas en las
+que se probó. En el
 monolítico, en cambio, crecen rápidamente: con 3 lotes pasa de 9 segundos en
 5×5 a 139 en 6×6, y no prueba el óptimo dentro del tope con 3 lotes en 7×7, 4
 lotes en 6×6 y 6 lotes en 5×5. En los puntos en que los dos prueban el
 óptimo, el monolítico tarda hasta 27 veces más (3 lotes en 6×6); en los que
-no lo prueba, al menos 71 veces más (4 lotes en 6×6, que el Split resuelve en
-8,4 segundos).
+no lo prueba, al menos 68 veces más con 4 lotes en 6×6 (que el Split resuelve
+en 8,4 segundos) y 59 veces más con 3 lotes en 7×7. Con 6 lotes en 5×5 el
+Split también tarda (218 segundos), y la diferencia es de al menos 2,6
+veces.
 
 La razón es estructural, como anticipaba el
 Cuadro~\in[tab:diferencias_modelos]. El \ac{mip} del monolítico crece con la
@@ -318,9 +326,11 @@ en pocos segundos.
 \stopplacetable
 
 Aumentar el tiempo disponible no cambia este resultado. Con un tope de 40
-minutos, el monolítico sigue sin probar el óptimo en esos puntos, ni en la instancia del escenario
-de estrés 04 resuelta con el peso de finalización de la exploración
-($W^{c} = 9$), como muestra el Cuadro~\in[tab:res_40min]. Encuentra
+minutos, el monolítico sigue sin probar el óptimo en dos de esos tres
+puntos (3 lotes en 7×7 y 4 lotes en 6×6), ni en la instancia del escenario
+de estrés 04 resuelta con el peso de finalización del relevamiento
+($W^{c} = 9$), como muestra el Cuadro~\in[tab:res_40min]. Con 6 lotes en
+5×5 lo prueba a los 32 minutos, unas 8 veces lo que tarda el Split. Encuentra
 soluciones muy buenas, a menos del 1~\% del óptimo, pero no puede demostrar
 que lo son, ya que su cota dual casi no avanza, y en la instancia del escenario 04
 informa un {\em gap} de optimalidad de 143,5~\% al cabo de 40 minutos,
@@ -351,22 +361,22 @@ después del otro.
 En las pruebas de estrés, el monolítico no termina ninguno de los 19
 escenarios dentro del tope de 40 minutos. El Split termina 9, ninguno en más de 15,1 minutos. Los
 escenarios que el Split tampoco termina son los del perfil realista con 8
-lotes o más (12 a 14 y 16 a 19), la grilla de 16×16 (08) y dos de los
-heredados (01 y 03). Son dos límites distintos: la Etapa~2 se encarece con
+lotes o más (12 a 14 y 16 a 19), la grilla de 16×16 (08), el almacén de
+100×100 (01) y el escenario con 40 lotes en un solo {\em picker} (03). Son dos límites distintos: la Etapa~2 se encarece con
 la cantidad de lotes y la Etapa~1, con el tamaño del almacén, como ya
 mostraba el relevamiento (Sección~\in[sec:relevamiento]).
 
 En estas pruebas, la Etapa~1 del Split se ejecutó repartida en seis
 procesos, y el monolítico en uno solo (Sección~\in[sec:ejecucion]). Esa
-diferencia no explica el resultado. El paralelismo reduce el tiempo de la
-Etapa~1 como mucho a la mitad (2,2 veces en una grilla de 13×13 y 1,9 en una
+diferencia no explica el resultado. El paralelismo divide el tiempo de la
+Etapa~1 por 2,2 como máximo (2,2 en una grilla de 13×13 y 1,9 en una
 de 14×14), y el Split no tardó más de 15,1 minutos en ningún escenario. Aun
-si todo su tiempo fuera el doble, terminaría esos 9 escenarios por debajo del
+si todo su tiempo fuera 2,2 veces mayor, terminaría esos 9 escenarios por debajo del
 tope de 40 minutos, en el que el monolítico no termina ninguno.
 
 En síntesis, las dos formulaciones alcanzan el mismo óptimo, pero solo el
 Split lo prueba a escala realista. Por eso, el Split es la referencia contra
-la que se comparan las metaheurísticas, y el monolítico queda como juez de la
+la que se comparan las heurísticas, y el monolítico queda como juez de la
 verificación de sus soluciones (Sección~\in[sec:validacion]).
 
 \stopsubsection
@@ -374,7 +384,7 @@ verificación de sus soluciones (Sección~\in[sec:validacion]).
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Validez de las soluciones de las metaheurísticas}, reference=sec:validez_resultados]
+\startsection[title={Validez de las soluciones de las heurísticas}, reference=sec:validez_resultados]
 
 Antes de comparar los objetivos, es necesario establecer que las soluciones
 de las heurísticas son factibles. Cada una se verificó contra el modelo monolítico
@@ -410,15 +420,14 @@ heurísticas no hacen. En el nivel~2, con los
 instantes fijos, el objetivo coincide con el informado. Esta diferencia es
 la misma que se analiza más adelante para esas instancias.
 
-Los ajustes del verificador (Anexo~\in[Anexo_Verificacion]) se usaron en
-pocos casos. En el caso 30a, el verificador quitó los 10 lotes vacíos. En el
-escenario de 100×100, resolvió sobre el subgrafo de las rutas, que tiene
-unas 1.500 de las 10.000 ubicaciones.
+En el caso 30a, el verificador quitó los 10 lotes vacíos
+(Anexo~\in[Anexo_Verificacion]). En el escenario de 100×100, resolvió sobre
+el subgrafo de las rutas, que tiene unas 1.400 de las 10.000 ubicaciones.
 
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Comparación entre el modelo Split y las metaheurísticas}, reference=sec:comparacion_split_metaheuristicas]
+\startsection[title={Comparación entre el modelo Split y las heurísticas}, reference=sec:comparacion_split_metaheuristicas]
 
 Esta sección compara HC y ACO con el modelo Split sobre las instancias
 comparables de la Sección~\in[sec:comparacion]: en estado, 67 instancias
@@ -474,8 +483,8 @@ escenarios.
 Además, HC casi no modifica las rutas que obtiene en la construcción inicial. En tres
 escenarios de estrés del perfil realista (grilla de 7×7 con 6 lotes y 3
 {\em pickers}, 7×7 con 10 lotes y 5 {\em pickers}, y 10×10 con 12 lotes y
-12 {\em pickers}), el movimiento 2-opt se eligió 86 veces y no generó ningún
-vecino. Esas iteraciones fueron entre el 26~\% y el 48~\% del total, según
+12 {\em pickers}), el movimiento 2-opt se eligió 86 veces en total, sumando los tres, y no
+generó ningún vecino. Esas iteraciones fueron entre el 26~\% y el 48~\% del total, según
 el escenario.
 
 Ninguna heurística queda por debajo de un óptimo probado del
@@ -582,13 +591,12 @@ Split, lo que confirma que toda la diferencia se explica por el tiempo ocioso in
 
 \startsubsection[title={Tiempos}, reference=sec:res_tiempos]
 
-En las pruebas funcionales, los tiempos se comparan sobre 35 de las 45
-instancias comparables en objetivo. El registro del Split guarda una fila por
-prueba y algunas pruebas resuelven más de una instancia, de modo que solo se
-conoce el tiempo de las instancias cuya prueba resuelve una sola. En la mediana, el Split tarda
-0,295 segundos, HC 0,061 y ACO 0,225, de modo que HC es 5,1 veces más rápido
-que el Split y ACO, 1,4 veces. HC fue más rápido que el Split en las 35
-instancias; ACO, en 24. En las 11 restantes, de alrededor de un segundo, ACO
+En las pruebas funcionales, los tiempos se comparan sobre las 45
+instancias comparables en objetivo. En la mediana, el Split tarda
+0,315 segundos, HC 0,067 y ACO 0,261. La mediana de los cocientes por
+instancia indica que HC es 5,0 veces más rápido que el Split y ACO, 1,2
+veces. HC fue más rápido que el Split en las 45
+instancias; ACO, en 28. En las 17 restantes, ACO
 ejecuta todas sus iteraciones aunque la instancia sea trivial. El
 Anexo~\in[Anexo_Resultados] muestra el detalle.
 
@@ -729,13 +737,12 @@ En los 9 escenarios que el Split resuelve, la mediana del cociente entre su
 tiempo y el de cada heurística es de 53,1 para HC y de 1,5 para ACO. HC
 resuelve todos los escenarios en menos de 5 segundos, salvo el 01, mientras
 que ACO, también salvo el 01, tarda entre 14 segundos y 6 minutos: en los escenarios que el Split resuelve, sus
-tiempos van de iguales a los del Split a 6 veces menores, según el escenario. El
+tiempos van de algo más que los del Split a 6 veces menores, según el escenario. El
 escenario de 100×100 (01) es el más costoso para las dos heurísticas: HC
 tarda 17 minutos, casi todos en construir la solución inicial, y ACO, 32,
 porque en ese tiempo completa solo dos iteraciones; las 60 completas
-llevarían unas 5 horas. En la grilla de 14×14, en cambio, una ejecución de
-ACO tarda unos 94 segundos
-(Sección~\in[sec:heur_limitaciones]).
+llevarían unas 5 horas, mientras que en la grilla de 14×14 una ejecución de
+ACO tarda unos 94 segundos.
 
 Las heurísticas no tienen los dos límites del Split
 (Sección~\in[sec:comparacion_lineales]), ya que resuelven los escenarios con 8 lotes
@@ -749,7 +756,7 @@ los del resto.
 La Figura~\in[fig:res_calidad_tiempo] reúne las dos medidas en los escenarios
 que el Split resuelve. Los tres métodos ocupan zonas distintas: el Split
 garantiza el óptimo con el mayor tiempo, ACO queda prácticamente en el óptimo
-con algo menos de tiempo, y HC resigna centésimas de punto porcentual de
+con algo menos de tiempo, y HC resigna hasta 0,21 puntos porcentuales de
 brecha a cambio de responder entre uno y dos órdenes de magnitud más rápido.
 Ninguno de los tres domina a los otros en las dos medidas a la vez.
 
@@ -882,9 +889,9 @@ En los cuatro escenarios restantes, el Split no llega a una solución. En el
 los lotes, y en el 11 rutea lotes que ningún {\em picker} habilitado para la cadena de
 frío puede tomar, así que la Etapa~2 no tiene una asignación factible.
 
-El monolítico solo obtiene una solución en el 04 y el 12, un 5,3 y un 10,5~\%
-peor que la de \ac{aco}. Salvo en el 01, los modelos lineales excedieron su
-presupuesto en a lo sumo 6~segundos. En el 01, el monolítico tardó
+El monolítico solo obtiene una solución en el 04 y el 12, y en ellos el
+objetivo de \ac{aco} es un 5,3 y un 10,5~\% menor que el suyo. Salvo en el 01, los modelos lineales excedieron su
+presupuesto en unos 6~segundos como máximo. En el 01, el monolítico tardó
 59~minutos, casi el doble de su presupuesto, porque el límite se aplica solo
 a la resolución de SCIP y no a la escritura de los datos ni a la compilación
 del modelo.
@@ -919,8 +926,9 @@ del modelo.
 
 \startsubsection[title={Nivel de servicio, memoria y convergencia}, reference=sec:res_memoria]
 
-{\bf Nivel de servicio.} En los escenarios heredados (01 a 03), ningún pedido
-llega a tiempo con ningún método, por la forma en que están construidos. En
+{\bf Nivel de servicio.} En los escenarios 01, 02 y 03, ningún pedido
+llega a tiempo con ningún método, porque sus fechas de entrega son
+imposibles de cumplir (Sección~\in[sec:escenarios_estres]). En
 el perfil realista, los tres métodos entregan todos los pedidos a tiempo,
 salvo en el escenario 11, donde la cadena de frío obliga a demorar algunos. El
 Split y ACO entregan a tiempo el 97,4~\% de los pedidos y HC, el 96,8~\%.
@@ -971,7 +979,7 @@ compararse entre ellas.
 %----------------------------------------------------------------------------------------
 \startsection[title={Síntesis de los resultados}, reference=sec:sintesis_resultados]
 
-Los cuatro modelos resuelven el mismo problema, con los mismos datos, las
+Los cuatro métodos resuelven el mismo problema, con los mismos datos, las
 mismas restricciones y el mismo objetivo. La única diferencia de modelado es
 el tiempo ocioso insertado, que los modelos lineales admiten como espera
 voluntaria y las heurísticas no; por eso, las instancias en las que el Split
@@ -991,7 +999,7 @@ capítulo pueden resumirse de la siguiente forma:
 	0,04~\%. HC falla el óptimo en 5 instancias de grilla y, en estrés, queda a
 	lo sumo a un 0,21~\%.
 	\item {\bf HC es el método más rápido}: en estrés, su tiempo es unas 53
-	veces menor que el del Split en la mediana. ACO tarda entre lo mismo que el
+	veces menor que el del Split en la mediana. ACO tarda entre algo más que el
 	Split y 6 veces menos, según el escenario.
 	\item {\bf Las heurísticas resuelven donde el Split no termina}: en los 10
 	escenarios de estrés sin referencia, las dos dan una solución válida, y ACO
@@ -999,8 +1007,8 @@ capítulo pueden resumirse de la siguiente forma:
 	\item {\bf A igual tiempo, las heurísticas aventajan a los modelos lineales}:
 	con el tiempo de HC, ningún modelo lineal obtiene una solución en estrés;
 	con el de ACO, el Split obtiene una en 15 de los 19 escenarios, cerca de
-	ACO en 7 de ellos, pero entre un 46 y un 58~\% peor en los de cuadrilla
-	grande, y el monolítico, solo en 2.
+	ACO en 7 de ellos, pero con un objetivo entre un 86 y un 141~\% mayor que
+	el de ACO en los de cuadrilla grande, y el monolítico, solo en 2.
 \stopitemize
 
 El Capítulo~\in[Capitulo_7] discute estos resultados y, a partir de ellos,

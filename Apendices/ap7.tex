@@ -12,7 +12,7 @@ declaran infactibles. Los casos corresponden a los del
 Anexo~\in[Anexo_Pruebas].
 
 \startplacetable[reference=tab:res_pares, location={here,split}, title={Pares resueltos por los dos modelos lineales: tiempo total, objetivo y diferencias en la solución del monolítico.}]
-	\bTABLE[split=repeat, align=middle, frame=on, width=fit]
+	\bTABLE[split=yes, align=middle, frame=on, width=fit]
 	\setupTABLE[row][1][background=color, backgroundcolor=darkgray, style=bold]
 	\bTABLEhead
 	\bTR \bTH Caso \eTH \bTH Monolítico (s) \eTH \bTH Split (s) \eTH \bTH Monolítico / Split \eTH \bTH Objetivo \eTH \bTH Solución del monolítico \eTH \eTR
@@ -57,7 +57,7 @@ Anexo~\in[Anexo_Pruebas].
 	\bTR \bTD 26c \eTD \bTD 0,366 \eTD \bTD 0,417 \eTD \bTD 0,88× \eTD \bTD 2.463,0 \eTD \bTD otra asignación \eTD \eTR
 	\bTR \bTD 26d·1 \eTD \bTD 0,311 \eTD \bTD 0,355 \eTD \bTD 0,88× \eTD \bTD 5.325,0 \eTD \bTD otras rutas y asignación \eTD \eTR
 	\bTR \bTD 26d·2 \eTD \bTD 0,573 \eTD \bTD 0,593 \eTD \bTD 0,97× \eTD \bTD 13.479,0 \eTD \bTD otras rutas y asignación \eTD \eTR
-	\bTR \bTD 27 \eTD \bTD 0,221 \eTD \bTD 0,266 \eTD \bTD 0,83× \eTD \bTD 58,0 \eTD \bTD otra asignación \eTD \eTR
+	\bTR \bTD 27 \eTD \bTD 0,221 \eTD \bTD 0,266 \eTD \bTD 0,83× \eTD \bTD 58,05 \eTD \bTD otra asignación \eTD \eTR
 	\bTR \bTD 28·1 \eTD \bTD 0,071 \eTD \bTD 0,231 \eTD \bTD 0,31× \eTD \bTD 20,0 \eTD \bTD igual \eTD \eTR
 	\bTR \bTD 28·2 \eTD \bTD 0,253 \eTD \bTD 0,363 \eTD \bTD 0,70× \eTD \bTD 0,0 \eTD \bTD igual \eTD \eTR
 	\bTR \bTD 29 \eTD \bTD 10,170 \eTD \bTD 0,352 \eTD \bTD 28,90× \eTD \bTD 327,0 \eTD \bTD otras rutas y asignación \eTD \eTR
@@ -98,10 +98,10 @@ Anexo~\in[Anexo_Pruebas].
 \stopsection
 
 %----------------------------------------------------------------------------------------
-\startsection[title={Split contra metaheurísticas}]
+\startsection[title={Split contra heurísticas}]
 
 La Figura~\in[fig:res_funcional_tiempos] compara el tiempo total del Split y
-de cada heurística en las 35 instancias funcionales con tiempo conocido
+de cada heurística en las 45 instancias funcionales comparables en objetivo
 (Sección~\in[sec:comparacion_split_metaheuristicas]). Los
 Cuadros~\in[tab:res_sla] y~\in[tab:res_convergencia] y la
 Figura~\in[fig:res_memoria] detallan el nivel de servicio, la convergencia y
@@ -131,7 +131,7 @@ label.lft(textext("\tfx 10"), (-0.120cm,8.000cm));
 label.bot(textext("Split, tiempo total (s, escala log.)"), (w/2,-0.85cm));
 label.lft(textext("Heurística, tiempo total (s, escala log.)") rotated 90, (-1.25cm,h/2));
 draw (0.000cm,0.000cm)--(8.000cm,8.000cm) withpen pencircle scaled 1.5pt withcolor \MPcolor{blueline} dashed evenly;
-fill fullcircle scaled 4pt shifted (3.815cm,2.463cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.815cm,2.464cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.915cm,2.032cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.939cm,2.043cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.753cm,2.196cm) withcolor \MPcolor{greenline};
@@ -145,6 +145,8 @@ fill fullcircle scaled 4pt shifted (3.869cm,2.266cm) withcolor \MPcolor{greenlin
 fill fullcircle scaled 4pt shifted (4.304cm,2.537cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.996cm,2.082cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.893cm,2.057cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.059cm,2.498cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.073cm,2.586cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (4.521cm,2.543cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.766cm,1.967cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.736cm,2.326cm) withcolor \MPcolor{greenline};
@@ -153,9 +155,17 @@ fill fullcircle scaled 4pt shifted (3.879cm,1.884cm) withcolor \MPcolor{greenlin
 fill fullcircle scaled 4pt shifted (4.539cm,2.378cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (4.328cm,2.202cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (4.349cm,2.245cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.398cm,2.282cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.781cm,2.270cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.921cm,2.359cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.866cm,2.494cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (4.403cm,2.319cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (4.321cm,2.291cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.133cm,2.466cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.728cm,2.754cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.802cm,1.976cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.639cm,2.042cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (4.160cm,2.505cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.851cm,2.081cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.974cm,2.175cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (4.222cm,1.936cm) withcolor \MPcolor{greenline};
@@ -166,12 +176,12 @@ fill fullcircle scaled 4pt shifted (3.765cm,1.826cm) withcolor \MPcolor{greenlin
 fill fullcircle scaled 4pt shifted (3.776cm,2.092cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.611cm,1.950cm) withcolor \MPcolor{greenline};
 fill fullcircle scaled 4pt shifted (3.676cm,1.807cm) withcolor \MPcolor{greenline};
+fill fullcircle scaled 4pt shifted (3.815cm,4.043cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.915cm,4.193cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.939cm,4.019cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.753cm,3.913cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.920cm,3.396cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.687cm,2.965cm) withcolor \MPcolor{redline};
-fill fullcircle scaled 4pt shifted (3.815cm,4.043cm) withcolor \MPcolor{redline};
-fill fullcircle scaled 4pt shifted (3.915cm,4.193cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.896cm,3.330cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.842cm,3.776cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (6.898cm,5.711cm) withcolor \MPcolor{redline};
@@ -180,6 +190,8 @@ fill fullcircle scaled 4pt shifted (3.869cm,4.370cm) withcolor \MPcolor{redline}
 fill fullcircle scaled 4pt shifted (4.304cm,5.346cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.996cm,3.630cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.893cm,3.842cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.059cm,3.856cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.073cm,3.933cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (4.521cm,5.484cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.766cm,3.436cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.736cm,3.687cm) withcolor \MPcolor{redline};
@@ -188,9 +200,17 @@ fill fullcircle scaled 4pt shifted (3.879cm,3.201cm) withcolor \MPcolor{redline}
 fill fullcircle scaled 4pt shifted (4.539cm,2.705cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (4.328cm,5.310cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (4.349cm,5.487cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.398cm,5.605cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.781cm,5.397cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.921cm,5.471cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.866cm,5.389cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (4.403cm,5.409cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (4.321cm,5.315cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.133cm,5.285cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.728cm,5.363cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.802cm,3.533cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (3.639cm,3.198cm) withcolor \MPcolor{redline};
+fill fullcircle scaled 4pt shifted (4.160cm,3.166cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.851cm,3.604cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (3.974cm,3.438cm) withcolor \MPcolor{redline};
 fill fullcircle scaled 4pt shifted (4.222cm,2.706cm) withcolor \MPcolor{redline};

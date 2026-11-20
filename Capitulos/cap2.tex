@@ -197,6 +197,13 @@ programaciones sin tiempo ocioso insertado.
 %----------------------------------------------------------------------------------------
 \startsection[title={Hill Climbing}, reference=sec:marco_hc]
 
+Una heurística es un procedimiento que busca una buena solución en un tiempo
+razonable, sin garantizar que sea óptima, y que en general se diseña para un
+problema particular. Una metaheurística, en cambio, es una estrategia general
+de búsqueda que guía a heurísticas subordinadas y que puede aplicarse, con
+pocas adaptaciones, a problemas distintos \cite[talbi2009metaheuristics].
+\ac{hc} y \ac{aco}, que se presentan a continuación, son metaheurísticas.
+
 Hill Climbing, también llamado búsqueda local, descenso o mejora iterativa,
 es la metaheurística más antigua y sencilla. Pertenece a la familia de las
 metaheurísticas basadas en una sola solución, que parten de una solución y la
@@ -430,18 +437,21 @@ optimización conjunta de cuatro decisiones: qué pedidos forman cada lote
 y qué ruta sigue en cada uno. Los lotes se forman respetando la capacidad del
 carro, y la ruta de cada lote parte de un depósito inicial, termina en un
 depósito final y pasa a lo sumo una vez por cada ubicación. Los {\em subtours} se
-eliminan con un flujo de tipo Gavish y Graves (Sección~\in[sec:marco_mip])
-acotado por la capacidad del carro, y la secuencia de cada operario se modela
+eliminan con restricciones de flujo acotadas por la capacidad del carro, y la secuencia de cada operario se modela
 asignando cada lote a una posición numerada de su agenda. El objetivo combina
 la suma de los tiempos de finalización con una suma ponderada de la demora y
 el adelanto de los pedidos, ya que preparar un pedido demasiado pronto ocupa
-espacio en el almacén sin necesidad.
+espacio en el almacén sin necesidad. En su caso de estudio usan $w_1 = 1$, es
+decir, priorizan la finalización de los lotes.
 
 Para reducir la complejidad, los autores proponen también un modelo
 simplificado sin las restricciones de ruteo, que recibe como datos todos los
 lotes factibles, cada uno con la distancia de una ruta construida con la
 heurística del vecino más cercano. Sobre un caso real, su propuesta reduce el
-tiempo de picking en un 57\% respecto de preparar los pedidos de a uno.
+tiempo de picking en un 57\% respecto de preparar los pedidos de a uno. Esa
+cifra suma el recorrido y la preparación del recorrido ({\em setup}),
+considera un solo operario y no descuenta el clasificado posterior de los
+pedidos que exige el loteo, del que depende el ahorro.
 
 En cuanto a los métodos de resolución, Chen et al.
 \cite[chen2013antcolony] proponen un algoritmo de ruteo basado en \ac{aco}
@@ -463,9 +473,12 @@ dos características presentes en la operación real, por lo que aquí se
 extiende su formulación para incorporarlas. La formación de los lotes, en
 cambio, que ese modelo también decide, aquí se toma como dato. En segundo lugar, los propios
 autores señalan que sus dos modelos lineales resultaron demasiado complejos
-para resolverse sobre el caso de estudio, por lo que recurren a una
+para resolverse sobre el caso de estudio: solo los resuelven sobre un
+problema pequeño de prueba. Sobre el caso real recurren a una
 heurística constructiva por fecha de entrega más temprana, mejorada con
-búsqueda local iterada, sin poder contrastar sus resultados con el óptimo. En este trabajo, en cambio, los modelos lineales
+búsqueda local iterada, y la mejor solución que informan ({\em minimum
+solution}) es la mejor entre sus variantes heurísticas, sin un óptimo con que
+contrastarla. En este trabajo, en cambio, los modelos lineales
 resuelven hasta el óptimo las instancias de menor tamaño, y eso permite
 medir directamente cuánto se alejan del óptimo las soluciones de las
 heurísticas.
