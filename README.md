@@ -3,9 +3,8 @@
 Tesina de la Licenciatura en Sistemas, Instituto de Industria (IDEI), Universidad Nacional de General Sarmiento (UNGS).
 
 - **Autoras:** Ximena Ebertz y Lucía Soria
-- **Supervisor:** Enrique Fernández
 - **PDF:** [ebertz-soria-2026-optimizacion-picking-ruteo.pdf](ebertz-soria-2026-optimizacion-picking-ruteo.pdf)
-- **Código de los modelos y de las pruebas:** [ttl-ungs/order-picking-optimization](https://github.com/ttl-ungs/order-picking-optimization)
+- **Código de los modelos y de las pruebas:** [ttl-ungs/order-picking-optimization](https://github.com/ttl-ungs/order-picking-optimization), versión del tag [`thesis/submission`](https://github.com/ttl-ungs/order-picking-optimization/tree/thesis/submission) (commit `f1851ce`)
 
 > *English:* ConTeXt source of our undergraduate thesis on the order picking problem: assigning batches of orders to pickers with heterogeneous speeds, sequencing them and routing each batch through the warehouse, under a cold-chain limit. Two mixed-integer models (monolithic and a two-stage Split) are compared with Hill Climbing and Ant Colony Optimization. The thesis is written in Spanish.
 
