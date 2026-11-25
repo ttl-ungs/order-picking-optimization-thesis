@@ -488,8 +488,15 @@ Sección~\in[sec:mismo_optimo] muestra que esto ocurre en la práctica.
 
 \startsubsection[title={Etapa 1: ruteo de cada lote}, reference=sec:split_etapa1]
 
-{\bf Variables.} $z_{ijb}$, $q_{ijb}$ y $r_b$, con el mismo
-significado que en el modelo monolítico.
+{\bf Variables.} Las mismas de ruteo del modelo monolítico, con el mismo
+significado:
+\startformula
+	\startalign[n=2, align={right,left}]
+		\NC z_{ijb} \in \{0,1\} \NC \quad \forall b \in \mathcal{B},\; (i,j) \in \mathcal{E} \NR
+		\NC q_{ijb} \geq 0 \NC \quad \forall b \in \mathcal{B},\; (i,j) \in \mathcal{E} \NR
+		\NC r_b \geq 0 \NC \quad \forall b \in \mathcal{B} \NR
+	\stopalign
+\stopformula
 
 {\bf Función objetivo.} Minimizar el tiempo total de ruta:
 \startplaceformula[reference=eq:split_objetivo1]
