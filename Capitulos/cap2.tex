@@ -212,7 +212,7 @@ de búsqueda que guía a heurísticas subordinadas y que puede aplicarse, con
 pocas adaptaciones, a problemas distintos \cite[talbi2009metaheuristics].
 \ac{hc} y \ac{aco}, que se presentan a continuación, son metaheurísticas.
 
-Hill Climbing, también llamado búsqueda local, descenso o mejora iterativa,
+Hill Climbing, también llamado búsqueda local o mejora iterativa,
 es la metaheurística más antigua y sencilla. Pertenece a la familia de las
 metaheurísticas basadas en una sola solución, que parten de una solución y la
 mejoran paso a paso, moviéndose en cada paso a una solución vecina
@@ -443,13 +443,14 @@ El modelo de referencia de esta tesina es el propuesto por Coruzzolo et al.
 optimización conjunta de cuatro decisiones: qué pedidos forman cada lote
 ({\em batching}), a qué operario se asigna cada lote, en qué orden los ejecuta
 y qué ruta sigue en cada uno. Los lotes se forman respetando la capacidad del
-carro, y la ruta de cada lote parte de un depósito inicial, termina en un
-depósito final y pasa a lo sumo una vez por cada ubicación. Los {\em subtours} se
-eliminan con restricciones de flujo acotadas por la capacidad del carro, y la secuencia de cada operario se modela
+{\em picker}, y la ruta de cada lote parte de una locación inicial, termina en una
+locación final y pasa a lo sumo una vez por cada ubicación. Los {\em subtours} se
+eliminan con restricciones de flujo acotadas por la capacidad del {\em picker},
+y la secuencia de cada operario se modela
 asignando cada lote a una posición numerada de su agenda. El objetivo combina
 la suma de los tiempos de finalización con una suma ponderada de la demora y
 el adelanto de los pedidos, ya que preparar un pedido demasiado pronto ocupa
-espacio en el almacén sin necesidad. En su caso de estudio usan $w_1 = 1$, es
+espacio en el depósito sin necesidad. En su caso de estudio usan $w_1 = 1$, es
 decir, priorizan la finalización de los lotes.
 
 Para reducir la complejidad, los autores proponen también un modelo
@@ -467,7 +468,7 @@ para dos operarios de picking que considera explícitamente la congestión
 entre ellos, un fenómeno relevante para cualquier heurística de ruteo con
 múltiples operarios trabajando en simultáneo. Lesch et al.
 \cite[lesch2023optimizing] combinan un algoritmo genético para la asignación
-de {\em storage} con \ac{aco} para el ruteo de picking en almacenes con
+de {\em storage} con \ac{aco} para el ruteo de picking en depósitos con
 entrepiso, mostrando que ambos problemas están interrelacionados y que
 optimizarlos de forma conjunta mejora el resultado global. Alaya et al.
 \cite[alaya2007antcolony] formalizan extensiones de \ac{aco} a problemas

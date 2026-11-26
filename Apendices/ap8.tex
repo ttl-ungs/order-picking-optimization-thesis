@@ -21,7 +21,7 @@ Sección~\in[sec:heur_rutas]. El pulido y la búsqueda de respaldo se usan tambi
 \startsubsection[title={Construcciones candidatas}, reference=sec:anexo_rutas_construcciones]
 
 \startitemize[n]
-	\item {\bf Vecino más cercano.} Desde el depósito, se va repetidamente a
+	\item {\bf Vecino más cercano.} Desde la locación inicial, se va repetidamente a
 	la ubicación pendiente más cercana por el camino más corto (algoritmo de
 	Dijkstra) que no pasa por ubicaciones ya visitadas ni por
 	$v_{\text{end}}$. Las ubicaciones requeridas por las que se pasa en el
@@ -53,7 +53,7 @@ Sección~\in[sec:heur_rutas]. El pulido y la búsqueda de respaldo se usan tambi
 	ubicación pendiente debe estar en algún camino simple entre la ubicación
 	elegida y $v_{\text{end}}$ que no pase por lo ya recorrido. Esto se
 	comprueba con las componentes biconexas del grafo no dirigido
-	subyacente, de modo que, en el grafo dirigido del almacén, es solo una
+	subyacente, de modo que, en el grafo dirigido del depósito, es solo una
 	condición necesaria, y la construcción todavía puede trabarse. Cuando ninguna candidata la cumple, se deshace el
 	último paso y se prueba otra ubicación en su lugar, con un máximo de 30
 	retrocesos. Las construcciones alternan entre el grafo original y el
@@ -167,7 +167,7 @@ valores guardados se actualizan únicamente cuando el vecino es aceptado.
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Movimiento 2-opt de \ac{hc}}, reference=sec:anexo_2opt]
 
-Como el grafo del almacén es dirigido, no toda inversión de un tramo de la
+Como el grafo del depósito es dirigido, no toda inversión de un tramo de la
 ruta es posible. Se descartan las inversiones que usarían un arco que no
 existe en ese sentido, o en las que falta alguno de los dos nuevos arcos de
 unión. Entre

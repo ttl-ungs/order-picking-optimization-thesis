@@ -14,7 +14,7 @@ descritas en la Sección~\in[sec:ejecucion].
 \startsection[title={Comparación entre modelos lineales}, reference=sec:comparacion_lineales]
 
 Esta sección compara el modelo monolítico con el Split en tres situaciones:
-las pruebas funcionales, una misma instancia del perfil realista en almacenes
+las pruebas funcionales, una misma instancia del perfil realista en depósitos
 de tamaño creciente y las pruebas de estrés. La comparación sigue las reglas
 de la Sección~\in[sec:comparacion].
 
@@ -364,9 +364,9 @@ después del otro.
 En las pruebas de estrés, el monolítico no termina ninguno de los 19
 escenarios dentro del tope de 40 minutos. El Split termina 9, ninguno en más de 15,1 minutos. Los
 escenarios que el Split tampoco termina son los del perfil realista con 8
-lotes o más (12 a 14 y 16 a 19), la grilla de 16×16 (08), el almacén de
+lotes o más (12 a 14 y 16 a 19), la grilla de 16×16 (08), el depósito de
 100×100 (01) y el escenario con 40 lotes en un solo {\em picker} (03). Son dos límites distintos: la Etapa~2 se encarece con
-la cantidad de lotes y la Etapa~1, con el tamaño del almacén, como ya
+la cantidad de lotes y la Etapa~1, con el tamaño del depósito, como ya
 mostraba el relevamiento (Sección~\in[sec:relevamiento]).
 
 En estas pruebas, la Etapa~1 del Split se ejecutó repartida en seis

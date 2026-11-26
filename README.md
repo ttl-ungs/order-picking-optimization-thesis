@@ -10,7 +10,7 @@ Tesina de la Licenciatura en Sistemas, Instituto de Industria (IDEI), Universida
 
 ## Resumen
 
-El trabajo aborda el problema de preparación de pedidos (OPP): asignar lotes de pedidos a operarios, decidir en qué orden los ejecuta cada uno y armar la ruta de recolección en el almacén, minimizando los instantes de finalización y las penalidades por adelanto o demora. Se formula un modelo de programación lineal entera mixta (el *monolítico*), con velocidades distintas entre operarios y restricciones de cadena de frío, y se lo descompone en dos etapas (el modelo *Split*). Para instancias más grandes se desarrollan dos metaheurísticas, *Hill Climbing* y *Ant Colony Optimization*, y los cuatro métodos se comparan sobre 38 casos funcionales y 19 escenarios de estrés.
+El trabajo aborda el problema de preparación de pedidos (OPP): asignar lotes de pedidos a operarios, decidir en qué orden los ejecuta cada uno y armar la ruta de recolección en el depósito, minimizando los instantes de finalización y las penalidades por adelanto o demora. Se formula un modelo de programación lineal entera mixta (el *monolítico*), con velocidades distintas entre operarios y restricciones de cadena de frío, y se lo descompone en dos etapas (el modelo *Split*). Para instancias más grandes se desarrollan dos metaheurísticas, *Hill Climbing* y *Ant Colony Optimization*, y los cuatro métodos se comparan sobre 38 casos funcionales y 19 escenarios de estrés.
 
 ## Compilar
 

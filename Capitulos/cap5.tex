@@ -60,7 +60,7 @@ Se definieron 38 casos de prueba. Los casos se diseñaron uno por uno para
 ejercitar una regla concreta del problema, a diferencia de los escenarios de
 estrés, que surgen de un relevamiento sistemático
 (Sección~\in[sec:relevamiento]). Cada caso genera una instancia,
-con un almacén y un conjunto de pedidos, lotes y {\em pickers}, la resuelve y 
+con un depósito y un conjunto de pedidos, lotes y {\em pickers}, la resuelve y 
 compara el resultado con el esperado. Un caso puede agrupar varias pruebas sobre
 variantes de una misma instancia; cada una se distingue con una letra. Si
 una prueba resuelve más de una instancia, cada instancia se indica con un
@@ -82,7 +82,7 @@ modelos y se construyen a partir de las mismas instancias.
 	\item {\bf Asignación y secuencia}: carga repartida entre los
 	{\em pickers} y lotes de un mismo {\em picker} sin superposición en el
 	tiempo (01, 05, 10, 13 y 14).
-	\item {\bf Datos de entrada}: capacidad del carro (25a, 25d, 25f, 30 y 32),
+	\item {\bf Datos de entrada}: capacidad del {\em picker} (25a, 25d, 25f, 30 y 32),
 	pedidos asignados a más de un lote (31) y velocidades no positivas (36c).
 	\item {\bf Fechas de entrega y pesos del objetivo}: adelanto, demora y
 	elección de la ruta según la fecha de entrega (06, 19b, 22, 25e, 26b, 26d,
@@ -108,7 +108,7 @@ tres causas, que conviene distinguir porque no se detectan en el mismo
 momento:
 \startitemize
 	\item {\bf Datos de entrada inválidos}, que se detectan antes de resolver:
-	lotes que superan la capacidad del carro (25a, 25d, 30b y 32) y un pedido
+	lotes que superan la capacidad del {\em picker} (25a, 25d, 30b y 32) y un pedido
 	asignado a más de un lote (31a).
 	\item {\bf Rutas imposibles}, que detecta el resolvedor: una ubicación
 	requerida inalcanzable (21 y 26a) o una ruta que debería repetir una
@@ -166,11 +166,11 @@ fueron los siguientes:
 \startitemize
 	\item {\bf Qué limita al modelo Split.} Solo dos dimensiones impidieron la
 	resolución, cada una en una etapa distinta: la cantidad de lotes encarece
-	la Etapa~2 y el tamaño del almacén, la Etapa~1. La cantidad de pedidos por
+	la Etapa~2 y el tamaño del depósito, la Etapa~1. La cantidad de pedidos por
 	lote, en cambio, no tuvo un impacto significativo. Esta separación permite
 	elegir qué etapa se pone bajo presión en cada escenario.
 	\item {\bf Perfil realista.} Para que las instancias se parecieran a un
-	almacén real, se adoptaron pesos levemente distintos según la dirección
+	depósito real, se adoptaron pesos levemente distintos según la dirección
 	del desplazamiento y dos bandas de velocidad para los {\em pickers}, que
 	resultaron el cambio más costoso para la Etapa~2. Se fijaron 26 pedidos
 	por lote y 6 lotes para 3 {\em pickers}, de modo que cada uno ejecute dos
@@ -178,7 +178,7 @@ fueron los siguientes:
 	$W^{c} = 27$, uno más que la cantidad de pedidos por lote, para que la
 	espera voluntaria (Sección~\in[sec:espera_voluntaria]) nunca convenga y los
 	objetivos de los modelos lineales y de las heurísticas sean comparables.
-	\item {\bf Tamaño del almacén.} Con el perfil fijo, se buscaron las
+	\item {\bf Tamaño del depósito.} Con el perfil fijo, se buscaron las
 	grillas que llevan al Split a resolver en un rango de 10 a 20 minutos. En
 	la grilla de 7×7 casi todo el tiempo corresponde a la Etapa~2; a partir
 	de 13×13 domina la Etapa~1, y en 15×15 la Etapa~1 superó el rango
@@ -212,7 +212,7 @@ instancias vecinas, como muestran los pesos asimétricos de la grilla
 A partir de los resultados del relevamiento se definieron los escenarios de
 estrés. Cada escenario
 pone a prueba un aspecto particular del problema, como el tamaño o la forma
-del almacén, la cantidad de lotes o la de {\em pickers}. Los escenarios se
+del depósito, la cantidad de lotes o la de {\em pickers}. Los escenarios se
 ubicaron \quotation{en la frontera} de lo que los modelos lineales pueden
 resolver en un tiempo aceptable, por lo que se espera que estos no resuelvan
 todas las instancias y que las heurísticas sí puedan hacerlo en un tiempo
@@ -222,7 +222,7 @@ El Cuadro~\in[tab:escenarios_estres] lista los escenarios, agrupados según el
 aspecto que ponen a prueba. Los escenarios 04 a 19 usan el perfil realista
 surgido del relevamiento, cuyos parámetros resume el
 Cuadro~\in[tab:perfil_realista], y cada grupo pone a prueba un aspecto: el
-tamaño del almacén (04 a 08), su forma (09), la agenda de los {\em pickers}
+tamaño del depósito (04 a 08), su forma (09), la agenda de los {\em pickers}
 (10, 11 y 15) y el tamaño de la cuadrilla (12 a 14 y 16 a 19). En este
 último grupo, los escenarios 12 a 14 parten de la grilla de 7×7 y los 16 a
 19, de la de 10×10. La cadena de
@@ -232,7 +232,7 @@ ese tiempo.
 
 La última columna del cuadro indica qué etapa del modelo Split pone bajo
 presión cada escenario, según lo que encarece a cada una
-(Sección~\in[sec:relevamiento]): el tamaño y la forma del almacén cargan la
+(Sección~\in[sec:relevamiento]): el tamaño y la forma del depósito cargan la
 Etapa~1, y la cantidad de lotes y de {\em pickers}, la Etapa~2. El 04 es la
 base del perfil realista y no presiona ninguna en particular. En el 11, la
 grilla de 13×13 carga la Etapa~1 y la cadena de frío actúa sobre la
@@ -246,14 +246,14 @@ Etapa~2, que decide qué {\em picker} puede ejecutar cada lote.
 	\bTR \bTH Parámetro \eTH \bTH Valor \eTH \eTR
 	\bTR \bTD Agenda base \eTD \bTD 6 lotes y 3 {\em pickers} \eTD \eTR
 	\bTR \bTD Pedidos \eTD \bTD 26 por lote, de 5 unidades cada uno; cada pedido en una ubicación elegida al azar (semilla 20260922) \eTD \eTR
-	\bTR \bTD Grilla \eTD \bTD Pesos 4 y 5 según la dirección; depósito y punto de entrega en esquinas opuestas \eTD \eTR
+	\bTR \bTD Grilla \eTD \bTD Pesos 4 y 5 según la dirección; locación inicial y locación final en esquinas opuestas \eTD \eTR
 	\bTR \bTD Velocidades \eTD \bTD Dos bandas, 0,8 y 1,2, alternadas entre los {\em pickers} \eTD \eTR
 	\bTR \bTD Tiempos \eTD \bTD $T^{\text{setup}} = T^{\text{pick}} = 1$, $T^{\text{travel}} = 0\mathord{,}5$ y $S_i = 0$, de modo que $F_b = 131$ \eTD \eTR
 	\bTR \bTD Fechas de entrega \eTD \bTD Repartidas entre el 60\% y el 140\% de una estimación de la duración de la operación \eTD \eTR
 	\bTR \bTD Pesos del objetivo \eTD \bTD $W^{c} = 27$ y $W^{\text{pen}} = W^{e} = W^{t} = 1$ \eTD \eTR
 	\bTR \bTD Cadena de frío \eTD \bTD $T^{\text{cold}} = 10^{9}$ (inactiva), salvo en el escenario 11 ($T^{\text{cold}} = 280$) \eTD \eTR
 	\bTR \bTD Constante $M$ \eTD \bTD $10^{6}$ \eTD \eTR
-	\bTR \bTD Capacidad del carro \eTD \bTD 1,5 veces la carga de un lote, por lo que nunca restringe \eTD \eTR
+	\bTR \bTD Capacidad del {\em picker} \eTD \bTD 1,5 veces la carga de un lote, por lo que nunca restringe \eTD \eTR
 	\eTABLE
 \stopplacetable
 
@@ -278,17 +278,17 @@ cada lote tenga un {\em picker} asignado y que los lotes de un mismo
 	\setupTABLE[column][2][width=6cm, align=flushleft]
 	\bTR \bTH Caso \eTH \bTH Qué se prueba \eTH \bTH Lotes \eTH \bTH {\em Pickers} \eTH \bTH Pedidos \eTH \bTH Grilla \eTH \bTH Etapa \eTH \eTR
 	\bTR \bTD[nc=7, style=bold, align=flushleft] Escenarios sin cadena de frío activa \eTD \eTR
-	\bTR \bTD 01 \eTD \bTD Almacén muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \bTD 1 y 2 \eTD \eTR
+	\bTR \bTD 01 \eTD \bTD Depósito muy grande, un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 30 \eTD \bTD 30 \eTD \bTD 750 \eTD \bTD 100×100 \eTD \bTD 1 y 2 \eTD \eTR
 	\bTR \bTD 02 \eTD \bTD Un lote por {\em picker}, todos los pedidos atrasados \eTD \bTD 10 \eTD \bTD 10 \eTD \bTD 100 \eTD \bTD 10×10 \eTD \bTD 2 \eTD \eTR
 	\bTR \bTD 03 \eTD \bTD Un solo {\em picker} con 40 lotes, todos los pedidos atrasados \eTD \bTD 40 \eTD \bTD 1 \eTD \bTD 320 \eTD \bTD 7×7 \eTD \bTD 2 \eTD \eTR
-	\bTR \bTD[nc=7, style=bold, align=flushleft] Tamaño del almacén \eTD \eTR
-	\bTR \bTD 04 \eTD \bTD Perfil realista en un almacén chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \bTD -- \eTD \eTR
-	\bTR \bTD 05 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \bTD 1 \eTD \eTR
-	\bTR \bTD 06 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \bTD 1 \eTD \eTR
-	\bTR \bTD 07 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \bTD 1 \eTD \eTR
-	\bTR \bTD 08 \eTD \bTD Igual que 04, en un almacén más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \bTD 1 \eTD \eTR
-	\bTR \bTD[nc=7, style=bold, align=flushleft] Forma del almacén \eTD \eTR
-	\bTR \bTD 09 \eTD \bTD Almacén alargado: efecto de la forma del almacén \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD[nc=7, style=bold, align=flushleft] Tamaño del depósito \eTD \eTR
+	\bTR \bTD 04 \eTD \bTD Perfil realista en un depósito chico \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \bTD -- \eTD \eTR
+	\bTR \bTD 05 \eTD \bTD Igual que 04, en un depósito más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD 06 \eTD \bTD Igual que 04, en un depósito más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 14×14 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD 07 \eTD \bTD Igual que 04, en un depósito más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 15×15 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD 08 \eTD \bTD Igual que 04, en un depósito más grande \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 16×16 \eTD \bTD 1 \eTD \eTR
+	\bTR \bTD[nc=7, style=bold, align=flushleft] Forma del depósito \eTD \eTR
+	\bTR \bTD 09 \eTD \bTD Depósito alargado: efecto de la forma del depósito \eTD \bTD 6 \eTD \bTD 3 \eTD \bTD 156 \eTD \bTD 8×21 \eTD \bTD 1 \eTD \eTR
 	\bTR \bTD[nc=7, style=bold, align=flushleft] Agenda de los {\em pickers} \eTD \eTR
 	\bTR \bTD 10 \eTD \bTD Más peso en la agenda: ruteo barato y 4 {\em pickers} \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 7×7 \eTD \bTD 2 \eTD \eTR
 	\bTR \bTD 11 \eTD \bTD Cadena de frío activa: solo los {\em pickers} rápidos pueden ejecutar los lotes \eTD \bTD 6 \eTD \bTD 4 \eTD \bTD 156 \eTD \bTD 13×13 \eTD \bTD 1 y 2 \eTD \eTR

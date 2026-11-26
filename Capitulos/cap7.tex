@@ -20,7 +20,7 @@ el problema abordado en esta tesina es más amplio en
 algunos aspectos pero más acotado en otro. Es más amplio porque incorpora la
 velocidad heterogénea entre {\em pickers}, la cadena de frío y un tiempo de
 servicio en cada ubicación, y es más acotado porque no se
-decide el loteo, y la capacidad del carro se verifica antes de resolver en
+decide el loteo, y la capacidad del {\em picker} se verifica antes de resolver en
 lugar de formar parte del modelo (Capítulo~\in[Capitulo_3]). Cuando las
 velocidades son iguales, la cadena de frío no restringe y no hay tiempos de
 servicio, los dos modelos lineales se reducen al de referencia con los lotes
@@ -56,7 +56,7 @@ que la resuelve hasta el óptimo (Etapa~1). Además, la descomposición es exact
 (Sección~\in[sec:modelo_split]), y los dos modelos coinciden en los 66 pares
 comparables de las pruebas funcionales (Sección~\in[sec:mismo_optimo]). El costo es que la Etapa~1
 resuelve un \ac{mip} de ruteo por lote sobre el grafo completo, lo cual es una limitación
-en almacenes grandes (Sección~\in[sec:caracteristicas_formulacion]).
+en depósitos grandes (Sección~\in[sec:caracteristicas_formulacion]).
 Si se quisiera decidir el loteo con el mismo esquema, la Etapa~1 tendría que
 rutear cada lote candidato, cuya cantidad crece combinatoriamente con los
 pedidos, lo que ayuda a explicar por qué Coruzzolo et al. recurren a una ruta
@@ -79,7 +79,7 @@ más temprana también está presente en \ac{aco}, aunque aplicada de otra
 forma. La heurística de los autores recorre los pedidos por fecha de entrega
 y, a medida que avanza, forma los lotes, agregando cada pedido al lote en curso
 del {\em picker} con el que termina antes, o abriendo uno nuevo si se supera la
-capacidad del carro. \ac{aco}, en cambio, recibe los lotes ya formados, los
+capacidad del {\em picker}. \ac{aco}, en cambio, recibe los lotes ya formados, los
 asigna a los {\em pickers} por ruleta y luego ordena la secuencia de cada uno
 según la menor fecha de entrega entre los pedidos de cada lote
 (Sección~\in[sec:aco_construccion]). En \ac{aco}, esa regla no basta por sí
@@ -99,7 +99,7 @@ a uno, y proviene enteramente de agrupar los pedidos en lotes, sobre todo de
 la reducción del tiempo de preparación del recorrido ({\em setup}). De los
 207,97 minutos diarios que se ahorran, 169,20 corresponden a esa preparación y
 38,77 al recorrido. Como en esta
-tesina los lotes son un dato, ese ahorro no puede reproducirse ni
+tesina los lotes son determinados previamente, ese ahorro no puede reproducirse ni
 contrastarse. Además, su resultado proviene de un caso real, mientras que las
 instancias de esta tesina son generadas
 (Sección~\in[sec:limitaciones]). Lo que esta tesina aporta frente a ese
@@ -120,7 +120,7 @@ esperable en un modelo que reúne en un mismo problema el ruteo, la
 asignación y la secuencia mediante restricciones de tipo M grande, ya que
 estas constantes debilitan la relajación lineal
 (Sección~\in[sec:marco_mip]). El Split, en cambio, resuelve la asignación y la
-secuencia sobre un modelo cuyo tamaño no depende del almacén.
+secuencia sobre un modelo cuyo tamaño no depende del depósito.
 
 La espera voluntaria resultó ser más que un detalle de la formulación. Es la
 forma que toma en los modelos lineales el tiempo ocioso insertado, propio de
@@ -171,13 +171,13 @@ Coruzzolo et al. las distancias forman una matriz completa de caminos mínimos
 entre las ubicaciones, sobre la que esta restricción no limita; aquí, en
 cambio, el grafo es de adyacencias, y por eso la restricción excluye rutas
 físicamente posibles. La restricción resulta
-adecuada para el almacén de este trabajo, pero en otros almacenes un {\em picker} puede entrar a un pasillo sin
+adecuada para el depósito de este trabajo, pero en otros depósitos un {\em picker} puede entrar a un pasillo sin
 salida y volver por donde vino, de modo que existen instancias físicamente
 posibles que la formulación declara infactibles. Por ejemplo, si una ubicación requerida está al fondo de un pasillo sin salida que 
-no contiene el depósito ni el punto de entrega, la única forma de visitarla es 
+no contiene la locación inicial ni la locación final, la única forma de visitarla es 
 volver por el mismo camino, lo que obliga a pasar dos veces por la ubicación que 
 da acceso al pasillo. Lo mismo puede ocurrir cuando un lote debe visitar casi todas las
-ubicaciones de un almacén pequeño y no existe un camino simple que las recorra
+ubicaciones de un depósito pequeño y no existe un camino simple que las recorra
 a todas. Para cubrir esos casos habría que admitir rutas que repitan ubicaciones,
 reescribiendo las restricciones de ruteo y el cálculo del tiempo de ruta. Es
 posible, pero complica la formulación y la resolución, y no forma parte del
@@ -196,13 +196,13 @@ afecta a las soluciones de este trabajo, como se comprobó sobre las 59
 soluciones del Split (Sección~\in[sec:anexo_mseq]).
 
 Además, la formulación no distingue los lotes vacíos, es decir, sin pedidos. Si
-$\mathcal{B}$ contiene alguno, igualmente le asigna una ruta del depósito al
-punto de entrega, un {\em picker} y un lugar en una secuencia, y su finalización
+$\mathcal{B}$ contiene alguno, igualmente le asigna una ruta de la locación inicial a
+la locación final, un {\em picker} y un lugar en una secuencia, y su finalización
 entra en el objetivo. Además, los lotes vacíos son intercambiables entre sí,
 lo que multiplica las soluciones equivalentes que debe considerar el
 resolvedor. Por eso, el caso 30a, con 10 lotes vacíos de 12, no termina en
 ninguno de los dos modelos (Sección~\in[sec:comparacion_lineales]). Como los
-lotes son un dato del problema y no una decisión de la formulación, se
+lotes fueron determinados previamente y no una decisión de la formulación, se
 considera que este caso debe resolverse antes, al conformar los lotes.
 
 Por último, la exactitud del Split depende de los supuestos del problema. La descomposición alcanza el óptimo del monolítico
@@ -222,13 +222,13 @@ que se discuten en la Sección~\in[sec:disc_literatura].
 El Split, por su parte, tiene un límite propio en cada etapa. La Etapa~1 no
 depende de la cantidad de {\em pickers} ni de la secuencia, pero cada uno
 de sus \ac{mip} se plantea sobre el grafo completo, así que su costo crece
-con el tamaño del almacén. La Etapa~2, en cambio, no depende del grafo,
+con el tamaño del depósito. La Etapa~2, en cambio, no depende del grafo,
 pero tiene una variable de precedencia por cada par de lotes y una
 asignación por cada par elegible, así que su costo crece con la cantidad
 de lotes y de {\em pickers}. La descomposición traslada la dificultad del
 ruteo fuera de la asignación, pero no elimina ninguna de las dos. En
 consecuencia, el Split termina 9 de los 19 escenarios de estrés, y los que no
-termina tienen muchos lotes, que encarecen la Etapa~2, o un almacén grande,
+termina tienen muchos lotes, que encarecen la Etapa~2, o un depósito grande,
 que encarece la Etapa~1 (Sección~\in[sec:comparacion_lineales]).
 
 Además, el Split no tiene una solución completa hasta terminar la
@@ -258,7 +258,7 @@ de cada una.
 	(Sección~\in[sec:calib_hc_semillas]).
 	\item En ninguna de las dos el tiempo máximo es estricto. \ac{hc} lo controla entre
 	iteraciones e incluye la construcción inicial, que no se interrumpe, de
-	modo que en almacenes grandes la búsqueda puede no llegar a iterar.
+	modo que en depósitos grandes la búsqueda puede no llegar a iterar.
 	\ac{aco} lo controla antes de cada hormiga y no lo aplica mientras no
 	exista una solución factible, así que una instancia en la que ninguna
 	hormiga cumple la cadena de frío corre las $\text{Max}_{\text{it}}$
@@ -297,7 +297,7 @@ de cada una.
 	paso de la construcción de una ruta recalcula caminos con el algoritmo de
 	Dijkstra y hace un chequeo de completitud. Como ese costo crece con el
 	tamaño del grafo y cada iteración construye $m$ soluciones completas, en
-	los almacenes grandes la colonia agota el tiempo máximo antes de
+	los depósitos grandes la colonia agota el tiempo máximo antes de
 	completar $\text{Max}_{\text{it}}$ iteraciones
 	(Sección~\in[sec:res_tiempos]).
 	\item No hay un criterio de estancamiento: la colonia ejecuta siempre
@@ -376,7 +376,7 @@ las limitaciones anteriores, indica cuándo conviene cada método.
 %----------------------------------------------------------------------------------------
 \startsubsection[title={Beneficios}, reference=sec:beneficios]
 
-Para la operación de un almacén, el beneficio principal es poder planificar y asignar
+Para la operación de un depósito, el beneficio principal es poder planificar y asignar
 considerando velocidades
 heterogéneas, donde un mismo lote dura distinto según quién lo ejecute.
 Por ejemplo, un lote cuya ejecución supera el
@@ -517,7 +517,7 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 	\item Descartar los lotes vacíos antes de resolver. En el caso 30a, SCIP no
 	terminó en 600 segundos con los lotes vacíos y terminó en 0,13 segundos sin
 	ellos (Sección~\in[sec:comparacion_lineales]).
-	\item Acelerar la Etapa~1 del Split, que limita en los almacenes grandes.
+	\item Acelerar la Etapa~1 del Split, que limita en los depósitos grandes.
 	Una vía concreta es retomar la clausura métrica, que reduce el grafo de
 	cada lote a las ubicaciones requeridas y, en una grilla de 100×100, baja
 	los arcos de unos 40.000 a unos 700. Se descartó porque, al expandir cada
@@ -537,7 +537,7 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 	en la vecina (Sección~\in[sec:anexo_intentos_split]).
 	\item Admitir rutas que repitan ubicaciones, reescribiendo las restricciones
 	de ruteo y el cálculo del tiempo de ruta. Eso permitiría representar
-	almacenes con pasillos sin salida, que hoy la formulación declara
+	depósitos con pasillos sin salida, que hoy la formulación declara
 	infactibles (Sección~\in[sec:caracteristicas_formulacion]).
 \stopitemize
 
@@ -625,7 +625,7 @@ del problema al que apuntan, y para cada una se indica qué se espera ganar.
 	extensión.
 	\item Evaluar los métodos con datos de una operación real, que permitirían comprobar si
 	el perfil realista representa bien una operación y medir el ahorro frente
-	a la práctica actual del almacén, como hacen Coruzzolo et al.
+	a la práctica actual del depósito, como hacen Coruzzolo et al.
 \stopitemize
 
 \stopsubsection

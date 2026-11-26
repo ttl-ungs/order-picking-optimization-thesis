@@ -4,11 +4,11 @@
 \startsection[title={Problema de preparación de pedidos}, reference=sec:problema]
 
 En un centro de distribución, los productos llegan de los proveedores, se
-almacenan en distintas ubicaciones dentro del almacén y se envían a los
+almacenan en distintas ubicaciones dentro del depósito y se envían a los
 clientes a medida que estos realizan sus pedidos. El {\em picking}, es decir,
 la recolección de los productos que componen cada pedido, es la actividad que
 conecta ambos extremos y una de las que más tiempo y costo insume, ya que
-representa entre el 50 y el 75\% del costo operativo total de un almacén
+representa entre el 50 y el 75\% del costo operativo total de un depósito
 típico, según los estudios que recopilan Urzúa et al. \cite[urzua2019evaluating]. Un caso real documentado en un centro de
 distribución nacional muestra que el tiempo de preparación de un pedido
 podía llegar a las 8 horas, y que con una mejor asignación de las
@@ -21,21 +21,21 @@ beneficios directos para la empresa y para los clientes, tales como:
 	\item Menores costos operativos, porque los operarios preparan más
 	pedidos en el mismo tiempo.
 	\item Menores tiempos de entrega, porque los pedidos salen antes del
-	almacén.
+	depósito.
 	\item Una mejor planificación de las entregas, porque los pedidos quedan
 	listos en el momento justo y no se acumulan en la zona de despacho.
 	\item Una mejor experiencia de compra, porque los clientes reciben sus
 	pedidos en el tiempo acordado.
 \stopitemize
 
-En este trabajo se considera un almacén con pasillos que guarda productos
+En este trabajo se considera un depósito con pasillos que guarda productos
 congelados, sujetos a la cadena de frío. Para recolectar varios pedidos en
 un mismo recorrido, los pedidos de los clientes
 se agrupan en {\em lotes}. Cada lote es ejecutado por un único operario de picking
 ({\em picker}, término que se usa a partir del
-Capítulo~\in[Capitulo_3]), que parte del depósito, recorre los pasillos visitando cada
+Capítulo~\in[Capitulo_3]), que parte de la locación inicial, recorre los pasillos visitando cada
 ubicación donde hay productos de alguno de sus pedidos, recoge las unidades
-correspondientes y termina en el punto de entrega, donde el lote queda listo
+correspondientes y termina en la locación final, donde el lote queda listo
 para su despacho. Los operarios trabajan en simultáneo, y cada uno ejecuta los
 lotes que tiene asignados de a uno por vez.
 
@@ -50,7 +50,7 @@ decisiones:
 \startitemize
 	\item {\bf Asignación:} qué operario ejecuta cada lote.
 	\item {\bf Secuenciación:} en qué orden ejecuta cada operario sus lotes.
-	\item {\bf Ruteo:} qué recorrido sigue el operario dentro del almacén
+	\item {\bf Ruteo:} qué recorrido sigue el operario dentro del depósito
 	para visitar todas las ubicaciones del lote.
 \stopitemize
 
@@ -62,20 +62,20 @@ mismo instante, cuando un lote reúne pedidos con fechas distintas, no todos
 pueden terminar justo en su fecha.
 
 El problema de preparación de pedidos ({\bf OPP}, del inglés {\em Order
-Picking Problem}) consiste en decidir, a partir de un almacén, un conjunto de lotes de pedidos y un
+Picking Problem}) consiste en decidir, a partir de un depósito, un conjunto de lotes de pedidos y un
 conjunto de operarios con velocidades distintas, qué operario ejecuta cada
 lote, en qué orden y siguiendo qué ruta, respetando la cadena de frío, de
 forma tal de minimizar la combinación de los tiempos de finalización de los
-lotes y las penalidades por adelanto y demora de los pedidos. El almacén se
+lotes y las penalidades por adelanto y demora de los pedidos. El depósito se
 representa como un grafo dirigido cuyos nodos son las ubicaciones de
-picking, el depósito de partida y el punto de entrega, y cuyos arcos
+picking, la locación inicial y la locación final, y cuyos arcos
 representan los desplazamientos posibles entre ubicaciones junto con su
 distancia asociada. Como simplificación, se considera que cada ubicación
 puede ser visitada una única vez en la ruta de un lote.
 
-Los lotes se reciben como dato de entrada, por lo que su formación
+Los lotes son determinados previamente, y su formación
 ({\em batching}) no forma parte de este trabajo. Lo mismo ocurre con la ubicación de los productos en el
-almacén ({\em slotting}), que también se considera dada.
+depósito ({\em slotting}), la cual también se considera ya determinada.
 
 Las decisiones del OPP no son independientes entre sí. La duración de un
 lote depende de su ruta y de la velocidad del operario que lo ejecuta, y
@@ -98,7 +98,7 @@ dos grandes familias de métodos. Los métodos {\bf exactos} garantizan
 encontrar la solución óptima, pero su tiempo de cómputo crece rápidamente con
 el tamaño de la instancia. Los métodos {\bf heurísticos} (y metaheurísticos),
 en cambio, renuncian a esa garantía a cambio de tiempos de resolución mucho
-menores. En un almacén real, con cientos de
+menores. En un depósito real, con cientos de
 ubicaciones y de pedidos con distintos niveles de urgencia, las decisiones
 deben tomarse en poco tiempo, por lo que esta disyuntiva entre la calidad de
 la solución y el tiempo de cómputo es central.

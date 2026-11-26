@@ -6,11 +6,11 @@ conclusiones resume la Sección~\in[sec:relevamiento]. Una prueba responde si un
 determinada se resuelve o no; un estudio, en cambio, recorre una familia de
 instancias y muestra a partir de qué tamaño, y por qué, un modelo deja de
 resolver en tiempos razonables. En cada estudio se varió un único factor
-por vez (tamaño del almacén, cantidad de lotes, pedidos por lote, cantidad
+por vez (tamaño del depósito, cantidad de lotes, pedidos por lote, cantidad
 de {\em pickers} y sus velocidades), manteniendo fijo el resto.
 
-En todos los estudios, el almacén es una grilla de $n \times n$ ubicaciones,
-con el depósito y el punto de entrega en esquinas opuestas. Cada pedido se
+En todos los estudios, el depósito es una grilla de $n \times n$ ubicaciones,
+con la locación inicial y la locación final en esquinas opuestas. Cada pedido se
 ubica al azar en una de las ubicaciones, con una semilla fija, los pedidos se
 reparten entre los lotes por turnos y las fechas de entrega se distribuyen
 entre el 60\% y el 140\% de una estimación de la duración total de la
@@ -38,7 +38,7 @@ Cuadro~\in[tab:relev_ejes] resume el resultado.
 
 Solo dos ejes impidieron la resolución, y cada uno lo hizo en una etapa
 distinta: la cantidad de lotes aumenta el tiempo de la Etapa~2 (asignación y
-secuencia), y el tamaño del almacén, el de la Etapa~1
+secuencia), y el tamaño del depósito, el de la Etapa~1
 (ruteo). Agregar pedidos a cada lote, en cambio, no impidió la resolución: 
 la Etapa~2 exploró 153.934 nodos con 10 pedidos por lote y
 4.144 con 26. Esta separación entre las dos etapas orientó el resto del
@@ -50,18 +50,18 @@ prueba.
 \startsection[title={Exploración de instancias más realistas}]
 
 Los estudios siguientes buscaron que las instancias se parecieran a un
-almacén real sin volverse imposibles de resolver.
+depósito real sin volverse imposibles de resolver.
 
 {\bf Pesos de la grilla.} Con el mismo peso en todos los desplazamientos,
 muchas rutas distintas empatan en costo, algo poco representativo de un
-almacén, donde recorrer un pasillo no cuesta lo mismo que cruzar entre
+depósito, donde recorrer un pasillo no cuesta lo mismo que cruzar entre
 pasillos. Con pesos asimétricos (2 y 6), la Etapa~1 llegó a ser 3,7 veces
 más rápida en la grilla de 7×7, pero la ventaja desapareció en la de
 15×15, por lo que no constituye una mejora de rendimiento. Se adoptaron
 pesos levemente distintos según la dirección del desplazamiento (4 y 5),
 por su realismo y no por su efecto en los tiempos.
 
-{\bf Velocidades de los {\em pickers}.} Si bien en un almacén real los
+{\bf Velocidades de los {\em pickers}.} Si bien en un depósito real los
 {\em pickers} tienen velocidades distintas, estas velocidades no son muy distantes,
 ya que todos provienen de un mismo perfil y usan el mismo equipamiento. Por este motivo, 
 se considera que un perfil de velocidades realista no tiene una velocidad distinta 
@@ -138,9 +138,9 @@ de 9,48\%.
 
 \stopsection
 
-\startsection[title={Hasta qué tamaño de almacén se obtienen resultados}]
+\startsection[title={Hasta qué tamaño de depósito se obtienen resultados}]
 
-Con el perfil fijo, el único eje que queda libre es el tamaño del almacén.
+Con el perfil fijo, el único eje que queda libre es el tamaño del depósito.
 Se buscó qué grillas llevan al modelo Split a resolver en un rango de 10 a
 20 minutos, suficiente para exigirlo sin superar el tope de las pruebas.
 Cada medición se tomó de a una, sin otras resoluciones en paralelo
@@ -216,8 +216,8 @@ algunas instancias y empeoraron otras, y se descartaron
 
 {\bf Clausura métrica.} La Etapa~1 resuelve en qué orden visitar las
 ubicaciones requeridas y cómo recorrerlas. La clausura reemplaza el
-grafo de cada lote por un grafo completo sobre el depósito, las ubicaciones
-requeridas y el punto de entrega, con las distancias de camino mínimo
+grafo de cada lote por un grafo completo sobre la locación inicial, las ubicaciones
+requeridas y la locación final, con las distancias de camino mínimo
 calculadas de antemano, de modo que el modelo solo decide el orden. En una
 grilla de 100×100, con unas 25 ubicaciones requeridas por lote, los arcos
 pasan de unos 40.000 a unos 700. La reducción es exacta, salvo cuando dos
