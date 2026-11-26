@@ -1,0 +1,24 @@
+\startchapter[title={Código de los modelos lineales}, reference=Anexo_Codigo]
+
+Este anexo reproduce, sin modificaciones, el código en ZIMPL de los modelos
+lineales: el modelo monolítico (Sección~\in[sec:modelo_monolitico]) y las dos
+etapas del modelo Split, ruteo y secuenciación.
+
+\definetyping[zpl][style=\tfxx, before={\blank[small]}, after={\blank[small]}]
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Modelo monolítico}]
+\typefile[zpl]{Apendices/codigo/opp_mono.zpl}
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Modelo Split: Etapa 1 (ruteo)}]
+\typefile[zpl]{Apendices/codigo/opp_split_stage1_routing.zpl}
+\stopsection
+
+%----------------------------------------------------------------------------------------
+\startsection[title={Modelo Split: Etapa 2 (secuenciación)}]
+\typefile[zpl]{Apendices/codigo/opp_split_stage2_scheduling.zpl}
+\stopsection
+
+\stopchapter
