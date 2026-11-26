@@ -45,7 +45,7 @@ que corresponden a las tres decisiones del problema:
 	$\sigma_p = (b_1, \dots, b_m)$ es la lista ordenada de los lotes que tiene
 	asignados.
 \stopitemize
-El loteo sigue siendo un dato de entrada. La Figura~\in[fig:heur_solucion]
+El loteo sigue siendo determinado previamente. La Figura~\in[fig:heur_solucion]
 muestra un ejemplo.
 
 \placefigure[force][fig:heur_solucion]{Ejemplo de una solución con tres lotes y dos {\em pickers}. Arriba, la ruta $\pi_{B1} = (3, 7, 8)$ del lote $B1$, que debe recolectar en las ubicaciones 3 y 8 y pasa por la 7 sin recolectar. Abajo, la asignación $a(B1) = a(B3) = P1$ y $a(B2) = P2$, y las secuencias $\sigma_{P1} = (B1, B3)$ y $\sigma_{P2} = (B2)$. Cada lote comienza apenas termina el anterior.}
@@ -223,7 +223,7 @@ informa como infactible.
 Los primeros chequeos validan los datos de entrada y son los mismos que en
 los modelos lineales (Sección~\in[sec:split_resolucion]). Cada pedido debe
 pertenecer a exactamente un lote, ningún lote puede superar la capacidad del
-carro y todas las velocidades deben ser positivas. A los {\em pickers} sin
+{\em picker} y todas las velocidades deben ser positivas. A los {\em pickers} sin
 velocidad informada se les asigna la velocidad de referencia $V_p = 1$.
 
 El siguiente chequeo corresponde a la cadena de frío. El tiempo fijo $F_b$
@@ -273,12 +273,12 @@ $v_{\text{end}}$ pasando por todas las ubicaciones de $\mathcal{V}_b$, en
 cualquier orden y con la posibilidad de atravesar otras ubicaciones en el
 camino. Chen et al. tratan el ruteo de picking de esta forma, eligiendo el
 orden en que se visitan las ubicaciones requeridas y uniéndolas por el camino
-más corto en el almacén \cite[chen2013antcolony].
+más corto en el depósito \cite[chen2013antcolony].
 
 La diferencia en este trabajo es que la ruta no puede repetir ubicaciones.
 Por eso, el camino entre dos ubicaciones se calcula con el algoritmo de
 Dijkstra evitando lo ya recorrido. Esto hace que una construcción golosa
-pueda trabarse, porque al entrar en una zona del almacén la ruta puede dejar
+pueda trabarse, porque al entrar en una zona del depósito la ruta puede dejar
 sin salida a ubicaciones que todavía faltaba visitar. Para reducir ese
 riesgo, las dos metaheurísticas usan los mismos mecanismos, que son un
 chequeo de completitud antes de aceptar cada ubicación (que comprueba que
@@ -499,7 +499,7 @@ decisión que toman las hormigas:
 	\item {\bf Feromona de ruta.} Como la ruta de un lote se construye
 	eligiendo el orden en que se visitan las ubicaciones requeridas
 	(Sección~\in[sec:heur_rutas]), la feromona $\tau_{ij}$ no se ubica sobre
-	los arcos del almacén, sino sobre
+	los arcos del depósito, sino sobre
 	los pares ordenados de ubicaciones entre las que una hormiga puede ir de
 	una a la otra. Para cada lote $b$, se
 	definen los pares $(i, j)$ con
@@ -507,7 +507,7 @@ decisión que toman las hormigas:
 	$j \in \mathcal{V}_b \cup \{v_{\text{end}}\}$ e $i \neq j$.
 	Los pares $(i, j)$ se comparten entre lotes. Por lo tanto, si dos lotes requieren visitar las mismas dos
 	ubicaciones, lo que el primer lote aprende es aprovechado por el
-	segundo lote, porque la geometría del almacén es la misma.
+	segundo lote, porque la geometría del depósito es la misma.
 	\item {\bf Feromona de asignación.} Para cada par de lote y {\em picker}
 	se mantiene un valor $\tau^{P}_{bp}$, que indica qué tan conveniente
 	resultó asignar el lote $b$ al {\em picker} $p$ en las soluciones

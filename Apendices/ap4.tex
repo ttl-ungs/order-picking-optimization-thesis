@@ -24,7 +24,7 @@ varias pruebas, cada una se distingue con una letra.
 	\bTR \bTD 09 \eTD \bTD Dos pedidos de un mismo lote en dos ubicaciones: ruta esperada. \eTD \eTR
 	\bTR \bTD 10 \eTD \bTD Dos pedidos en lotes distintos: ruta esperada para cada lote, carga equilibrada y sin superposición. \eTD \eTR
 	\bTR \bTD 11 \eTD \bTD Cuatro pedidos en dos lotes que comparten ubicaciones: rutas esperadas. \eTD \eTR
-	\bTR \bTD 12 \eTD \bTD Sin pruebas activas: verificaba la capacidad del carro dentro del modelo, que ya no la contempla. \eTD \eTR
+	\bTR \bTD 12 \eTD \bTD Sin pruebas activas: verificaba la capacidad del {\em picker} dentro del modelo, que ya no la contempla. \eTD \eTR
 	\bTR \bTD 13 \eTD \bTD 12 pedidos en 6 lotes con 3 {\em pickers}, sobre una grilla de 4×4: carga equilibrada y sin superposición en el tiempo. \eTD \eTR
 	\bTR \bTD 14 \eTD \bTD La misma instancia y los mismos controles que el caso 13. \eTD \eTR
 	\bTR \bTD 15 \eTD \bTD 3 pedidos con varias ubicaciones cada uno, en un lote con un {\em picker}, sobre una grilla de 4×4: tiene solución. \eTD \eTR
@@ -42,12 +42,12 @@ varias pruebas, cada una se distingue con una letra.
 	\bTR \bTD 23b \eTD \bTD Los tiempos de ruta calculados son los que usa la asignación, sin superposición entre lotes de un mismo {\em picker}. \eTD \eTR
 	\bTR \bTD 24a \eTD \bTD La cadena de frío excluye al {\em picker} lento: el lote se asigna al rápido. \eTD \eTR
 	\bTR \bTD 24b \eTD \bTD Ningún {\em picker} cumple la cadena de frío: el chequeo previo no encuentra pares elegibles. \eTD \eTR
-	\bTR \bTD 25a \eTD \bTD Grilla de 5×3 con 2 {\em pickers} y 4 lotes, uno de los cuales supera la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 25a \eTD \bTD Grilla de 5×3 con 2 {\em pickers} y 4 lotes, uno de los cuales supera la capacidad del {\em picker}: se espera infactibilidad. \eTD \eTR
 	\bTR \bTD 25b \eTD \bTD La misma grilla, con dos pedidos de un lote en la misma ubicación: tiene solución. \eTD \eTR
 	\bTR \bTD 25c \eTD \bTD La misma grilla, con pedidos de varias ubicaciones: cada lote visita todas sus ubicaciones. \eTD \eTR
-	\bTR \bTD 25d \eTD \bTD La misma grilla, con todos los lotes por encima de la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 25d \eTD \bTD La misma grilla, con todos los lotes por encima de la capacidad del {\em picker}: se espera infactibilidad. \eTD \eTR
 	\bTR \bTD 25e \eTD \bTD La misma grilla, con fechas de entrega extremas (0 y 100): tiene solución en ambos casos. \eTD \eTR
-	\bTR \bTD 25f \eTD \bTD La misma grilla, con la carga de cada lote exactamente igual a la capacidad del carro: tiene solución. \eTD \eTR
+	\bTR \bTD 25f \eTD \bTD La misma grilla, con la carga de cada lote exactamente igual a la capacidad del {\em picker}: tiene solución. \eTD \eTR
 	\bTR \bTD 25g \eTD \bTD La misma grilla, con lotes distintos que comparten ubicaciones: tiene solución. \eTD \eTR
 	\bTR \bTD 26a \eTD \bTD Grafo con un puente cortado, 2 {\em pickers} y 4 lotes: una ubicación requerida queda inalcanzable; se espera infactibilidad. \eTD \eTR
 	\bTR \bTD 26b \eTD \bTD El mismo grafo con el puente, con fechas de entrega muy holgadas y dos tamaños de pedido: tiene solución. \eTD \eTR
@@ -56,11 +56,11 @@ varias pruebas, cada una se distingue con una letra.
 	\bTR \bTD 27 \eTD \bTD La instancia del caso 01 con otros pesos en la función objetivo. \eTD \eTR
 	\bTR \bTD 28 \eTD \bTD Fechas de entrega ajustadas y holgadas: ambas tienen solución, porque la demora absorbe la fecha ajustada. \eTD \eTR
 	\bTR \bTD 29 \eTD \bTD Un lote vacío entre otros: tiene solución. \eTD \eTR
-	\bTR \bTD 30a \eTD \bTD Capacidades de pedido nulas y fraccionarias dentro de la capacidad del carro: tiene solución. \eTD \eTR
-	\bTR \bTD 30b \eTD \bTD Capacidades de pedido nulas y fraccionarias que superan la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 30a \eTD \bTD Capacidades de pedido nulas y fraccionarias dentro de la capacidad del {\em picker}: tiene solución. \eTD \eTR
+	\bTR \bTD 30b \eTD \bTD Capacidades de pedido nulas y fraccionarias que superan la capacidad del {\em picker}: se espera infactibilidad. \eTD \eTR
 	\bTR \bTD 31a \eTD \bTD Un pedido asignado a más de un lote: se rechaza como infactible. \eTD \eTR
 	\bTR \bTD 31b \eTD \bTD Cada pedido asignado a un único lote: tiene solución. \eTD \eTR
-	\bTR \bTD 32 \eTD \bTD Un pedido que por sí solo supera la capacidad del carro: se espera infactibilidad. \eTD \eTR
+	\bTR \bTD 32 \eTD \bTD Un pedido que por sí solo supera la capacidad del {\em picker}: se espera infactibilidad. \eTD \eTR
 	\bTR \bTD 33a \eTD \bTD Tiempos de servicio distintos entre ubicaciones: tiene solución. \eTD \eTR
 	\bTR \bTD 33b \eTD \bTD Tiempo de servicio igual a 1 en todas las ubicaciones: tiene solución. \eTD \eTR
 	\bTR \bTD 33c \eTD \bTD Tiempo de servicio nulo: tiene solución. \eTD \eTR

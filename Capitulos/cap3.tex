@@ -13,17 +13,17 @@ Sección~\in[sec:espera_voluntaria] describe una propiedad común a ambas
 formulaciones y, por último, la Sección~\in[sec:diferencias_modelos] resume
 las diferencias entre ellas. Las limitaciones de las dos formulaciones se
 discuten en la Sección~\in[sec:caracteristicas_formulacion], junto con su
-efecto sobre los resultados.
+efecto sobre los resultados. El código completo en ZIMPL de los modelos se reproduce en el
+Anexo~\in[Anexo_Codigo].
 
 Respecto del modelo de referencia, la formulación agrega la velocidad heterogénea entre
 {\em pickers}, la restricción de cadena de frío y un tiempo de servicio en cada
 ubicación que atraviesa la ruta. Lo que simplifica es la formación de los
-lotes, que aquí son un dato de entrada, de modo que la capacidad del carro
+lotes, que aquí fueron determinados previamente, de modo que la capacidad del {\em picker}
 deja de ser una restricción del modelo. Además, la secuencia de cada {\em picker}
 se expresa con variables de precedencia entre pares de lotes, en lugar de
 posiciones numeradas, y el flujo que elimina los {\em subtours} se acota con la
-cantidad de ubicaciones requeridas del lote, en lugar de la capacidad del
-carro (Sección~\in[sec:modelo_monolitico]). La forma de la función objetivo se
+cantidad de ubicaciones requeridas del lote, en lugar de la capacidad del {\em picker} (Sección~\in[sec:modelo_monolitico]). La forma de la función objetivo se
 mantiene, de modo que, si todos los {\em pickers} tienen la misma velocidad, el
 límite de la cadena de frío es suficientemente grande y no hay tiempos de
 servicio, los dos modelos se reducen al modelo de referencia con los lotes
@@ -37,8 +37,7 @@ Sección~\in[sec:problema], bajo los siguientes supuestos:
 
 \startitemize
 	\item {\bf Lotes dados.} Los lotes se reciben ya conformados y cada pedido
-	pertenece a un único lote. Como el loteo no se decide, la capacidad del
-	carro no forma parte del modelo, y se verifica antes de resolver
+	pertenece a un único lote. Como el loteo no se decide, la capacidad del {\em picker} no forma parte del modelo, y se verifica antes de resolver
 	(Sección~\in[sec:split_resolucion]).
 	\item {\bf Disponibilidad de los pickers.} Todos los {\em pickers} están
 	disponibles desde el instante 0 y ejecutan un lote por vez.
@@ -49,13 +48,13 @@ Sección~\in[sec:problema], bajo los siguientes supuestos:
 	ruta por igual, la mejor ruta de un lote es la misma para cualquier
 	{\em picker}.
 	\item {\bf Sin congestión.} Los {\em pickers} no interfieren entre sí al
-	recorrer el almacén, de modo que la ruta de un lote tampoco depende del
+	recorrer el depósito, de modo que la ruta de un lote tampoco depende del
 	momento en que se ejecuta ni de los demás lotes.
 	\item {\bf Cadena de frío por lote.} El límite de tiempo fuera de la cámara
 	de frío se aplica a la ejecución de cada lote, incluida su parte fija, y
 	no al turno del {\em picker} ni a la espera hasta el despacho.
-	\item {\bf Extremos de la ruta.} El depósito ($v_{\text{start}}$) y el punto de
-	entrega ($v_{\text{end}}$) son ubicaciones distintas, como en el modelo de referencia.
+	\item {\bf Extremos de la ruta.} La locación inicial ($v_{\text{start}}$) y la locación
+    final ($v_{\text{end}}$) son ubicaciones distintas, como en el modelo de referencia.
 	\item {\bf Camino simple.} La ruta de un lote no pasa dos veces por la misma
 	ubicación, como en el modelo de referencia. Es una simplificación de la
 	formulación y no una regla de la operación, y sus consecuencias se
@@ -75,7 +74,7 @@ sola vez en esta sección.
 		\NC \mathcal{N} \NC \quad \text{pedidos de clientes} \NR
 		\NC \mathcal{B} \NC \quad \text{lotes; cada pedido pertenece a un único lote} \NR
 		\NC \mathcal{P} \NC \quad \text{{\em pickers}} \NR
-		\NC \mathcal{V} \NC \quad \text{ubicaciones del almacén, incluidos el depósito $v_{\text{start}}$ y el punto de entrega $v_{\text{end}}$} \NR
+		\NC \mathcal{V} \NC \quad \text{ubicaciones del depósito, incluidas la locación inicial $v_{\text{start}}$ y la locación final $v_{\text{end}}$} \NR
 		\NC \mathcal{E} \NC \quad \text{arcos del grafo de ubicaciones, es decir, los pares $(i,j)$ tales que se puede ir de $i$ a $j$} \NR
 	\stopalign
 \stopformula
@@ -95,13 +94,13 @@ siguientes subconjuntos:
 
 \startsubsection[title={Parámetros}]
 
-{\bf Pedidos, lotes y almacén.}
+{\bf Pedidos, lotes y depósito.}
 \startformula
 	\startalign[n=2, align={right,left}]
 		\NC A_{ni} \in \{0,1\} \NC \quad \text{1 si el pedido $n$ tiene productos en la ubicación $i$} \NR
 		\NC B_{nb} \in \{0,1\} \NC \quad \text{1 si el pedido $n$ pertenece al lote $b$} \NR
 		\NC C_n \NC \quad \text{cantidad de unidades a recoger del pedido $n$} \NR
-		\NC Q^{\text{carro}} \NC \quad \text{capacidad del carro, en unidades; se verifica antes de resolver} \NR
+		\NC Q^{\text{picker}} \NC \quad \text{capacidad del {\em picker}, en unidades; se verifica antes de resolver} \NR
 		\NC T^{\text{due}}_n \NC \quad \text{fecha de entrega del pedido $n$} \NR
 		\NC D_{ij} \NC \quad \text{distancia del arco $(i,j) \in \mathcal{E}$} \NR
 		\NC S_i \NC \quad \text{tiempo de servicio en la ubicación $i$} \NR
@@ -249,9 +248,8 @@ Por ejemplo, $z_b(\delta^{+}(i))$ vale 1 si la ruta del lote $b$ sale de la
 ubicación $i$, y 0 si no pasa por ella.
 
 {\bf Inicio y fin de la ruta.}
-La ruta sale una vez del depósito (\in[eq:mono_salida]) y llega una vez al
-punto de entrega (\in[eq:mono_llegada]). Además, no vuelve al depósito
-(\in[eq:mono_no_vuelve]) ni sale del punto de entrega (\in[eq:mono_no_sale]).
+La ruta sale una vez de la locación inicial (\in[eq:mono_salida]) y llega una vez a la locación final (\in[eq:mono_llegada]). Además, no vuelve a la locación inicial
+(\in[eq:mono_no_vuelve]) ni sale de la locación final (\in[eq:mono_no_sale]).
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
@@ -282,16 +280,16 @@ repite.
 \stopplaceformula
 
 {\bf Eliminación de {\em subtours}.}
-Las restricciones (\in[eq:mono_salida])--(\in[eq:mono_sale_max]) todavía
-admiten soluciones formadas por un camino del depósito al punto de entrega más un
-ciclo disjunto que visita algunas ubicaciones requeridas sin conectarse con el
-depósito. Para eliminarlos se utiliza una variante de la formulación de flujo
-de Gavish y Graves (Ecuación~\in[eq:gg]). Un flujo $q$ sale del depósito con
+Las restricciones (\in[eq:mono_salida])--(\in[eq:mono_sale_max])
+admiten soluciones formadas por un camino de la locación inicial a la locación final más un
+ciclo disjunto que visita algunas ubicaciones requeridas sin conectarse con la
+locación inicial. Para eliminarlos se utiliza una variante de la formulación de flujo
+de Gavish y Graves (Ecuación~\in[eq:gg]). Un flujo $q$ sale de la locación inicial con
 $L_b$ unidades, una por cada ubicación requerida, y cada ubicación requerida
 consume una. Como el flujo solo circula por arcos usados
-(\in[eq:mono_gg_cota]) y se origina únicamente en el depósito
+(\in[eq:mono_gg_cota]) y se origina únicamente en la locación inicial
 (\in[eq:mono_gg_origen]), una ubicación requerida solo puede recibir su
-unidad (\in[eq:mono_gg_balance]) si está conectada al depósito por la ruta.
+unidad (\in[eq:mono_gg_balance]) si está conectada a la locación inicial por la ruta.
 \startplaceformula
 \startformula
 	\startalign[n=3, align={right,left,left}]
@@ -322,8 +320,8 @@ por la que pasa la ruta, que se cuenta cuando la ruta sale de ella:
 \stopplaceformula
 El tiempo de servicio se cobra en toda ubicación intermedia que la ruta
 atraviesa, se recoja algo en ella o no.\footnote{En la implementación, la
-suma del traslado excluye los arcos que entran al depósito y los que salen del
-punto de entrega. Por (\in[eq:mono_no_vuelve]) y (\in[eq:mono_no_sale]) esos arcos
+suma del traslado excluye los arcos que entran a la locación inicial y los
+que salen de la locación final. Por (\in[eq:mono_no_vuelve]) y (\in[eq:mono_no_sale]) esos arcos
 no se usan, así que las dos expresiones coinciden.}
 
 \stopsubsection
@@ -615,8 +613,8 @@ del modelo monolítico, restringidas a los pares elegibles:
 La Figura~\in[fig:split_flujo] muestra cómo se resuelve una instancia con el
 modelo Split.
 Primero se validan los datos. Se verifica que cada pedido pertenezca a un
-único lote, que ningún lote supere la capacidad del carro
-($\sum_{n \in \mathcal{N}_b} C_n \leq Q^{\text{carro}}$) y que todas las
+único lote, que ningún lote supere la capacidad del {\em picker}
+($\sum_{n \in \mathcal{N}_b} C_n \leq Q^{\text{picker}}$) y que todas las
 velocidades sean positivas, ya que una velocidad nula dejaría indefinido el
 tiempo de ejecución y una negativa lo haría negativo. Si alguna de estas
 condiciones no se cumple, la instancia se informa como
